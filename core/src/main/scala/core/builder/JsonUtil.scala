@@ -12,7 +12,9 @@ object JsonUtil {
     json: JsValue,
     strings: Seq[String] = Nil,
     optionalStrings: Seq[String] = Nil,
-    arraysOfObjects: Seq[String] = Nil,
+    anys: Seq[String] = Nil,
+    arrayOfAnys: Seq[String] = Nil,
+    arrayOfObjects: Seq[String] = Nil,
     optionalArraysOfObjects: Seq[String] = Nil,
     optionalObjects: Seq[String] = Nil,
     objects: Seq[String] = Nil,
@@ -21,7 +23,7 @@ object JsonUtil {
     optionalAnys: Seq[String] = Nil,
     prefix: Option[String] = None
   ): Seq[String] = {
-    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ objects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
+    val keys = strings ++ anys ++ optionalStrings ++ arrayOfAnys ++ arrayOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ objects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
 
     val unrecognized = json.asOpt[JsObject] match {
       case None => Seq.empty
@@ -41,6 +43,12 @@ object JsonUtil {
         case None => Some(withPrefix(prefix, s"Missing $field"))
       }
     } ++
+      anys.flatMap { field =>
+        (json \ field).toOption match {
+          case Some(_) => None
+          case None => Some(withPrefix(prefix, s"Missing $field"))
+        }
+      } ++
     optionalStrings.flatMap { field =>
       (json \ field).toOption match {
         case Some(_: JsString) => None
@@ -74,7 +82,13 @@ object JsonUtil {
         case None => None
       }
     } ++
-    arraysOfObjects.flatMap { field =>
+    arrayOfAnys.flatMap { field =>
+      (json \ field).toOption match {
+        case Some(_) => None
+        case None => Some(withPrefix(prefix, s"Missing $field"))
+      }
+    } ++
+    arrayOfObjects.flatMap { field =>
       (json \ field).toOption match {
         case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
         case Some(_) => Some(withPrefix(prefix, s"$field must be an array"))
@@ -141,7 +155,11 @@ object JsonUtil {
   }
 
   def asOptString(value: JsLookupResult): Option[String] = {
-    value.toOption.flatMap { asOptString }
+    asOptJsValue(value).flatMap { asOptString }
+  }
+
+  def asOptJsValue(value: JsLookupResult): Option[JsValue] = {
+    value.toOption
   }
 
   def asOptBoolean(value: JsValue): Option[Boolean] = {

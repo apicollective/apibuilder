@@ -149,7 +149,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       val json = baseJson.format("guid")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors should be(Nil)
-      val userResource = validator.service.resources.head
+      val userResource = validator.service().resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
       param.name should be("guid")
@@ -160,7 +160,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       val json = baseJson.format("age")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors should be(Nil)
-      val userResource = validator.service.resources.head
+      val userResource = validator.service().resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
       param.name should be("age")
@@ -221,7 +221,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     val json = baseJson.format("age")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
+    validator.errors().mkString("") shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
   }
 
   it("fails incorrectly named path parameters in the middle of the path") {
@@ -249,7 +249,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     val json = baseJson.format("age")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
+    validator.errors().mkString("") shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
   }
 
   it("fails incorrectly named path parameters at the end of the path") {
@@ -277,6 +277,6 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     val json = baseJson.format("age")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
+    validator.errors().mkString("") shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
   }
 }

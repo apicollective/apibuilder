@@ -64,7 +64,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
     it("union types support descriptions") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "string", "uuid", "registered"))
       validator.errors should be(Nil)
-      val union = validator.service.unions.head
+      val union = validator.service().unions.head
       union.types.find(_.`type` == "string").get.description should be(Some("foobar"))
       union.types.find(_.`type` == "uuid").get.description should be(None)
     }
@@ -72,19 +72,19 @@ class UnionTypeSpec extends FunSpec with Matchers {
     it("union types can have primitives") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "string", "uuid", "registered"))
       validator.errors should be(Nil)
-      validator.service.unions.head.types.map(_.`type`) should be(Seq("string", "uuid"))
+      validator.service().unions.head.types.map(_.`type`) should be(Seq("string", "uuid"))
     }
 
     it("union types can have models") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "guest", "registered", "registered"))
       validator.errors should be(Nil)
-      validator.service.unions.head.types.map(_.`type`) should be(Seq("guest", "registered"))
+      validator.service().unions.head.types.map(_.`type`) should be(Seq("guest", "registered"))
     }
 
     it("union types can have lists") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "[guest]", "map[registered]", "registered"))
       validator.errors should be(Nil)
-      validator.service.unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered]"))
+      validator.service().unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered]"))
     }
 
     it("rejects blank types") {
@@ -114,14 +114,14 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
     it("infers proper parameter type if field is common across all types") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "guest", "registered", "registered"))
-      validator.service.resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
+      validator.service().resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
         sys.error("Could not find guid parameter")
       }.`type` should be("uuid")
     }
 
     it("infers string parameter type if type varies") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "other_random_user", "registered", "registered"))
-      validator.service.resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
+      validator.service().resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
         sys.error("Could not find guid parameter")
       }.`type` should be("string")
     }
@@ -133,7 +133,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
     it("union types unique discriminator") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "type",""", "guest", "registered", "registered"))
       validator.errors should be(Nil)
-      val union = validator.service.unions.head
+      val union = validator.service().unions.head
       union.discriminator should be(Some("type"))
     }
 
@@ -251,7 +251,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.service.resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
+    validator.service().resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
       sys.error("Could not find guid parameter")
     }.`type` should be("uuid")
   }
@@ -301,8 +301,8 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
     val validator = TestHelper.serviceValidatorFromApiJson(common)
     validator.errors should be(Nil)
-    validator.service.namespace should be("test.common")
-    validator.service.models.map(_.name) should be(Seq("reference"))
+    validator.service().namespace should be("test.common")
+    validator.service().models.map(_.name) should be(Seq("reference"))
 
     val fetcher = MockServiceFetcher()
     fetcher.add(uri, validator.service)

@@ -72,16 +72,16 @@ case class ApiJsonServiceValidator(
             validateKey ++
             validateImports ++
             validateAttributes("Service", internalService.get.attributes) ++
-            validateEnums ++
             validateHeaders ++
-            validateModels ++
-            validateUnions ++
-            validateFields ++
             validateResources ++
             validateOperations ++
             validateParameterBodies ++
             validateParameters ++
-            validateResponses
+            validateResponses ++
+            validateUnions ++
+            validateModels ++
+            validateFields ++
+            validateEnums
           }
 
           case errs => {
@@ -163,36 +163,51 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnionTypes(union: InternalUnionForm): Seq[String] = {
-    val attributeErrors = union.types.filter(_.datatype.isDefined).flatMap { typ =>
-      validateAttributes(s"Union[${union.name}] type[${typ.datatype.get}]", typ.attributes)
+    val attributeErrors = union.types.filter(_.datatype.isRight).flatMap { typ =>
+      validateAttributes(s"Union[${union.name}] type[${typ.datatype.right.get}]", typ.attributes)
+    }
+    val typeErrors = union.types.filter(_.datatype.isLeft).flatMap { typ =>
+      Seq(s"Union[${union.name}] type[] " + typ.datatype.left.get.mkString(", "))
     }
 
     val defaultErrors = union.discriminator match {
       case None => {
-        union.types.filter(_.default.isDefined).flatMap(_.datatype.map(_.name)).toList match {
-          case Nil => Nil
-          case types => {
-            val plural = if (types.length > 1) { "types" } else { "type "}
-            Seq(s"Union[${union.name}] $plural[${types.mkString(", ")}] cannot specify 'default' as the union does not define an explicit discriminator.")
-          }
+        union.types.
+          filter(_.datatype.isRight).
+          filter(_.default.isDefined).
+          map(_.datatype.right.get.name).
+          toList match {
+            case Nil => Nil
+            case types => {
+              val plural = if (types.length > 1) { "types" } else { "type "}
+              Seq(s"Union[${union.name}] $plural[${types.mkString(", ")}] cannot specify 'default' as the union does not define an explicit discriminator.")
+            }
         }
       }
 
       case Some(_) => {
-        union.types.filter(_.default.getOrElse(false)).flatMap(_.datatype.map(_.name)).toList match {
-          case Nil => Nil
-          case _ :: Nil => Nil
-          case types => Seq(s"Union[${union.name}] More than one type marked as default: " + types.mkString(", "))
-        }
+        union.types.
+          filter(_.datatype.isRight).
+          filter(_.default.getOrElse(false)).
+          map(_.datatype.right.get.name).
+          toList match {
+            case Nil => Nil
+            case _ :: Nil => Nil
+            case types => Seq(s"Union[${union.name}] More than one type marked as default: " + types.mkString(", "))
+          }
       }
     }
-    union.types.flatMap(_.warnings) ++ attributeErrors ++ defaultErrors
+    union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors ++ defaultErrors
   }
 
   private def validateEnums(): Seq[String] = {
     val warnings = internalService.get.enums.flatMap(_.warnings)
 
     val attributeErrors = internalService.get.enums.flatMap { enum =>
+      validateAttributes(s"Enum[${enum.name}]", enum.attributes)
+    }
+
+    val typeErrors = internalService.get.enums.flatMap { enum =>
       validateAttributes(s"Enum[${enum.name}]", enum.attributes)
     }
 
@@ -242,8 +257,8 @@ case class ApiJsonServiceValidator(
     }
 
     val missingTypes = internalService.get.models.flatMap { model =>
-      model.fields.filter(_.name.isDefined).filter(_.datatype.isEmpty).map { f =>
-        s"Model[${model.name}] field[${f.name.get}] must have a type"
+      model.fields.filter(_.name.isDefined).filter(_.datatype.isLeft).map { f =>
+        s"Model[${model.name}] field[${f.name.get}] type ${f.datatype.left.get.mkString(", ")}"
       }
     }
 
@@ -287,19 +302,27 @@ case class ApiJsonServiceValidator(
       }
     }
 
+    val typeErrors = internalService.get.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.responses.filter(r => r.datatype.isLeft).map { r =>
+          opLabel(resource, op, s"${r.code} type: " + r.datatype.left.get.mkString(", "))
+        }
+      }
+    }
+
     val attributeErrors = internalService.get.resources.flatMap { resource =>
       validateAttributes(s"Resource[${resource.datatype.label}]", resource.attributes)
     }
 
-    codeErrors ++ attributeErrors
+    codeErrors ++ typeErrors ++ attributeErrors
   }
 
   private def validateParameterBodies(): Seq[String] = {
     internalService.get.resources.flatMap { resource =>
       resource.operations.filter(_.body.isDefined).flatMap { op =>
-        op.body.flatMap(_.datatype) match {
-          case None => Some(opLabel(resource, op, "Body missing type"))
-          case Some(_) => None
+        op.body.get.datatype match {
+          case Left(errs) => Some(opLabel(resource, op, s"Body ${errs.mkString(", ")}"))
+          case Right(_) => None
         }
       }
     }

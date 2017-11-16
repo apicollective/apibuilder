@@ -23,8 +23,8 @@ class InfoSpec extends FunSpec with Matchers {
     it("accepts empty objects") {
       val json = baseJson.format("")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("")
-      validator.service.info should be(Info(license = None, contact = None))
+      validator.errors().mkString("") should be("")
+      validator.service().info should be(Info(license = None, contact = None))
     }
 
     it("contact") {
@@ -36,13 +36,13 @@ class InfoSpec extends FunSpec with Matchers {
         }
       """)
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("")
+      validator.errors().mkString("") should be("")
       val contact = Contact(
         name = Some("Foo"),
         email = Some("Foo@test.apibuilder.me"),
         url = Some("http://www.apidoc.me")
       )
-      validator.service.info should be(Info(contact = Some(contact)))
+      validator.service().info should be(Info(contact = Some(contact)))
     }
 
     it("license") {
@@ -53,12 +53,12 @@ class InfoSpec extends FunSpec with Matchers {
         }
       """)
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("")
+      validator.errors().mkString("") should be("")
       val license = License(
         name = "MIT",
         url = Some("http://opensource.org/licenses/MIT")
       )
-      validator.service.info should be(Info(license = Some(license)))
+      validator.service().info should be(Info(license = Some(license)))
     }
 
     it("validates license requires name") {
@@ -68,7 +68,7 @@ class InfoSpec extends FunSpec with Matchers {
         }
       """)
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("License must have a name")
+      validator.errors().mkString("") should be("License must have a name")
     }
 
   }

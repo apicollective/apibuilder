@@ -7,12 +7,12 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   it("should detect empty inputs") {
     val validator = TestHelper.serviceValidatorFromApiJson("")
-    validator.errors.mkString should be("No Data")
+    validator.errors().mkString should be("No Data")
   }
 
   it("should detect invalid json") {
     val validator = TestHelper.serviceValidatorFromApiJson(" { ")
-    validator.errors.mkString.indexOf("expected close marker") should be >= 0
+    validator.errors().mkString.indexOf("expected close marker") should be >= 0
   }
 
   it("service name must be a valid name") {
@@ -24,7 +24,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Name[5@4] must start with a letter")
+    validator.errors().mkString should be("Name[5@4] must start with a letter")
   }
 
   it("base url shouldn't end with a '/'") {
@@ -38,7 +38,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("base_url[http://localhost:9000/] must not end with a '/'")
+    validator.errors().mkString should be("base_url[http://localhost:9000/] must not end with a '/'")
   }
 
   it("model that is missing fields") {
@@ -55,7 +55,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Model[user] must have at least one field")
+    validator.errors().mkString should be("Model[user] must have at least one field")
   }
 
   it("model has a field with an invalid name") {
@@ -74,7 +74,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Model[user] field name[_!@#] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter")
+    validator.errors().mkString should be("Model[user] field name[_!@#] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter")
   }
 
   it("model with duplicate field names") {
@@ -93,7 +93,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Model[user] field[key] appears more than once")
+    validator.errors().mkString("") should be("Model[user] field[key] appears more than once")
   }
 
 
@@ -113,7 +113,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("user.foo has invalid type[foo]")
+    validator.errors().mkString should be("user.foo has invalid type[foo]")
   }
 
   it("types are lowercased in service definition") {
@@ -131,9 +131,9 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("")
+    validator.errors().mkString should be("")
 
-    validator.service.models.head.fields.head.`type` should be("uuid")
+    validator.service().models.head.fields.head.`type` should be("uuid")
   }
 
   it("base_url is optional") {
@@ -152,7 +152,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("")
+    validator.errors().mkString should be("")
   }
 
   it("defaults to a NoContent response") {
@@ -181,8 +181,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
-    validator.service.resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").getOrElse {
+    validator.errors().mkString("") should be("")
+    validator.service().resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").getOrElse {
       sys.error("Missing 204 response")
     }
   }
@@ -216,8 +216,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json.format("string"))
-    validator.errors.mkString("") should be("")
-    val guid = validator.service.resources.head.operations.head.parameters.head
+    validator.errors().mkString("") should be("")
+    val guid = validator.service().resources.head.operations.head.parameters.head
     guid.`type` should be("string")
     guid.location should be(ParameterLocation.Header)
 
@@ -262,8 +262,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val userHeader = header.format("user")
 
     val validator = TestHelper.serviceValidatorFromApiJson(json.format(stringHeader))
-    validator.errors.mkString("") should be("")
-    val headers = validator.service.resources.head.operations.head.responses.head.headers
+    validator.errors().mkString("") should be("")
+    val headers = validator.service().resources.head.operations.head.responses.head.headers
     headers.size should be(1)
     headers.get(0).name should be("foo")
     headers.get(0).`type` should be("string")
@@ -369,8 +369,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    val op = validator.service().resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.`type` should be("uuid")
@@ -405,8 +405,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    val op = validator.service().resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.`type` should be("[uuid]")
@@ -443,7 +443,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Resource[user] GET /users/:id path parameter[id] is specified as optional. All path parameters are required")
+    validator.errors().mkString("") should be("Resource[user] GET /users/:id path parameter[id] is specified as optional. All path parameters are required")
   }
 
   it("infers datatype for a path parameter from the associated model") {
@@ -474,8 +474,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    val op = validator.service().resources.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
     idParam.`type` should be("long")
@@ -521,7 +521,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     it("maps of primitives are valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("map[string]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters.")
+      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters.")
     }
 
     it("lists of models are not valid in query parameters") {
@@ -533,12 +533,12 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     it("models are not valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("tag"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
+      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
     }
 
     it("validates type name in collection") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[foo]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type: [foo]")
+      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type: [foo]")
     }
 
   }
@@ -575,7 +575,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
+    validator.errors().mkString("") should be("")
   }
 
   it("resources with duplicate plural names are NOT allowed") {
@@ -617,6 +617,6 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Resource with plural[users] appears more than once")
+    validator.errors().mkString("") should be("Resource with plural[users] appears more than once")
   }
 }

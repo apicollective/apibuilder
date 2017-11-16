@@ -19,7 +19,10 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
       namespace = internal.namespace.getOrElse(""),
       name = u.name,
       plural = u.plural,
-      types = u.types.flatMap(_.datatype).map(_.name).map { core.TypesProviderUnionType }
+      types = u.types.
+        filter(_.datatype.isRight).
+        map(_.datatype.right.get.name).
+        map { core.TypesProviderUnionType }
     )
   }
 
@@ -28,11 +31,14 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
       namespace = internal.namespace.getOrElse(""),
       name = m.name,
       plural = m.plural,
-      fields = m.fields.filter(_.name.isDefined).filter(_.datatype.isDefined) map { f =>
-        TypesProviderField(
-          name = f.name.get,
-          `type` = f.datatype.get.label
-        )
+      fields = m.fields.
+        filter(_.name.isDefined).
+        filter(_.datatype.isRight).
+        map { f =>
+          TypesProviderField(
+            name = f.name.get,
+            `type` = f.datatype.right.get.label
+          )
       }
     )
   }
