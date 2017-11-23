@@ -84,8 +84,27 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
     validator.errors should be(
       Seq(
-        "TODO: Discriminator value guest_user specified more than once"
+        "Union[user] discriminator values[guest_user] appears more than once"
       )
+    )
+  }
+
+  it("union type discriminator considers only explicit values when present") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "guest_user" },
+          |    { "type": "guest_user", "discriminator_value": "guest_user2" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors should be(Nil)
+    validator.service().unions.head.types.flatMap(_.discriminatorValue) should be(
+      Seq("guest_user", "guest_user2")
     )
   }
 

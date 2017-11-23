@@ -238,6 +238,10 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
+    validateUnionTypeDiscriminatorValuesValidNames() ++ validateUnionTypeDiscriminatorValuesAreDistinct()
+  }
+
+  private[this] def validateUnionTypeDiscriminatorValuesValidNames(): Seq[String] = {
     service.unions.flatMap { union =>
       union.types.flatMap { unionType =>
         unionType.discriminatorValue match {
@@ -252,6 +256,17 @@ case class ServiceSpecValidator(
           }
         }
       }
+    }
+  }
+
+  private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): Seq[String] = {
+    service.unions.flatMap { union =>
+      dupsError(
+        s"Union[${union.name}] discriminator values",
+        union.types.map { unionType =>
+          unionType.discriminatorValue.getOrElse(unionType.`type`)
+        }
+      )
     }
   }
 
