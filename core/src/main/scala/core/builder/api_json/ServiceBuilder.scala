@@ -333,11 +333,15 @@ case class ServiceBuilder(
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         types = internal.types.map { it =>
+          val typ = rightOrError(it.datatype)
           UnionType(
-            `type` = rightOrError(it.datatype).label,
+            `type` = typ.label,
             description = it.description,
             deprecation = it.deprecation.map(DeprecationBuilder(_)),
-            default = it.default
+            default = it.default,
+            discriminatorValue = Some(
+              it.discriminatorValue.getOrElse(typ.name)
+            )
           )
         },
         attributes = internal.attributes.map { AttributeBuilder(_) }
