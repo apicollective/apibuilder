@@ -190,7 +190,6 @@ case class InternalUnionTypeForm(
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
-  discriminatorValue: Option[String],
   warnings: Seq[String]
 )
 
@@ -366,12 +365,11 @@ object InternalUnionForm {
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
                default = JsonUtil.asOptBoolean(json \ "default"),
-               discriminatorValue = JsonUtil.asOptString(json \ "discriminator_value"),
                attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  anys = Seq("type"),
-                 optionalStrings = Seq("description", "discriminator_value"),
+                 optionalStrings = Seq("description"),
                  optionalBooleans = Seq("default"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),

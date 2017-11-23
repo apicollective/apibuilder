@@ -9,7 +9,7 @@ case class ServiceSpecValidator(
   service: Service
 ) {
 
-  private val ReservedDiscriminatorValues = Seq("value", "implicit")
+  private val ReservedDiscriminatorValue = "value"
 
   private val localTypeResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
@@ -208,8 +208,8 @@ case class ServiceSpecValidator(
             }
 
             case Some(discriminator) => {
-              if (ReservedDiscriminatorValues.contains(discriminator)) {
-                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved and cannot be used as a discriminator")
+              if (discriminator == ReservedDiscriminatorValue) {
+                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator")
               } else {
                 Text.validateName(discriminator) match {
                   case Nil => {
@@ -223,7 +223,7 @@ case class ServiceSpecValidator(
                       }
                     }
                   }
-                  case errs => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errs.mkString(", "))
+                  case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
                 }
               }
             }
@@ -234,40 +234,7 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
-  }
-
-  private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
-    validateUnionTypeDiscriminatorValuesValidNames() ++ validateUnionTypeDiscriminatorValuesAreDistinct()
-  }
-
-  private[this] def validateUnionTypeDiscriminatorValuesValidNames(): Seq[String] = {
-    service.unions.flatMap { union =>
-      union.types.flatMap { unionType =>
-        unionType.discriminatorValue match {
-          case None => None
-          case Some(value) => {
-            Text.validateName(value) match {
-              case Nil => None
-              case errs => {
-                Some(s"Union[${union.name}] type[${unionType.`type`}] discriminator_value[${value}] is invalid: ${errs.mkString(" and ")}")
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): Seq[String] = {
-    service.unions.flatMap { union =>
-      dupsError(
-        s"Union[${union.name}] discriminator values",
-        union.types.map { unionType =>
-          unionType.discriminatorValue.getOrElse(unionType.`type`)
-        }
-      )
-    }
+    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates
   }
 
   /**
