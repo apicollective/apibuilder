@@ -213,7 +213,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
     it("'implicit' is reserved for future implicit discriminators") {
       val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("implicit"))
       validator.errors should be(Seq(
-        "Union[user] discriminator[value]: The keyword[implicit] is reserved and cannot be used as a discriminator"
+        "Union[user] discriminator[implicit]: The keyword[implicit] is reserved and cannot be used as a discriminator"
       ))
     }
 
