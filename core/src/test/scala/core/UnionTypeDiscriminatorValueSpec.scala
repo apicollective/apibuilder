@@ -89,4 +89,24 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
   }
 
+  it("union type must be a valid string") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "!@#" },
+          |    { "type": "guest_user" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors should be(
+      Seq(
+        "Union[user] type[registered_user] discriminator_value[!@#] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter"
+      )
+    )
+  }
+
 }

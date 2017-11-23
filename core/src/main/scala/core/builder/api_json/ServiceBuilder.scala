@@ -337,7 +337,8 @@ case class ServiceBuilder(
             `type` = rightOrError(it.datatype).label,
             description = it.description,
             deprecation = it.deprecation.map(DeprecationBuilder(_)),
-            default = it.default
+            default = it.default,
+            discriminatorValue = it.discriminatorValue
           )
         },
         attributes = internal.attributes.map { AttributeBuilder(_) }
