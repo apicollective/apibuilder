@@ -225,24 +225,24 @@ package io.apibuilder.spec.v0.anorm.parsers {
 
     def parser(
       name: String = "name",
-      value: String = "value",
       description: String = "description",
       deprecationPrefix: String = "deprecation",
       attributes: String = "attributes",
+      value: String = "value",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.spec.v0.models.EnumValue] = {
       SqlParser.str(prefixOpt.getOrElse("") + name) ~
-      SqlParser.str(prefixOpt.getOrElse("") + value).? ~
       SqlParser.str(prefixOpt.getOrElse("") + description).? ~
       io.apibuilder.spec.v0.anorm.parsers.Deprecation.parserWithPrefix(prefixOpt.getOrElse("") + deprecationPrefix).? ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) map {
-        case name ~ value ~ description ~ deprecation ~ attributes => {
+      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) ~
+      SqlParser.str(prefixOpt.getOrElse("") + value).? map {
+        case name ~ description ~ deprecation ~ attributes ~ value => {
           io.apibuilder.spec.v0.models.EnumValue(
             name = name,
-            value = value,
             description = description,
             deprecation = deprecation,
-            attributes = attributes
+            attributes = attributes,
+            value = value
           )
         }
       }

@@ -108,10 +108,10 @@
     "enum_value": {
       "fields": [
 	{ "name": "name", "type": "string" },
-	{ "name": "value", "type": "string", "required": false, "description": "The actual string representation of this value. If not specified, defaults to 'name'" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
+	{ "name": "value", "type": "string", "required": false, "description": "The actual string representation of this value. If not specified, defaults to 'name'" }        
       ]
     },
 

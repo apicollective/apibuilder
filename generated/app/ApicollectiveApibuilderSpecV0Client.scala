@@ -73,10 +73,10 @@ package io.apibuilder.spec.v0.models {
    */
   case class EnumValue(
     name: String,
-    value: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
-    attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil
+    attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil,
+    value: _root_.scala.Option[String] = None
   )
 
   case class Field(
@@ -714,10 +714,10 @@ package io.apibuilder.spec.v0.models {
     implicit def jsonReadsApibuilderspecEnumValue: play.api.libs.json.Reads[EnumValue] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "value").readNullable[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
+        (__ \ "value").readNullable[String]
       )(EnumValue.apply _)
     }
 
@@ -725,17 +725,17 @@ package io.apibuilder.spec.v0.models {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
-      ) ++ (obj.value match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.description match {
+      ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
       }) ++
       (obj.deprecation match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("deprecation" -> jsObjectDeprecation(x))
+      }) ++
+      (obj.value match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(x))
       })
     }
 
