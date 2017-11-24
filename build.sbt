@@ -5,7 +5,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.11.11"
+scalaVersion in ThisBuild := "2.11.12"
 
 lazy val lib = project
   .in(file("lib"))
