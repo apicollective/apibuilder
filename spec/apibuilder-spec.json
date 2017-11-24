@@ -134,7 +134,7 @@
 	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
 	{ "name": "default", "type": "boolean", "required": false, "description": "If true, indicates that this type should be used as the default when deserializing union types. This field is only used by union types that require a discriminator and sets the default value for that disciminator during deserialization." },
-        { "name": "discriminator_value", "type": "string", "required": false, "description": "The discriminator value defines the string to use in the discriminator field to identify this type. If not specifiied, the discriminator value will default to the name of the type itself." }
+        { "name": "discriminator_value", "type": "string", "required": false, "description": "The discriminator value defines the string to use in the discriminator field to identify this type. If not specified, the discriminator value will default to the name of the type itself." }
       ]
     },
 
