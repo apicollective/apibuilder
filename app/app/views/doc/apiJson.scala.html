@@ -342,6 +342,7 @@
     <pre>
     {
       "name": <em>string</em>,
+      "value": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
       "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
@@ -351,6 +352,7 @@
     where
     <ul>
       <li><em>name</em> the name of the value. Names must start with a letter.</li>
+     <li><em>value</em> the actual string representation of this value when serializing. If not specified, defaults to 'name'.</li>
       @description("enum value")
       <li><em>attributes</em> JSON array defining additional meta data about this enum value for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>

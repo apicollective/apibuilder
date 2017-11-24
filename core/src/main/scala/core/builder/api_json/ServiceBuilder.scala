@@ -313,6 +313,7 @@ case class ServiceBuilder(
         values = ie.values.map { iv =>
           EnumValue(
             name = iv.name.get,
+            value = iv.value,
             description = iv.description,
             deprecation = iv.deprecation.map(DeprecationBuilder(_))
           )
