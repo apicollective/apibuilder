@@ -1,7 +1,5 @@
 FROM flowdocker/play_builder:0.0.79 as builder
 RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_5.x | bash -
-RUN apt-get install -y nodejs
 ADD . /opt/play
 WORKDIR /opt/play
 RUN sbt 'project app' clean stage
