@@ -1,4 +1,4 @@
-FROM flowdocker/play_builder:0.0.70 as builder
+FROM flowdocker/play_builder:0.0.79 as builder
 RUN apt-get install -y curl
 RUN curl -sL https://deb.nodesource.com/setup_5.x | bash -
 RUN apt-get install -y nodejs
@@ -6,7 +6,7 @@ ADD . /opt/play
 WORKDIR /opt/play
 RUN sbt 'project api' clean stage
 
-FROM flowdocker/play:0.0.70
+FROM flowdocker/play:0.0.79
 COPY --from=builder /opt/play /opt/play
 WORKDIR /opt/play/api/target/universal/stage
 ENTRYPOINT ["java", "-jar", "/root/environment-provider.jar", "--service", "play", "apibuilder-api", "bin/apibuilder-api"]
