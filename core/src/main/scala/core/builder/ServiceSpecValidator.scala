@@ -141,9 +141,33 @@ case class ServiceSpecValidator(
       dups(enum.values.map(_.name)).map { value =>
         s"Enum[${enum.name}] value[$value] appears more than once"
       }
+    }.toList match {
+      case Nil => {
+        // Check uniqueness of the serialization values
+        service.enums.flatMap { enum =>
+          dups(enum.values.map { ev => ev.value.getOrElse(ev.name) }).map { value =>
+            s"Enum[${enum.name}] value[$value] appears more than once"
+          }
+        }
+      }
+      case errs => errs
     }
 
-    nameErrors ++ duplicates ++ valueErrors ++ valuesWithInvalidNames ++ duplicateValues
+    nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues ++ valuesWithInvalidNames ++ duplicateValues
+  }
+
+  private[this] def validateEnumValues(): Seq[String] = {
+    service.enums.flatMap { enum =>
+      enum.values.flatMap { enumValue =>
+        enumValue.value match {
+          case None => Nil
+          case Some(v) => Text.validateName(v) match {
+            case Nil => Nil
+            case errors => Seq(s"Enum[${enum.name}] value[$v] is invalid: ${errors.mkString(" and ")}")
+          }
+        }
+      }
+    }
   }
 
   private def validateUnions(): Seq[String] = {

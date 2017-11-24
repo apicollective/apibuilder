@@ -167,6 +167,7 @@ case class InternalEnumForm(
 
 case class InternalEnumValueForm(
   name: Option[String],
+  value: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
@@ -469,13 +470,14 @@ object InternalEnumForm {
              val valueName = JsonUtil.asOptString(json \ "name")
              InternalEnumValueForm(
                name = valueName,
+               value = JsonUtil.asOptString(json \ "value"),
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
                attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  strings = Seq("name"),
-                 optionalStrings = Seq("description"),
+                 optionalStrings = Seq("value", "description"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),
                  prefix = Some(s"Enum[$name] value[${valueName.getOrElse("")}]")
