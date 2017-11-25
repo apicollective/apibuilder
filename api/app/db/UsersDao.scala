@@ -165,7 +165,6 @@ class UsersDao @Inject() (
         gravatarId = gravatarId
       )
     }
-    println(s"Starting insert: DOINE $guid")
 
     mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
@@ -188,7 +187,6 @@ class UsersDao @Inject() (
 
     val nickname = form.nickname.getOrElse(generateNickname(form.email))
     val guid = db.withTransaction { implicit c =>
-      println(s"Starting insert")
       val id = doInsert(
         nickname = nickname,
         email = form.email,
@@ -196,11 +194,9 @@ class UsersDao @Inject() (
         avatarUrl = None,
         gravatarId = None
       )
-      println(s"Starting insert - id[$id]")
 
       userPasswordsDao.doCreate(c, id, id, form.password)
 
-      println(s"Starting insert - id[$id] and password done")
       id
     }
 
