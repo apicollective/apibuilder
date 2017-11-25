@@ -19,7 +19,7 @@ trait MockClient {
 
   val defaultPort: Int = 9010
 
-  private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
+  private[this] val DefaultDuration = FiniteDuration(5, SECONDS)
   private[this] def app = play.api.Play.current
 
   def applicationsDao = app.injector.instanceOf[db.ApplicationsDao]
