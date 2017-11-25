@@ -11,11 +11,8 @@ import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
 import java.util.UUID
 
-import play.api.Logger
 import play.api.libs.ws.WSClient
-
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
 
 class Users @Inject() (
   sessionHelper: SessionHelper,
@@ -89,7 +86,7 @@ class Users @Inject() (
 
           case None => NotFound
 
-          case Some(u: User) => {
+          case Some(_: User) => {
             val existingUser = usersDao.findByGuid(guid)
 
             usersDao.validate(form, existingUser = existingUser) match {
@@ -150,7 +147,7 @@ class Users @Inject() (
       }
       case s: JsSuccess[GithubAuthenticationForm] => {
         val token = s.get.token
-        val headers = ("Authorization" -> s"Bearer $token")
+        val headers = "Authorization" -> s"Bearer $token"
 
         for {
           userResponse <- ws.url("https://api.github.com/user").withHeaders(headers).get()
