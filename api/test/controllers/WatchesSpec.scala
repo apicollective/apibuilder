@@ -11,7 +11,7 @@ class WatchesSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val org = createOrganization()
+  lazy val org = organizationsDao.createWithAdministrator(TestUser, createOrganizationForm())
 
   def createWatch(
     form: WatchForm = createWatchForm()

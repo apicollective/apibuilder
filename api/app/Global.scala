@@ -14,18 +14,19 @@ import scala.util.{Failure, Success, Try}
 object Global extends WithFilters(LoggingFilter) {
 
   override def onStart(app: Application): Unit = {
-//    import play.api.libs.concurrent.Akka
-//    import scala.concurrent.duration._
-//    import scala.concurrent.ExecutionContext.Implicits.global
+    import play.api.libs.concurrent.Akka
+    import scala.concurrent.duration._
+    import scala.concurrent.ExecutionContext.Implicits.global
 
     app.mode match {
       case Mode.Test => {
         // No-op. Skip call to ensure services while testing
       }
       case Mode.Prod | Mode.Dev => {
-        //Akka.system.scheduler.scheduleOnce(5.seconds) {
-        //  ensureServices()
-        //}
+        import play.api.Play.current
+        Akka.system.scheduler.scheduleOnce(5.seconds) {
+          ensureServices()
+        }
       }
     }
   }
@@ -48,7 +49,7 @@ object Global extends WithFilters(LoggingFilter) {
     Logger.info("Starting ensureServices()")
 
     Try {
-      Logger.warn("Migration disabled")
+      // Logger.warn("Migration disabled")
       play.api.Play.current.injector.instanceOf[_root_.db.VersionsDao].migrate()
     } match {
       case Success(result) => Logger.info("ensureServices() completed: " + result)
