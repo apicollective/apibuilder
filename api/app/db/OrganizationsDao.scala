@@ -23,7 +23,7 @@ class OrganizationsDao @Inject() (
 
   private[this] val dbHelpers = DbHelpers(db, "organizations")
 
-  // TODO: resolve cicrular dependency
+  // TODO: resolve circular dependency
   private[this] def membershipsDao = injector.instanceOf[MembershipsDao]
 
   private[this] val MinNameLength = 3

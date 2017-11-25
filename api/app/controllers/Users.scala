@@ -12,7 +12,6 @@ import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSu
 import java.util.UUID
 
 import play.api.libs.ws.WSClient
-
 import scala.concurrent.Future
 
 class Users @Inject() (
@@ -85,7 +84,7 @@ class Users @Inject() (
 
           case None => NotFound
 
-          case Some(u: User) => {
+          case Some(_: User) => {
             val existingUser = usersDao.findByGuid(guid)
 
             usersDao.validate(form, existingUser = existingUser) match {
@@ -121,7 +120,6 @@ class Users @Inject() (
       }
       case s: JsSuccess[UserAuthenticationForm] => {
         val form = s.get
-
         usersDao.findByEmail(form.email) match {
 
           case None => {
@@ -147,7 +145,7 @@ class Users @Inject() (
       }
       case s: JsSuccess[GithubAuthenticationForm] => {
         val token = s.get.token
-        val headers = ("Authorization" -> s"Bearer $token")
+        val headers = "Authorization" -> s"Bearer $token"
 
         for {
           userResponse <- ws.url("https://api.github.com/user").withHeaders(headers).get()
