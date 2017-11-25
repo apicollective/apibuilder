@@ -18,7 +18,7 @@ class EnumValueSpec extends FunSpec with Matchers {
     val json = baseJson.format(
       """
         |"status": {
-        |Users  "values": [
+        |  "values": [
         |    { "name": "Open", "value": "!" }
         |  ]
         |}

@@ -10,12 +10,14 @@ class UsersSpec extends BaseSpec {
 
   "POST /users" in new WithServer {
     val form = createUserForm()
+    println("SPEC STARTING AWAIT")
     val user = await {
       client.users.post(form)
     }
+    println("SPEC FINISHED AWAIT")
     user.email must equal(form.email)
   }
-
+/*
   "POST /users/authenticate" in new WithServer {
     val form = createUserForm()
     val user = createUser(form)
@@ -54,4 +56,5 @@ class UsersSpec extends BaseSpec {
       client.users.get(nickname = Some(UUID.randomUUID.toString))
     ).map(_.guid) must be(Nil)
   }
+*/
 }

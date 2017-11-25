@@ -6,7 +6,6 @@ import java.util.UUID
 
 import io.apibuilder.api.v0.Client
 import play.api.test._
-import play.api.test.Helpers._
 import org.scalatestplus.play._
 
 import scala.concurrent.duration.Duration
