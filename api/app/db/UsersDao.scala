@@ -178,19 +178,17 @@ class UsersDao @Inject() (
   }
 
   private[this] def toOptionString(value: String): Option[String] = {
-    value.trim match {
-      case "" => None
-      case v => Some(v)
-    }
+    Some(value.trim).filter(_.nonEmpty)
   }
 
   def create(form: UserForm): User = {
     val errors = validateNewUser(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
+    val nickname = form.nickname.getOrElse(generateNickname(form.email))
     val guid = db.withTransaction { implicit c =>
       val id = doInsert(
-        nickname = form.nickname.getOrElse(generateNickname(form.email)),
+        nickname = nickname,
         email = form.email,
         name = form.name,
         avatarUrl = None,

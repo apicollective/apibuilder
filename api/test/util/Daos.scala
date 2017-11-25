@@ -1,5 +1,7 @@
 package util
 
+import db.generated.SessionsDao
+
 trait Daos {
 
   def applicationsDao = play.api.Play.current.injector.instanceOf[db.ApplicationsDao]
@@ -17,6 +19,8 @@ trait Daos {
   def organizationsDao = play.api.Play.current.injector.instanceOf[db.OrganizationsDao]
   def originalsDao = play.api.Play.current.injector.instanceOf[db.OriginalsDao]
   def passwordResetRequestsDao = play.api.Play.current.injector.instanceOf[db.PasswordResetRequestsDao]
+  def sessionsDao =  play.api.Play.current.injector.instanceOf[SessionsDao]
+
   def subscriptionsDao = play.api.Play.current.injector.instanceOf[db.SubscriptionsDao]
   def tasksDao = play.api.Play.current.injector.instanceOf[db.TasksDao]
   def tokensDao = play.api.Play.current.injector.instanceOf[db.TokensDao]

@@ -2,7 +2,6 @@ package db
 
 import io.flow.postgresql.Query
 import java.util.UUID
-
 import io.apibuilder.api.v0.models.User
 import play.api.db.Database
 

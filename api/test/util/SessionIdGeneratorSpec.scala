@@ -9,13 +9,13 @@ class SessionIdGeneratorSpec extends FunSpec with Matchers {
   }
 
   it("64 characters long") {
-    SessionIdGenerator.generate().size should be(64)
+    SessionIdGenerator.generate().length should be(64)
   }
 
   it("generates unique identifiers") {
     val s = collection.mutable.Set[String]()
 
-    1.to(100000).foreach { i =>
+    1.to(100000).foreach { _ =>
       val tn = SessionIdGenerator.generate()
       s(tn) should be (false)
       s += tn
