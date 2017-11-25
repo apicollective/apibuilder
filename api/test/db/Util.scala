@@ -7,8 +7,7 @@ import play.api.libs.json.{Json, JsObject}
 import lib.Role
 import java.util.UUID
 
-object Util extends util.Daos {
-  // new play.core.StaticApplication(new java.io.File("."))
+object Util extends util.TestApplication {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"

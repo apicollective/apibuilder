@@ -1,14 +1,13 @@
 package controllers
 
 import io.apibuilder.api.v0.models.OriginalType
-import play.api.test._
+import play.api.test.{PlaySpecification, WithServer}
 
 class VersionsSpec extends PlaySpecification with MockClient {
 
-  private[this] lazy val org = createOrganization()
-  private[this] lazy val application = createApplication(org)
-
   "POST /:orgKey/:version stores the original in the proper format" in new WithServer(port=defaultPort) {
+    val org = createOrganization()
+    val application = createApplication(org)
     val form = createVersionForm(name = application.name)
     val version = createVersion(application, Some(form))
 

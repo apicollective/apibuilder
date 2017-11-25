@@ -7,7 +7,7 @@ import db.generated.SessionsDao
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc._
-import scala.concurrent.Future
+
 
 @Singleton
 class Authentications @Inject() (
@@ -15,16 +15,18 @@ class Authentications @Inject() (
   usersDao: UsersDao
 ) extends Controller {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def getSessionById(sessionId: String) = AnonymousRequest { request =>
+  def getSessionById(sessionId: String) = AnonymousRequest { _ =>
     sessionsDao.findById(sessionId) match {
       case None => NotFound
       case Some(session) => {
-        usersDao.findByGuid(session.userGuid) match {
-          case None => NotFound
-          case Some(user) => {
-            Ok(Json.toJson(Conversions.toAuthentication(session, user)))
+        if (session.deletedAt.isDefined) {
+          NotFound
+        } else {
+          usersDao.findByGuid(session.userGuid) match {
+            case None => NotFound
+            case Some(user) => {
+              Ok(Json.toJson(Conversions.toAuthentication(session, user)))
+            }
           }
         }
       }
