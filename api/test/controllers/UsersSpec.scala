@@ -8,6 +8,14 @@ class UsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  "POST /users" in new WithServer(port = defaultPort) {
+    val form = createUserForm()
+    val user = await {
+      client.users.post(form)
+    }
+    user.email must beEqualTo(form.email)
+  }
+
   "POST /users/authenticate" in new WithServer(port = defaultPort) {
     val form = createUserForm()
     val user = createUser(form)
@@ -16,7 +24,7 @@ class UsersSpec extends PlaySpecification with MockClient {
       client.users.postAuthenticate(form.email, form.password)
     )
 
-    val updatedUser = await(
+    val updatedUser = await {
       newSessionClient(auth.session.id).users.putByGuid(
         auth.user.guid,
         UserUpdateForm(
@@ -25,11 +33,11 @@ class UsersSpec extends PlaySpecification with MockClient {
           name = Some("joseph")
         )
       )
-    )
+    }
     updatedUser.name must beSome("joseph")
   }
 
-  "GET /users by bickname" in new WithServer(port = defaultPort) {
+  "GET /users by nickname" in new WithServer(port = defaultPort) {
     val user1 = createUser()
     val user2 = createUser()
 
@@ -45,4 +53,5 @@ class UsersSpec extends PlaySpecification with MockClient {
       client.users.get(nickname = Some(UUID.randomUUID.toString))
     ).map(_.guid) must be(Nil)
   }
+
 }
