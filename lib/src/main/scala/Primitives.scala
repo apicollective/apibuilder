@@ -16,20 +16,19 @@ object Primitives {
   case object Uuid extends Primitives { override def toString = "uuid" }
   case object Unit extends Primitives { override def toString = "unit" }
 
-  val All = Seq(Boolean, Decimal, Integer, Double, Long, Object, String, DateIso8601, DateTimeIso8601, Uuid, Unit)
+  val All: Seq[Primitives] = Seq(Boolean, Decimal, Integer, Double, Long, Object, String, DateIso8601, DateTimeIso8601, Uuid, Unit)
 
-  val ValidInPath = All.filter(p => p != Unit && p != Object)
+  val ValidInPath: Seq[Primitives] = All.filter(p => p != Unit && p != Object)
 
-  def validInPath(name: String): Boolean = {
+  def validInUrl(name: String): Boolean = {
     Primitives(name) match {
       case None => false
       case Some(p) => ValidInPath.contains(p)
     }
   }
 
-  def apply(value: String): Option[Primitives] = {
-    All.find(_.toString == value.toLowerCase.trim)
-  }
+  private[this] val byName: Map[String, Primitives] = All.map(x => x.toString.toLowerCase -> x).toMap
+
+  def apply(value: String): Option[Primitives] = byName.get(value.toLowerCase.trim)
 
 }
-

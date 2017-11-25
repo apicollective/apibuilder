@@ -23,7 +23,7 @@ class OrganizationDomainsDao @Inject() (
       from organization_domains
   """)
 
-  private[this] val InsertQuery = """
+  private[this] val UpsertQuery = """
     insert into organization_domains
     (guid, organization_guid, domain, created_by_guid)
     values
@@ -43,7 +43,7 @@ class OrganizationDomainsDao @Inject() (
       domain = Domain(domainName.trim)
     )
 
-    SQL(InsertQuery).on(
+    SQL(UpsertQuery).on(
       'guid -> domain.guid,
       'organization_guid -> domain.organizationGuid,
       'domain -> domain.domain.name,

@@ -32,11 +32,17 @@ class Users @Inject() (
   private[this] case class GithubAuthenticationForm(token: String)
   private[this] implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
 
-  def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
+  def get(
+    guid: Option[UUID],
+    email: Option[String],
+    nickname: Option[String],
+    token: Option[String]
+  ) = AnonymousRequest { request =>
     require(request.tokenUser.isDefined, "Missing API Token")
     val users = usersDao.findAll(
       guid = guid,
       email = email,
+      nickname = nickname,
       token = token
     )
     Ok(Json.toJson(users))

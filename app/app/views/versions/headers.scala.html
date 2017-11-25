@@ -20,7 +20,7 @@
      <tr>
        <td>@header.name@header.deprecation.map(deprecation(_))</td>
        <td>@datatype(org, app, version, service, header.`type`)</td>
-       <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>
+       <td>@if(header.required) { Yes } else { No }</td>
        <td>@header.default.getOrElse("-")</td>
        <td>@Html(lib.Markdown(header.description))</td>
      </tr>

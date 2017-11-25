@@ -41,7 +41,7 @@ class ImportedResourcePathsSpec extends FunSpec with Matchers {
     val validator = TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher)
     validator.errors should be(Nil)
 
-    val userResource = validator.service.resources.head
+    val userResource = validator.service().resources.head
     userResource.operations.map(_.path) should be(Seq("/users"))
   }
 

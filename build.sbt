@@ -5,7 +5,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.11.11"
+scalaVersion in ThisBuild := "2.11.12"
 
 lazy val lib = project
   .in(file("lib"))
@@ -81,7 +81,7 @@ lazy val api = project
       filters,
       "org.postgresql"    %  "postgresql"    % "42.1.4",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
-      "com.sendgrid"      %  "sendgrid-java" % "4.0.1",
+      "com.sendgrid"      %  "sendgrid-java" % "4.1.0",
       "io.flow"           %% "lib-postgresql-play" % "0.0.97",
       specs2              %  Test,
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
@@ -100,7 +100,7 @@ lazy val app = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "org.apache.commons" % "commons-compress" % "1.14",
-      "com.github.tototoshi" %% "scala-csv" % "1.3.4",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.5",
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
       "org.webjars" % "bootstrap" % "3.3.7",
@@ -161,4 +161,4 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
-version := "0.12.61"
+version := "0.13.0"

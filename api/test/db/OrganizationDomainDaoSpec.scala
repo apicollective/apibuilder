@@ -18,6 +18,18 @@ class OrganizationDomainsDaoSpec extends FunSpec with Matchers with util.TestApp
     organizationDomainsDao.findAll(guid = Some(domain.guid)) should be(Nil)
   }
 
+  it("domains are unique per org") {
+    val domainName = UUID.randomUUID.toString + ".org"
+    val org1 = Util.createOrganization()
+    val domain1 = organizationDomainsDao.create(Util.createdBy, org1, domainName)
+
+    val org2 = Util.createOrganization()
+    val domain2 = organizationDomainsDao.create(Util.createdBy, org2, domainName)
+
+    organizationsDao.findByGuid(Authorization.All, org1.guid).get.domains.map(_.name) should be(Seq(domainName))
+    organizationsDao.findByGuid(Authorization.All, org2.guid).get.domains.map(_.name) should be(Seq(domainName))
+  }
+
   it("findAll") {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = Util.createOrganization()

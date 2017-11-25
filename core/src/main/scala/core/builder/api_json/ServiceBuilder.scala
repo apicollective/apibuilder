@@ -1,7 +1,7 @@
 package builder.api_json
 
 import core.{Importer, ServiceFetcher, VersionMigration, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion}
-import lib.{Methods, Primitives, ServiceConfiguration, Text, Kind, UrlKey}
+import lib.{Methods, Primitives, ServiceConfiguration, Text, UrlKey}
 import io.apibuilder.spec.v0.models._
 import play.api.libs.json._
 import scala.util.{Failure, Success, Try}
@@ -194,10 +194,10 @@ case class ServiceBuilder(
       union: Option[TypesProviderUnion] = None
     ): Operation = {
       val method = internal.method.getOrElse("")
-      val defaultLocation = if (!internal.body.isEmpty || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
+      val defaultLocation = if (internal.body.isDefined || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
 
       val pathParameters = internal.namedPathParameters.map { name =>
-        internal.parameters.find(_.name == Some(name)) match {
+        internal.parameters.find(_.name.contains(name)) match {
           case None => {
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
               case Some(field) => field.`type`
@@ -218,7 +218,7 @@ case class ServiceBuilder(
         }
       }
 
-      val internalParams = internal.parameters.filter(p => pathParameters.find(_.name == p.name.get).isEmpty).map { p =>
+      val internalParams = internal.parameters.filter(p => !pathParameters.exists(_.name == p.name.get)).map { p =>
         ParameterBuilder(p, defaultLocation)
       }
 
@@ -282,8 +282,8 @@ case class ServiceBuilder(
 
     def apply(ib: InternalBodyForm): Body = {
       ib.datatype match {
-        case None => sys.error("Body missing type: " + ib)
-        case Some(datatype) => Body(
+        case Left(errs) => sys.error("Body missing type: " + errs.mkString(", "))
+        case Right(datatype) => Body(
           `type` = datatype.label,
           description = ib.description,
           deprecation = ib.deprecation.map(DeprecationBuilder(_)),
@@ -313,6 +313,7 @@ case class ServiceBuilder(
         values = ie.values.map { iv =>
           EnumValue(
             name = iv.name.get,
+            value = iv.value,
             description = iv.description,
             deprecation = iv.deprecation.map(DeprecationBuilder(_))
           )
@@ -333,11 +334,15 @@ case class ServiceBuilder(
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         types = internal.types.map { it =>
+          val typ = rightOrError(it.datatype)
           UnionType(
-            `type` = it.datatype.get.label,
+            `type` = typ.label,
             description = it.description,
             deprecation = it.deprecation.map(DeprecationBuilder(_)),
-            default = it.default
+            default = it.default,
+            discriminatorValue = Some(
+              it.discriminatorValue.getOrElse(typ.name)
+            )
           )
         },
         attributes = internal.attributes.map { AttributeBuilder(_) }
@@ -351,7 +356,7 @@ case class ServiceBuilder(
     def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
       Header(
         name = ih.name.get,
-        `type` = resolver.parseWithError(ih.datatype.get).toString,
+        `type` = resolver.parseWithError(rightOrError(ih.datatype)).toString,
         required = ih.required,
         description = ih.description,
         deprecation = ih.deprecation.map(DeprecationBuilder(_)),
@@ -436,15 +441,16 @@ case class ServiceBuilder(
       Response(
         code = Try(internal.code.toInt) match {
           case Success(code) => ResponseCodeInt(code)
-          case Failure(ex) => ResponseCodeOption(internal.code)
+          case Failure(_) => ResponseCodeOption(internal.code)
         },
-        `type` = internal.datatype.get.label,
+        `type` = rightOrError(internal.datatype).label,
         headers = internal.headers.map { HeaderBuilder(resolver, _) }.toList match {
           case Nil => None
           case headers => Some(headers)
         },
         description = internal.description,
-        deprecation = internal.deprecation.map(DeprecationBuilder(_))
+        deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+        attributes = Some(internal.attributes.map { AttributeBuilder(_) })
       )
     }
 
@@ -464,18 +470,17 @@ case class ServiceBuilder(
     def apply(internal: InternalParameterForm, defaultLocation: ParameterLocation): Parameter = {
       Parameter(
         name = internal.name.get,
-        `type` = internal.datatype.get.label,
+        `type` = rightOrError(internal.datatype).label,
         location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = migration.makeFieldsWithDefaultsRequired match {
-          case true => {
-            internal.default match {
-              case None => internal.required
-              case Some(_) => true
-            }
+        required = if (migration.makeFieldsWithDefaultsRequired()) {
+          internal.default match {
+            case None => internal.required
+            case Some(_) => true
           }
-          case false => internal.required
+        } else {
+          internal.required
         },
         default = internal.default,
         minimum = internal.minimum,
@@ -492,19 +497,18 @@ case class ServiceBuilder(
     ): Field = {
       Field(
         name = internal.name.get,
-        `type` = internal.datatype.get.label,
+        `type` = rightOrError(internal.datatype).label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = migration.makeFieldsWithDefaultsRequired match {
-          case true => {
-            internal.default match {
-              case None => internal.required
-              case Some(_) => true
-            }
-          }
-          case false => internal.required
-        },
         default = internal.default,
+        required = if (migration.makeFieldsWithDefaultsRequired()) {
+          internal.default match {
+            case None => internal.required
+            case Some(_) => true
+          }
+        } else {
+          internal.required
+        },
         minimum = internal.minimum,
         maximum = internal.maximum,
         example = internal.example,
@@ -526,6 +530,13 @@ case class ServiceBuilder(
       )
     }
 
+  }
+
+  private[this] def rightOrError[T](value: Either[Seq[String], T]): T = {
+    value match {
+      case Left(errors) => sys.error("Unexpected errors: " + errors.mkString(", "))
+      case Right(v) => v
+    }
   }
 
 }

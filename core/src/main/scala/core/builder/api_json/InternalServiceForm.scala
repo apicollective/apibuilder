@@ -2,7 +2,7 @@ package builder.api_json
 
 import builder.JsonUtil
 import core.{ServiceFetcher, Util}
-import lib.{Primitives, Text}
+import lib.Text
 import play.api.libs.json._
 
 /**
@@ -17,15 +17,17 @@ private[api_json] case class InternalServiceForm(
   fetcher: ServiceFetcher
 ) {
 
-  lazy val apidoc = (json \ "apidoc").asOpt[JsValue].map { InternalApidocForm(_) }
-  lazy val name = JsonUtil.asOptString(json \ "name")
-  lazy val key = JsonUtil.asOptString(json \ "key")
-  lazy val namespace = JsonUtil.asOptString(json \ "namespace")
-  lazy val baseUrl = JsonUtil.asOptString(json \ "base_url")
-  lazy val basePath = JsonUtil.asOptString(json \ "base_path")
+  val internalDatatypeBuilder = InternalDatatypeBuilder()
 
-  lazy val description = JsonUtil.asOptString(json \ "description")
-  lazy val info = (json \ "info").asOpt[JsValue].map { InternalInfoForm(_) }
+  lazy val apidoc: Option[InternalApidocForm] = (json \ "apidoc").asOpt[JsValue].map { InternalApidocForm(_) }
+  lazy val name: Option[String] = JsonUtil.asOptString(json \ "name")
+  lazy val key: Option[String] = JsonUtil.asOptString(json \ "key")
+  lazy val namespace: Option[String] = JsonUtil.asOptString(json \ "namespace")
+  lazy val baseUrl: Option[String] = JsonUtil.asOptString(json \ "base_url")
+  lazy val basePath: Option[String] = JsonUtil.asOptString(json \ "base_path")
+
+  lazy val description: Option[String] = JsonUtil.asOptString(json \ "description")
+  lazy val info: Option[InternalInfoForm] = (json \ "info").asOpt[JsValue].map { InternalInfoForm(_) }
 
   lazy val imports: Seq[InternalImportForm] = {
     (json \ "imports").asOpt[JsArray] match {
@@ -36,12 +38,12 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  lazy val unions: Seq[InternalUnionForm] = {
+  private[this] lazy val declaredUnions: Seq[InternalUnionForm] = {
     (json \ "unions").asOpt[JsValue] match {
       case Some(unions: JsObject) => {
         unions.fields.flatMap { v =>
           v match {
-            case(key, value) => value.asOpt[JsObject].map(InternalUnionForm(key, _))
+            case(k, value) => value.asOpt[JsObject].map(InternalUnionForm(internalDatatypeBuilder, k, _))
           }
         }
       }
@@ -49,12 +51,16 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  lazy val models: Seq[InternalModelForm] = {
+  def unions: Seq[InternalUnionForm] = {
+    declaredUnions ++ internalDatatypeBuilder.unionForms
+  }
+
+  private[this] lazy val declaredModels: Seq[InternalModelForm] = {
     (json \ "models").asOpt[JsValue] match {
       case Some(models: JsObject) => {
         models.fields.flatMap { v =>
           v match {
-            case(key, value) => value.asOpt[JsObject].map(InternalModelForm(key, _))
+            case(k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
           }
         }
       }
@@ -62,12 +68,16 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  lazy val enums: Seq[InternalEnumForm] = {
+  def models: Seq[InternalModelForm] = {
+    declaredModels ++ internalDatatypeBuilder.modelForms
+  }
+
+  private[this] lazy val declaredEnums: Seq[InternalEnumForm] = {
     (json \ "enums").asOpt[JsValue] match {
       case Some(enums: JsObject) => {
         enums.fields.flatMap { v =>
           v match {
-            case(key, value) => value.asOpt[JsObject].map(InternalEnumForm(key, _))
+            case(k, value) => value.asOpt[JsObject].map(InternalEnumForm(k, _))
           }
         }
       }
@@ -75,7 +85,9 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  lazy val headers: Seq[InternalHeaderForm] = InternalHeaderForm(json)
+  def enums: Seq[InternalEnumForm] = declaredEnums ++ internalDatatypeBuilder.enumForms
+
+  lazy val headers: Seq[InternalHeaderForm] = InternalHeaderForm(internalDatatypeBuilder, json)
 
   lazy val resources: Seq[InternalResourceForm] = {
     (json \ "resources").asOpt[JsValue] match {
@@ -85,7 +97,7 @@ private[api_json] case class InternalServiceForm(
         resources.fields.flatMap { v =>
           v match {
             case(typeName, value) => {
-              value.asOpt[JsObject].map(InternalResourceForm(typeName, models, enums, unions, _))
+              value.asOpt[JsObject].map(InternalResourceForm(internalDatatypeBuilder, typeName, declaredModels, declaredEnums, unions, _))
             }
           }
         }
@@ -155,6 +167,7 @@ case class InternalEnumForm(
 
 case class InternalEnumValueForm(
   name: Option[String],
+  value: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
@@ -173,17 +186,18 @@ case class InternalUnionForm(
 )
 
 case class InternalUnionTypeForm(
-  datatype: Option[InternalDatatype] = None,
+  datatype: Either[Seq[String], InternalDatatype],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
+  discriminatorValue: Option[String],
   warnings: Seq[String]
 )
 
 case class InternalHeaderForm(
   name: Option[String],
-  datatype: Option[InternalDatatype],
+  datatype: Either[Seq[String], InternalDatatype],
   required: Boolean,
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
@@ -215,13 +229,13 @@ case class InternalOperationForm(
   warnings: Seq[String] = Seq.empty
 ) {
 
-  lazy val label = "%s %s".format(method.getOrElse(""), path).trim
+  lazy val label: String = "%s %s".format(method.getOrElse(""), path).trim
 
 }
 
 case class InternalFieldForm(
   name: Option[String] = None,
-  datatype: Option[InternalDatatype] = None,
+  datatype: Either[Seq[String], InternalDatatype],
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   required: Boolean = true,
@@ -243,7 +257,7 @@ case class InternalAttributeForm(
 
 case class InternalParameterForm(
   name: Option[String] = None,
-  datatype: Option[InternalDatatype] = None,
+  datatype: Either[Seq[String], InternalDatatype],
   location: Option[String] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
@@ -256,7 +270,7 @@ case class InternalParameterForm(
 )
 
 case class InternalBodyForm(
-  datatype: Option[InternalDatatype] = None,
+  datatype: Either[Seq[String], InternalDatatype],
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
@@ -265,14 +279,18 @@ case class InternalBodyForm(
 
 case class InternalResponseForm(
   code: String,
-  datatype: Option[InternalDatatype] = None,
+  datatype: Either[Seq[String], InternalDatatype],
   headers: Seq[InternalHeaderForm] = Nil,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,
+  attributes: Seq[InternalAttributeForm] = Nil,
   warnings: Seq[String] = Seq.empty
 ) {
 
-  lazy val datatypeLabel: Option[String] = datatype.map(_.label)
+  lazy val datatypeLabel: Option[String] = datatype match {
+    case Left(_) => None
+    case Right(dt) => Some(dt.name)
+  }
 
 }
 
@@ -331,29 +349,34 @@ object InternalDeprecationForm {
 
 object InternalUnionForm {
 
-  def apply(name: String, value: JsObject): InternalUnionForm = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject): InternalUnionForm = {
     val description = JsonUtil.asOptString(value \ "description")
     val types = (value \ "types").asOpt[JsArray] match {
        case None => Seq.empty
        case Some(a: JsArray) => {
          a.value.flatMap { value =>
            value.asOpt[JsObject].map { json =>
-             val typeName = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_))
+             val internalDatatype = internalDatatypeBuilder.parseTypeFromObject(json)
+             val datatypeName = internalDatatype match {
+               case Left(_) => None
+               case Right(dt) => Some(dt.name)
+             }
 
              InternalUnionTypeForm(
-               datatype = typeName,
+               datatype = internalDatatype,
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
                default = JsonUtil.asOptBoolean(json \ "default"),
+               discriminatorValue = JsonUtil.asOptString(json \ "discriminator_value"),
                attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
-                 strings = Seq("type"),
-                 optionalStrings = Seq("description"),
+                 anys = Seq("type"),
+                 optionalStrings = Seq("description", "discriminator_value"),
                  optionalBooleans = Seq("default"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),
-                 prefix = Some(s"Union[$name] type[${typeName.getOrElse("")}]")
+                 prefix = Some(s"Union[$name] type[${datatypeName.getOrElse("")}]")
                )
              )
            }
@@ -372,7 +395,7 @@ object InternalUnionForm {
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("discriminator", "description", "plural"),
-        arraysOfObjects = Seq("types"),
+        arrayOfObjects = Seq("types"),
         optionalObjects = Seq("deprecation"),
         optionalArraysOfObjects = Seq("attributes"),
         prefix = Some(s"Union[$name]")
@@ -399,7 +422,7 @@ object InternalImportForm {
 
 object InternalModelForm {
 
-  def apply(name: String, value: JsObject): InternalModelForm = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject): InternalModelForm = {
     val description = JsonUtil.asOptString(value \ "description")
     val plural: String = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) )
 
@@ -408,7 +431,9 @@ object InternalModelForm {
       case None => Seq.empty
 
       case Some(a: JsArray) => {
-        a.value.flatMap { _.asOpt[JsObject].map(InternalFieldForm(_)) }
+        a.value.flatMap { _.asOpt[JsObject].map { v =>
+          InternalFieldForm(internalDatatypeBuilder, v)
+        }}
       }
 
     }
@@ -423,7 +448,7 @@ object InternalModelForm {
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("description", "plural"),
-        arraysOfObjects = Seq("fields"),
+        arrayOfObjects = Seq("fields"),
         optionalArraysOfObjects = Seq("attributes"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Model[$name]")
@@ -445,13 +470,14 @@ object InternalEnumForm {
              val valueName = JsonUtil.asOptString(json \ "name")
              InternalEnumValueForm(
                name = valueName,
+               value = JsonUtil.asOptString(json \ "value"),
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
                attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  strings = Seq("name"),
-                 optionalStrings = Seq("description"),
+                 optionalStrings = Seq("value", "description"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),
                  prefix = Some(s"Enum[$name] value[${valueName.getOrElse("")}]")
@@ -472,7 +498,7 @@ object InternalEnumForm {
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("name", "description", "plural"),
-        arraysOfObjects = Seq("values"),
+        arrayOfObjects = Seq("values"),
         optionalObjects = Seq("deprecation"),
         optionalArraysOfObjects = Seq("attributes"),
         prefix = Some(s"Enum[$name]")
@@ -483,25 +509,30 @@ object InternalEnumForm {
 }
 
 object InternalHeaderForm {
-  def apply(json: JsValue): Seq[InternalHeaderForm] = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsValue): Seq[InternalHeaderForm] = {
     (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
       el match {
         case o: JsObject => {
-          val datatype = InternalDatatype(o)
+          val datatype = internalDatatypeBuilder.parseTypeFromObject(o)
+          val isRequired = datatype match {
+            case Left(_) => true
+            case Right(dt) => dt.required
+          }
 
           val headerName = JsonUtil.asOptString(o \ "name")
           Some(
             InternalHeaderForm(
               name = headerName,
               datatype = datatype,
-              required = datatype.map(_.required).getOrElse(true),
+              required = isRequired,
               description = JsonUtil.asOptString(o \ "description"),
               deprecation = InternalDeprecationForm.fromJsValue(o),
               default = JsonUtil.asOptString(o \ "default"),
               attributes = InternalAttributeForm.attributesFromJson((o \ "attributes").asOpt[JsArray]),
               warnings = JsonUtil.validate(
                 o,
-                strings = Seq("name", "type"),
+                strings = Seq("name"),
+                anys = Seq("type"),
                 optionalBooleans = Seq("required"),
                 optionalObjects = Seq("deprecation"),
                 optionalStrings = Seq("default", "description"),
@@ -520,6 +551,7 @@ object InternalHeaderForm {
 object InternalResourceForm {
 
   def apply(
+    internalDatatypeBuilder: InternalDatatypeBuilder,
     typeName: String,
     models: Seq[InternalModelForm],
     enums: Seq[InternalEnumForm],
@@ -551,12 +583,14 @@ object InternalResourceForm {
     val operations = (value \ "operations").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
-        a.value.flatMap { _.asOpt[JsObject].map(InternalOperationForm(path, _)) }
+        a.value.flatMap { _.asOpt[JsObject].map(InternalOperationForm(internalDatatypeBuilder, path, _)) }
       }
     }
 
     InternalResourceForm(
-      datatype = InternalDatatype(typeName),
+      datatype = internalDatatypeBuilder.fromString(typeName).right.getOrElse {
+        sys.error(s"Invalid datatype[$typeName]")
+      },
       description = JsonUtil.asOptString(value \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(value),
       path = path,
@@ -566,7 +600,7 @@ object InternalResourceForm {
         value,
         optionalStrings = Seq("path", "description"),
         optionalObjects = Seq("deprecation"),
-        arraysOfObjects = Seq("operations"),
+        arrayOfObjects = Seq("operations"),
         optionalArraysOfObjects = Seq("attributes")
       )
     )
@@ -576,9 +610,7 @@ object InternalResourceForm {
 
 object InternalOperationForm {
 
-  private val NoContentResponse = InternalResponseForm(code = "204", datatype = Some(InternalDatatype("unit")))
-
-  def apply(resourcePath: Option[String], json: JsObject): InternalOperationForm = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, resourcePath: Option[String], json: JsObject): InternalOperationForm = {
     val operationPath = JsonUtil.asOptString(json \ "path")
 
     val knownPath = Seq(resourcePath, operationPath).flatten.mkString("/")
@@ -587,14 +619,14 @@ object InternalOperationForm {
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
-        a.value.flatMap { _.asOpt[JsObject].map(InternalParameterForm(_)) }
+        a.value.flatMap { _.asOpt[JsObject].map(InternalParameterForm(internalDatatypeBuilder, _)) }
       }
     }
 
     val responses: Seq[InternalResponseForm] = {
       (json \ "responses").asOpt[JsObject] match {
         case None => {
-          Seq(NoContentResponse)
+          Seq(InternalResponseForm(code = "204", datatype = Right(InternalDatatype.Unit)))
         }
 
         case Some(responses: JsObject) => {
@@ -602,10 +634,11 @@ object InternalOperationForm {
             case(code, value) => {
               value match {
                 case o: JsObject => {
-                  InternalResponseForm(code, o)
+                  InternalResponseForm(internalDatatypeBuilder, code, o)
                 }
-                case other => {
+                case _ => {
                   InternalResponseForm(
+                    datatype = Right(InternalDatatype.Unit),
                     code = code,
                     warnings = Seq("value must be an object")
                   )
@@ -619,13 +652,13 @@ object InternalOperationForm {
 
     val body = (json \ "body").asOpt[JsObject].map { o =>
       InternalBodyForm(
-        datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
+        datatype = internalDatatypeBuilder.parseTypeFromObject(o),
         description = JsonUtil.asOptString(o \ "description"),
         deprecation = InternalDeprecationForm.fromJsValue(o),
         attributes = InternalAttributeForm.attributesFromJson((o \ "attributes").asOpt[JsArray]),
         warnings = JsonUtil.validate(
           o,
-          strings = Seq("type"),
+          anys = Seq("type"),
           optionalStrings = Seq("description"),
           optionalObjects = Seq("deprecation"),
           optionalArraysOfObjects = Seq("attributes")
@@ -657,18 +690,19 @@ object InternalOperationForm {
 
 object InternalResponseForm {
 
-  def apply(code: String, json: JsObject): InternalResponseForm = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, code: String, json: JsObject): InternalResponseForm = {
     InternalResponseForm(
       code = code,
-      datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
-      headers = InternalHeaderForm(json),
+      datatype = internalDatatypeBuilder.parseTypeFromObject(json),
+      headers = InternalHeaderForm(internalDatatypeBuilder, json),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
+      attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         json,
-        strings = Seq("type"),
+        anys = Seq("type"),
         optionalStrings = Seq("description"),
-        optionalArraysOfObjects = Seq("headers"),
+        optionalArraysOfObjects = Seq("headers", "attributes"),
         optionalObjects = Seq("deprecation")
       )
     )
@@ -677,21 +711,25 @@ object InternalResponseForm {
 
 object InternalFieldForm {
 
-  def apply(json: JsObject): InternalFieldForm = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalFieldForm = {
     val warnings = if (JsonUtil.hasKey(json, "enum") || JsonUtil.hasKey(json, "values")) {
       Seq("Enumerations are now first class objects and must be defined in an explicit enum section")
     } else {
       Seq.empty
     }
 
-    val datatype = InternalDatatype(json)
+    val datatype = internalDatatypeBuilder.parseTypeFromObject(json)
+    val isRequired = datatype match {
+      case Left(_) => true
+      case Right(dt) => dt.required
+    }
 
     InternalFieldForm(
       name = JsonUtil.asOptString(json \ "name"),
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      required = datatype.map(_.required).getOrElse(true),
+      required = isRequired,
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
@@ -699,7 +737,8 @@ object InternalFieldForm {
       attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = warnings ++ JsonUtil.validate(
         json,
-        strings = Seq("name", "type"),
+        strings = Seq("name"),
+        anys = Seq("type"),
         optionalStrings = Seq("description", "example"),
         optionalObjects = Seq("deprecation"),
         optionalBooleans = Seq("required"),
@@ -742,8 +781,12 @@ object InternalAttributeForm {
 
 object InternalParameterForm {
 
-  def apply(json: JsObject): InternalParameterForm = {
-    val datatype = InternalDatatype(json)
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalParameterForm = {
+    val datatype = internalDatatypeBuilder.parseTypeFromObject(json)
+    val isRequired = datatype match {
+      case Left(_) => true
+      case Right(dt) => dt.required
+    }
 
     InternalParameterForm(
       name = JsonUtil.asOptString(json \ "name"),
@@ -751,14 +794,15 @@ object InternalParameterForm {
       location = JsonUtil.asOptString(json \ "location"),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      required = datatype.map(_.required).getOrElse(true),
+      required = isRequired,
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
       warnings = JsonUtil.validate(
         json,
-        strings = Seq("name", "type"),
+        strings = Seq("name"),
+        anys = Seq("type"),
         optionalStrings = Seq("description", "example", "location"),
         optionalObjects = Seq("deprecation"),
         optionalBooleans = Seq("required"),
@@ -766,86 +810,6 @@ object InternalParameterForm {
         optionalAnys = Seq("default")
       )
     )
-  }
-
-}
-
-sealed trait InternalDatatype {
-
-  def name: String
-  def required: Boolean
-  def label: String
-
-  protected def makeLabel(prefix: String = "", postfix: String = ""): String = {
-    prefix + name + postfix
-  }
-
-}
-
-private[api_json] object InternalDatatype {
-
-  case class List(name: String, required: Boolean) extends InternalDatatype {
-    override def label = makeLabel("[", "]")
-  }
-
-  case class Map(name: String, required: Boolean) extends InternalDatatype {
-    override def label = makeLabel("map[", "]")
-  }
-
-  case class Singleton(name: String, required: Boolean) extends InternalDatatype {
-    override def label = makeLabel()
-  }
-
-  private val ListRx = "^\\[(.*)\\]$".r
-  private val MapRx = "^map\\[(.*)\\]$".r
-  private val DefaultMapRx = "^map$".r
-
-  def apply(value: String): InternalDatatype = {
-    value match {
-      case ListRx(name) => InternalDatatype.List(formatName(name), true)
-      case MapRx(name) => InternalDatatype.Map(formatName(name), true)
-      case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString, true)
-      case _ => InternalDatatype.Singleton(formatName(value), true)
-    }
-  }
-
-  /**
-    * Make primitive datatype names case insensitive to user
-    * input. e.g. accept both 'UUID' and 'uuid' as the uuid type.
-    */
-  private def formatName(name: String): String = {
-    Primitives(name) match {
-      case None => name
-      case Some(p) => p.toString
-    }
-  }
-
-  def apply(json: JsObject): Option[InternalDatatype] = {
-    JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)).map { dt =>
-      JsonUtil.asOptBoolean(json \ "required") match {
-        case None => {
-          dt
-        }
-
-        case Some(true) => {
-          // User explicitly marked this required
-          dt match {
-            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), true)
-            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), true)
-            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), true)
-          }
-        }
-
-        case Some(false) => {
-          // User explicitly marked this optional
-          dt match {
-            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), false)
-            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), false)
-            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), false)
-          }
-        }
-      }
-    }
   }
 
 }

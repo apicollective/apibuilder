@@ -48,74 +48,74 @@ class BodyParameterSpec extends FunSpec with Matchers {
 
   it("validates that body refers to a known model") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "foo" }""", "boolean"))
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Type[foo] not found")
+    validator.errors().mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Type[foo] not found")
   }
 
   it("support primitive types in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "string", "description": "test" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val model = validator.service.models.find(_.name == "message").get
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    validator.service().models.find(_.name == "message").get
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("string"))
     op.body.flatMap(_.description) should be(Some("test"))
   }
 
   it("support arrays of primitive types in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "[string]" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val model = validator.service.models.find(_.name == "message").get
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    validator.service().models.find(_.name == "message").get
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("[string]"))
   }
 
   it("support enums in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "age_group" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val model = validator.service.models.find(_.name == "message").get
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    validator.service().models.find(_.name == "message").get
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("age_group"))
   }
 
   it("support arrays of enums in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "[age_group]" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val model = validator.service.models.find(_.name == "message").get
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    validator.service().models.find(_.name == "message").get
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("[age_group]"))
   }
 
   it("supports arrays of models in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "[message]" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val model = validator.service.models.find(_.name == "message").get
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    validator.service().models.find(_.name == "message").get
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("[message]"))
   }
 
   it("validates if body is not a map") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """"string"""", "boolean"))
-    validator.errors.mkString("") should be("Resource[message] POST /messages/:mimeType body, if present, must be an object")
+    validator.errors().mkString("") should be("Resource[message] POST /messages/:mimeType body, if present, must be an object")
   }
 
   it("validates that body cannot be specified for GET, DELETE operations") {
     Methods.MethodsNotAcceptingBodies.foreach { method =>
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(method, """{ "type": "message" }""", "boolean"))
-      validator.errors.mkString("") should be(s"Resource[message] $method /messages/:mimeType Cannot specify body for HTTP method[$method]")
+      validator.errors().mkString("") should be(s"Resource[message] $method /messages/:mimeType Cannot specify body for HTTP method[$method]")
     }
   }
 
   it("supports models in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "message" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val model = validator.service.models.find(_.name == "message").get
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    validator.service().models.find(_.name == "message").get
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("message"))
   }
 
   it("If body specified, all parameters are either PATH or QUERY") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "message" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    val op = validator.service().resources.head.operations.head
     val params = op.parameters
     params.size should be(2)
     params.find(_.name == "mimeType").get.location should be(ParameterLocation.Path)
@@ -124,27 +124,27 @@ class BodyParameterSpec extends FunSpec with Matchers {
 
   it("body can be an array") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "[message]" }""", "boolean"))
-    validator.errors.mkString("") should be("")
-    val op = validator.service.resources.head.operations.head
+    validator.errors().mkString("") should be("")
+    val op = validator.service().resources.head.operations.head
     op.body.map(_.`type`) should be(Some("[message]"))
   }
 
   it("validates missing datatype") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "" }""", "age_group")
     val validator = TestHelper.serviceValidatorFromApiJson(baseJsonWithInvalidModel)
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType Body missing type")
+    validator.errors().mkString("") should be(s"Resource[message] POST /messages/:mimeType Body type must be a non empty string")
   }
 
   it("If body specified, parameters can be enums") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "age_group")
     val validator = TestHelper.serviceValidatorFromApiJson(baseJsonWithInvalidModel)
-    validator.errors.mkString("") should be("")
+    validator.errors().mkString("") should be("")
   }
 
   it("If body specified, parameters cannot be models") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "message")
     val validator = TestHelper.serviceValidatorFromApiJson(baseJsonWithInvalidModel)
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType Parameter[debug] has an invalid type[message]. Model and union types are not supported as query parameters.")
+    validator.errors().mkString("") should be(s"Resource[message] POST /messages/:mimeType Parameter[debug] has an invalid type[message]. Model and union types are not supported as query parameters.")
   }
 
 }

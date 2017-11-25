@@ -49,7 +49,7 @@ object Global extends WithFilters(LoggingFilter) {
 
     Try {
       Logger.warn("Migration disabled")
-      //play.api.Play.current.injector.instanceOf[VersionsDao].migrate()
+      play.api.Play.current.injector.instanceOf[_root_.db.VersionsDao].migrate()
     } match {
       case Success(result) => Logger.info("ensureServices() completed: " + result)
       case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")

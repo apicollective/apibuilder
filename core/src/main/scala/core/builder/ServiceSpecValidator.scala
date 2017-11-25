@@ -1,6 +1,6 @@
 package builder
 
-import core.{TypeValidator, TypesProvider}
+import core.{TypeValidator, TypesProvider, Util}
 import io.apibuilder.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
 import io.apibuilder.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
@@ -9,7 +9,7 @@ case class ServiceSpecValidator(
   service: Service
 ) {
 
-  private val ReservedDiscriminatorValue = "value"
+  private val ReservedDiscriminatorValues = Seq("value", "implicit")
 
   private val localTypeResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
@@ -57,9 +57,9 @@ case class ServiceSpecValidator(
     validateParameterLocations() ++
     validateParameterBodies() ++
     validateParameterDefaults() ++
+    validateParameterNames() ++
     validateParameters() ++
-    validateResponses() ++
-    validatePathParameters()
+    validateResponses()
   }
 
   private def validateApidoc(): Seq[String] = {
@@ -141,9 +141,33 @@ case class ServiceSpecValidator(
       dups(enum.values.map(_.name)).map { value =>
         s"Enum[${enum.name}] value[$value] appears more than once"
       }
+    }.toList match {
+      case Nil => {
+        // Check uniqueness of the serialization values
+        service.enums.flatMap { enum =>
+          dups(enum.values.map { ev => ev.value.getOrElse(ev.name) }).map { value =>
+            s"Enum[${enum.name}] value[$value] appears more than once"
+          }
+        }
+      }
+      case errs => errs
     }
 
-    nameErrors ++ duplicates ++ valueErrors ++ valuesWithInvalidNames ++ duplicateValues
+    nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues ++ valuesWithInvalidNames ++ duplicateValues
+  }
+
+  private[this] def validateEnumValues(): Seq[String] = {
+    service.enums.flatMap { enum =>
+      enum.values.flatMap { enumValue =>
+        enumValue.value match {
+          case None => Nil
+          case Some(v) => Text.validateName(v) match {
+            case Nil => Nil
+            case errors => Seq(s"Enum[${enum.name}] value[$v] is invalid: ${errors.mkString(" and ")}")
+          }
+        }
+      }
+    }
   }
 
   private def validateUnions(): Seq[String] = {
@@ -208,8 +232,8 @@ case class ServiceSpecValidator(
             }
 
             case Some(discriminator) => {
-              if (discriminator == ReservedDiscriminatorValue) {
-                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator")
+              if (ReservedDiscriminatorValues.contains(discriminator)) {
+                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved and cannot be used as a discriminator")
               } else {
                 Text.validateName(discriminator) match {
                   case Nil => {
@@ -223,7 +247,7 @@ case class ServiceSpecValidator(
                       }
                     }
                   }
-                  case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
+                  case errs => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errs.mkString(", "))
                 }
               }
             }
@@ -234,7 +258,40 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates
+    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
+  }
+
+  private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
+    validateUnionTypeDiscriminatorValuesValidNames() ++ validateUnionTypeDiscriminatorValuesAreDistinct()
+  }
+
+  private[this] def validateUnionTypeDiscriminatorValuesValidNames(): Seq[String] = {
+    service.unions.flatMap { union =>
+      union.types.flatMap { unionType =>
+        unionType.discriminatorValue match {
+          case None => None
+          case Some(value) => {
+            Text.validateName(value) match {
+              case Nil => None
+              case errs => {
+                Some(s"Union[${union.name}] type[${unionType.`type`}] discriminator_value[${value}] is invalid: ${errs.mkString(" and ")}")
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): Seq[String] = {
+    service.unions.flatMap { union =>
+      dupsError(
+        s"Union[${union.name}] discriminator values",
+        union.types.map { unionType =>
+          unionType.discriminatorValue.getOrElse(unionType.`type`)
+        }
+      )
+    }
   }
 
   /**
@@ -346,7 +403,7 @@ case class ServiceSpecValidator(
     }
 
     val duplicateFieldErrors = service.models.flatMap { model =>
-      dupsError(s"Model[${model.name}] field", model.fields.filter(!_.name.isEmpty).map(_.name.trim.toLowerCase))
+      dupsError(s"Model[${model.name}] field", model.fields.filterNot(_.name.isEmpty).map(_.name))
     }
 
     val typeErrors = service.models.flatMap { model =>
@@ -512,6 +569,17 @@ case class ServiceSpecValidator(
     }
   }
 
+  private def validateParameterNames(): Seq[String] = {
+    service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        dupsError(
+          opLabel(resource, op, "Parameter"),
+          op.parameters.map(_.name)
+        )
+      }
+    }
+  }
+
   private def validateParameters(): Seq[String] = {
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
@@ -525,16 +593,24 @@ case class ServiceSpecValidator(
                 case ParameterLocation.Query | ParameterLocation.Header => {
                   // Query and Header parameters can only be primitives or enums
                   kind match {
-                    case Kind.Primitive(_) | Kind.Enum(_) => {
+                    case Kind.Enum(_) => {
                       None
                     }
 
-                    case Kind.List(Kind.Primitive(_) | Kind.Enum(_)) => {
+                    case Kind.Primitive(_) if isValidInUrl(kind) => {
+                      None
+                    }
+
+                    case Kind.Primitive(_) => {
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid types for ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
+                    }
+
+                    case Kind.List(nested) if isValidInUrl(nested) => {
                       None
                     }
 
                     case Kind.List(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Parameters that are lists must be lists of primitive types or enums."))
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
                     }
 
                     case Kind.Model(_) | Kind.Union(_) => {
@@ -542,7 +618,7 @@ case class ServiceSpecValidator(
                     }
 
                     case Kind.Map(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as query parameters."))
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as ${p.location.toString.toLowerCase} parameters."))
                     }
 
                   }
@@ -552,12 +628,14 @@ case class ServiceSpecValidator(
                 case ParameterLocation.Path => {
                   // Path parameters are required
                   if (p.required) {
-                    // Verify that path parameter is actually in the path
-                    val index = op.path.indexOf(s"${p.name}")
-                    if ((index < 0)) {
+                    // Verify that path parameter is actually in the path and immediately before or after a '/'
+                    if (!Util.namedParametersInPath(op.path).contains(p.name)) {
                       Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
-                    } else {
+                    } else if (isValidInUrl(kind)) {
                       None
+                    } else {
+                      val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.")
+                      Some(errorTemplate.format(kind.toString))
                     }
                   } else {
                     Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
@@ -575,33 +653,10 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def validatePathParameters(): Seq[String] = {
-    service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.parameters.filter(_.location == ParameterLocation.Path).flatMap { p =>
-          val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}")
-
-          typeResolver.parse(p.`type`) match {
-            case None => {
-              Some(errorTemplate.format(p.`type`))
-            }
-            case Some(kind) => {
-              if (isValidInPath(kind)) {
-                None
-              } else {
-                Some(errorTemplate.format(kind.toString))
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private def isValidInPath(kind: Kind): Boolean = {
+  private def isValidInUrl(kind: Kind): Boolean = {
     kind match {
       case Kind.Primitive(name) => {
-        Primitives.validInPath(name)
+        Primitives.validInUrl(name)
       }
       case Kind.Enum(_) => {
         // Serializes as a string
@@ -730,7 +785,7 @@ case class ServiceSpecValidator(
   }
 
   private def dups(values: Iterable[String]): Iterable[String] = {
-    values.groupBy(_.toLowerCase).filter { _._2.size > 1 }.keys
+    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim).filter { _._2.size > 1 }.keys
   }
 
   private def opLabel(
