@@ -9,6 +9,9 @@ import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+
 abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,6 +29,12 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
   private[this] lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
 
   lazy val client: Client = newClient(TestUser)
+
+  def await[T](f: => Future[T])(
+    implicit ec: ExecutionContext
+  ): T = {
+    Await.result(f, Duration.Inf)
+  }
 
   def newClient(user: User): Client = {
     val auth = sessionHelper.createAuthentication(user)

@@ -4,19 +4,15 @@ import io.apibuilder.api.v0.models.UserUpdateForm
 import java.util.UUID
 import play.api.test._
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-
 class UsersSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "POST /users" in new WithServer {
     val form = createUserForm()
-    val user = Await.result(
-      client.users.post(form),
-      Duration.Inf
-    )
+    val user = await {
+      client.users.post(form)
+    }
     user.email must equal(form.email)
   }
 
@@ -25,10 +21,9 @@ class UsersSpec extends BaseSpec {
     val user = createUser(form)
 
     // Need to wait longer here as these methods use bcrypt
-    val auth = Await.result(
-      client.users.postAuthenticate(form.email, form.password),
-      Duration.Inf
-    )
+    val auth = await {
+      client.users.postAuthenticate(form.email, form.password)
+    }
 
     val updatedUser = await(
       newSessionClient(auth.session.id).users.putByGuid(
