@@ -63,8 +63,10 @@ class Users @Inject() (
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
+        println(s"form: $form")
         usersDao.validateNewUser(form) match {
           case Nil => {
+            println(s" VALIDATED!!!")
             val user = usersDao.create(form)
             Ok(Json.toJson(user))
           }

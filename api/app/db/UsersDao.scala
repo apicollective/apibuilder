@@ -165,6 +165,7 @@ class UsersDao @Inject() (
         gravatarId = gravatarId
       )
     }
+    println(s"Starting insert: DOINE $guid")
 
     mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
@@ -178,27 +179,28 @@ class UsersDao @Inject() (
   }
 
   private[this] def toOptionString(value: String): Option[String] = {
-    value.trim match {
-      case "" => None
-      case v => Some(v)
-    }
+    Some(value.trim).filter(_.nonEmpty)
   }
 
   def create(form: UserForm): User = {
     val errors = validateNewUser(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
+    val nickname = form.nickname.getOrElse(generateNickname(form.email))
     val guid = db.withTransaction { implicit c =>
+      println(s"Starting insert")
       val id = doInsert(
-        nickname = form.nickname.getOrElse(generateNickname(form.email)),
+        nickname = nickname,
         email = form.email,
         name = form.name,
         avatarUrl = None,
         gravatarId = None
       )
+      println(s"Starting insert - id[$id]")
 
       userPasswordsDao.doCreate(c, id, id, form.password)
 
+      println(s"Starting insert - id[$id] and password done")
       id
     }
 

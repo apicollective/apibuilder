@@ -21,11 +21,11 @@ class UsersSpec extends BaseSpec {
     val user = createUser(form)
 
     // Need to wait longer here as these methods use bcrypt
-    val auth = await {
+    val auth = await(
       client.users.postAuthenticate(form.email, form.password)
-    }
+    )
 
-    val updatedUser = await(
+    val updatedUser = await {
       newSessionClient(auth.session.id).users.putByGuid(
         auth.user.guid,
         UserUpdateForm(
@@ -34,21 +34,21 @@ class UsersSpec extends BaseSpec {
           name = Some("joseph")
         )
       )
-    )
-    updatedUser.name must beSome("joseph")
+    }
+    updatedUser.name must equal(Some("joseph"))
   }
 
-  "GET /users by bickname" in new WithServer(port = defaultPort) {
+  "GET /users by nickname" in new WithServer {
     val user1 = createUser()
     val user2 = createUser()
 
     await(
       client.users.get(nickname = Some(user1.nickname))
-    ).map(_.guid) must beEqualTo(Seq(user1.guid))
+    ).map(_.guid) must equal(Seq(user1.guid))
 
     await(
       client.users.get(nickname = Some(user2.nickname))
-    ).map(_.guid) must beEqualTo(Seq(user2.guid))
+    ).map(_.guid) must equal(Seq(user2.guid))
 
     await(
       client.users.get(nickname = Some(UUID.randomUUID.toString))
