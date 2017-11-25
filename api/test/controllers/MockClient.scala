@@ -117,13 +117,12 @@ trait MockClient {
     Try(
       f
     ) match {
-      case Success(response) => {
+      case Success(_) => {
         org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
       }
       case Failure(ex) => ex match {
-        case UnitResponse(_) => {
-          org.specs2.execute.Success()
-        }
+        case UnitResponse(resultCode) if resultCode == code => org.specs2.execute.Success()
+        case UnitResponse(resultCode) => sys.error(s"Expected status[$code] but got[$resultCode]")
         case e => {
           org.specs2.execute.Failure(s"Unexpected error: $e")
         }
