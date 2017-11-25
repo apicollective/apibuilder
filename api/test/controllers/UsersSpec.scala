@@ -4,25 +4,22 @@ import io.apibuilder.api.v0.models.UserUpdateForm
 import java.util.UUID
 import play.api.test._
 
-class UsersSpec extends BaseSpec {
+class UsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /users" in new WithServer {
+  "POST /users" in new WithServer(port = defaultPort) {
     val form = createUserForm()
-    println("SPEC STARTING AWAIT")
     val user = await {
       client.users.post(form)
     }
-    println("SPEC FINISHED AWAIT")
-    user.email must equal(form.email)
+    user.email must beEqualTo(form.email)
   }
-/*
-  "POST /users/authenticate" in new WithServer {
+
+  "POST /users/authenticate" in new WithServer(port = defaultPort) {
     val form = createUserForm()
     val user = createUser(form)
 
-    // Need to wait longer here as these methods use bcrypt
     val auth = await(
       client.users.postAuthenticate(form.email, form.password)
     )
@@ -37,24 +34,24 @@ class UsersSpec extends BaseSpec {
         )
       )
     }
-    updatedUser.name must equal(Some("joseph"))
+    updatedUser.name must beSome("joseph")
   }
 
-  "GET /users by nickname" in new WithServer {
+  "GET /users by nickname" in new WithServer(port = defaultPort) {
     val user1 = createUser()
     val user2 = createUser()
 
     await(
       client.users.get(nickname = Some(user1.nickname))
-    ).map(_.guid) must equal(Seq(user1.guid))
+    ).map(_.guid) must beEqualTo(Seq(user1.guid))
 
     await(
       client.users.get(nickname = Some(user2.nickname))
-    ).map(_.guid) must equal(Seq(user2.guid))
+    ).map(_.guid) must beEqualTo(Seq(user2.guid))
 
     await(
       client.users.get(nickname = Some(UUID.randomUUID.toString))
     ).map(_.guid) must be(Nil)
   }
-*/
+
 }
