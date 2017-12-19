@@ -129,6 +129,24 @@ class TypeValidatorSpec extends FunSpec with Matchers {
     validator.validate(Kind.Primitive(Primitives.String.toString), "foo") should be(None)
   }
 
+  it("object") {
+    validator.validate(Kind.Primitive(Primitives.Object.toString), "{}") should be(None)
+    validator.validate(Kind.Primitive(Primitives.Object.toString), "{\"foo\":10}") should be(None)
+    validator.validate(Kind.Primitive(Primitives.Object.toString), "\"foo\"") should be(Some("""Value["foo"] is not a valid object"""))
+  }
+
+  it("json") {
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "\"foo\"") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "null") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "true") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "10") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "{}") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "{\"foo\":10}") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "[]") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "[\"foo\",{},null,true,10,[]]") should be(None)
+    validator.validate(Kind.Primitive(Primitives.JsonValue.toString), "foo") should be(Some("Value[foo] is not a valid json value"))
+  }
+
   it("PrimitiveMetadata defined for all primitives") {
     val missing = Primitives.All.filter( p => PrimitiveMetadata.All.find( pm => pm.primitive == p ).isEmpty )
     if (!missing.isEmpty) {
