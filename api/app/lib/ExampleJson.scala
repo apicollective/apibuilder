@@ -248,7 +248,7 @@ case class ExampleJson(service: Service, selection: Selection) {
       case Primitives.Decimal => Json.toJson(BigDecimal(parseDouble(ex, 1)))
       case Primitives.String => JsString(ex)
       case Primitives.Object => parseObject(ex, Json.obj("foo" -> "bar"))
-      case Primitives.JsonValue => parseJsonValue(ex, JsArray(Seq(JsNumber(1), JsString("foo"))))
+      case Primitives.JsonValue => parseJsonValue(ex, JsNull)
       case Primitives.Unit => JsNull
       case Primitives.Uuid => JsString(parseUUID(ex, UUID.randomUUID).toString)
     }
