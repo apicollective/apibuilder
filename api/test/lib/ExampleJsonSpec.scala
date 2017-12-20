@@ -82,6 +82,10 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   it("union type (no discriminator) containing an enum") {
     val svc = service.withEnum("color", _.withValue("red")).withUnion("dimension", _.withType("color"))
 
+    ExampleJson.allFields(svc).sample("color").get should equal(
+      JsString("red")
+    )
+
     ExampleJson.allFields(svc).sample("dimension").get should equal(
       Json.obj(
         "color" -> "red"
@@ -101,6 +105,10 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
 
   it("union type (w/ discriminator) containing an enum") {
     val svc = service.withEnum("color", _.withValue("red")).withUnion("dimension", _.withType("color"), Some("discriminator"))
+
+    ExampleJson.allFields(svc).sample("color").get should equal(
+      JsString("red")
+    )
 
     ExampleJson.allFields(svc).sample("dimension").get should equal(
       Json.obj(
@@ -167,6 +175,12 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   it("union type (no discriminator) containing a model") {
     val svc = service.withModel("user", _.withField("name", "string", Some("Joe"))).withUnion("party", _.withType("user"))
 
+    ExampleJson.allFields(svc).sample("user").get should equal(
+      Json.obj(
+        "name" -> "Joe"
+      )
+    )
+
     ExampleJson.allFields(svc).sample("party").get should equal(
       Json.obj(
         "user" -> Json.obj(
@@ -190,6 +204,12 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
 
   it("union type (w/ discriminator) containing a model") {
     val svc = service.withModel("user", _.withField("name", "string", Some("Joe"))).withUnion("party", _.withType("user"), Some("discriminator"))
+
+    ExampleJson.allFields(svc).sample("user").get should equal(
+      Json.obj(
+        "name" -> "Joe"
+      )
+    )
 
     ExampleJson.allFields(svc).sample("party").get should equal(
       Json.obj(

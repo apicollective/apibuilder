@@ -28,7 +28,7 @@ case class ExampleJson(service: Service, selection: Selection) {
   def sample(typ: String): Option[JsValue] = {
     try {
       Some(
-        mockValue(TextDatatype.parse(typ))
+        mockValue(TextDatatype.parse(typ), None)
       )
     } catch {
       case UnknownType(_) => None
@@ -36,20 +36,12 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parentUnionType(typeName: String): Option[(Union, UnionType)] = {
-    (for {
-        union <- service.unions
-        unionType <- union.types if unionType.`type` == typeName
-      } yield union -> unionType
-    ).headOption
-  }
-
-  private[this] def makeEnum(enum: Enum): JsValue = {
+  private[this] def makeEnum(enum: Enum, parentUnion: Option[(Union, UnionType)]): JsValue = {
     val value: JsValue = JsString(
       enum.values.headOption.map(ev => ev.value.getOrElse(ev.name)).getOrElse("undefined")
     )
 
-    parentUnionType(enum.name).fold(value) { case (union, unionType) =>
+    parentUnion.fold(value) { case (union, unionType) =>
       // strip any namespace prefix from model name
       val name = enum.name.reverse.takeWhile(_ != '.').reverse
       val discrVal = unionType.discriminatorValue.getOrElse(name)
@@ -65,18 +57,18 @@ case class ExampleJson(service: Service, selection: Selection) {
     
   }
 
-  private[this] def makeModel(model: Model): JsValue = {
+  private[this] def makeModel(model: Model, parentUnion: Option[(Union, UnionType)]): JsValue = {
     val value = JsObject(
       Map(
         model.fields.
           filter { f => selection == Selection.All || f.required }.
           map { field =>
-            (field.name, mockValue(field))
+            (field.name, mockValue(field, None))
           }: _*
       )
     )
 
-    parentUnionType(model.name).fold(value) { case (union, unionType) =>
+    parentUnion.fold(value) { case (union, unionType) =>
       // strip any namespace prefix from model name
       val name = model.name.reverse.takeWhile(_ != '.').reverse
       val discrVal = unionType.discriminatorValue.getOrElse(name)
@@ -92,7 +84,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     union.types.headOption.fold {
       Json.obj(): JsValue
     } { unionType =>
-      mockValue(TextDatatype.parse(unionType.`type`)) match {
+      mockValue(TextDatatype.parse(unionType.`type`), Some(union -> unionType)) match {
         case js: JsBoolean => primitiveUnionWrapper(union, unionType, js)
         case js: JsNumber => primitiveUnionWrapper(union, unionType, js)
         case js: JsString => primitiveUnionWrapper(union, unionType, js)
@@ -114,24 +106,24 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(types: Seq[TextDatatype]): JsValue = {
+  private[this] def mockValue(types: Seq[TextDatatype], parentUnion: Option[(Union, UnionType)]): JsValue = {
     types.toList match {
       case Nil => JsNull
-      case TextDatatype.Singleton(one) :: Nil => singleton(one)
+      case TextDatatype.Singleton(one) :: Nil => singleton(one, parentUnion)
       case TextDatatype.Singleton(one) :: _ => sys.error("Singleton must be leaf")
-      case TextDatatype.List :: rest => Json.toJson(Seq(mockValue(rest)))
-      case TextDatatype.Map :: rest => Json.obj("foo" -> mockValue(rest))
+      case TextDatatype.List :: rest => Json.toJson(Seq(mockValue(rest, parentUnion)))
+      case TextDatatype.Map :: rest => Json.obj("foo" -> mockValue(rest, parentUnion))
     }
   }
 
-  private[this] def singleton(typ: String): JsValue = {
+  private[this] def singleton(typ: String, parentUnion: Option[(Union, UnionType)]): JsValue = {
     Primitives(typ) match {
       case None => {
         service.enums.find(_.name == typ) match {
-          case Some(e) => makeEnum(e)
+          case Some(e) => makeEnum(e, parentUnion)
           case None => {
             service.models.find(_.name == typ) match {
-              case Some(m) => makeModel(m)
+              case Some(m) => makeModel(m, parentUnion)
 
               case None => {
                 service.unions.find(_.name == typ) match {
@@ -148,22 +140,22 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(field: Field): JsValue = {
+  private[this] def mockValue(field: Field, parentUnion: Option[(Union, UnionType)]): JsValue = {
     val types = TextDatatype.parse(field.`type`)
     types.toList match {
       case Nil => JsNull
-      case TextDatatype.Singleton(one) :: Nil => singleton(field)
+      case TextDatatype.Singleton(one) :: Nil => singleton(field, parentUnion)
       case TextDatatype.Singleton(_) :: _ => sys.error("Singleton must be leaf")
       case TextDatatype.List :: rest => {
         field.default match {
           case None => {
-            Json.toJson(Seq(mockValue(rest)))
+            Json.toJson(Seq(mockValue(rest, parentUnion)))
           }
           case Some(default) => {
             try {
               Json.parse(default).as[JsArray]
             } catch {
-              case _: Throwable => Json.toJson(Seq(mockValue(rest)))
+              case _: Throwable => Json.toJson(Seq(mockValue(rest, parentUnion)))
             }
           }
         }
@@ -171,13 +163,13 @@ case class ExampleJson(service: Service, selection: Selection) {
       case TextDatatype.Map :: rest => {
         field.default match {
           case None => {
-            Json.obj("foo" -> mockValue(rest))
+            Json.obj("foo" -> mockValue(rest, parentUnion))
           }
           case Some(default) => {
             try {
               Json.parse(default).as[JsObject]
             } catch {
-              case _: Throwable => Json.obj("foo" -> mockValue(rest))
+              case _: Throwable => Json.obj("foo" -> mockValue(rest, parentUnion))
             }
           }
         }
@@ -185,14 +177,14 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def singleton(field: Field): JsValue = {
+  private[this] def singleton(field: Field, parentUnion: Option[(Union, UnionType)]): JsValue = {
     Primitives(field.`type`) match {
       case None => {
         service.enums.find(_.name == field.`type`) match {
           case Some(e) => JsString(e.values.headOption.map(_.name).getOrElse("undefined"))
           case None => {
             service.models.find(_.name == field.`type`) match {
-              case Some(m) => makeModel(m)
+              case Some(m) => makeModel(m, parentUnion)
               case None => {
                 service.unions.find(_.name == field.`type`) match {
                   case Some(u) => makeUnion(u)
