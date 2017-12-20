@@ -204,6 +204,12 @@ case class ServiceSpecValidator(
                   case Kind.Primitive("unit") => {
                     Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
                   }
+                  case Kind.List(_) => {
+                    Seq("Union types cannot contain Lists.")
+                  }
+                  case Kind.Map(_) => {
+                    Seq("Union types cannot contain Maps.")
+                  }
                   case _ => {
                     Nil
                   }
