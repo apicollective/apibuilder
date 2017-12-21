@@ -52,10 +52,10 @@ case class ExampleJson(service: Service, selection: Selection) {
     parentUnionType(enum.name).fold(value) { case (union, unionType) =>
       // strip any namespace prefix from model name
       val name = enum.name.reverse.takeWhile(_ != '.').reverse
+      val discrVal = unionType.discriminatorValue.getOrElse(name)
       union.discriminator.fold {
-        Json.obj(name -> value)
+        Json.obj(discrVal -> value)
       }{ discriminator =>
-        val discrVal = unionType.discriminatorValue.getOrElse(name)
         Json.obj(
           discriminator -> JsString(discrVal),
           "value" -> value
@@ -79,10 +79,10 @@ case class ExampleJson(service: Service, selection: Selection) {
     parentUnionType(model.name).fold(value) { case (union, unionType) =>
       // strip any namespace prefix from model name
       val name = model.name.reverse.takeWhile(_ != '.').reverse
+      val discrVal = unionType.discriminatorValue.getOrElse(name)
       union.discriminator.fold {
-        Json.obj(name -> value)
+        Json.obj(discrVal -> value)
       }{ discriminator =>
-        val discrVal = unionType.discriminatorValue.getOrElse(name)
         Json.obj(discriminator -> JsString(discrVal)) ++ value
       }
     }
@@ -103,10 +103,10 @@ case class ExampleJson(service: Service, selection: Selection) {
 
   // primitives in a union type are wrapped in a 'value' field
   private[this] def primitiveUnionWrapper(union: Union, unionType: UnionType, js: JsValue): JsValue = {
+    val discrVal = unionType.discriminatorValue.getOrElse(unionType.`type`)
     union.discriminator.fold {
-      Json.obj(unionType.`type` -> Json.obj("value" -> js))
+      Json.obj(discrVal -> Json.obj("value" -> js))
     } { discriminator =>
-      val discrVal = unionType.discriminatorValue.getOrElse(unionType.`type`)
       Json.obj(
         discriminator -> JsString(discrVal),
         "value" -> js

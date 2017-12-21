@@ -8,7 +8,7 @@ import play.api.libs.json.{JsString, Json}
 class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplication {
   import ServiceBuilder._
 
-  private[this] lazy val service: Service = TestHelper.readService("../spec/apibuilder-spec.json")
+  private[this] lazy val service: Service = TestHelper.readService("/web/apibuilder/apibuilder/spec/apibuilder-spec.json")
   private[this] lazy val exampleAll = ExampleJson.allFields(service)
   private[this] lazy val exampleMinimal = ExampleJson.requiredFieldsOnly(service)
 
@@ -85,6 +85,16 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     ExampleJson.allFields(svc).sample("dimension").get should equal(
       Json.obj(
         "color" -> "red"
+      )
+    )
+  }
+
+  it("union type (no discriminator but with discriminator value) containing an enum") {
+    val svc = service.withEnum("color", _.withValue("red")).withUnion("dimension", _.withType("color", Some("farbe")))
+
+    ExampleJson.allFields(svc).sample("dimension").get should equal(
+      Json.obj(
+        "farbe" -> "red"
       )
     )
   }
@@ -166,6 +176,18 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     )
   }
 
+  it("union type (no discriminator but with discriminator value) containing a model") {
+    val svc = service.withModel("user", _.withField("name", "string", Some("Joe"))).withUnion("party", _.withType("user", Some("usr")))
+
+    ExampleJson.allFields(svc).sample("party").get should equal(
+      Json.obj(
+        "usr" -> Json.obj(
+          "name" -> "Joe"
+        )
+      )
+    )
+  }
+
   it("union type (w/ discriminator) containing a model") {
     val svc = service.withModel("user", _.withField("name", "string", Some("Joe"))).withUnion("party", _.withType("user"), Some("discriminator"))
 
@@ -205,6 +227,16 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     ExampleJson.allFields(svc).sample("primitive").get should equal(
       Json.obj(
         "integer" -> Json.obj("value" -> 1)
+      )
+    )
+  }
+
+  it("union type (no discriminator but with discriminator value) containing a primitive") {
+    val svc = service.withUnion("primitive", _.withType("integer", Some("int")))
+
+    ExampleJson.allFields(svc).sample("primitive").get should equal(
+      Json.obj(
+        "int" -> Json.obj("value" -> 1)
       )
     )
   }
