@@ -90,6 +90,7 @@ case class ExampleJson(service: Service, selection: Selection) {
         case js: JsBoolean => primitiveUnionWrapper(union, js)
         case js: JsNumber => primitiveUnionWrapper(union, js)
         case js: JsString => primitiveUnionWrapper(union, js)
+        case JsNull => primitiveUnionWrapper(union, JsNull)
         case other => other
       }
     }
