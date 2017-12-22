@@ -258,6 +258,13 @@ case class TypeValidator(
                 }
               }
 
+              case Primitives.JsonValue => {
+                Try(Json.parse(value)) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid json value"))
+                }
+              }
+
               case Primitives.Long => {
                 Try(value.toLong) match {
                   case Success(v) => None
@@ -267,8 +274,8 @@ case class TypeValidator(
 
               case Primitives.Object => {
                 Try(Json.parse(value)) match {
-                  case Success(v) => None
-                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid object"))
+                  case Success(v: JsObject) => None
+                  case _ => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid object"))
                 }
               }
 

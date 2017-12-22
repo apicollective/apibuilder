@@ -88,6 +88,7 @@ case class ExampleJson(service: Service, selection: Selection) {
         case js: JsBoolean => primitiveUnionWrapper(union, unionType, js)
         case js: JsNumber => primitiveUnionWrapper(union, unionType, js)
         case js: JsString => primitiveUnionWrapper(union, unionType, js)
+        case JsNull => primitiveUnionWrapper(union, unionType, JsNull)
         case other => other
       }
     }
@@ -224,6 +225,7 @@ case class ExampleJson(service: Service, selection: Selection) {
       case Primitives.Decimal => Json.toJson(BigDecimal("1"))
       case Primitives.String => JsString(randomString)
       case Primitives.Object => Json.obj("foo" -> "bar")
+      case Primitives.JsonValue => JsNull
       case Primitives.Unit => JsNull
       case Primitives.Uuid => JsString(UUID.randomUUID.toString)
     }
@@ -246,6 +248,7 @@ case class ExampleJson(service: Service, selection: Selection) {
       case Primitives.Decimal => Json.toJson(BigDecimal(parseDouble(ex, 1)))
       case Primitives.String => JsString(ex)
       case Primitives.Object => parseObject(ex, Json.obj("foo" -> "bar"))
+      case Primitives.JsonValue => parseJsonValue(ex, JsNull)
       case Primitives.Unit => JsNull
       case Primitives.Uuid => JsString(parseUUID(ex, UUID.randomUUID).toString)
     }
@@ -288,6 +291,14 @@ case class ExampleJson(service: Service, selection: Selection) {
   private[this] def parseObject(value: String, default: JsObject): JsObject = {
     try {
       Json.parse(value).as[JsObject]
+    } catch {
+      case _: Throwable => default
+    }
+  }
+
+  private[this] def parseJsonValue(value: String, default: JsValue): JsValue = {
+    try {
+      Json.parse(value)
     } catch {
       case _: Throwable => default
     }
