@@ -145,7 +145,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     val types = TextDatatype.parse(field.`type`)
     types.toList match {
       case Nil => JsNull
-      case TextDatatype.Singleton(one) :: Nil => singleton(field, None)
+      case TextDatatype.Singleton(one) :: Nil => singleton(field)
       case TextDatatype.Singleton(_) :: _ => sys.error("Singleton must be leaf")
       case TextDatatype.List :: rest => {
         field.default match {
@@ -178,14 +178,14 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def singleton(field: Field, parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private[this] def singleton(field: Field): JsValue = {
     Primitives(field.`type`) match {
       case None => {
         service.enums.find(_.name == field.`type`) match {
-          case Some(e) => JsString(e.values.headOption.map(_.name).getOrElse("undefined"))
+          case Some(e) => makeEnum(e, None)
           case None => {
             service.models.find(_.name == field.`type`) match {
-              case Some(m) => makeModel(m, parentUnion)
+              case Some(m) => makeModel(m, None)
               case None => {
                 service.unions.find(_.name == field.`type`) match {
                   case Some(u) => makeUnion(u)
