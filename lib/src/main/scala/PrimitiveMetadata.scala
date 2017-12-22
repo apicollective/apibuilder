@@ -48,6 +48,12 @@ object PrimitiveMetadata {
     ),
 
     PrimitiveMetadata(
+      primitive = Primitives.JsonValue,
+      examples = Seq("{}", "[]", "\"This is a fox.\"", "10", "null", "true"),
+      description = "Represents an arbitrary json value. In scala clients using play-json, maps to a play.api.libs.json.JsValue. In ruby clients, JSON is parsed into an Object"
+    ),
+
+    PrimitiveMetadata(
       primitive = Primitives.Long,
       examples = Seq("10", "0", "-10"),
       description = "64-bit signed integer"
@@ -56,7 +62,7 @@ object PrimitiveMetadata {
     PrimitiveMetadata(
       primitive = Primitives.Object,
       examples = Seq("{}"),
-      description = "Represents an arbitrary json object. In scala clients using play-json, maps to a play.api.libs.json.JsObject. In ruby clients, JSON is parsed into a hash"
+      description = "Represents an arbitrary json object. In scala clients using play-json, maps to a play.api.libs.json.JsObject. In ruby clients, JSON is parsed into a Hash"
     ),
 
     PrimitiveMetadata(
