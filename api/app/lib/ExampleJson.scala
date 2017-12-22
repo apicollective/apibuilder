@@ -63,7 +63,7 @@ case class ExampleJson(service: Service, selection: Selection) {
         model.fields.
           filter { f => selection == Selection.All || f.required }.
           map { field =>
-            (field.name, mockValue(field, None))
+            (field.name, mockValue(field))
           }: _*
       )
     )
@@ -112,8 +112,8 @@ case class ExampleJson(service: Service, selection: Selection) {
       case Nil => JsNull
       case TextDatatype.Singleton(one) :: Nil => singleton(one, parentUnion)
       case TextDatatype.Singleton(one) :: _ => sys.error("Singleton must be leaf")
-      case TextDatatype.List :: rest => Json.toJson(Seq(mockValue(rest, parentUnion)))
-      case TextDatatype.Map :: rest => Json.obj("foo" -> mockValue(rest, parentUnion))
+      case TextDatatype.List :: rest => Json.toJson(Seq(mockValue(rest, None)))
+      case TextDatatype.Map :: rest => Json.obj("foo" -> mockValue(rest, None))
     }
   }
 
@@ -141,22 +141,22 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(field: Field, parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private[this] def mockValue(field: Field): JsValue = {
     val types = TextDatatype.parse(field.`type`)
     types.toList match {
       case Nil => JsNull
-      case TextDatatype.Singleton(one) :: Nil => singleton(field, parentUnion)
+      case TextDatatype.Singleton(one) :: Nil => singleton(field, None)
       case TextDatatype.Singleton(_) :: _ => sys.error("Singleton must be leaf")
       case TextDatatype.List :: rest => {
         field.default match {
           case None => {
-            Json.toJson(Seq(mockValue(rest, parentUnion)))
+            Json.toJson(Seq(mockValue(rest, None)))
           }
           case Some(default) => {
             try {
               Json.parse(default).as[JsArray]
             } catch {
-              case _: Throwable => Json.toJson(Seq(mockValue(rest, parentUnion)))
+              case _: Throwable => Json.toJson(Seq(mockValue(rest, None)))
             }
           }
         }
@@ -164,13 +164,13 @@ case class ExampleJson(service: Service, selection: Selection) {
       case TextDatatype.Map :: rest => {
         field.default match {
           case None => {
-            Json.obj("foo" -> mockValue(rest, parentUnion))
+            Json.obj("foo" -> mockValue(rest, None))
           }
           case Some(default) => {
             try {
               Json.parse(default).as[JsObject]
             } catch {
-              case _: Throwable => Json.obj("foo" -> mockValue(rest, parentUnion))
+              case _: Throwable => Json.obj("foo" -> mockValue(rest, None))
             }
           }
         }
