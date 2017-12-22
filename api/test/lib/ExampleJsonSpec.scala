@@ -3,7 +3,7 @@ package lib
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
 import org.scalatest.{FunSpec, ShouldMatchers}
-import play.api.libs.json.{JsArray, JsNull, JsNumber, JsString, Json}
+import play.api.libs.json.{JsNull, JsNumber, JsString, Json}
 
 class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplication {
   import ServiceBuilder._
