@@ -3,7 +3,7 @@ package lib
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
 import org.scalatest.{FunSpec, ShouldMatchers}
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsNull, JsNumber, JsString, Json}
 
 class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplication {
   import ServiceBuilder._
@@ -82,6 +82,10 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   it("union type (no discriminator) containing an enum") {
     val svc = service.withEnum("color", _.withValue("red")).withUnion("dimension", _.withType("color"))
 
+    ExampleJson.allFields(svc).sample("color").get should equal(
+      JsString("red")
+    )
+
     ExampleJson.allFields(svc).sample("dimension").get should equal(
       Json.obj(
         "color" -> "red"
@@ -101,6 +105,10 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
 
   it("union type (w/ discriminator) containing an enum") {
     val svc = service.withEnum("color", _.withValue("red")).withUnion("dimension", _.withType("color"), Some("discriminator"))
+
+    ExampleJson.allFields(svc).sample("color").get should equal(
+      JsString("red")
+    )
 
     ExampleJson.allFields(svc).sample("dimension").get should equal(
       Json.obj(
@@ -167,10 +175,34 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   it("union type (no discriminator) containing a model") {
     val svc = service.withModel("user", _.withField("name", "string", Some("Joe"))).withUnion("party", _.withType("user"))
 
+    ExampleJson.allFields(svc).sample("user").get should equal(
+      Json.obj(
+        "name" -> "Joe"
+      )
+    )
+
     ExampleJson.allFields(svc).sample("party").get should equal(
       Json.obj(
         "user" -> Json.obj(
           "name" -> "Joe"
+        )
+      )
+    )
+  }
+
+  it("union type (no discriminator) containing nested types") {
+    val svc = service
+      .withModel("inner", _.withField("int", "integer"))
+      .withModel("outer", _.withField("nested", "inner").withField("strs", "[string]", Some("[\"foo\"]")))
+      .withUnion("testunion", _.withType("outer"))
+
+    ExampleJson.allFields(svc).sample("testunion").get should equal(
+      Json.obj(
+        "outer" -> Json.obj(
+          "nested" -> Json.obj(
+            "int" -> JsNumber(1)
+          ),
+          "strs" -> Json.arr("foo")
         )
       )
     )
@@ -191,6 +223,12 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   it("union type (w/ discriminator) containing a model") {
     val svc = service.withModel("user", _.withField("name", "string", Some("Joe"))).withUnion("party", _.withType("user"), Some("discriminator"))
 
+    ExampleJson.allFields(svc).sample("user").get should equal(
+      Json.obj(
+        "name" -> "Joe"
+      )
+    )
+
     ExampleJson.allFields(svc).sample("party").get should equal(
       Json.obj(
         "discriminator" -> "user",
@@ -206,6 +244,23 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       Json.obj(
         "discriminator" -> "user",
         "name" -> "Joe"
+      )
+    )
+  }
+
+  it("union type (w/ discriminator) containing nested types") {
+    val svc = service
+      .withModel("inner", _.withField("int", "integer"))
+      .withModel("outer", _.withField("nested", "inner").withField("strs", "[string]", Some("[\"foo\"]")))
+      .withUnion("testunion", _.withType("outer"), Some("discriminator"))
+
+    ExampleJson.allFields(svc).sample("testunion").get should equal(
+      Json.obj(
+        "discriminator" -> "outer",
+        "nested" -> Json.obj(
+          "int" -> JsNumber(1)
+        ),
+        "strs" -> Json.arr("foo")
       )
     )
   }
@@ -271,4 +326,27 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     )
   }
 
+  it("model with json field") {
+    val svc = service.withModel("foo", _.withField("bar", "json"))
+
+    ExampleJson.allFields(svc).sample("foo").get should equal(
+      Json.obj("bar" -> JsNull)
+    )
+  }
+
+  it("union type (no discriminator) containing a json type") {
+    val svc = service.withUnion("primitive", _.withType("json"))
+
+    ExampleJson.allFields(svc).sample("primitive").get should equal(
+      Json.obj("json" -> Json.obj("value" -> JsNull))
+    )
+  }
+
+  it("union type (w/ discriminator) containing a json type") {
+    val svc = service.withUnion("primitive", _.withType("json"), Some("discriminator"))
+
+    ExampleJson.allFields(svc).sample("primitive").get should equal(
+      Json.obj("discriminator" -> "json", "value" -> JsNull)
+    )
+  }
 }
