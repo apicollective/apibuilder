@@ -25,7 +25,7 @@ case class UnknownType(typ: String) extends Throwable
 
 case class ExampleJson(service: Service, selection: Selection) {
 
-  def sample(typ: String, subTyp: Option[String]): Option[JsValue] = {
+  def sample(typ: String, subTyp: Option[String] = None): Option[JsValue] = {
     try {
       subTyp match {
         case Some(subType) => makeUnion(typ, subType)
@@ -91,7 +91,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     unions.headOption
   }
 
-  private[this] def makeUnion(union: Union, unionType: Option[UnionType]): JsValue = {
+  private[this] def makeUnion(union: Union, unionType: Option[UnionType] = None): JsValue = {
     unionType.orElse(union.types.headOption).fold {
       Json.obj(): JsValue
     } { unionType =>
@@ -139,7 +139,7 @@ case class ExampleJson(service: Service, selection: Selection) {
 
               case None => {
                 service.unions.find(_.name == typ) match {
-                  case Some(u) => makeUnion(u, None)
+                  case Some(u) => makeUnion(u)
                   case None => throw new UnknownType(typ)
                 }
               }
@@ -199,7 +199,7 @@ case class ExampleJson(service: Service, selection: Selection) {
               case Some(m) => makeModel(m, None)
               case None => {
                 service.unions.find(_.name == field.`type`) match {
-                  case Some(u) => makeUnion(u, None)
+                  case Some(u) => makeUnion(u)
                   case None => throw new UnknownType(field.`type`)
                 }
               }
