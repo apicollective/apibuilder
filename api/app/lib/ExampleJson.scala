@@ -25,11 +25,14 @@ case class UnknownType(typ: String) extends Throwable
 
 case class ExampleJson(service: Service, selection: Selection) {
 
-  def sample(typ: String): Option[JsValue] = {
+  def sample(typ: String, subTyp: Option[String]): Option[JsValue] = {
     try {
-      Some(
-        mockValue(TextDatatype.parse(typ), None)
-      )
+      subTyp match {
+        case Some(subType) => makeUnion(typ, subType)
+        case None => Some(
+          mockValue(TextDatatype.parse(typ), None)
+        )
+      }
     } catch {
       case UnknownType(_) => None
       case ex: Throwable => throw new RuntimeException(ex)
@@ -80,8 +83,16 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def makeUnion(union: Union): JsValue = {
-    union.types.headOption.fold {
+  private[this] def makeUnion(unionName: String, unionTypeName: String): Option[JsValue] = {
+    val unions = for {
+      union <- service.unions if union.name == unionName
+      unionType <- union.types if (unionType.`type` == unionTypeName)
+    } yield makeUnion(union, Some(unionType))
+    unions.headOption
+  }
+
+  private[this] def makeUnion(union: Union, unionType: Option[UnionType]): JsValue = {
+    unionType.orElse(union.types.headOption).fold {
       Json.obj(): JsValue
     } { unionType =>
       mockValue(TextDatatype.parse(unionType.`type`), Some(union -> unionType)) match {
@@ -128,7 +139,7 @@ case class ExampleJson(service: Service, selection: Selection) {
 
               case None => {
                 service.unions.find(_.name == typ) match {
-                  case Some(u) => makeUnion(u)
+                  case Some(u) => makeUnion(u, None)
                   case None => throw new UnknownType(typ)
                 }
               }
@@ -188,7 +199,7 @@ case class ExampleJson(service: Service, selection: Selection) {
               case Some(m) => makeModel(m, None)
               case None => {
                 service.unions.find(_.name == field.`type`) match {
-                  case Some(u) => makeUnion(u)
+                  case Some(u) => makeUnion(u, None)
                   case None => throw new UnknownType(field.`type`)
                 }
               }

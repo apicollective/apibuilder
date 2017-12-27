@@ -40,7 +40,7 @@ class Versions @Inject() (
   }
 
   def getExampleByApplicationKeyAndVersionAndTypeName(
-    orgKey: String, applicationKey: String, version: String, typeName: String, optionalFields: Option[Boolean]
+    orgKey: String, applicationKey: String, version: String, typeName: String, subTypeName: Option[String], optionalFields: Option[Boolean]
   ) = AnonymousRequest { request =>
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
@@ -83,7 +83,7 @@ class Versions @Inject() (
         } else {
           ExampleJson.requiredFieldsOnly(service)
         }
-        example.sample(typeName) match {
+        example.sample(typeName, subTypeName) match {
           case None => NotFound
           case Some(js) => Ok(js)
         }

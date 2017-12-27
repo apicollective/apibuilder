@@ -72,4 +72,4 @@ GET        /:orgKey/:applicationKey/:version                         controllers
 POST       /:orgKey/:version                                         controllers.Versions.postByVersion(orgKey: String, version: String)
 PUT        /:orgKey/:applicationKey/:version                         controllers.Versions.putByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String)
 DELETE     /:orgKey/:applicationKey/:version                         controllers.Versions.deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String)
-GET        /:orgKey/:applicationKey/:version/example/:type_name      controllers.Versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey: String, applicationKey: String, version: String, type_name: String, optional_fields: _root_.scala.Option[Boolean])
+GET        /:orgKey/:applicationKey/:version/example/:type_name      controllers.Versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey: String, applicationKey: String, version: String, type_name: String, sub_type_name: _root_.scala.Option[String], optional_fields: _root_.scala.Option[Boolean])

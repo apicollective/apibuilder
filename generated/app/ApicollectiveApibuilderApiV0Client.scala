@@ -3218,10 +3218,12 @@ package io.apibuilder.api.v0 {
         applicationKey: String,
         version: String,
         typeName: String,
+        subTypeName: _root_.scala.Option[String] = None,
         optionalFields: _root_.scala.Option[Boolean] = None,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.play.api.libs.json.JsObject] = {
         val queryParameters = Seq(
+          subTypeName.map("sub_type_name" -> _.toString),
           optionalFields.map("optional_fields" -> _.toString)
         ).flatten
 
@@ -4158,7 +4160,7 @@ package io.apibuilder.api.v0 {
     /**
      * Generates an example JSON document of the type with the specified name.
      * 
-     * @param version The version of tthis application to download, or the keyword latest to get the
+     * @param version The version of this application to download, or the keyword latest to get the
      *        latest version
      * @param typeName The name of the type (e.g. model name) for which you would like to generate a
      *        sample json document
@@ -4170,6 +4172,7 @@ package io.apibuilder.api.v0 {
       applicationKey: String,
       version: String,
       typeName: String,
+      subTypeName: _root_.scala.Option[String] = None,
       optionalFields: _root_.scala.Option[Boolean] = None,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.play.api.libs.json.JsObject]
