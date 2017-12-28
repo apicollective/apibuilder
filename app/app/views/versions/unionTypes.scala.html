@@ -8,6 +8,7 @@
   <thead>
     <tr>
       <th>Type</th>
+      <th>Discriminator Value</th>
       <th>Example Json</th>
       <th>Description</th>
     </tr>
@@ -15,16 +16,20 @@
   <tbody>
    @union.types.map { t =>
      <tr>
-       <td>
-         @datatype(org, app, version, service, t.`type`)@t.deprecation.map(deprecation(_))
-         @if(t.default.getOrElse(false)) {
-           (Default)
-         }
+       <td>@datatype(org, app, version, service, t.`type`)</td>
+       <td>@t.discriminatorValue.getOrElse(t.`type`)
+           @if(t.default.getOrElse(false)) {
+             (Default)
+           }
        </td>
        <td><a href="@routes.Versions.example(orgKey = org.key, applicationKey = app.key, version = version, typeName = union.name, subTypeName = Some(t.`type`))">Minimal</a> |
          <a href="@routes.Versions.example(orgKey = org.key, applicationKey = app.key, version = version, typeName = union.name, subTypeName = Some(t.`type`), optionalFields = Some(true))">Full</a>
        </td>
-       <td>@Html(lib.Markdown(t.description))</td>
+       <td>@Html(lib.Markdown(t.description))
+           <p>
+           @t.deprecation.map(deprecation(_))
+           </p>
+       </td>
      </tr>
    }
   </tbody>
