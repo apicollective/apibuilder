@@ -5,6 +5,13 @@
   union: io.apibuilder.spec.v0.models.Union)
 
 <table class="table table-hover table-condensed">
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Example Json</th>
+      <th>Description</th>
+    </tr>
+  </thead>
   <tbody>
    @union.types.map { t =>
      <tr>
@@ -13,6 +20,9 @@
          @if(t.default.getOrElse(false)) {
            (Default)
          }
+       </td>
+       <td><a href="@routes.Versions.example(orgKey = org.key, applicationKey = app.key, version = version, typeName = union.name, subTypeName = Some(t.`type`))">Minimal</a> |
+         <a href="@routes.Versions.example(orgKey = org.key, applicationKey = app.key, version = version, typeName = union.name, subTypeName = Some(t.`type`), optionalFields = Some(true))">Full</a>
        </td>
        <td>@Html(lib.Markdown(t.description))</td>
      </tr>

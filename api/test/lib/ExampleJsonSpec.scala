@@ -55,6 +55,24 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     exampleMinimal.sample("foo") should be(None)
   }
 
+  it("unknown union") {
+    exampleMinimal.sample("foo", Some("bar")) should be(None)
+  }
+
+  it("unknown union type") {
+    val svc = service.withUnion("primitive", _.withType("integer"))
+    ExampleJson.allFields(svc).sample("primitive", Some("bar")) should be(None)
+  }
+
+  it("specific union type") {
+    val svc = service.withUnion("primitive", _.withType("string").withType("integer"))
+    ExampleJson.allFields(svc).sample("primitive", Some("integer")).get should equal(
+      Json.obj(
+        "integer" -> Json.obj("value" -> 1)
+      )
+    )
+  }
+
   it("enum") {
     val svc = service.withEnum("color", _.withValue("red"))
 

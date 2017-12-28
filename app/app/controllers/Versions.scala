@@ -111,10 +111,10 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
   }
 
   def example(
-    orgKey: String, applicationKey: String, versionName: String, typeName: String, optionalFields: Option[Boolean]
+    orgKey: String, applicationKey: String, versionName: String, typeName: String, subTypeName: Option[String], optionalFields: Option[Boolean]
   ) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey, applicationKey, versionName, typeName, optionalFields = optionalFields)
+      request.api.versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey, applicationKey, versionName, typeName, subTypeName = subTypeName, optionalFields = optionalFields)
     ).map {
       case None => {
         if (LatestVersion == versionName) {
