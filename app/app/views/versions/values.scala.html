@@ -4,11 +4,23 @@
   enum: io.apibuilder.spec.v0.models.Enum)
 
 <table class="table table-hover table-condensed">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+      <th>Description</th>
+    </tr>
+  </thead>
   <tbody>
    @enum.values.map { value =>
      <tr>
-       <td>@value.name@enum.deprecation.map(deprecation(_))</td>
-       <td>@Html(lib.Markdown(value.description))</td>
+       <td>@value.name</td>
+       <td>@value.value.getOrElse(value.name)</td>
+       <td>@Html(lib.Markdown(value.description))
+           <p>
+           @enum.deprecation.map(deprecation(_))
+           </p>
+       </td>
      </tr>
    }
   </tbody>
