@@ -123,7 +123,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
     validator.errors should be(
       Seq(
-        "Union[user] type[registered_user] discriminator_value[!@#] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter"
+        "Union[user] type[registered_user] discriminator_value[!@#] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter"
       )
     )
   }

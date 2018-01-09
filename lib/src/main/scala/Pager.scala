@@ -30,7 +30,7 @@ object Pager {
 
     while (haveMore) {
       val objects = pagerFunction(offset)
-      haveMore = !objects.isEmpty
+      haveMore = objects.nonEmpty
       offset += objects.size
       objects.foreach { perObjectFunction(_) }
     }

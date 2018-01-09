@@ -15,12 +15,12 @@ object Text {
     val alphaNumericError = if (isAlphaNumeric(name)) {
                               Seq.empty
                             } else {
-                              Seq("Name can only contain a-z, A-Z, 0-9 and _ characters")
+                              Seq("Name can only contain a-z, A-Z, 0-9, - and _ characters")
                             }
 
     val startsWithLetterError = if (startsWithLetter(name)) {
                                   Seq.empty
-                                } else if (name.size == 0) {
+                                } else if (name.isEmpty) {
                                   Seq("Name cannot be blank")
                                 } else {
                                   Seq("Name must start with a letter")
@@ -29,7 +29,7 @@ object Text {
     alphaNumericError ++ startsWithLetterError
   }
 
-  private val AlphaNumericRx = "^[a-zA-Z0-9_.\\.]*$".r
+  private[this] val AlphaNumericRx = "^[a-zA-Z0-9-_.\\.]*$".r
 
   def isAlphaNumeric(value: String): Boolean = {
     value match {
@@ -38,7 +38,7 @@ object Text {
     }
   }
 
-  private val StartsWithLetterRx = "^[a-zA-Z].*".r
+  private[this] val StartsWithLetterRx = "^[a-zA-Z].*".r
 
   def startsWithLetter(value: String): Boolean = {
     val result = value match {
@@ -48,14 +48,14 @@ object Text {
     result
   }
 
-  private val Ellipsis = "..."
+  private[this] val Ellipsis = "..."
 
   /**
     * if value is longer than maxLength characters, it wil be truncated
     * to <= (maxLength-Ellipsis.length) characters and an ellipsis
     * added. We try to truncate on a space to avoid breaking a word in
     * pieces.
-    * 
+    *
     * @param value The string value to truncate
     * @param maxLength The max length of the returned string, including the final ellipsis if added. Must be >= 10
     * @param ellipsis If the string is truncated, this value will be appended to the string.
@@ -86,7 +86,7 @@ object Text {
     }
   }
 
-  private val Plurals = Map(
+  private[this] val Plurals = Map(
     "metadatum" -> "metadata",
     "datum" -> "data",
     "person" -> "people",
@@ -128,9 +128,9 @@ object Text {
     }
   }
 
-  private val RemoveUnsafeCharacters = """([^0-9a-zA-Z])""".r
+  private[this] val RemoveUnsafeCharacters = """([^0-9a-zA-Z\-\_])""".r
   def safeName(name: String): String = {
-    RemoveUnsafeCharacters.replaceAllIn(name, m => "").trim
+    RemoveUnsafeCharacters.replaceAllIn(name, _ => "").replaceAll("\\.", "_").replaceAll("\\_+", "_").trim
   }
 
   def underscoreToInitCap(value: String): String = {
@@ -141,13 +141,13 @@ object Text {
     initCap(splitIntoWords(value).flatMap(_.split("-")))
   }
 
-  private val WordDelimeterRx = "_|\\-|\\.|:".r
+  private[this] val WordDelimiterRx = "_|\\-|\\.|:|/".r
 
   def splitIntoWords(value: String): Seq[String] = {
-    WordDelimeterRx.split(value).map(_.trim).filter(!_.isEmpty)
+    WordDelimiterRx.split(lib.Text.camelCaseToUnderscore(value)).map(_.trim).filter(!_.isEmpty)
   }
 
-  def snakeToCamelCase(value: String) = {
+  def snakeToCamelCase(value: String): String = {
     splitIntoWords(value).toList match {
       case Nil => ""
       case part :: rest => part + initCap(rest)
@@ -165,12 +165,12 @@ object Text {
   /**
     * Returns the word with first character in lower case
     */
-  private val InitLowerCaseRx = """^([A-Z])""".r
-  def initLowerCase(word: String) = {
+  private[this] val InitLowerCaseRx = """^([A-Z])""".r
+  def initLowerCase(word: String): String = {
     InitLowerCaseRx.replaceAllIn(word, m => s"${m.toString.toLowerCase}")
   }
 
-  private val Capitals = """([A-Z])""".r
+  private[this] val Capitals = """([A-Z])""".r
   def camelCaseToUnderscore(phrase: String): String = {
     if (phrase == phrase.toUpperCase) {
       phrase.toLowerCase

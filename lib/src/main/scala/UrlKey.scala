@@ -2,19 +2,19 @@ package lib
 
 object UrlKey {
 
-  private val MinKeyLength = 3
+  private[this] val MinKeyLength = 3
 
   // Only want lower case letters and dashes
-  private val Regexp1 = """([^0-9a-z\-\_])""".r
+  private[this] val Regexp1 = """([^0-9a-z\-\_\.])""".r
 
   // Turn multiple dashes into single dashes
-  private val Regexp2 = """(\-+)""".r
+  private[this] val Regexp2 = """(\-+)""".r
 
   // Turn multiple underscores into single underscore
-  private val Regexp3 = """(\_+)""".r
+  private[this] val Regexp3 = """(\_+)""".r
 
-  private val RegexpLeadingSpaces = """^\-+""".r
-  private val RegexpTrailingSpaces = """\-+$""".r
+  private[this] val RegexpLeadingSpaces = """^\-+""".r
+  private[this] val RegexpTrailingSpaces = """\-+$""".r
 
   def generate(value: String): String = {
     generate(format(value), 0)
@@ -29,7 +29,7 @@ object UrlKey {
     }
   }
 
-  private def format(value: String): String = {
+  def format(value: String): String = {
     RegexpTrailingSpaces.replaceAllIn(
       RegexpLeadingSpaces.replaceAllIn(
         Regexp3.replaceAllIn(

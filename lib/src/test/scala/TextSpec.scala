@@ -49,7 +49,7 @@ class TextSpec extends FunSpec with Matchers {
     Text.validateName("_") should be(Seq("Name must start with a letter"))
     Text.validateName("vendor") should be(Seq.empty)
     Text.validateName("Vendor") should be(Seq.empty)
-    Text.validateName("some service") should be(Seq("Name can only contain a-z, A-Z, 0-9 and _ characters"))
+    Text.validateName("some service") should be(Seq("Name can only contain a-z, A-Z, 0-9, - and _ characters"))
     Text.validateName("me.apidoc.models.service") should be(Seq.empty)
   }
 
@@ -64,7 +64,6 @@ class TextSpec extends FunSpec with Matchers {
     }
 
     it("for non alpha numeric strings") {
-      Text.isAlphaNumeric("-") should be(false)
       Text.isAlphaNumeric("this!") should be(false)
       Text.isAlphaNumeric(" this") should be(false)
       Text.isAlphaNumeric("foo bar") should be(false)
@@ -76,12 +75,14 @@ class TextSpec extends FunSpec with Matchers {
 
     it("for valid strings") {
       Text.startsWithLetter("this_dog") should be(true)
+      Text.startsWithLetter("this-dog") should be(true)
       Text.startsWithLetter("This dog") should be(true)
       Text.startsWithLetter("this!") should be(true)
     }
 
     it("for invalid strings") {
-      Text.startsWithLetter("-") should be(false)
+      Text.startsWithLetter("-test") should be(false)
+      Text.startsWithLetter("_test") should be(false)
       Text.startsWithLetter("!this") should be(false)
       Text.startsWithLetter("_ this") should be(false)
       Text.startsWithLetter("1this") should be(false)

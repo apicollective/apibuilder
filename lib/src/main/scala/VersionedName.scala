@@ -5,7 +5,7 @@ case class VersionedName(
   version: Option[String] = None
 ) extends Ordered[VersionedName] {
 
-  private val versionTag = version.map(VersionTag(_))
+  private[lib] val versionTag = version.map(VersionTag(_))
 
   val label = version match {
     case None => name
