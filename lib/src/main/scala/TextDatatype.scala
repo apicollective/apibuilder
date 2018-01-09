@@ -8,9 +8,9 @@ object TextDatatype {
   case object Map extends TextDatatype
   case class Singleton(name: String) extends TextDatatype
 
-  private val ListRx = "^\\[(.*)\\]$".r
-  private val MapRx = "^map\\[(.*)\\]$".r
-  private val MapDefaultRx = "^map$".r
+  private[this] val ListRx = "^\\[(.*)\\]$".r
+  private[this] val MapRx = "^map\\[(.*)\\]$".r
+  private[this] val MapDefaultRx = "^map$".r
 
   def parse(value: String): Seq[TextDatatype] = {
     value match {

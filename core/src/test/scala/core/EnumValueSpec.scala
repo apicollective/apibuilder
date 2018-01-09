@@ -26,7 +26,7 @@ class EnumValueSpec extends FunSpec with Matchers {
     )
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors() should be(
-      Seq("Enum[status] value[!] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter")
+      Seq("Enum[status] value[!] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter")
     )
   }
 
