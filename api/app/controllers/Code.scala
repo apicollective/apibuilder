@@ -4,19 +4,14 @@ import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 import io.apibuilder.api.v0.models.json._
-
-import io.apibuilder.spec.v0.models.json._
-import io.apibuilder.spec.v0.models.Service
-
 import io.apibuilder.generator.v0.Client
 import io.apibuilder.generator.v0.models.{Attribute, InvocationForm}
-
 import db.generators.{GeneratorsDao, ServicesDao}
-import db.{Authorization, OrganizationAttributeValuesDao, VersionsDao}
-import lib.{Config, AppConfig, Pager, Validation}
-
+import db.{OrganizationAttributeValuesDao, VersionsDao}
+import lib.{Pager, Validation}
 import play.api.libs.json._
 import play.api.mvc._
+import _root_.util.UserAgent
 
 import scala.concurrent.Future
 
@@ -28,9 +23,9 @@ class Code @Inject() (
   versionsDao: VersionsDao
 ) extends Controller {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val apibuilderVersion = Config.requiredString("git.version")
+  private[this] lazy val userAgent = new UserAgent()
 
   def get(
     orgKey: String,
@@ -55,7 +50,12 @@ class Code @Inject() (
                 Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
               }
               case Some(gws) => {
-                val userAgent = s"apibuilder-$apibuilderVersion ${AppConfig.apibuilderWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
+                val userAgentString = userAgent.generate(
+                  orgKey = orgKey,
+                  applicationKey = applicationKey,
+                  versionName = version.version,
+                  generatorKey = generatorKey
+                )
 
                 val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
 
@@ -63,7 +63,7 @@ class Code @Inject() (
                   key = gws.generator.key,
                   invocationForm = InvocationForm(
                     service = version.service,
-                    userAgent = Some(userAgent),
+                    userAgent = Some(userAgentString),
                     attributes = attributes
                   )
                 ).map { invocation =>
