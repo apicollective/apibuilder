@@ -1,8 +1,10 @@
 package controllers
 
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
-class TokensSpec extends PlaySpecification with MockClient {
+class TokensSpec extends PlaySpecification with MockClient with OneServerPerSuite {
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "POST /tokens" in new WithServer(port=defaultPort) {

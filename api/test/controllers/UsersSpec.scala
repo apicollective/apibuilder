@@ -2,9 +2,10 @@ package controllers
 
 import io.apibuilder.api.v0.models.UserUpdateForm
 import java.util.UUID
-import play.api.test._
 
-class UsersSpec extends PlaySpecification with MockClient {
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+
+class UsersSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -5,9 +5,10 @@ import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest, User}
 import io.apibuilder.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
-class PasswordResetRequestsSpec extends PlaySpecification with MockClient {
+class PasswordResetRequestsSpec extends PlaySpecification with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

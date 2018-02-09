@@ -2,11 +2,13 @@ package controllers
 
 import io.apibuilder.api.v0.models.{Authentication, PasswordReset}
 import java.util.UUID
+
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
 import scala.concurrent.Future
 
-class PasswordResetsSpec extends PlaySpecification with MockClient {
+class PasswordResetsSpec extends PlaySpecification with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

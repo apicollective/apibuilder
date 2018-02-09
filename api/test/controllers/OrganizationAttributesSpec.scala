@@ -1,9 +1,10 @@
 package controllers
 
 import io.apibuilder.api.v0.models.AttributeValueForm
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
-class OrganizationAttributesSpec extends PlaySpecification with MockClient {
+class OrganizationAttributesSpec extends PlaySpecification with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

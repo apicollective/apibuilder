@@ -5,9 +5,10 @@ import io.apibuilder.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import org.scalatest.Matchers
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
-class ApplicationsSpec extends PlaySpecification with MockClient {
+class ApplicationsSpec extends PlaySpecification with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

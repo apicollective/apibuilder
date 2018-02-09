@@ -1,9 +1,9 @@
 package controllers
 
-import io.apibuilder.api.v0.errors.UnitResponse
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
-class AttributesSpec extends PlaySpecification with MockClient {
+class AttributesSpec extends PlaySpecification with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

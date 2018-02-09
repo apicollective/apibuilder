@@ -2,9 +2,11 @@ package controllers
 
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 import java.util.UUID
+
+import org.scalatestplus.play.OneServerPerSuite
 import play.api.test._
 
-class SubscriptionsSpec extends PlaySpecification with MockClient {
+class SubscriptionsSpec extends PlaySpecification with MockClient with OneServerPerSuite {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] lazy val org = createOrganization()
