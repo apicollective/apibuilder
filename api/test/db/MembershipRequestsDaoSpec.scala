@@ -1,9 +1,8 @@
 package db
 
 import lib.Role
-import org.scalatest.FlatSpec
-import org.junit.Assert._
 import java.util.UUID
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
 class MembershipRequestsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
