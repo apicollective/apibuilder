@@ -1,10 +1,11 @@
 package lib
 
 import io.apibuilder.api.v0.models.User
-
 import java.util.UUID
-import java.nio.file.{Path, Paths, Files}
+import java.nio.file.{Files, Path, Paths}
 import java.nio.charset.StandardCharsets
+import javax.inject.Inject
+
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import com.sendgrid._
@@ -19,24 +20,26 @@ object Person {
   )
 }
 
-object Email {
-
-  private[this] val subjectPrefix = Config.requiredString("mail.subjectPrefix")
+class Email @Inject() (
+  appConfig: AppConfig
+) {
 
   private[this] val fromPerson = Person(
-    email = Config.requiredString("mail.defaultFromEmail"),
-    name = Some(Config.requiredString("mail.defaultFromName"))
+    email = appConfig.emailDefaultFromEmail,
+    name = Some(appConfig.emailDefaultFromName)
   )
 
-  val localDeliveryDir = Config.optionalString("mail.localDeliveryDir").map(Paths.get(_))
+  val localDeliveryDir: Option[Path] = appConfig.mailLocalDeliveryDir.map(Paths.get(_))
 
   // Initialize sendgrid on startup to verify that all of our settings
   // are here. If using localDeliveryDir, set password to a test
   // string.
   private[this] val sendgrid = {
     localDeliveryDir match {
-      case None => new SendGrid(Config.requiredString("sendgrid.apiKey"))
-      case Some(_) => new SendGrid(Config.optionalString("sendgrid.apiKey").getOrElse("development"))
+      case None => new SendGrid(appConfig.sendgridApiKey.getOrElse {
+        sys.error(s"sendgridApiKey required when localDeliveryDir is not set")
+      })
+      case Some(_) => new SendGrid(appConfig.sendgridApiKey.getOrElse("development"))
     }
   }
 
@@ -45,7 +48,7 @@ object Email {
     subject: String,
     body: String
   ) {
-    val prefixedSubject = subjectPrefix + " " + subject
+    val prefixedSubject = appConfig.subjectPrefix + " " + subject
 
     val from = fromPerson.name match {
       case Some(n) => new com.sendgrid.Email(fromPerson.email, n)
@@ -73,7 +76,7 @@ object Email {
         request.setBody(mail.build())
         val response = sendgrid.api(request)
         assert(
-          response.getStatusCode() == 202,
+          response.getStatusCode == 202,
           "Error sending email. Expected statusCode[202] but got[${response.getStatusCode()}]"
         )
       }
@@ -87,7 +90,7 @@ object Email {
     val target = Paths.get(dir.toString, timestamp + "-" + UUID.randomUUID.toString + ".html")
     val name = to.name match {
       case None => to.email
-      case Some(name) => s""""$name" <${to.email}">"""
+      case Some(n) => s""""$n" <${to.email}">"""
     }
 
     val bytes = s"""<p>

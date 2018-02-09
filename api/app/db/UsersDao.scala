@@ -223,8 +223,8 @@ class UsersDao @Inject() (
       'name -> toOptionString(name),
       'avatar_url -> toOptionString(avatarUrl),
       'gravatar_id -> toOptionString(gravatarId),
-      'created_by_guid -> Constants.DefaultUserGuid,
-      'updated_by_guid -> Constants.DefaultUserGuid
+      'created_by_guid -> Constants.DefaultUserGuid.toString,
+      'updated_by_guid -> Constants.DefaultUserGuid.toString
     ).execute()
 
     guid

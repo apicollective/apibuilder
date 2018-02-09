@@ -1,4 +1,6 @@
-@(org: io.apibuilder.api.v0.models.Organization,
+@(
+  appConfig: lib.AppConfig,
+  org: io.apibuilder.api.v0.models.Organization,
   application: io.apibuilder.api.v0.models.Application,
   version: io.apibuilder.api.v0.models.Version,
   breakingDiffs: Seq[String],
@@ -20,5 +22,5 @@
 }
 
 <p>
-  <a href="@lib.AppConfig.apibuilderWwwHost/@org.key/@application.key/@version.version">View version</a>
+  <a href="@appConfig.apibuilderWwwHost/@org.key/@application.key/@version.version">View version</a>
 </p>

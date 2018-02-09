@@ -1,4 +1,7 @@
-@(request: io.apibuilder.api.v0.models.MembershipRequest)
+@(
+  appConfig: lib.AppConfig,
+  request: io.apibuilder.api.v0.models.MembershipRequest
+)
 
 <p>
   @request.user.name &lt;@request.user.email&gt; has submitted a
@@ -6,5 +9,5 @@
 </p>
 
 <p>
-  <a href="@lib.AppConfig.apibuilderWwwHost/@request.organization.key/membership_requests">Review membership request</a>
+  <a href="@appConfig.apibuilderWwwHost/@request.organization.key/membership_requests">Review membership request</a>
 </p>

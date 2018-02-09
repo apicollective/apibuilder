@@ -1,10 +1,10 @@
 package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
-import io.apibuilder.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
+import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
 import io.apibuilder.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao, WatchesDao}
-import lib.{ServiceDiff, Text}
+import lib.{AppConfig, ServiceDiff, Text}
 import java.util.UUID
 
 import org.joda.time.DateTime
@@ -26,6 +26,7 @@ object TaskActor {
 @javax.inject.Singleton
 class TaskActor @javax.inject.Inject() (
   system: ActorSystem,
+  appConfig: AppConfig,
   applicationsDao: ApplicationsDao,
   changesDao: ChangesDao,
   emails: Emails,
@@ -53,7 +54,7 @@ class TaskActor @javax.inject.Inject() (
     }
 
     case m @ Process(guid) => withVerboseErrorHandler(m) {
-      tasksDao.findByGuid(guid).map { task =>
+      tasksDao.findByGuid(guid).foreach { task =>
         tasksDao.incrementNumberAttempts(usersDao.AdminUser, task)
 
         task.data match {
@@ -114,9 +115,9 @@ class TaskActor @javax.inject.Inject() (
     case m: Any => logUnhandledMessage(m)
   }
 
-  private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
-    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
-      versionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
+  private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID): Unit = {
+    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).foreach { oldVersion =>
+      versionsDao.findByGuid(Authorization.All, newVersionGuid).foreach { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
@@ -140,31 +141,32 @@ class TaskActor @javax.inject.Inject() (
     diffs: Seq[Diff]
   ) {
     // Only send email if something has actually changed
-    if (!diffs.isEmpty) {
+    if (diffs.nonEmpty) {
       val breakingDiffs = diffs.flatMap { d =>
         d match {
           case d: DiffBreaking => Some(d.description)
-          case d: DiffNonBreaking => None
+          case _: DiffNonBreaking => None
           case d: DiffUndefinedType => Some(d.description)
         }
       }
 
       val nonBreakingDiffs = diffs.flatMap { d =>
         d match {
-          case d: DiffBreaking => None
+          case _: DiffBreaking => None
           case d: DiffNonBreaking => Some(d.description)
-          case d: DiffUndefinedType => None
+          case _: DiffUndefinedType => None
         }
       }
 
-      applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
-        organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+      applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).foreach { application =>
+        organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).foreach { org =>
           emails.deliver(
             context = Emails.Context.Application(application),
             org = org,
             publication = Publication.VersionsCreate,
             subject = s"${org.name}/${application.name}:${version.version} Uploaded",
             body = views.html.emails.versionCreated(
+              appConfig,
               org,
               application,
               version,
@@ -177,7 +179,7 @@ class TaskActor @javax.inject.Inject() (
               application = Some(application),
               userGuid = Some(subscription.user.guid),
               limit = 1
-            ).headOption.isDefined
+            ).nonEmpty
           }
         }
       }

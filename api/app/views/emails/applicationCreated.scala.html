@@ -1,5 +1,8 @@
-@(org: io.apibuilder.api.v0.models.Organization,
-  application: io.apibuilder.api.v0.models.Application)
+@(
+  appConfig: lib.AppConfig,
+  org: io.apibuilder.api.v0.models.Organization,
+  application: io.apibuilder.api.v0.models.Application
+)
 
 <p>
   New application named @application.name created for @org.name with visibility @application.visibility.
@@ -12,5 +15,5 @@
 }
 
 <p>
-  <a href="@lib.AppConfig.apibuilderWwwHost/@org.key/@application.key/latest">View application</a>
+  <a href="@appConfig.apibuilderWwwHost/@org.key/@application.key/latest">View application</a>
 </p>
