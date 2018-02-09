@@ -1,4 +1,4 @@
-package io.apicollective
+package io.apicollective.play
 
 import play.api.Logger
 import play.api.mvc._

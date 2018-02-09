@@ -2,6 +2,9 @@ package actors
 
 import java.util.UUID
 
+import akka.actor.{Actor, ActorLogging, ActorSystem}
+import play.api.{Logger, Mode}
+
 import scala.util.{Failure, Success, Try}
 
 object MainActor {
