@@ -5,6 +5,7 @@ import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest}
 import java.util.UUID
 
 import play.api.test._
+import play.api.test.Helpers._
 
 class WatchesSpec extends PlaySpecification with MockClient {
 

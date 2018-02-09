@@ -2,10 +2,10 @@ package db
 
 import io.apibuilder.api.v0.models.{Organization, Publication}
 import lib.Role
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class SubsriptionDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class SubsriptionDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   lazy val org = Util.createOrganization()
 
@@ -25,9 +25,9 @@ class SubsriptionDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
     Publication.all.foreach { publication =>
       if (SubscriptionsDao.PublicationsRequiredAdmin.contains(publication)) {
-        subscriptions.contains(publication) must be(false)
+        subscriptions.contains(publication) should be(false)
       } else {
-        subscriptions.contains(publication) must be(true)
+        subscriptions.contains(publication) should be(true)
       }
     }
 

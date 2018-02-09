@@ -5,7 +5,7 @@ import builder.OriginalValidator
 import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
 
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatest.{FunSpec, ShouldMatchers}
 
 object TestHelper {
 

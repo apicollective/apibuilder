@@ -1,15 +1,15 @@
 package util
 
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatest.{FunSpec, Matchers}
 
-class SessionIdGeneratorSpec extends PlaySpec with OneAppPerSuite {
+class SessionIdGeneratorSpec extends FunSpec with Matchers {
 
   it("starts with prefix") {
-    SessionIdGenerator.generate().startsWith("A51") must be (true)
+    SessionIdGenerator.generate().startsWith("A51") should be (true)
   }
 
   it("64 characters long") {
-    SessionIdGenerator.generate().length must be(64)
+    SessionIdGenerator.generate().length should be(64)
   }
 
   it("generates unique identifiers") {
@@ -17,7 +17,7 @@ class SessionIdGeneratorSpec extends PlaySpec with OneAppPerSuite {
 
     1.to(100000).foreach { _ =>
       val tn = SessionIdGenerator.generate()
-      s(tn) must be (false)
+      s(tn) should be (false)
       s += tn
     }
   }

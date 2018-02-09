@@ -6,6 +6,7 @@ import java.util.UUID
 
 import org.scalatest.Matchers
 import play.api.test._
+import play.api.test.Helpers._
 
 class ApplicationsSpec extends PlaySpecification with MockClient {
 
