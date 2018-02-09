@@ -20,7 +20,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   "create different records for different emails" in {
     val user1 = Util.upsertUser("michael@mailinator.com")
     val user2 = Util.upsertUser("other@mailinator.com")
-    user1.guid should not be(user2.guid)
+    user1.guid != user2.guid must be(true)
   }
 
   "return empty list without error guid is not a valid format" in {

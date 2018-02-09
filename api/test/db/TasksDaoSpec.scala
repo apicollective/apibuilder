@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.internal.v0.models.{Task, TaskData, TaskDataDiffVersion, TaskDataUndefinedType}
+import io.apibuilder.internal.v0.models.{Task, TaskDataDiffVersion}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.postgresql.util.PSQLException
 import java.util.UUID
@@ -9,7 +9,6 @@ import anorm._
 import io.apibuilder.api.v0.models.User
 import org.joda.time.DateTime
 import play.api.db._
-import play.api.Play.current
 
 class TasksDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 

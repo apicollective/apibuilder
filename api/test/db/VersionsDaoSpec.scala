@@ -2,12 +2,10 @@ package db
 
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import builder.OriginalValidator
-import io.apibuilder.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
-import io.apibuilder.spec.v0.models.{Application, Organization, Service}
-import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.api.v0.models.OriginalType
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
-import play.api.libs.json.{Json, JsObject}
+import play.api.libs.json.Json
 
 class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
@@ -53,7 +51,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
         guid = version1.guid,
         audit = version1.audit
       ) must be(version1)
-      version2.guid shouldNot be(version1.guid)
+      version1.guid != version2.guid must be(true)
     }
 
   }
