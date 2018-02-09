@@ -4,7 +4,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
 class UserAgentSpec extends PlaySpec with OneAppPerSuite {
 
-  private[this] val userAgent = new UserAgent()
+  private[this] val userAgent = app.injector.instanceOf[UserAgent]
 
   "user agent generates valid strings" in {
     userAgent.generate(

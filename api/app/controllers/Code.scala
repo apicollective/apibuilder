@@ -20,12 +20,11 @@ class Code @Inject() (
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
-  versionsDao: VersionsDao
+  versionsDao: VersionsDao,
+  userAgent: UserAgent
 ) extends Controller {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
-
-  private[this] lazy val userAgent = new UserAgent()
 
   def get(
     orgKey: String,

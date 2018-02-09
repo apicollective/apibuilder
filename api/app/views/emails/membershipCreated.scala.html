@@ -1,4 +1,7 @@
-@(membership: io.apibuilder.api.v0.models.Membership)
+@(
+  appConfig: lib.AppConfig,
+  membership: io.apibuilder.api.v0.models.Membership
+)
 
 <p>
   @membership.user.name &lt;@membership.user.email&gt; has joined
@@ -6,6 +9,6 @@
 </p>
 
 <p>
-  <a href="@lib.AppConfig.apibuilderWwwHost/@membership.organization.key/members">View all members</a>
+  <a href="@appConfig.apibuilderWwwHost/@membership.organization.key/members">View all members</a>
 </p>
 

@@ -1,10 +1,9 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.{ActorLogging, ActorSystem}
 import db._
-import io.apibuilder.api.v0.models.{Application, Membership, Publication, Version}
-import lib.{Email, Person, Role}
-import play.api.Logger
+import io.apibuilder.api.v0.models.Publication
+import lib.{AppConfig, Email, Person, Role}
 import akka.actor.Actor
 import java.util.UUID
 
@@ -25,7 +24,9 @@ object EmailActor {
 @javax.inject.Singleton
 class EmailActor @javax.inject.Inject() (
   system: ActorSystem,
+  appConfig: AppConfig,
   applicationsDao: db.ApplicationsDao,
+  email: Email,
   emails: Emails,
   emailVerificationsDao: db.EmailVerificationsDao,
   membershipsDao: db.MembershipsDao,
@@ -35,7 +36,7 @@ class EmailActor @javax.inject.Inject() (
   usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  implicit val ec = system.dispatchers.lookup("email-actor-context")
+  private[this] implicit val ec = system.dispatchers.lookup("email-actor-context")
 
   def receive = {
 
@@ -46,7 +47,7 @@ class EmailActor @javax.inject.Inject() (
           org = request.organization,
           publication = Publication.MembershipRequestsCreate,
           subject = s"${request.organization.name}: Membership Request from ${request.user.email}",
-          body = views.html.emails.membershipRequestCreated(request).toString
+          body = views.html.emails.membershipRequestCreated(appConfig, request).toString
         )
       }
     }
@@ -54,7 +55,7 @@ class EmailActor @javax.inject.Inject() (
     case m @ EmailActor.Messages.MembershipRequestAccepted(organizationGuid, userGuid, role) => withVerboseErrorHandler(m) {
       organizationsDao.findByGuid(Authorization.All, organizationGuid).foreach { org =>
         usersDao.findByGuid(userGuid).foreach { user =>
-          Email.sendHtml(
+          email.sendHtml(
             to = Person(user),
             subject = s"Welcome to ${org.name}",
             body = views.html.emails.membershipRequestAccepted(org, user, role).toString
@@ -66,7 +67,7 @@ class EmailActor @javax.inject.Inject() (
     case m @ EmailActor.Messages.MembershipRequestDeclined(organizationGuid, userGuid, role) => withVerboseErrorHandler(m) {
       organizationsDao.findByGuid(Authorization.All, organizationGuid).foreach { org =>
         usersDao.findByGuid(userGuid).foreach { user =>
-          Email.sendHtml(
+          email.sendHtml(
             to = Person(user),
             subject = s"Your Membership Request to join ${org.name} was declined",
             body = views.html.emails.membershipRequestDeclined(org, user, role).toString
@@ -82,7 +83,7 @@ class EmailActor @javax.inject.Inject() (
           org = membership.organization,
           publication = Publication.MembershipsCreate,
           subject = s"${membership.organization.name}: ${membership.user.email} has joined as ${membership.role}",
-          body = views.html.emails.membershipCreated(membership).toString
+          body = views.html.emails.membershipCreated(appConfig, membership).toString
         )
       }
     }
@@ -95,7 +96,7 @@ class EmailActor @javax.inject.Inject() (
             org = org,
             publication = Publication.ApplicationsCreate,
             subject = s"${org.name}: New Application Created - ${application.name}",
-            body = views.html.emails.applicationCreated(org, application).toString
+            body = views.html.emails.applicationCreated(appConfig, org, application).toString
           )
         }
       }
@@ -104,10 +105,10 @@ class EmailActor @javax.inject.Inject() (
     case m @ EmailActor.Messages.PasswordResetRequestCreated(guid) => withVerboseErrorHandler(m) {
       passwordResetRequestsDao.findByGuid(guid).foreach { request =>
         usersDao.findByGuid(request.userGuid).foreach { user =>
-          Email.sendHtml(
+          email.sendHtml(
             to = Person(user),
             subject = s"Reset your password",
-            body = views.html.emails.passwordResetRequestCreated(request.token).toString
+            body = views.html.emails.passwordResetRequestCreated(appConfig, request.token).toString
           )
         }
       }
@@ -116,10 +117,10 @@ class EmailActor @javax.inject.Inject() (
     case m @ EmailActor.Messages.EmailVerificationCreated(guid) => withVerboseErrorHandler(m) {
       emailVerificationsDao.findByGuid(guid).foreach { verification =>
         usersDao.findByGuid(verification.userGuid).foreach { user =>
-          Email.sendHtml(
+          email.sendHtml(
             to = Person(email = verification.email, name = user.name),
             subject = s"Verify your email address",
-            body = views.html.emails.emailVerificationCreated(verification).toString
+            body = views.html.emails.emailVerificationCreated(appConfig, verification).toString
           )
         }
       }

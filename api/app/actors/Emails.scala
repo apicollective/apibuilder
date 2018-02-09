@@ -1,9 +1,10 @@
 package actors
 
-import io.apibuilder.api.v0.models.{Organization, Publication, Subscription, User, Visibility}
+import io.apibuilder.api.v0.models._
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import javax.inject.{Inject, Singleton}
-import lib.{Config, Email, Pager, Person}
+
+import lib._
 import play.api.Logger
 
 object Emails {
@@ -29,12 +30,12 @@ object Emails {
 
 @Singleton
 class Emails @Inject() (
+  appConfig: AppConfig,
+  email: Email,
   applicationsDao: ApplicationsDao,
   membershipsDao: MembershipsDao,
   subscriptionsDao: SubscriptionsDao
 ) {
-
-  private lazy val sendErrorsTo = Config.requiredString("apibuilder.sendErrorsTo").split("\\s+")
 
   def deliver(
     context: Emails.Context,
@@ -46,7 +47,7 @@ class Emails @Inject() (
     implicit filter: Subscription => Boolean = { _ => true }
   ) {
     eachSubscription(context, org, publication, { subscription =>
-      Email.sendHtml(
+      email.sendHtml(
         to = Person(subscription.user),
         subject = subject,
         body = body
@@ -69,14 +70,11 @@ class Emails @Inject() (
         offset = offset
       )
     } { subscription =>
-      isAuthorized(context, organization, subscription.user) match {
-        case false => {
-          Logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
-        }
-        case true => {
-          Logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
-          f(subscription)
-        }
+      if (isAuthorized(context, organization, subscription.user)) {
+        Logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
+        f(subscription)
+      } else {
+        Logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
       }
     }
   }
@@ -117,11 +115,11 @@ class Emails @Inject() (
   ) {
     errors match {
       case Nil => {}
-      case errors => {
+      case _ => {
         val body = views.html.emails.errors(errors).toString
-        sendErrorsTo.foreach { email =>
-          Email.sendHtml(
-            to = Person(email),
+        appConfig.sendErrorsTo.foreach { emailAddress =>
+          email.sendHtml(
+            to = Person(emailAddress),
             subject = subject,
             body = body
           )

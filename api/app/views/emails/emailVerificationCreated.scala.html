@@ -1,5 +1,8 @@
-@(verification: db.EmailVerification)
+@(
+  appConfig: lib.AppConfig,
+  verification: db.EmailVerification
+)
 
 <p>
-  <a href="@lib.AppConfig.apibuilderWwwHost/email-verifications/@verification.token">Verify your email address</a>
+  <a href="@appConfig.apibuilderWwwHost/email-verifications/@verification.token">Verify your email address</a>
 </p>

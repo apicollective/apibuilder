@@ -1,14 +1,16 @@
 package util
 
-import lib.{AppConfig, Config}
+import javax.inject.Inject
+import lib.AppConfig
 
 /**
   * Generates safe user agents
   */
-class UserAgent() {
+class UserAgent @Inject() (
+  appConfig: AppConfig
+) {
 
-  private[this] val Prefixes = Seq("http://", "https://")
-  private[this] lazy val apibuilderVersion = Config.requiredString("git.version")
+  private[this] val Prefixes: Seq[String] = Seq("http://", "https://")
 
   def generate(
     orgKey: String,
@@ -18,9 +20,9 @@ class UserAgent() {
   ): String = {
     Seq(
       "apibuilder",
-      apibuilderVersion,
+      appConfig.apibuilderVersion,
       Seq(
-        AppConfig.apibuilderWwwHost,
+        appConfig.apibuilderWwwHost,
         orgKey,
         applicationKey,
         versionName,
