@@ -12,13 +12,13 @@ import play.api.http.HttpFilters
   *
   **/
 
-class LoggingFilter @javax.inject.Inject() (loggingFilter: cLoggingFilter) extends HttpFilters {
+class LoggingFilter @javax.inject.Inject() (loggingFilter: ApibuilderLoggingFilter) extends HttpFilters {
   def filters = Seq(loggingFilter)
 }
 
 class ApibuilderLoggingFilter @javax.inject.Inject() (
-  implicit ec: ExecutionContext,
-) extends Filter {
+  implicit ec: ExecutionContext
+) extends HttpFilters {
   def apply(f: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
     val startTime = System.currentTimeMillis
     f(requestHeader).map { result =>
