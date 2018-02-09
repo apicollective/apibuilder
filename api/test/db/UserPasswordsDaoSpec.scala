@@ -4,7 +4,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
 class UserPasswordsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
-  private[this] val user = upsertUser("michael@mailinator.com")
+  private[this] lazy val user = upsertUser("michael@mailinator.com")
 
   "have distinct keys for all algorithms" in {
     val keys = PasswordAlgorithm.All.map(_.key.toLowerCase)
