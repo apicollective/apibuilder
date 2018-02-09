@@ -1,13 +1,16 @@
 package db
 
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
-import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
+import io.apibuilder.api.v0.models._
 import io.apibuilder.spec.v0.{models => spec}
 import play.api.libs.json.Json
 import lib.Role
 import java.util.UUID
 
 trait Helpers extends util.Daos {
+
+  def createRandomName(suffix: String): String = {
+    s"z-test-$suffix-" + UUID.randomUUID.toString
+  }
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
@@ -77,6 +80,14 @@ trait Helpers extends util.Daos {
     key = key,
     description = description,
     visibility = visibility
+  )
+
+  def createAttributeForm(
+    name: String = createRandomName("attribute"),
+    description: Option[String] = None
+  ) = AttributeForm(
+    name = name,
+    description = description
   )
 
   def createVersion(

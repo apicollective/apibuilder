@@ -89,12 +89,15 @@ trait MockClient extends db.Helpers
     Try(
       f
     ) match {
-      case Success(response) => {
+      case Success(_) => {
         org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
       }
       case Failure(ex) => ex match {
-        case UnitResponse(_) => {
+        case UnitResponse(c) if c == code => {
           org.specs2.execute.Success()
+        }
+        case UnitResponse(c) => {
+          org.specs2.execute.Failure(s"Expected code[$c] but got[$code]")
         }
         case e => {
           org.specs2.execute.Failure(s"Unexpected error: $e")
@@ -103,25 +106,11 @@ trait MockClient extends db.Helpers
     }
   }
 
-  def createRandomName(suffix: String): String = {
-    s"z-test-$suffix-" + UUID.randomUUID.toString
-  }
-  
   def createOrganization(
     form: OrganizationForm = createOrganizationForm()
   ): Organization = {
     await(client.organizations.post(form))
   }
-
-  def createOrganizationForm(
-    name: String = createRandomName("org"),
-    key: Option[String] = None,
-    namespace: String = "test." + UUID.randomUUID.toString
-  ) = OrganizationForm(
-    name = name,
-    key = key,
-    namespace = namespace
-  )
 
   def createAttribute(
     form: AttributeForm = createAttributeForm()
@@ -129,14 +118,6 @@ trait MockClient extends db.Helpers
     await(client.attributes.post(form))
   }
 
-  def createAttributeForm(
-    name: String = createRandomName("attribute"),
-    description: Option[String] = None
-  ) = AttributeForm(
-    name = name,
-    description = description
-  )
-  
   def createUser(
     form: UserForm = createUserForm()
   ): User = {
@@ -163,25 +144,6 @@ trait MockClient extends db.Helpers
   ) = TokenForm(
     userGuid = user.guid,
     description = Some("test")
-  )
-
-  def createApplication(
-    org: Organization,
-    form: ApplicationForm = createApplicationForm()
-  ): Application = {
-    await(client.applications.post(org.key, form))
-  }
-
-  def createApplicationForm(
-    name: String = "Test " + UUID.randomUUID.toString,
-    key: Option[String] = None,
-    description: Option[String] = None,
-    visibility: Visibility = Visibility.Organization
-  ): ApplicationForm = db.createApplicationForm(
-    name = name,
-    key = key,
-    description = description,
-    visibility = visibility
   )
 
   def createVersion(
