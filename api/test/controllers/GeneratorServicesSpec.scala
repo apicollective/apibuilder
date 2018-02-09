@@ -3,10 +3,9 @@ package controllers
 import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
 import java.util.UUID
 
-import org.scalatestplus.play.OneServerPerSuite
-import play.api.test._
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
-class GeneratorServicesSpec extends PlaySpecification with MockClient with OneServerPerSuite {
+class GeneratorServicesSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -30,25 +29,25 @@ class GeneratorServicesSpec extends PlaySpecification with MockClient with OneSe
     )
   }
 
-  "POST /generator_services" in new WithServer(port=defaultPort) {
+  "POST /generator_services" in {
     val form = createGeneratorServiceForm()
     val service = createGeneratorService(form)
-    service.uri must beEqualTo(form.uri)
+    service.uri must equal(form.uri)
   }
 
-  "GET /generator_services/:guid" in new WithServer(port=defaultPort) {
+  "GET /generator_services/:guid" in {
     val service = createGeneratorService()
-    await(client.generatorServices.getByGuid(service.guid)) must beEqualTo(service)
+    await(client.generatorServices.getByGuid(service.guid)) must equal(service)
 
     expectNotFound {
       client.generatorServices.getByGuid(UUID.randomUUID)
     }
   }
 
-  "DELETE /generator_services/:guid" in new WithServer(port=defaultPort) {
+  "DELETE /generator_services/:guid" in {
     val service = createGeneratorService()
 
-    await(client.generatorServices.deleteByGuid(service.guid)) must beEqualTo(())
+    await(client.generatorServices.deleteByGuid(service.guid)) must equal(())
     expectNotFound {
       client.generatorServices.getByGuid(service.guid)
     }

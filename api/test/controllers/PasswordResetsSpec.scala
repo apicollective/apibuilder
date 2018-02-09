@@ -3,12 +3,11 @@ package controllers
 import io.apibuilder.api.v0.models.{Authentication, PasswordReset}
 import java.util.UUID
 
-import org.scalatestplus.play.OneServerPerSuite
-import play.api.test._
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
 import scala.concurrent.Future
 
-class PasswordResetsSpec extends PlaySpecification with MockClient with OneServerPerSuite {
+class PasswordResetsSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -18,41 +17,41 @@ class PasswordResetsSpec extends PlaySpecification with MockClient with OneServe
     )
   }
 
-  "POST /password_resets" in new WithServer(port=defaultPort) {
+  "POST /password_resets" in {
     val user = createUser()
     createPasswordRequest(user.email)
     val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
 
     val pwd = "some password"
-    userPasswordsDao.isValid(user.guid, pwd) must beEqualTo(false)
+    userPasswordsDao.isValid(user.guid, pwd) must equal(false)
 
     val result = await(resetPassword(pr.token, pwd))
-    result.user.guid must beEqualTo(user.guid)
+    result.user.guid must equal(user.guid)
 
-    userPasswordsDao.isValid(user.guid, pwd) must beEqualTo(true)
+    userPasswordsDao.isValid(user.guid, pwd) must equal(true)
 
     // Make sure token cannot be reused
     expectErrors {
       resetPassword(pr.token, pwd)
-    }.errors.map(_.message) must beEqualTo(Seq(s"Token not found"))
+    }.errors.map(_.message) must equal(Seq(s"Token not found"))
 
   }
 
-  "POST /password_resets validates password" in new WithServer(port=defaultPort) {
+  "POST /password_resets validates password" in {
     val user = createUser()
     createPasswordRequest(user.email)
     val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
 
     expectErrors {
       resetPassword(pr.token, "foo")
-    }.errors.map(_.message) must beEqualTo(Seq(s"Password must be at least 5 characters"))
+    }.errors.map(_.message) must equal(Seq(s"Password must be at least 5 characters"))
 
   }
 
-  "POST /password_reset_requests/:token validates token" in new WithServer(port=defaultPort) {
+  "POST /password_reset_requests/:token validates token" in {
     expectErrors {
       resetPassword(UUID.randomUUID.toString, "testing")
-    }.errors.map(_.message) must beEqualTo(Seq(s"Token not found"))
+    }.errors.map(_.message) must equal(Seq(s"Token not found"))
 
   }
 

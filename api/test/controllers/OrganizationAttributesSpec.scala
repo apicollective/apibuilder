@@ -1,37 +1,36 @@
 package controllers
 
 import io.apibuilder.api.v0.models.AttributeValueForm
-import org.scalatestplus.play.OneServerPerSuite
-import play.api.test._
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
-class OrganizationAttributesSpec extends PlaySpecification with MockClient with OneServerPerSuite {
+class OrganizationAttributesSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] lazy val org = createOrganization()
 
-  "PUT /organizations/:key/attributes" in new WithServer(port=defaultPort) {
+  "PUT /organizations/:key/attributes" in {
     val attribute = createAttribute()
     val form = AttributeValueForm(value = "test")
 
     val attributeValue = await(
       client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form)
     )
-    attributeValue.attribute.guid must beEqualTo(attribute.guid)
-    attributeValue.attribute.name must beEqualTo(attribute.name)
-    attributeValue.value must beEqualTo("test")
+    attributeValue.attribute.guid must equal(attribute.guid)
+    attributeValue.attribute.name must equal(attribute.name)
+    attributeValue.value must equal("test")
   }
 
-  "PUT /organizations/:key/attributes validates value" in new WithServer(port=defaultPort) {
+  "PUT /organizations/:key/attributes validates value" in {
     val attribute = createAttribute()
     val form = AttributeValueForm(value = "   ")
 
     expectErrors {
       client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form)
-    }.errors.map(_.message) must beEqualTo(Seq(s"Value is required"))
+    }.errors.map(_.message) must equal(Seq(s"Value is required"))
   }
 
-  "PUT /organizations/:key/attributes validates attribute" in new WithServer(port=defaultPort) {
+  "PUT /organizations/:key/attributes validates attribute" in {
     val form = AttributeValueForm(value = "rest")
 
     expectNotFound {
@@ -39,19 +38,19 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient with 
     }
   }
 
-  "PUT /organizations/:key/attributes updates existing value" in new WithServer(port=defaultPort) {
+  "PUT /organizations/:key/attributes updates existing value" in {
     val attribute = createAttribute()
 
     val form = AttributeValueForm(value = "test")
     val original = await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form))
-    original.value must beEqualTo("test")
+    original.value must equal("test")
 
     val form2 = AttributeValueForm(value = "test2")
     val updated = await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form2))
-    updated.value must beEqualTo("test2")
+    updated.value must equal("test2")
   }
   
-  "GET /organizations/:key/attributes" in new WithServer(port=defaultPort) {
+  "GET /organizations/:key/attributes" in {
     val org = createOrganization()
     val attribute1 = createAttribute()
     val attribute2 = createAttribute()
@@ -59,10 +58,10 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient with 
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
-    await(client.organizations.getAttributesByKey(org.key)).map(_.value) must beEqualTo(Seq("a", "b"))
+    await(client.organizations.getAttributesByKey(org.key)).map(_.value) must equal(Seq("a", "b"))
   }
 
-  "GET /organizations/:key/attributes w/ name filter" in new WithServer(port=defaultPort) {
+  "GET /organizations/:key/attributes w/ name filter" in {
     val org = createOrganization()
     val attribute1 = createAttribute()
     val attribute2 = createAttribute()
@@ -70,12 +69,12 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient with 
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
-    await(client.organizations.getAttributesByKey(org.key, name = Some(attribute1.name))).map(_.value) must beEqualTo(Seq("a"))
-    await(client.organizations.getAttributesByKey(org.key, name = Some(attribute2.name))).map(_.value) must beEqualTo(Seq("b"))
-    await(client.organizations.getAttributesByKey(org.key, name = Some("other"))).map(_.value) must beEqualTo(Nil)
+    await(client.organizations.getAttributesByKey(org.key, name = Some(attribute1.name))).map(_.value) must equal(Seq("a"))
+    await(client.organizations.getAttributesByKey(org.key, name = Some(attribute2.name))).map(_.value) must equal(Seq("b"))
+    await(client.organizations.getAttributesByKey(org.key, name = Some("other"))).map(_.value) must equal(Nil)
   }
 
-  "GET /organizations/:key/attributes/:name" in new WithServer(port=defaultPort) {
+  "GET /organizations/:key/attributes/:name" in {
     val org = createOrganization()
     val attribute1 = createAttribute()
     val attribute2 = createAttribute()
@@ -83,8 +82,8 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient with 
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
-    await(client.organizations.getAttributesByKeyAndName(org.key, attribute1.name)).value must beEqualTo("a")
-    await(client.organizations.getAttributesByKeyAndName(org.key, attribute2.name)).value must beEqualTo("b")
+    await(client.organizations.getAttributesByKeyAndName(org.key, attribute1.name)).value must equal("a")
+    await(client.organizations.getAttributesByKeyAndName(org.key, attribute2.name)).value must equal("b")
 
     expectNotFound {
       client.organizations.getAttributesByKeyAndName(org.key, "other")
