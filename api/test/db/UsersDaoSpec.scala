@@ -4,7 +4,7 @@ import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class UsersDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   def createUserForm(
     email: String = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
@@ -12,14 +12,14 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   ) = UserForm(email = email, password = UUID.randomUUID.toString, nickname = nickname)
 
   "upsert" in {
-    val user1 = Util.upsertUser("michael@mailinator.com")
-    val user2 = Util.upsertUser("michael@mailinator.com")
+    val user1 = upsertUser("michael@mailinator.com")
+    val user2 = upsertUser("michael@mailinator.com")
     user1.guid must be(user2.guid)
   }
 
   "create different records for different emails" in {
-    val user1 = Util.upsertUser("michael@mailinator.com")
-    val user2 = Util.upsertUser("other@mailinator.com")
+    val user1 = upsertUser("michael@mailinator.com")
+    val user2 = upsertUser("other@mailinator.com")
     user1.guid != user2.guid must be(true)
   }
 
@@ -28,7 +28,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   }
 
   "findByGuid" in {
-    val user = Util.upsertUser("michael@mailinator.com")
+    val user = upsertUser("michael@mailinator.com")
     usersDao.findByGuid(UUID.randomUUID.toString) must be(None)
     usersDao.findByGuid(user.guid) must be(Some(user))
   }
@@ -73,7 +73,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
       )
 
       usersDao.validate(updateForm, existingUser = Some(user)).map(_.message) must be(Nil)
-      usersDao.validate(updateForm, existingUser = Some(Util.upsertUser())).map(_.message) must be(Seq("User with this email address already exists"))
+      usersDao.validate(updateForm, existingUser = Some(upsertUser())).map(_.message) must be(Seq("User with this email address already exists"))
     }
 
     "password" in {
@@ -130,7 +130,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
       usersDao.validate(formWithUniqueEmail).map(_.message) must be(Seq("User with this nickname already exists"))
       usersDao.validate(formWithUniqueEmail, existingUser = Some(user)).map(_.message) must be(Nil)
-      usersDao.validate(formWithUniqueEmail, existingUser = Some(Util.upsertUser())).map(_.message) must be(Seq("User with this nickname already exists"))
+      usersDao.validate(formWithUniqueEmail, existingUser = Some(upsertUser())).map(_.message) must be(Seq("User with this nickname already exists"))
     }
 
   }
@@ -158,12 +158,12 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   }
 
   "update" in {
-    val user = Util.createRandomUser()
+    val user = createRandomUser()
     val email = "test-email-2@" + UUID.randomUUID.toString
     val nickname = user.nickname + "-2"
     val name = "Test User " + UUID.randomUUID.toString
 
-    usersDao.update(Util.createdBy, user, UserUpdateForm(
+    usersDao.update(createdBy, user, UserUpdateForm(
       email = " " + email + " ",
       nickname = nickname,
       name = Some(name)

@@ -7,7 +7,7 @@ import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 import io.apibuilder.spec.v0.models._
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with util.Daos {
+class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private lazy val service = TestHelper.readService("../spec/apibuilder-spec.json")
 

@@ -5,17 +5,17 @@ import lib.Role
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class SubsriptionDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class SubsriptionDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
-  lazy val org = Util.createOrganization()
+  lazy val org = createOrganization()
 
   "when a user loses admin role, we remove subscriptions that require admin" in {
-    val user = Util.createRandomUser()
-    val membership = Util.createMembership(org, user, Role.Admin)
+    val user = createRandomUser()
+    val membership = createMembership(org, user, Role.Admin)
 
-    Publication.all.foreach { publication => Util.createSubscription(org, user, publication) }
+    Publication.all.foreach { publication => createSubscription(org, user, publication) }
 
-    membershipsDao.softDelete(Util.createdBy, membership)
+    membershipsDao.softDelete(createdBy, membership)
 
     val subscriptions = subscriptionsDao.findAll(
       Authorization.All,

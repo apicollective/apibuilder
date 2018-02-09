@@ -7,7 +7,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 import play.api.libs.json.Json
 
-class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
@@ -20,9 +20,9 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   )
 
   private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): io.apibuilder.api.v0.models.Application = {
-    Util.createApplication(
+    createApplication(
       org = Util.testOrg,
-      form = Util.createApplicationForm().copy(key = Some(key))
+      form = createApplicationForm().copy(key = Some(key))
     )
   }
 
@@ -30,23 +30,23 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
     val application: io.apibuilder.api.v0.models.Application = createApplication(applicationKey)
-    val service = Util.createService(application)
+    val service = createService(application)
 
     "create" in {
-      val version = versionsDao.create(Util.createdBy, application, "1.0.0", Original, service)
-      Util.createVersion().version must be("1.0.0")
+      val version = versionsDao.create(createdBy, application, "1.0.0", Original, service)
+      createVersion().version must be("1.0.0")
     }
 
     "findByApplicationAndVersion" in {
-      versionsDao.create(Util.createdBy, application, "1.0.1", Original, service)
+      versionsDao.create(createdBy, application, "1.0.1", Original, service)
       versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) must be(Some(service))
     }
 
     "soft delete" in {
-      val version1 = versionsDao.create(Util.createdBy, application, "1.0.2", Original, service)
-      versionsDao.softDelete(Util.createdBy, version1)
+      val version1 = versionsDao.create(createdBy, application, "1.0.2", Original, service)
+      versionsDao.softDelete(createdBy, version1)
 
-      val version2 = versionsDao.create(Util.createdBy, application, "1.0.2", Original, service)
+      val version2 = versionsDao.create(createdBy, application, "1.0.2", Original, service)
       version2.copy(
         guid = version1.guid,
         audit = version1.audit
@@ -58,9 +58,9 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   "sorts properly" in {
     val app = createApplication()
-    val service = Util.createService(app)
-    versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
-    versionsDao.create(Util.createdBy, app, "1.0.2-dev", Original, service)
+    val service = createService(app)
+    versionsDao.create(createdBy, app, "1.0.2", Original, service)
+    versionsDao.create(createdBy, app, "1.0.2-dev", Original, service)
 
     versionsDao.findAll(
       Authorization.All,
@@ -70,8 +70,8 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   "can parse original" in {
     val app = createApplication()
-    val service = Util.createService(app)
-    val version = versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+    val service = createService(app)
+    val version = versionsDao.create(createdBy, app, "1.0.2", Original, service)
 
     val serviceConfig = ServiceConfiguration(
       orgKey = "test",
@@ -94,16 +94,16 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   "trims version number" in {
     val app = createApplication()
-    val service = Util.createService(app)
-    val version = versionsDao.create(Util.createdBy, app, " 1.0.2\n ", Original, service)
+    val service = createService(app)
+    val version = versionsDao.create(createdBy, app, " 1.0.2\n ", Original, service)
     version.version must be("1.0.2")
   }
 
   "findAllVersions" in {
     val app = createApplication()
-    val service = Util.createService(app)
-    versionsDao.create(Util.createdBy, app, "1.0.1", Original, service)
-    versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+    val service = createService(app)
+    versionsDao.create(createdBy, app, "1.0.1", Original, service)
+    versionsDao.create(createdBy, app, "1.0.2", Original, service)
 
     versionsDao.findAllVersions(
       Authorization.All,

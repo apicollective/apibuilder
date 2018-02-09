@@ -10,7 +10,7 @@ import io.apibuilder.api.v0.models.User
 import org.joda.time.DateTime
 import play.api.db._
 
-class TasksDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class TasksDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] def setDeletedAt(task: Task, days: Int) {
     val query = s"""
@@ -22,7 +22,7 @@ class TasksDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
     }
   }
 
-  private[this] lazy val user: User = Util.createRandomUser()
+  private[this] lazy val user: User = createRandomUser()
 
   private[this] def createTaskDataDiffVersion(
     oldGuid: UUID = UUID.randomUUID,

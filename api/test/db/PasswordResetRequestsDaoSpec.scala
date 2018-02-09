@@ -3,23 +3,23 @@ package db
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "create" in {
-    val user = Util.createRandomUser()
-    val pr = passwordResetRequestsDao.create(Some(Util.createdBy), user)
+    val user = createRandomUser()
+    val pr = passwordResetRequestsDao.create(Some(createdBy), user)
     pr.userGuid must be(user.guid)
   }
 
   "isExpired" in {
-    val user = Util.createRandomUser()
-    val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
+    val user = createRandomUser()
+    val verification = emailVerificationsDao.create(createdBy, user, user.email)
     emailVerificationsDao.isExpired(verification) must be(false)
   }
 
   "resetPassword" in {
-    val user = Util.createRandomUser()
-    val pr = passwordResetRequestsDao.create(Some(Util.createdBy), user)
+    val user = createRandomUser()
+    val pr = passwordResetRequestsDao.create(Some(createdBy), user)
 
     val newPassword = "testing"
     userPasswordsDao.isValid(user.guid, newPassword) must be(false)
@@ -28,7 +28,7 @@ class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with uti
   }
 
   "findByGuid" in {
-    val user = Util.createRandomUser()
+    val user = createRandomUser()
     val pr = passwordResetRequestsDao.create(None, user)
 
     passwordResetRequestsDao.findByGuid(pr.guid).map(_.userGuid) must be(Some(user.guid))
@@ -36,7 +36,7 @@ class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with uti
   }
 
   "findByToken" in {
-    val user = Util.createRandomUser()
+    val user = createRandomUser()
     val pr = passwordResetRequestsDao.create(None, user)
 
     passwordResetRequestsDao.findByToken(pr.token).map(_.userGuid) must be(Some(user.guid))
@@ -44,10 +44,10 @@ class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with uti
   }
 
   "findAll" in {
-    val user1 = Util.createRandomUser()
+    val user1 = createRandomUser()
     val pr1 = passwordResetRequestsDao.create(None, user1)
 
-    val user2 = Util.createRandomUser()
+    val user2 = createRandomUser()
     val pr2 = passwordResetRequestsDao.create(None, user2)
 
     passwordResetRequestsDao.findAll(isExpired = Some(false), guid = Some(pr1.guid)).map(_.userGuid) must be(Seq(user1.guid))

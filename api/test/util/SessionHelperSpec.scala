@@ -4,10 +4,10 @@ import db.Helpers
 import org.joda.time.DateTime
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class SessionHelperSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class SessionHelperSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "createAuthentication" in {
-    val user = Util.upsertUser("michael@mailinator.com")
+    val user = upsertUser("michael@mailinator.com")
     val auth = sessionHelper.createAuthentication(user)
     auth.user.guid must equal(user.guid)
     auth.session.expiresAt.isBefore(DateTime.now.plusWeeks(6)) must be(true)
@@ -15,7 +15,7 @@ class SessionHelperSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   }
 
   "can delete session" in {
-    val user = Util.upsertUser("michael@mailinator.com")
+    val user = upsertUser("michael@mailinator.com")
     val auth = sessionHelper.createAuthentication(user)
 
     sessionsDao.findById(auth.session.id).get.deletedAt.isEmpty must be(true)

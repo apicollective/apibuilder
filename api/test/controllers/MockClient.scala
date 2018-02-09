@@ -12,7 +12,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-trait MockClient extends util.Daos
+trait MockClient extends db.Helpers
   with FutureAwaits
   with DefaultAwaitTimeout
 {
@@ -177,7 +177,7 @@ trait MockClient extends util.Daos
     key: Option[String] = None,
     description: Option[String] = None,
     visibility: Visibility = Visibility.Organization
-  ): ApplicationForm = db.Util.createApplicationForm(
+  ): ApplicationForm = db.createApplicationForm(
     name = name,
     key = key,
     description = description,

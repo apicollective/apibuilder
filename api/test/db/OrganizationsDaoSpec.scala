@@ -5,7 +5,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.junit.Assert._
 import java.util.UUID
 
-class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "create" in {
     Util.gilt.name must be("Gilt Test Org")
@@ -15,14 +15,14 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   "create w/ explicit key" in {
     val name = UUID.randomUUID.toString
     val key = "key-" + UUID.randomUUID.toString
-    val org = Util.createOrganization(Util.createdBy, name = Some(name), key = Some(key))
+    val org = createOrganization(createdBy, name = Some(name), key = Some(key))
     org.name must be(name)
     org.key must be(key)
   }
 
   "update" must {
 
-    lazy val org = Util.createOrganization()
+    lazy val org = createOrganization()
     lazy val form = OrganizationForm(
       name = org.name,
       key = Some(org.key),
@@ -31,34 +31,34 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
     )
 
     "name" in {
-      val updated = organizationsDao.update(Util.createdBy, org, form.copy(name = org.name + "2"))
+      val updated = organizationsDao.update(createdBy, org, form.copy(name = org.name + "2"))
       updated.name must be(org.name + "2")
     }
 
     "key" in {
-      val updated = organizationsDao.update(Util.createdBy, org, form.copy(key = Some(org.key + "2")))
+      val updated = organizationsDao.update(createdBy, org, form.copy(key = Some(org.key + "2")))
       updated.key must be(org.key + "2")
     }
 
     "namespace" in {
-      val updated = organizationsDao.update(Util.createdBy, org, form.copy(namespace = org.namespace + "2"))
+      val updated = organizationsDao.update(createdBy, org, form.copy(namespace = org.namespace + "2"))
       updated.namespace must be(org.namespace + "2")
     }
   
     "visibility" in {
-      val updated = organizationsDao.update(Util.createdBy, org, form.copy(visibility = Visibility.Public))
+      val updated = organizationsDao.update(createdBy, org, form.copy(visibility = Visibility.Public))
       updated.visibility must be(Visibility.Public)
 
-      val updated2 = organizationsDao.update(Util.createdBy, org, form.copy(visibility = Visibility.Organization))
+      val updated2 = organizationsDao.update(createdBy, org, form.copy(visibility = Visibility.Organization))
       updated2.visibility must be(Visibility.Organization)
     }
 
   }
 
   "user that creates org must be an admin" in {
-    val user = Util.upsertUser(UUID.randomUUID.toString + "@test.apibuilder.io")
+    val user = upsertUser(UUID.randomUUID.toString + "@test.apibuilder.io")
     val name = UUID.randomUUID.toString
-    val org = organizationsDao.createWithAdministrator(user, Util.createOrganizationForm(name = name))
+    val org = organizationsDao.createWithAdministrator(user, createOrganizationForm(name = name))
     org.name must be(name)
 
     membershipsDao.isUserAdmin(user, org) must be(true)
@@ -69,7 +69,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
     val domainName = UUID.randomUUID.toString
     val domains = Seq(domainName + ".com", UUID.randomUUID.toString + ".org")
     val org = organizationsDao.createWithAdministrator(
-      Util.createdBy,
+      createdBy,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
         domains = Some(domains),
@@ -96,11 +96,11 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   "findAll" must {
 
-    val user1 = Util.createRandomUser()
-    val org1 = Util.createOrganization(user1)
+    val user1 = createRandomUser()
+    val org1 = createOrganization(user1)
 
-    val user2 = Util.createRandomUser()
-    val org2 = Util.createOrganization(user2)
+    val user2 = createRandomUser()
+    val org2 = createOrganization(user2)
 
     "by key" in {
       organizationsDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) must be(Seq(org1.guid))
@@ -140,22 +140,22 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
   "validation" must {
 
     "validates name" in {
-      organizationsDao.validate(Util.createOrganizationForm(name = "this is a long name")) must be(Nil)
-      organizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message must be("name must be at least 3 characters")
-      organizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name)).head.message must be("Org with this name already exists")
+      organizationsDao.validate(createOrganizationForm(name = "this is a long name")) must be(Nil)
+      organizationsDao.validate(createOrganizationForm(name = "a")).head.message must be("name must be at least 3 characters")
+      organizationsDao.validate(createOrganizationForm(name = Util.gilt.name)).head.message must be("Org with this name already exists")
 
-      organizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) must be(Nil)
+      organizationsDao.validate(createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) must be(Nil)
     }
 
     "validates key" in {
-      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message must be("Key must be at least 3 characters")
-      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message must be("Org with this key already exists")
-      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) must be(Nil)
+      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message must be("Key must be at least 3 characters")
+      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message must be("Org with this key already exists")
+      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) must be(Nil)
     }
 
     "raises error if you try to create an org with a short name" in {
       intercept[java.lang.AssertionError] {
-        organizationsDao.createWithAdministrator(Util.createdBy, Util.createOrganizationForm("a"))
+        organizationsDao.createWithAdministrator(createdBy, createOrganizationForm("a"))
       }.getMessage must be("assertion failed: name must be at least 3 characters")
     }
 
@@ -169,18 +169,18 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
     "validates domains" in {
       val name = UUID.randomUUID.toString
-      organizationsDao.validate(Util.createOrganizationForm(name = name, domains = None)) must be(Nil)
-      organizationsDao.validate(Util.createOrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message must be("Domain bad name is not valid. Expected a domain name like apibuilder.io")
+      organizationsDao.validate(createOrganizationForm(name = name, domains = None)) must be(Nil)
+      organizationsDao.validate(createOrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message must be("Domain bad name is not valid. Expected a domain name like apibuilder.io")
     }
   }
 
   "Authorization" must {
 
-    val publicUser = Util.createRandomUser()
-    val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
+    val publicUser = createRandomUser()
+    val publicOrg = createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
 
-    val privateUser = Util.createRandomUser()
-    val privateOrg = Util.createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))
+    val privateUser = createRandomUser()
+    val privateOrg = createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))
 
     "All" must {
 
