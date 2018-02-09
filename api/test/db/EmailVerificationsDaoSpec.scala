@@ -92,39 +92,35 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
     emailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid).distinct must be(Nil)
   }
 
-  "membership requests" must {
+  "membership requests confirm auto approves pending membership requests based on org email domain" in {
+    val org = createOrganization()
+    val domain = UUID.randomUUID.toString + ".com"
 
-    "confirm auto approves pending membership requests based on org email domain" in {
-      val org = createOrganization()
-      val domain = UUID.randomUUID.toString + ".com"
+    organizationDomainsDao.create(createdBy, org, domain)
 
-      organizationDomainsDao.create(createdBy, org, domain)
+    val prefix = "test-user-" + UUID.randomUUID.toString
 
-      val prefix = "test-user-" + UUID.randomUUID.toString
+    val user = usersDao.create(UserForm(
+      email = prefix + "@" + domain,
+      password = "testing"
+    ))
 
-      val user = usersDao.create(UserForm(
-        email = prefix + "@" + domain,
-        password = "testing"
-      ))
+    val nonMatchingUser = usersDao.create(UserForm(
+      email = prefix + "@other." + domain,
+      password = "testing"
+    ))
 
-      val nonMatchingUser = usersDao.create(UserForm(
-        email = prefix + "@other." + domain,
-        password = "testing"
-      ))
+    usersDao.processUserCreated(user.guid)
+    usersDao.processUserCreated(nonMatchingUser.guid)
 
-      usersDao.processUserCreated(user.guid)
-      usersDao.processUserCreated(nonMatchingUser.guid)
+    membershipsDao.isUserMember(user, org) must be(false)
+    membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
 
-      membershipsDao.isUserMember(user, org) must be(false)
-      membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
+    val verification = emailVerificationsDao.upsert(createdBy, user, user.email)
+    emailVerificationsDao.confirm(Some(createdBy), verification)
 
-      val verification = emailVerificationsDao.upsert(createdBy, user, user.email)
-      emailVerificationsDao.confirm(Some(createdBy), verification)
-
-      membershipsDao.isUserMember(user, org) must be(true)
-      membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
-    }
-
+    membershipsDao.isUserMember(user, org) must be(true)
+    membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
   }
 
 }
