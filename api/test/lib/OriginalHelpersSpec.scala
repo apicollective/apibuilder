@@ -3,7 +3,7 @@ package lib
 import io.apibuilder.api.v0.models.{Original, OriginalForm, OriginalType}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class OriginalUtilSpec extends PlaySpec with OneAppPerSuite {
+class OriginalHelpersSpec extends PlaySpec with OneAppPerSuite {
 
   "original" in {
     val data = TestHelper.readFile("../spec/apibuilder-api.json")

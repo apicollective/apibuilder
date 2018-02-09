@@ -1,18 +1,17 @@
 package actors
 
 import db.Authorization
-import io.apibuilder.api.v0.models.ApplicationSummary
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class SearchSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class SearchSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "indexApplication" must {
 
     "q" in {
       val description = UUID.randomUUID.toString
-      val form = db.Util.createApplicationForm().copy(description = Some(description))
-      val app = db.Util.createApplication(form = form)
+      val form = createApplicationForm().copy(description = Some(description))
+      val app = createApplication(form = form)
       search.indexApplication(app.guid)
 
       Seq(
@@ -29,7 +28,7 @@ class SearchSpec extends PlaySpec with OneAppPerSuite with util.Daos {
     }
 
     "on create" in {
-      val app = db.Util.createApplication()
+      val app = createApplication()
 
       search.indexApplication(app.guid)
 
@@ -39,15 +38,15 @@ class SearchSpec extends PlaySpec with OneAppPerSuite with util.Daos {
     }
 
     "on update" in {
-      val form = db.Util.createApplicationForm()
-      val app = db.Util.createApplication(form = form)
+      val form = createApplicationForm()
+      val app = createApplication(form = form)
 
       search.indexApplication(app.guid)
 
       val newName = app.name + "2"
 
       applicationsDao.update(
-        updatedBy = db.Util.createdBy,
+        updatedBy = createdBy,
         app = app,
         form = form.copy(name = newName)
       )
@@ -63,10 +62,10 @@ class SearchSpec extends PlaySpec with OneAppPerSuite with util.Daos {
     }
 
     "on delete" in {
-      val app = db.Util.createApplication()
+      val app = createApplication()
       search.indexApplication(app.guid)
 
-      applicationsDao.softDelete(db.Util.createdBy, app)
+      applicationsDao.softDelete(createdBy, app)
       search.indexApplication(app.guid)
       itemsDao.findAll(Authorization.All, guid = Some(app.guid)) must be(Nil)
     }

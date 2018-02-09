@@ -3,12 +3,11 @@ package db
 import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
 import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
 import io.apibuilder.spec.v0.{models => spec}
-import play.api.libs.json.{Json, JsObject}
+import play.api.libs.json.Json
 import lib.Role
 import java.util.UUID
 
-object Util extends util.Daos {
-  // new play.core.StaticApplication(new java.io.File("."))
+trait Helpers extends util.Daos {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
@@ -32,7 +31,7 @@ object Util extends util.Daos {
   }
 
   def createOrganization(
-    createdBy: User = Util.createdBy,
+    createdBy: User = createdBy,
     name: Option[String] = None,
     key: Option[String] = None,
     namespace: Option[String] = None,
@@ -65,7 +64,7 @@ object Util extends util.Daos {
     org: Organization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
   ): Application = {
-    applicationsDao.create(Util.createdBy, org, form)
+    applicationsDao.create(createdBy, org, form)
   }
 
   def createApplicationForm(
@@ -87,11 +86,11 @@ object Util extends util.Daos {
     service: Option[spec.Service] = None
   ): Version = {
     versionsDao.create(
-      Util.createdBy,
+      createdBy,
       application,
       version,
       original,
-      service.getOrElse { Util.createService(application) }
+      service.getOrElse { createService(application) }
     )
   }
 
@@ -109,11 +108,11 @@ object Util extends util.Daos {
 
   def createMembership(
     org: Organization,
-    user: User = Util.createRandomUser(),
+    user: User = createRandomUser(),
     role: Role = Role.Admin
   ): io.apibuilder.api.v0.models.Membership = {
-    val request = membershipRequestsDao.upsert(Util.createdBy, org, user, role)
-    membershipRequestsDao.accept(Util.createdBy, request)
+    val request = membershipRequestsDao.upsert(createdBy, org, user, role)
+    membershipRequestsDao.accept(createdBy, request)
 
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
       sys.error("membership could not be created")
@@ -122,7 +121,7 @@ object Util extends util.Daos {
 
   def createSubscription(
     org: Organization,
-    user: User = Util.createRandomUser(),
+    user: User = createRandomUser(),
     publication: Publication = Publication.all.head
   ): Subscription = {
     createSubscription(
@@ -139,7 +138,7 @@ object Util extends util.Daos {
     user: User,
     form: SubscriptionForm
   ): Subscription = {
-    subscriptionsDao.create(Util.createdBy, form)
+    subscriptionsDao.create(createdBy, form)
   }
 
   def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(

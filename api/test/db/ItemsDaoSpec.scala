@@ -6,16 +6,16 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.postgresql.util.PSQLException
 import java.util.UUID
 
-class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
+class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] def upsertItem(
-    org: Organization = Util.createOrganization(),
+    org: Organization = createOrganization(),
     guid: UUID = UUID.randomUUID,
     label: String = "Test",
     description: Option[String] = None,
     content: String = "test"
   ): Item = {
-    val app = Util.createApplication(org = org)
+    val app = createApplication(org = org)
     itemsDao.upsert(
       guid = guid,
       detail = ApplicationSummary(
@@ -71,7 +71,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
       }
 
       "orgKey" in {
-        val org = Util.createOrganization()
+        val org = createOrganization()
         val item = upsertItem(org = org)
         val guids = itemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}")).map(_.guid)
         guids.contains(item.guid) must be(true)

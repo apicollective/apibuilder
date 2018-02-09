@@ -1,6 +1,6 @@
 package util
 
-import db.Util
+import db.Helpers
 import org.joda.time.DateTime
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
