@@ -4,7 +4,7 @@ import db.Authorization
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "upsert" must {
 
@@ -13,13 +13,13 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val form = createGeneratorForm(service)
       generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) must be(Nil)
 
-      generatorsDao.upsert(db.createdBy, form)
+      generatorsDao.upsert(createdBy, form)
       val gws = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       gws.generator.key must be(form.generator.key)
 
-      generatorsDao.upsert(db.createdBy, form)
+      generatorsDao.upsert(createdBy, form)
       val second = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
@@ -31,7 +31,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val form = createGeneratorForm(service = service)
       generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) must be(Nil)
 
-      generatorsDao.upsert(db.createdBy, form)
+      generatorsDao.upsert(createdBy, form)
       val gws = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
@@ -41,7 +41,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
         serviceGuid = service.guid,
         generator = form.generator.copy(name = form.generator.name + "2")
       )
-      generatorsDao.upsert(db.createdBy, newForm)
+      generatorsDao.upsert(createdBy, newForm)
       val second = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
@@ -56,7 +56,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
         attributes = Seq("foo", "bar")
       )
 
-      generatorsDao.upsert(db.createdBy, form)
+      generatorsDao.upsert(createdBy, form)
       generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.generator.attributes must be(
         Seq("foo", "bar")
       )
@@ -67,7 +67,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
           attributes = Seq("baz")
         )
       )
-      generatorsDao.upsert(db.createdBy, form2)
+      generatorsDao.upsert(createdBy, form2)
       generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.generator.attributes must be(
         Seq("baz")
       )
@@ -78,7 +78,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
           attributes = Nil
         )
       )
-      generatorsDao.upsert(db.createdBy, form3)
+      generatorsDao.upsert(createdBy, form3)
       generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.generator.attributes must be(
         Nil
       )
@@ -88,7 +88,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "softDelete" in {
     val gws = createGenerator()
-    generatorsDao.softDelete(db.createdBy, gws)
+    generatorsDao.softDelete(createdBy, gws)
     generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key)) must be(Nil)
   }
 
@@ -105,7 +105,7 @@ class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val gws = createGenerator()
       generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key)).map(_.generator.key) must be(Seq(gws.generator.key))
 
-      generatorsDao.softDelete(db.createdBy, gws)
+      generatorsDao.softDelete(createdBy, gws)
       generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = None).map(_.generator.key) must be(Seq(gws.generator.key))
       generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = Some(true)).map(_.generator.key) must be(Seq(gws.generator.key))
       generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = Some(false)) must be(Nil)

@@ -5,12 +5,12 @@ import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService, GeneratorSe
 import io.apibuilder.generator.v0.models.Generator
 import java.util.UUID
 
-object Util extends db.Helpers {
+trait Helpers extends db.Helpers {
 
   def createGeneratorService(
     form: GeneratorServiceForm = createGeneratorServiceForm()
   ): GeneratorService = {
-    servicesDao.create(db.createdBy, form)
+    servicesDao.create(createdBy, form)
   }
 
   def createGeneratorServiceForm(
@@ -26,7 +26,7 @@ object Util extends db.Helpers {
   ): GeneratorWithService = {
     val form = createGeneratorForm(service = service)
 
-    generatorsDao.upsert(db.createdBy, form)
+    generatorsDao.upsert(createdBy, form)
     generatorsDao.findAll(
       Authorization.All,
       serviceGuid = Some(service.guid),

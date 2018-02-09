@@ -1,10 +1,8 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{Application, MoveForm, Organization}
-import io.apibuilder.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
-import org.scalatest.Matchers
 import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
 class ApplicationsSpec extends PlaySpec with MockClient with OneServerPerSuite {
@@ -15,7 +13,7 @@ class ApplicationsSpec extends PlaySpec with MockClient with OneServerPerSuite {
     await(client.applications.get(org.key, key = Some(key), limit = 1)).headOption
   }
 
-  private lazy val org = db.createOrganization(createdBy = TestUser)
+  private lazy val org = createOrganization(createdBy = TestUser)
 
   "POST /:orgKey" in {
     val key = "test-" + UUID.randomUUID.toString

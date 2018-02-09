@@ -10,7 +10,7 @@ class VersionsSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   "POST /:orgKey/:version stores the original in the proper format" in {
     val form = createVersionForm(name = application.name)
-    val version = createVersion(application, Some(form))
+    val version = createVersionThroughApi(application, Some(form))
 
     // Now test that we stored the appropriate original
     version.original match {

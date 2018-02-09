@@ -106,12 +106,6 @@ trait MockClient extends db.Helpers
     }
   }
 
-  def createOrganization(
-    form: OrganizationForm = createOrganizationForm()
-  ): Organization = {
-    await(client.organizations.post(form))
-  }
-
   def createAttribute(
     form: AttributeForm = createAttributeForm()
   ): Attribute = {
@@ -146,7 +140,7 @@ trait MockClient extends db.Helpers
     description = Some("test")
   )
 
-  def createVersion(
+  def createVersionThroughApi(
     application: Application = createApplication(createOrganization()),
     form: Option[VersionForm] = None,
     version: String = "0.0.1"

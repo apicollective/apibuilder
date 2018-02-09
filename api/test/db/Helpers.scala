@@ -40,12 +40,19 @@ trait Helpers extends util.Daos {
     namespace: Option[String] = None,
     visibility: Visibility = Visibility.Organization
   ): Organization = {
-    val form = createOrganizationForm(
-      name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
-      key = key,
-      namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
-      visibility = visibility
+    createOrganization(
+      createOrganizationForm(
+        name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
+        key = key,
+        namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
+        visibility = visibility
+      )
     )
+  }
+
+  def createOrganization(
+    form: OrganizationForm
+  ): Organization = {
     organizationsDao.createWithAdministrator(createdBy, form)
   }
 
