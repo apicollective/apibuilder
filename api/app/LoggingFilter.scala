@@ -1,6 +1,8 @@
 package io.apicollective
 
 import play.api.Logger
+import play.api.mvc._
+
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HttpFilters
 
@@ -18,7 +20,7 @@ class LoggingFilter @javax.inject.Inject() (loggingFilter: ApibuilderLoggingFilt
 
 class ApibuilderLoggingFilter @javax.inject.Inject() (
   implicit ec: ExecutionContext
-) extends HttpFilters {
+) extends Filter {
   def apply(f: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
     val startTime = System.currentTimeMillis
     f(requestHeader).map { result =>
@@ -30,6 +32,7 @@ class ApibuilderLoggingFilter @javax.inject.Inject() (
         s"${requestHeader.host}${requestHeader.uri}",
         result.header.status,
         s"${requestTime}ms",
+        headerMap.getOrElse("X-Flow-Request-Id", Nil).mkString(","),
         headerMap.getOrElse("User-Agent", Nil).mkString(","),
         headerMap.getOrElse("X-Forwarded-For", Nil).mkString(","),
         headerMap.getOrElse("CF-Connecting-IP", Nil).mkString(",")
