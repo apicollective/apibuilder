@@ -3,9 +3,8 @@ package util
 import db.Util
 import org.joda.time.DateTime
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class SessionHelperSpec extends PlaySpec with OneAppPerSuite {
+class SessionHelperSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   "createAuthentication" in {
     val user = Util.upsertUser("michael@mailinator.com")

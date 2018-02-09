@@ -1,14 +1,13 @@
 package db
 
 import io.apibuilder.api.v0.models.UserForm
-import lib.Role
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import org.junit.Assert._
 import java.util.UUID
 
 class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
-  def emailVerificationConfirmationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationConfirmationsDao]
+  def emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
+
   "upsert" in {
     val user = Util.createRandomUser()
 
@@ -21,12 +20,12 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with util.D
 
     emailVerificationsDao.softDelete(Util.createdBy, verification1)
     val verification3 = emailVerificationsDao.upsert(Util.createdBy, user, user.email)
-    verification3.guid should not be(verification1.guid)
+    verification3.guid != verification1.guid must be(true)
 
     val verificationWithDifferentEmail = emailVerificationsDao.upsert(Util.createdBy, user, "other-" + user.email)
-    verificationWithDifferentEmail.guid should not be(verification3.guid)
+    verificationWithDifferentEmail.guid != verification3.guid must be(true)
   }
-  /*
+
   "create" in {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
@@ -127,5 +126,5 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with util.D
     }
 
   }
-*/
+
 }

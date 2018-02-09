@@ -6,6 +6,7 @@ import org.postgresql.util.PSQLException
 import java.util.UUID
 
 import anorm._
+import io.apibuilder.api.v0.models.User
 import org.joda.time.DateTime
 import play.api.db._
 import play.api.Play.current
@@ -17,19 +18,19 @@ class TasksDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
       update tasks set deleted_at = timezone('utc', now()) - interval '$days days' where guid = {guid}::uuid
     """
 
-    DB.withConnection { implicit c =>
+    injector.instanceOf[DefaultDBApi].database("default").withConnection { implicit c =>
       SQL(query).on('guid -> task.guid).execute()
     }
   }
 
-  lazy val user = Util.createRandomUser()
+  private[this] lazy val user: User = Util.createRandomUser()
 
   private[this] def createTaskDataDiffVersion(
     oldGuid: UUID = UUID.randomUUID,
     newGuid: UUID = UUID.randomUUID,
     numberAttempts: Int = 0
   ): Task = {
-    val guid = DB.withConnection { implicit c =>
+    val guid = injector.instanceOf[DefaultDBApi].database("default").withConnection { implicit c =>
       tasksDao.insert(c, user, TaskDataDiffVersion(oldGuid, newGuid))
     }
 

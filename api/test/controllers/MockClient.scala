@@ -6,49 +6,22 @@ import db.Authorization
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
-import util.SessionHelper
+import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-trait MockClient {
+trait MockClient extends util.Daos
+  with FutureAwaits
+  with DefaultAwaitTimeout
+{
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   val defaultPort: Int = 9010
 
   private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
-  private[this] def app = play.api.Play.current
-
-  def applicationsDao = app.injector.instanceOf[db.ApplicationsDao]
-  def attributesDao = app.injector.instanceOf[db.AttributesDao]
-  def changesDao = app.injector.instanceOf[db.ChangesDao]
-  def emailVerificationsDao = app.injector.instanceOf[db.EmailVerificationsDao]
-  def itemsDao = app.injector.instanceOf[db.ItemsDao]
-  def membershipRequestsDao = app.injector.instanceOf[db.MembershipRequestsDao]
-  def membershipsDao = app.injector.instanceOf[db.MembershipsDao]
-  def usersDao = app.injector.instanceOf[db.UsersDao]
-
-  def organizationAttributeValuesDao = app.injector.instanceOf[db.OrganizationAttributeValuesDao]
-  def organizationDomainsDao = app.injector.instanceOf[db.OrganizationDomainsDao]
-  def organizationLogsDao = app.injector.instanceOf[db.OrganizationLogsDao]
-  def organizationsDao = app.injector.instanceOf[db.OrganizationsDao]
-  def originalsDao = app.injector.instanceOf[db.OriginalsDao]
-  def passwordResetRequestsDao = app.injector.instanceOf[db.PasswordResetRequestsDao]
-  def subscriptionsDao = app.injector.instanceOf[db.SubscriptionsDao]
-  def tasksDao = app.injector.instanceOf[db.TasksDao]
-  def tokensDao = app.injector.instanceOf[db.TokensDao]
-  def userPasswordsDao = app.injector.instanceOf[db.UserPasswordsDao]
-  def versionsDao = app.injector.instanceOf[db.VersionsDao]
-
-  def servicesDao = app.injector.instanceOf[db.generators.ServicesDao]
-  def generatorsDao = app.injector.instanceOf[db.generators.GeneratorsDao]
-
-  def emails = app.injector.instanceOf[actors.Emails]
-  def search = app.injector.instanceOf[actors.Search]
-
-  def sessionHelper = app.injector.instanceOf[SessionHelper]
 
   lazy val TestUser: User = usersDao.create(createUserForm())
 
