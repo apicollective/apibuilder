@@ -3,7 +3,6 @@ package db
 import lib.Role
 import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OriginalType, Visibility}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import org.junit.Assert._
 import java.util.UUID
 import play.api.libs.json.Json
 
@@ -178,7 +177,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       ).map(_.guid) must be(Nil)
 
       val service = createService(app)
-      val version = versionsDao.create(createdBy, app, "1.0.0", Original, service)
+      versionsDao.create(createdBy, app, "1.0.0", Original, service)
 
       applicationsDao.findAll(
         Authorization.All,

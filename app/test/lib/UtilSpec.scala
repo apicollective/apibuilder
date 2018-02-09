@@ -1,11 +1,8 @@
 package lib
 
-import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
 import org.scalatest.{FunSpec, Matchers}
-import org.junit.Assert._
-import java.util.UUID
 
-class UtilSpec extends FunSpec with Matchers with TestApplication {
+class UtilSpec extends FunSpec with Matchers {
 
   it("validateReturnUrl for invalid domains") {
     Util.validateReturnUrl("") should be(Left(Seq("Redirect URL[] must start with / or a known domain")))

@@ -31,11 +31,11 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   "with an application" must {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(applicationKey)
-    val service = createService(application)
+    lazy val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(applicationKey)
+    lazy val service = createService(application)
 
     "create" in {
-      val version = versionsDao.create(createdBy, application, "1.0.0", Original, service)
+      versionsDao.create(createdBy, application, "1.0.0", Original, service)
       createVersion().version must be("1.0.0")
     }
 

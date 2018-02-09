@@ -176,9 +176,7 @@ trait Helpers extends util.Daos {
   )
 
 
-  lazy val createdBy: User = {
-    play.api.Play.current.injector.instanceOf[db.UsersDao].AdminUser
-  }
+  def createdBy: User = usersDao.AdminUser
 
   lazy val gilt: Organization = upsertOrganization("Gilt Test Org")
 

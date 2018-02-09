@@ -1,7 +1,6 @@
 package db
 
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import org.junit.Assert._
 import java.util.UUID
 
 class OrganizationDomainsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {

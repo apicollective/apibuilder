@@ -2,7 +2,6 @@ package db
 
 import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import org.junit.Assert._
 import java.util.UUID
 
 class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
@@ -68,7 +67,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
 
     val domainName = UUID.randomUUID.toString
     val domains = Seq(domainName + ".com", UUID.randomUUID.toString + ".org")
-    val org = organizationsDao.createWithAdministrator(
+    lazy val org = organizationsDao.createWithAdministrator(
       createdBy,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
@@ -96,11 +95,11 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
 
   "findAll" must {
 
-    val user1 = createRandomUser()
-    val org1 = createOrganization(user1)
+    lazy val user1 = createRandomUser()
+    lazy val org1 = createOrganization(user1)
 
-    val user2 = createRandomUser()
-    val org2 = createOrganization(user2)
+    lazy val user2 = createRandomUser()
+    lazy val org2 = createOrganization(user2)
 
     "by key" in {
       organizationsDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) must be(Seq(org1.guid))
@@ -176,15 +175,15 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
 
   "Authorization" must {
 
-    val publicUser = createRandomUser()
-    val publicOrg = createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
+    lazy val publicUser = createRandomUser()
+    lazy val publicOrg = createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
 
-    val privateUser = createRandomUser()
-    val privateOrg = createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))
+    lazy val privateUser = createRandomUser()
+    lazy val privateOrg = createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))
 
     "All" must {
 
-      "sees both orgs" in {
+      "sees both organizations" in {
         organizationsDao.findAll(Authorization.All, guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
         organizationsDao.findAll(Authorization.All, guid = Some(privateOrg.guid)).map(_.guid) must be(Seq(privateOrg.guid))
       }
@@ -197,10 +196,6 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
         organizationsDao.findAll(Authorization.PublicOnly, guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
         organizationsDao.findAll(Authorization.PublicOnly, guid = Some(privateOrg.guid)).map(_.guid) must be(Nil)
       }
-
-    }
-
-    "User" must {
 
       "user can see own org" in {
         organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
