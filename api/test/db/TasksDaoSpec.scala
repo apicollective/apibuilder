@@ -17,7 +17,7 @@ class TasksDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       update tasks set deleted_at = timezone('utc', now()) - interval '$days days' where guid = {guid}::uuid
     """
 
-    injector.instanceOf[DefaultDBApi].database("default").withConnection { implicit c =>
+    injector.instanceOf[DBApi].database("default").withConnection { implicit c =>
       SQL(query).on('guid -> task.guid).execute()
     }
   }
@@ -29,7 +29,7 @@ class TasksDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     newGuid: UUID = UUID.randomUUID,
     numberAttempts: Int = 0
   ): Task = {
-    val guid = injector.instanceOf[DefaultDBApi].database("default").withConnection { implicit c =>
+    val guid = injector.instanceOf[DBApi].database("default").withConnection { implicit c =>
       tasksDao.insert(c, user, TaskDataDiffVersion(oldGuid, newGuid))
     }
 
