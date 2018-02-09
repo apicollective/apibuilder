@@ -11,13 +11,13 @@ class OrganizationsSpec extends PlaySpec with MockClient with OneServerPerSuite 
 
   "POST /organizations" in {
     val name = UUID.randomUUID.toString
-    val org = createOrganization(createOrganizationForm(name = name))
+    val org = createOrganization(name = Some(name))
     org.name must equal(name)
   }
 
   "POST /organizations trims whitespace in name" in {
     val name = UUID.randomUUID.toString
-    val org = createOrganization(createOrganizationForm(name = " " + name + " "))
+    val org = createOrganization(name = Some(" " + name + " "))
     org.name must equal(name)
   }
 
@@ -55,8 +55,14 @@ class OrganizationsSpec extends PlaySpec with MockClient with OneServerPerSuite 
   }
 
   "GET /organizations for an anonymous user shows only public orgs" in {
-    val privateOrg = createOrganization(createOrganizationForm().copy(visibility = Visibility.Organization))
-    val publicOrg = createOrganization(createOrganizationForm().copy(visibility = Visibility.Public))
+    val privateOrg = createOrganization(
+      createOrganizationForm().copy(visibility = Visibility.Organization),
+      createdBy
+    )
+    val publicOrg = createOrganization(
+      createOrganizationForm().copy(visibility = Visibility.Public),
+      createdBy
+    )
     val anonymous = createUser()
 
     val client = newClient(anonymous)

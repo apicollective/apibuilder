@@ -41,17 +41,19 @@ trait Helpers extends util.Daos {
     visibility: Visibility = Visibility.Organization
   ): Organization = {
     createOrganization(
-      createOrganizationForm(
+      form = createOrganizationForm(
         name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
         key = key,
         namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
         visibility = visibility
-      )
+      ),
+      createdBy = createdBy
     )
   }
 
   def createOrganization(
-    form: OrganizationForm
+    form: OrganizationForm,
+    createdBy: User
   ): Organization = {
     organizationsDao.createWithAdministrator(createdBy, form)
   }
