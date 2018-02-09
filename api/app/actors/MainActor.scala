@@ -1,8 +1,8 @@
 package actors
 
-import lib.Role
-import akka.actor._
 import java.util.UUID
+
+import scala.util.{Failure, Success, Try}
 
 object MainActor {
 
@@ -32,7 +32,13 @@ class MainActor @javax.inject.Inject() (
   @javax.inject.Named("user-actor") userActor: akka.actor.ActorRef
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  implicit val ec = system.dispatchers.lookup("main-actor-context")
+  private[this] implicit val ec = system.dispatchers.lookup("main-actor-context")
+
+  private[this] case object Startup
+
+  system.scheduler.scheduleOnce(5.seconds) {
+    self ! Startup
+  }
 
   def receive = akka.event.LoggingReceive {
 
@@ -76,6 +82,30 @@ class MainActor @javax.inject.Inject() (
       userActor ! UserActor.Messages.UserCreated(guid)
     }
 
+    case m @ Startup => withVerboseErrorHandler(m) {
+      app.mode match {
+        case Mode.Test => {
+          // No-op
+        }
+        case Mode.Prod | Mode.Dev => {
+          ensureServices()
+        }
+      }
+    }
+
     case m: Any => logUnhandledMessage(m)
+  }
+
+  private[this] def ensureServices() {
+    // TODO: Move to background actor and out of global
+    Logger.info("[MainActor] Starting ensureServices()")
+
+    Try {
+      // Logger.warn("Migration disabled")
+      play.api.Play.current.injector.instanceOf[_root_.db.VersionsDao].migrate()
+    } match {
+      case Success(result) => Logger.info("ensureServices() completed: " + result)
+      case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")
+    }
   }
 }
