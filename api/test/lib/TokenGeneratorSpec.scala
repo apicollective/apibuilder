@@ -12,7 +12,7 @@ class TokenGeneratorSpec extends FunSpec with ShouldMatchers {
 
   it("generates tokens that are long") {
     val token = TokenGenerator.generate()
-    token.size >= 80
+    token.length >= 80
   }
 
 }
