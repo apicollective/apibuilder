@@ -6,7 +6,6 @@ import db.Authorization
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
-import play.api.test.Helpers._
 import util.SessionHelper
 
 import scala.concurrent.{Await, Future}

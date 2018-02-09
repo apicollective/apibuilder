@@ -1,35 +1,35 @@
 package lib
 
-import org.scalatest.{FunSpec, ShouldMatchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class ServiceUriSpec extends FunSpec with ShouldMatchers {
+class ServiceUriSpec extends PlaySpec with OneAppPerSuite {
 
   describe("parse") {
 
     it("invalid URIs") {
-      ServiceUri.parse("") should be(None)
-      ServiceUri.parse("foo") should be(None)
-      ServiceUri.parse("http://foo") should be(None)
-      ServiceUri.parse("http://foo:9000/123") should be(None)
-      ServiceUri.parse("http://localhost:9000/bryzek/apidoc/latest/service") should be(None)
+      ServiceUri.parse("") must be(None)
+      ServiceUri.parse("foo") must be(None)
+      ServiceUri.parse("http://foo") must be(None)
+      ServiceUri.parse("http://foo:9000/123") must be(None)
+      ServiceUri.parse("http://localhost:9000/bryzek/apidoc/latest/service") must be(None)
     }
 
     it("valid URIs") {
-      ServiceUri.parse("http://localhost:9000/bryzek/apidoc/latest/service.json") should be(Some(ServiceUri(
+      ServiceUri.parse("http://localhost:9000/bryzek/apidoc/latest/service.json") must be(Some(ServiceUri(
         host = "localhost:9000",
         org = "bryzek",
         app = "apidoc",
         version = "latest"
       )))
 
-      ServiceUri.parse("http://localhost:9000/bryzek/apidoc/0.9.1-dev/service.json") should be(Some(ServiceUri(
+      ServiceUri.parse("http://localhost:9000/bryzek/apidoc/0.9.1-dev/service.json") must be(Some(ServiceUri(
         host = "localhost:9000",
         org = "bryzek",
         app = "apidoc",
         version = "0.9.1-dev"
       )))
 
-      ServiceUri.parse(" HTTPS://localhost:9000/bryzek/apidoc/0.9.1-dev/service.json") should be(Some(ServiceUri(
+      ServiceUri.parse(" HTTPS://localhost:9000/bryzek/apidoc/0.9.1-dev/service.json") must be(Some(ServiceUri(
         host = "localhost:9000",
         org = "bryzek",
         app = "apidoc",
