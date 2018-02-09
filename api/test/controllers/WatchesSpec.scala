@@ -1,11 +1,10 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Organization, Application, User, Watch, WatchForm}
-import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest}
-import java.util.UUID
+import io.apibuilder.api.v0.models.{Application, Organization, User, Watch, WatchForm}
 
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
-class WatchesSpec extends PlaySpec with MockClient {
+class WatchesSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

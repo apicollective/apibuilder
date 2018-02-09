@@ -10,7 +10,7 @@ class AttributesSpec extends PlaySpec with MockClient with OneServerPerSuite {
     val name = createRandomName("attribute")
     val attr = createAttribute(createAttributeForm(name = name, description = Some("foo")))
     attr.name must equal(name)
-    attr.description must beSome("foo")
+    attr.description must be(Some("foo"))
   }
 
   "POST /attributes trims whitespace in name" in {

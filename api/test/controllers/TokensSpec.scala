@@ -11,7 +11,7 @@ class TokensSpec extends PlaySpec with MockClient with OneServerPerSuite {
     val form = createTokenForm(user).copy(description = Some("testing"))
     val token = await(newClient(user).tokens.post(form))
     token.user.guid must equal(user.guid)
-    token.description must beSome("testing")
+    token.description must be(Some("testing"))
   }
 
   "GET /tokens" in {
@@ -49,6 +49,6 @@ class TokensSpec extends PlaySpec with MockClient with OneServerPerSuite {
     val clear = await(
       newClient(user).tokens.getCleartextByGuid(token.guid)
     )
-    clear.token.length > 30 must beTrue
+    clear.token.length > 30 must be(true)
   }
 }

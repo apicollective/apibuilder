@@ -41,7 +41,7 @@ class ApplicationsSpec extends PlaySpec with MockClient with OneServerPerSuite {
   "DELETE /:org/:key" in {
     val application = createApplication(org)
     await(client.applications.deleteByApplicationKey(org.key, application.key)) must equal(())
-    getByKey(org, application.key) must beNone
+    getByKey(org, application.key) must be(None)
   }
 
   "GET /:orgKey by application name" in {

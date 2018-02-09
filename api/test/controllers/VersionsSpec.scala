@@ -1,8 +1,9 @@
 package controllers
 
 import io.apibuilder.api.v0.models.OriginalType
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
-class VersionsSpec extends PlaySpec with MockClient {
+class VersionsSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   private[this] lazy val org = createOrganization()
   private[this] lazy val application = createApplication(org)

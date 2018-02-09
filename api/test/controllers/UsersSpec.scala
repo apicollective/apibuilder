@@ -35,7 +35,7 @@ class UsersSpec extends PlaySpec with MockClient with OneServerPerSuite {
         )
       )
     }
-    updatedUser.name must beSome("joseph")
+    updatedUser.name must be(Some("joseph"))
   }
 
   "GET /users by nickname" in {
