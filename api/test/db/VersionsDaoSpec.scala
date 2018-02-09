@@ -19,7 +19,9 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     ).toString
   )
 
-  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): io.apibuilder.api.v0.models.Application = {
+  private[this] def createApplicationByKey(
+    key: String = "test-" + UUID.randomUUID.toString
+  ): io.apibuilder.api.v0.models.Application = {
     createApplication(
       org = testOrg,
       form = createApplicationForm().copy(key = Some(key))
@@ -29,7 +31,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   "with an application" must {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    val application: io.apibuilder.api.v0.models.Application = createApplication(applicationKey)
+    val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(applicationKey)
     val service = createService(application)
 
     "create" in {
@@ -57,7 +59,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   }
 
   "sorts properly" in {
-    val app = createApplication()
+    val app = createApplicationByKey()
     val service = createService(app)
     versionsDao.create(createdBy, app, "1.0.2", Original, service)
     versionsDao.create(createdBy, app, "1.0.2-dev", Original, service)
@@ -69,7 +71,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   }
 
   "can parse original" in {
-    val app = createApplication()
+    val app = createApplicationByKey()
     val service = createService(app)
     val version = versionsDao.create(createdBy, app, "1.0.2", Original, service)
 
@@ -93,14 +95,14 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   }
 
   "trims version number" in {
-    val app = createApplication()
+    val app = createApplicationByKey()
     val service = createService(app)
     val version = versionsDao.create(createdBy, app, " 1.0.2\n ", Original, service)
     version.version must be("1.0.2")
   }
 
   "findAllVersions" in {
-    val app = createApplication()
+    val app = createApplicationByKey()
     val service = createService(app)
     versionsDao.create(createdBy, app, "1.0.1", Original, service)
     versionsDao.create(createdBy, app, "1.0.2", Original, service)
