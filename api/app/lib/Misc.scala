@@ -11,12 +11,11 @@ object Misc {
 
   def emailDomain(email: String): Option[String] = {
     email.trim.split("@").toList match {
-      case username :: domain :: Nil => {
-        Some(domain.toLowerCase.trim)
+      case _ :: domain :: Nil => {
+        Some(domain.toLowerCase.trim).filter(_.nonEmpty)
       }
       case _ => None
     }
   }
-
 
 }

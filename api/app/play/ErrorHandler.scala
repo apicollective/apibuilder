@@ -1,5 +1,6 @@
 package io.apicollective.play
 
+import io.apibuilder.api.v0.models.json._
 import java.util.UUID
 
 import lib.Validation
@@ -34,4 +35,5 @@ class ErrorHandler extends HttpErrorHandler {
     Logger.error(msg, exception)
     Future.successful(InternalServerError(Json.toJson(Validation.error(msg))))
   }
+
 }

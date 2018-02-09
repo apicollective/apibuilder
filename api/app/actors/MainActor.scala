@@ -1,11 +1,12 @@
 package actors
 
+import lib.Role
+import akka.actor._
 import java.util.UUID
-
-import akka.actor.{Actor, ActorLogging, ActorSystem}
 import play.api.{Logger, Mode}
 
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 object MainActor {
 
@@ -39,7 +40,7 @@ class MainActor @javax.inject.Inject() (
 
   private[this] case object Startup
 
-  system.scheduler.scheduleOnce(5.seconds) {
+  system.scheduler.scheduleOnce(FiniteDuration(5, SECONDS)) {
     self ! Startup
   }
 
