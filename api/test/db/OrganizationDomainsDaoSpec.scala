@@ -20,10 +20,10 @@ class OrganizationDomainsDaoSpec extends PlaySpec with OneAppPerSuite with db.He
   "domains are unique per org" in {
     val domainName = UUID.randomUUID.toString + ".org"
     val org1 = createOrganization()
-    val domain1 = organizationDomainsDao.create(createdBy, org1, domainName)
+    organizationDomainsDao.create(createdBy, org1, domainName)
 
     val org2 = createOrganization()
-    val domain2 = organizationDomainsDao.create(createdBy, org2, domainName)
+    organizationDomainsDao.create(createdBy, org2, domainName)
 
     organizationsDao.findByGuid(Authorization.All, org1.guid).get.domains.map(_.name) must be(Seq(domainName))
     organizationsDao.findByGuid(Authorization.All, org2.guid).get.domains.map(_.name) must be(Seq(domainName))
