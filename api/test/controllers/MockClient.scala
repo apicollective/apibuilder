@@ -19,7 +19,7 @@ trait MockClient extends db.Helpers
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val defaultPort: Int = 9010
+  def port: Int
 
   private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
 
@@ -40,7 +40,7 @@ trait MockClient extends db.Helpers
 
   def newSessionClient(sessionId: String): Client = {
     new io.apibuilder.api.v0.Client(
-      s"http://localhost:$defaultPort",
+      s"http://localhost:$port",
       Some(apiAuth),
       defaultHeaders = Seq("Authorization" -> s"Session $sessionId")
     )

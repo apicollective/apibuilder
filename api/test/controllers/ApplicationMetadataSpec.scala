@@ -29,7 +29,7 @@ class ApplicationMetadataSpec extends PlaySpec with MockClient with OneServerPer
 
     val result = await(
       ws.url(
-        s"http://localhost:$defaultPort/${org.key}/metadata/${application.key}/versions/latest.txt"
+        s"http://localhost:$port/${org.key}/metadata/${application.key}/versions/latest.txt"
       ).withHeaders(
         "Authorization" -> s"Session ${auth.session.id}"
       ).get()
