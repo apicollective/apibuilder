@@ -9,8 +9,6 @@ import play.api.libs.json.Json
 
 class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
-  private lazy val baseUrl = "http://localhost"
-
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
@@ -18,7 +16,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] def upsertApplication(
     nameOption: Option[String] = None,
-    org: Organization = Util.testOrg,
+    org: Organization = testOrg,
     visibility: Visibility = Visibility.Organization
   ): Application = {
     val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
@@ -68,28 +66,28 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     )
 
     "returns empty if valid" in {
-      applicationsDao.validate(Util.testOrg, createForm(), None) must be(Nil)
+      applicationsDao.validate(testOrg, createForm(), None) must be(Nil)
     }
 
     "returns error if name already exists" in {
       val form = createForm()
-      applicationsDao.create(createdBy, Util.testOrg, form)
-      applicationsDao.validate(Util.testOrg, form, None).map(_.code) must be(Seq("validation_error"))
+      applicationsDao.create(createdBy, testOrg, form)
+      applicationsDao.validate(testOrg, form, None).map(_.code) must be(Seq("validation_error"))
     }
 
     "returns empty if name exists but belongs to the application we are updating" in {
       val form = createForm()
-      val application = applicationsDao.create(createdBy, Util.testOrg, form)
-      applicationsDao.validate(Util.testOrg, form, Some(application)) must be(Nil)
+      val application = applicationsDao.create(createdBy, testOrg, form)
+      applicationsDao.validate(testOrg, form, Some(application)) must be(Nil)
     }
 
     "key" in {
       val form = createForm()
-      val application = applicationsDao.create(createdBy, Util.testOrg, form)
+      val application = applicationsDao.create(createdBy, testOrg, form)
 
       val newForm = form.copy(name = application.name + "2", key = Some(application.key))
-      applicationsDao.validate(Util.testOrg, newForm, None).map(_.message) must be(Seq("Application with this key already exists"))
-      applicationsDao.validate(Util.testOrg, newForm, Some(application)) must be(Nil)
+      applicationsDao.validate(testOrg, newForm, None).map(_.message) must be(Seq("Application with this key already exists"))
+      applicationsDao.validate(testOrg, newForm, Some(application)) must be(Nil)
     }
 
   }
@@ -110,15 +108,15 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val application = upsertApplication(Some(name))
       val newName = application.name + "2"
       applicationsDao.update(createdBy, application, toForm(application).copy(name = newName))
-      findByKey(Util.testOrg, application.key).get.name must be(newName)
+      findByKey(testOrg, application.key).get.name must be(newName)
     }
 
     "description" in {
       val application = upsertApplication()
       val newDescription = "Test %s".format(UUID.randomUUID)
-      findByKey(Util.testOrg, application.key).get.description must be(None)
+      findByKey(testOrg, application.key).get.description must be(None)
       applicationsDao.update(createdBy, application, toForm(application).copy(description = Some(newDescription)))
-      findByKey(Util.testOrg, application.key).get.description must be(Some(newDescription))
+      findByKey(testOrg, application.key).get.description must be(Some(newDescription))
     }
 
     "visibility" in {
@@ -126,10 +124,10 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       application.visibility must be(Visibility.Organization)
 
       applicationsDao.update(createdBy, application, toForm(application).copy(visibility = Visibility.Public))
-      findByKey(Util.testOrg, application.key).get.visibility must be(Visibility.Public)
+      findByKey(testOrg, application.key).get.visibility must be(Visibility.Public)
 
       applicationsDao.update(createdBy, application, toForm(application).copy(visibility = Visibility.Organization))
-      findByKey(Util.testOrg, application.key).get.visibility must be(Visibility.Organization)
+      findByKey(testOrg, application.key).get.visibility must be(Visibility.Organization)
     }
   }
 

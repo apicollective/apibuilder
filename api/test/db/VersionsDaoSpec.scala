@@ -21,7 +21,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): io.apibuilder.api.v0.models.Application = {
     createApplication(
-      org = Util.testOrg,
+      org = testOrg,
       form = createApplicationForm().copy(key = Some(key))
     )
   }

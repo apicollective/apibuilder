@@ -8,8 +8,8 @@ import java.util.UUID
 class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "create" in {
-    Util.gilt.name must be("Gilt Test Org")
-    Util.gilt.key must be("gilt-test-org")
+    gilt.name must be("Gilt Test Org")
+    gilt.key must be("gilt-test-org")
   }
 
   "create w/ explicit key" in {
@@ -91,7 +91,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
   }
 
   "find by guid" in {
-    organizationsDao.findByGuid(Authorization.All, Util.gilt.guid).get.guid must equal(Util.gilt.guid)
+    organizationsDao.findByGuid(Authorization.All, gilt.guid).get.guid must equal(gilt.guid)
   }
 
   "findAll" must {
@@ -142,15 +142,15 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
     "validates name" in {
       organizationsDao.validate(createOrganizationForm(name = "this is a long name")) must be(Nil)
       organizationsDao.validate(createOrganizationForm(name = "a")).head.message must be("name must be at least 3 characters")
-      organizationsDao.validate(createOrganizationForm(name = Util.gilt.name)).head.message must be("Org with this name already exists")
+      organizationsDao.validate(createOrganizationForm(name = gilt.name)).head.message must be("Org with this name already exists")
 
-      organizationsDao.validate(createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) must be(Nil)
+      organizationsDao.validate(createOrganizationForm(name = gilt.name), Some(gilt)) must be(Nil)
     }
 
     "validates key" in {
       organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message must be("Key must be at least 3 characters")
-      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message must be("Org with this key already exists")
-      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) must be(Nil)
+      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(gilt.key))).head.message must be("Org with this key already exists")
+      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(gilt.key)), Some(gilt)) must be(Nil)
     }
 
     "raises error if you try to create an org with a short name" in {
