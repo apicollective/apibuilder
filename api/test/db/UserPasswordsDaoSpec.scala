@@ -1,49 +1,47 @@
 package db
 
-import org.scalatest.FlatSpec
-import org.junit.Assert._
-import java.util.UUID
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class UserPasswordsDaoSpec extends FlatSpec with util.TestApplication {
+class UserPasswordsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   private[this] val user = Util.upsertUser("michael@mailinator.com")
 
-  it should "have distinct keys for all algorithms" in {
+  it "have distinct keys for all algorithms" in {
     val keys = PasswordAlgorithm.All.map(_.key.toLowerCase)
-    assertEquals(keys, keys.distinct.sorted)
+    keys must equal(keys.distinct.sorted)
   }
 
-  it should "findByUserGuid" in {
+  it "findByUserGuid" in {
     userPasswordsDao.create(user, user.guid, "password")
 
     val up = userPasswordsDao.findByUserGuid(user.guid).get
-    assertEquals(up.userGuid, user.guid)
-    assertEquals(up.algorithm, PasswordAlgorithm.Latest)
+    up.userGuid must equal(user.guid)
+    up.algorithm must equal(PasswordAlgorithm.Latest)
   }
 
-  it should "validate matching passwords" in {
+  it "validate matching passwords" in {
     userPasswordsDao.create(user, user.guid, "password")
-    assertEquals(userPasswordsDao.isValid(user.guid, "password"), true)
-    assertEquals(userPasswordsDao.isValid(user.guid, "password2"), false)
-    assertEquals(userPasswordsDao.isValid(user.guid, "test"), false)
-    assertEquals(userPasswordsDao.isValid(user.guid, ""), false)
+    userPasswordsDao.isValid(user.guid, "password") must equal(true)
+    userPasswordsDao.isValid(user.guid, "password2") must equal(false)
+    userPasswordsDao.isValid(user.guid, "test") must equal(false)
+    userPasswordsDao.isValid(user.guid, "") must equal(false)
 
     userPasswordsDao.create(user, user.guid, "testing")
-    assertEquals(userPasswordsDao.isValid(user.guid, "password"), false)
-    assertEquals(userPasswordsDao.isValid(user.guid, "password2"), false)
-    assertEquals(userPasswordsDao.isValid(user.guid, "testing"), true)
-    assertEquals(userPasswordsDao.isValid(user.guid, ""), false)
+    userPasswordsDao.isValid(user.guid, "password") must equal(false)
+    userPasswordsDao.isValid(user.guid, "password2") must equal(false)
+    userPasswordsDao.isValid(user.guid, "testing") must equal(true)
+    userPasswordsDao.isValid(user.guid, "") must equal(false)
   }
 
-  it should "hash the password" in {
+  it "hash the password" in {
     userPasswordsDao.create(user, user.guid, "password")
     val up = userPasswordsDao.findByUserGuid(user.guid).get
-    assertEquals(-1, up.hash.indexOf("password"))
+    -1 must equal(up.hash.indexOf("password"))
   }
 
-  it should "generates unique hashes, even for same password" in {
+  it "generates unique hashes, even for same password" in {
     PasswordAlgorithm.All.filter { _ != PasswordAlgorithm.Unknown }.foreach { algo =>
-      assertNotEquals(algo.hash("password"), algo.hash("password"))
+      algo.hash("password") != algo.hash("password") must be(true)
     }
   }
 

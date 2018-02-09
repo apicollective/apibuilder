@@ -9,31 +9,31 @@ class BasicAuthorizationSpec extends PlaySpec with OneAppPerSuite {
     new String(Base64.encodeBase64(v.getBytes))
   }
 
-  it("parses a valid token") {
+  "parses a valid token" in {
     BasicAuthorization.get("Basic " + encode("abc")) must be(Some(BasicAuthorization.Token("abc")))
   }
 
-  it("parses a valid optional token") {
+  "parses a valid optional token" in {
     BasicAuthorization.get(Some("Basic " + encode("abc"))) must be(Some(BasicAuthorization.Token("abc")))
   }
 
-  it("parses a valid token with a colon") {
+  "parses a valid token with a colon" in {
     BasicAuthorization.get("Basic " + encode("abc:")) must be(Some(BasicAuthorization.Token("abc")))
   }
 
-  it("parses username and password") {
+  "parses username and password" in {
     BasicAuthorization.get("Basic " + encode("user:pass")) must be(Some(BasicAuthorization.User("user", "pass")))
   }
 
-  it("Ignores non basic auth") {
+  "Ignores non basic auth" in {
     BasicAuthorization.get("Other " + encode("user:pass")) must be(None)
   }
 
-  it("Ignores invalid auth") {
+  "Ignores invalid auth" in {
     BasicAuthorization.get("Basic " + encode("user:pass:other")) must be(None)
   }
 
-  it("Ignores empty string") {
+  "Ignores empty string" in {
     BasicAuthorization.get("Basic " + encode("")) must be(None)
   }
 

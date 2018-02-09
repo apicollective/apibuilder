@@ -1,16 +1,15 @@
 package lib
 
-import play.api.test.Helpers._
-import org.scalatest.{FunSpec, ShouldMatchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class TokenGeneratorSpec extends FunSpec with ShouldMatchers {
+class TokenGeneratorSpec extends PlaySpec with OneAppPerSuite {
 
-  it("generates unique tokens") {
+  "generates unique tokens" in {
     val tokens = (1 to 100).map { _ => TokenGenerator.generate() }
-    tokens.distinct.sorted should be(tokens.sorted)
+    tokens.distinct.sorted must be(tokens.sorted)
   }
 
-  it("generates tokens that are long") {
+  "generates tokens that are long" in {
     val token = TokenGenerator.generate()
     token.length >= 80
   }

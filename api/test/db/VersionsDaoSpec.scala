@@ -5,11 +5,11 @@ import builder.OriginalValidator
 import io.apibuilder.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
 import io.apibuilder.spec.v0.models.{Application, Organization, Service}
 import io.apibuilder.spec.v0.models.json._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 import play.api.libs.json.{Json, JsObject}
 
-class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
@@ -28,23 +28,23 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     )
   }
 
-  describe("with an application") {
+  "with an application" must {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
     val application: io.apibuilder.api.v0.models.Application = createApplication(applicationKey)
     val service = Util.createService(application)
 
-    it("create") {
+    "create" in {
       val version = versionsDao.create(Util.createdBy, application, "1.0.0", Original, service)
-      Util.createVersion().version should be("1.0.0")
+      Util.createVersion().version must be("1.0.0")
     }
 
-    it("findByApplicationAndVersion") {
+    "findByApplicationAndVersion" in {
       versionsDao.create(Util.createdBy, application, "1.0.1", Original, service)
-      versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) should be(Some(service))
+      versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) must be(Some(service))
     }
 
-    it("soft delete") {
+    "soft delete" in {
       val version1 = versionsDao.create(Util.createdBy, application, "1.0.2", Original, service)
       versionsDao.softDelete(Util.createdBy, version1)
 
@@ -52,13 +52,13 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
       version2.copy(
         guid = version1.guid,
         audit = version1.audit
-      ) should be(version1)
+      ) must be(version1)
       version2.guid shouldNot be(version1.guid)
     }
 
   }
 
-  it("sorts properly") {
+  "sorts properly" in {
     val app = createApplication()
     val service = Util.createService(app)
     versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
@@ -67,10 +67,10 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     versionsDao.findAll(
       Authorization.All,
       applicationGuid = Some(app.guid)
-    ).map(_.version) should be(Seq("1.0.2", "1.0.2-dev"))
+    ).map(_.version) must be(Seq("1.0.2", "1.0.2-dev"))
   }
 
-  it("can parse original") {
+  "can parse original" in {
     val app = createApplication()
     val service = Util.createService(app)
     val version = versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
@@ -94,14 +94,14 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     }
   }
 
-  it("trims version number") {
+  "trims version number" in {
     val app = createApplication()
     val service = Util.createService(app)
     val version = versionsDao.create(Util.createdBy, app, " 1.0.2\n ", Original, service)
-    version.version should be("1.0.2")
+    version.version must be("1.0.2")
   }
 
-  it("findAllVersions") {
+  "findAllVersions" in {
     val app = createApplication()
     val service = Util.createService(app)
     versionsDao.create(Util.createdBy, app, "1.0.1", Original, service)
@@ -110,6 +110,6 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     versionsDao.findAllVersions(
       Authorization.All,
       applicationGuid = Some(app.guid)
-    ).map(_.version) should be(Seq("1.0.2", "1.0.1"))
+    ).map(_.version) must be(Seq("1.0.2", "1.0.1"))
   }
 }

@@ -2,14 +2,14 @@ package db
 
 import io.apibuilder.api.v0.models.UserForm
 import lib.Role
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.junit.Assert._
 import java.util.UUID
 
-class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
   def emailVerificationConfirmationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationConfirmationsDao]
-  it("upsert") {
+  "upsert" in {
     val user = Util.createRandomUser()
 
     // Let actor create the email verification
@@ -17,7 +17,7 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestAppl
     Thread.sleep(1500)
     val verification1 = emailVerificationsDao.upsert(Util.createdBy, user, user.email)
     val verification2 = emailVerificationsDao.upsert(Util.createdBy, user, user.email)
-    verification2.guid should be(verification1.guid)
+    verification2.guid must be(verification1.guid)
 
     emailVerificationsDao.softDelete(Util.createdBy, verification1)
     val verification3 = emailVerificationsDao.upsert(Util.createdBy, user, user.email)
@@ -27,75 +27,75 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestAppl
     verificationWithDifferentEmail.guid should not be(verification3.guid)
   }
   /*
-  it("create") {
+  "create" in {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
-    verification.userGuid should be(user.guid)
-    verification.email should be(user.email)
+    verification.userGuid must be(user.guid)
+    verification.email must be(user.email)
   }
 
-  it("isExpired") {
+  "isExpired" in {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
-    emailVerificationsDao.isExpired(verification) should be(false)
+    emailVerificationsDao.isExpired(verification) must be(false)
   }
 
-  it("confirm") {
+  "confirm" in {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) should be(Nil)
+    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) must be(Nil)
 
     emailVerificationsDao.confirm(None, verification)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) should be(Seq(verification.guid))
+    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) must be(Seq(verification.guid))
   }
 
-  it("findByGuid") {
+  "findByGuid" in {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
 
-    emailVerificationsDao.findByGuid(verification.guid).map(_.userGuid) should be(Some(user.guid))
-    emailVerificationsDao.findByGuid(UUID.randomUUID) should be(None)
+    emailVerificationsDao.findByGuid(verification.guid).map(_.userGuid) must be(Some(user.guid))
+    emailVerificationsDao.findByGuid(UUID.randomUUID) must be(None)
   }
 
-  it("findByToken") {
+  "findByToken" in {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
 
-    emailVerificationsDao.findByToken(verification.token).map(_.userGuid) should be(Some(user.guid))
-    emailVerificationsDao.findByToken(UUID.randomUUID.toString) should be(None)
+    emailVerificationsDao.findByToken(verification.token).map(_.userGuid) must be(Some(user.guid))
+    emailVerificationsDao.findByToken(UUID.randomUUID.toString) must be(None)
   }
 
-  it("findAll") {
+  "findAll" in {
     val user1 = Util.createRandomUser()
     val verification1 = emailVerificationsDao.create(Util.createdBy, user1, user1.email)
 
     val user2 = Util.createRandomUser()
     val verification2 = emailVerificationsDao.create(Util.createdBy, user2, user2.email)
 
-    emailVerificationsDao.findAll(userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(userGuid = Some(user2.guid)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(userGuid = Some(UUID.randomUUID)).map(_.userGuid).distinct should be(Nil)
+    emailVerificationsDao.findAll(userGuid = Some(user1.guid)).map(_.userGuid).distinct must be(Seq(user1.guid))
+    emailVerificationsDao.findAll(userGuid = Some(user2.guid)).map(_.userGuid).distinct must be(Seq(user2.guid))
+    emailVerificationsDao.findAll(userGuid = Some(UUID.randomUUID)).map(_.userGuid).distinct must be(Nil)
 
-    emailVerificationsDao.findAll(isExpired = Some(false), userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(isExpired = Some(true), userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Nil)
+    emailVerificationsDao.findAll(isExpired = Some(false), userGuid = Some(user1.guid)).map(_.userGuid).distinct must be(Seq(user1.guid))
+    emailVerificationsDao.findAll(isExpired = Some(true), userGuid = Some(user1.guid)).map(_.userGuid).distinct must be(Nil)
 
-    emailVerificationsDao.findAll(email = Some(user1.email)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(email = Some(user1.email.toUpperCase)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(email = Some(user2.email)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(email = Some(UUID.randomUUID.toString)).map(_.userGuid).distinct should be(Nil)
+    emailVerificationsDao.findAll(email = Some(user1.email)).map(_.userGuid).distinct must be(Seq(user1.guid))
+    emailVerificationsDao.findAll(email = Some(user1.email.toUpperCase)).map(_.userGuid).distinct must be(Seq(user1.guid))
+    emailVerificationsDao.findAll(email = Some(user2.email)).map(_.userGuid).distinct must be(Seq(user2.guid))
+    emailVerificationsDao.findAll(email = Some(UUID.randomUUID.toString)).map(_.userGuid).distinct must be(Nil)
 
-    emailVerificationsDao.findAll(guid = Some(verification1.guid)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(guid = Some(verification2.guid)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid).distinct should be(Nil)
+    emailVerificationsDao.findAll(guid = Some(verification1.guid)).map(_.userGuid).distinct must be(Seq(user1.guid))
+    emailVerificationsDao.findAll(guid = Some(verification2.guid)).map(_.userGuid).distinct must be(Seq(user2.guid))
+    emailVerificationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid).distinct must be(Nil)
 
-    emailVerificationsDao.findAll(token = Some(verification1.token)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(token = Some(verification2.token)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid).distinct should be(Nil)
+    emailVerificationsDao.findAll(token = Some(verification1.token)).map(_.userGuid).distinct must be(Seq(user1.guid))
+    emailVerificationsDao.findAll(token = Some(verification2.token)).map(_.userGuid).distinct must be(Seq(user2.guid))
+    emailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid).distinct must be(Nil)
   }
 
-  describe("membership requests") {
+  "membership requests" must {
 
-    it("confirm auto approves pending membership requests based on org email domain") {
+    "confirm auto approves pending membership requests based on org email domain" in {
       val org = Util.createOrganization()
       val domain = UUID.randomUUID.toString + ".com"
 
@@ -116,14 +116,14 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestAppl
       usersDao.processUserCreated(user.guid)
       usersDao.processUserCreated(nonMatchingUser.guid)
 
-      membershipsDao.isUserMember(user, org) should be(false)
-      membershipsDao.isUserMember(nonMatchingUser, org) should be(false)
+      membershipsDao.isUserMember(user, org) must be(false)
+      membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
 
       val verification = emailVerificationsDao.upsert(Util.createdBy, user, user.email)
       emailVerificationsDao.confirm(Some(Util.createdBy), verification)
 
-      membershipsDao.isUserMember(user, org) should be(true)
-      membershipsDao.isUserMember(nonMatchingUser, org) should be(false)
+      membershipsDao.isUserMember(user, org) must be(true)
+      membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
     }
 
   }

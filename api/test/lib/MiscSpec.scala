@@ -1,27 +1,27 @@
 package lib
 
-import org.scalatest.{FunSpec, ShouldMatchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class MiscSpec extends FunSpec with ShouldMatchers {
+class MiscSpec extends PlaySpec with OneAppPerSuite {
 
-  it("isValidEmail") {
-    Misc.isValidEmail("") should be(false)
-    Misc.isValidEmail("@") should be(false)
-    Misc.isValidEmail("foo@") should be(false)
-    Misc.isValidEmail("@bryzek.com") should be(false)
-    Misc.isValidEmail("foo@apidoc.me") should be(true)
+  "isValidEmail" in {
+    Misc.isValidEmail("") must be(false)
+    Misc.isValidEmail("@") must be(false)
+    Misc.isValidEmail("foo@") must be(false)
+    Misc.isValidEmail("@bryzek.com") must be(false)
+    Misc.isValidEmail("foo@apidoc.me") must be(true)
   }
 
-  it("emailDomain") {
-    Misc.emailDomain("") should be(None)
-    Misc.emailDomain("@") should be(None)
-    Misc.emailDomain("foo@") should be(None)
-    Misc.emailDomain("foo@apidoc.me") should be(Some("apidoc.me"))
-    Misc.emailDomain("FOO@APIDOC.ME") should be(Some("apidoc.me"))
-    Misc.emailDomain("  FOO@APIDOC.ME  ") should be(Some("apidoc.me"))
-    Misc.emailDomain("mb@bryzek.com") should be(Some("bryzek.com"))
-    Misc.emailDomain("mb@internal.bryzek.com") should be(Some("internal.bryzek.com"))
-    Misc.emailDomain("mb") should be(None)
+  "emailDomain" in {
+    Misc.emailDomain("") must be(None)
+    Misc.emailDomain("@") must be(None)
+    Misc.emailDomain("foo@") must be(None)
+    Misc.emailDomain("foo@apidoc.me") must be(Some("apidoc.me"))
+    Misc.emailDomain("FOO@APIDOC.ME") must be(Some("apidoc.me"))
+    Misc.emailDomain("  FOO@APIDOC.ME  ") must be(Some("apidoc.me"))
+    Misc.emailDomain("mb@bryzek.com") must be(Some("bryzek.com"))
+    Misc.emailDomain("mb@internal.bryzek.com") must be(Some("internal.bryzek.com"))
+    Misc.emailDomain("mb") must be(None)
   }
 
 }

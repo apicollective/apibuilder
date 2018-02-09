@@ -3,12 +3,12 @@ package actors
 import db.MembershipsDao
 import lib.Role
 import io.apibuilder.api.v0.models.Visibility
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class EmailsSpec extends FunSpec with Matchers with util.TestApplication {
+class EmailsSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
-  describe("isAuthorized") {
+  "isAuthorized" must {
 
     lazy val org = db.Util.createOrganization()
     lazy val randomUser = db.Util.createRandomUser()
@@ -32,36 +32,36 @@ class EmailsSpec extends FunSpec with Matchers with util.TestApplication {
       user
     }
 
-    it("Context.Application for private app") {
+    "Context.Application for private app" in {
       val app = db.Util.createApplication(org = org)
-      emails.isAuthorized(Emails.Context.Application(app), org, randomUser) should be(false)
-      emails.isAuthorized(Emails.Context.Application(app), org, orgMember) should be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org, formerMember) should be(false)
+      emails.isAuthorized(Emails.Context.Application(app), org, randomUser) must be(false)
+      emails.isAuthorized(Emails.Context.Application(app), org, orgMember) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org, formerMember) must be(false)
     }
 
-    it("Context.Application for public app") {
+    "Context.Application for public app" in {
       val app = db.Util.createApplication(
         org = org,
         db.Util.createApplicationForm(visibility = Visibility.Public)
       )
 
-      emails.isAuthorized(Emails.Context.Application(app), org, randomUser) should be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org, orgMember) should be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org, formerMember) should be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org, randomUser) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org, orgMember) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org, formerMember) must be(true)
     }
 
-    it("Context.OrganizationAdmin") {
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, randomUser) should be(false)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, orgMember) should be(false)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, orgAdmin) should be(true)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, formerMember) should be(false)
+    "Context.OrganizationAdmin" in {
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, randomUser) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, orgMember) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, orgAdmin) must be(true)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, formerMember) must be(false)
     }
 
-    it("Context.OrganizationMember") {
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, randomUser) should be(false)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, orgMember) should be(true)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, orgAdmin) should be(true)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, formerMember) should be(false)
+    "Context.OrganizationMember" in {
+      emails.isAuthorized(Emails.Context.OrganizationMember, org, randomUser) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org, orgMember) must be(true)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org, orgAdmin) must be(true)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org, formerMember) must be(false)
     }
 
   }

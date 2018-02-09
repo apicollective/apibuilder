@@ -1,26 +1,26 @@
 package db
 
 import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.junit.Assert._
 import java.util.UUID
 
-class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with util.Daos {
 
-  it("create") {
-    Util.gilt.name should be("Gilt Test Org")
-    Util.gilt.key should be("gilt-test-org")
+  "create" in {
+    Util.gilt.name must be("Gilt Test Org")
+    Util.gilt.key must be("gilt-test-org")
   }
 
-  it("create w/ explicit key") {
+  "create w/ explicit key" in {
     val name = UUID.randomUUID.toString
     val key = "key-" + UUID.randomUUID.toString
     val org = Util.createOrganization(Util.createdBy, name = Some(name), key = Some(key))
-    org.name should be(name)
-    org.key should be(key)
+    org.name must be(name)
+    org.key must be(key)
   }
 
-  describe("update") {
+  "update" must {
 
     lazy val org = Util.createOrganization()
     lazy val form = OrganizationForm(
@@ -30,41 +30,41 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
       namespace = org.namespace
     )
 
-    it("name") {
+    "name" in {
       val updated = organizationsDao.update(Util.createdBy, org, form.copy(name = org.name + "2"))
-      updated.name should be(org.name + "2")
+      updated.name must be(org.name + "2")
     }
 
-    it("key") {
+    "key" in {
       val updated = organizationsDao.update(Util.createdBy, org, form.copy(key = Some(org.key + "2")))
-      updated.key should be(org.key + "2")
+      updated.key must be(org.key + "2")
     }
 
-    it("namespace") {
+    "namespace" in {
       val updated = organizationsDao.update(Util.createdBy, org, form.copy(namespace = org.namespace + "2"))
-      updated.namespace should be(org.namespace + "2")
+      updated.namespace must be(org.namespace + "2")
     }
   
-    it("visibility") {
+    "visibility" in {
       val updated = organizationsDao.update(Util.createdBy, org, form.copy(visibility = Visibility.Public))
-      updated.visibility should be(Visibility.Public)
+      updated.visibility must be(Visibility.Public)
 
       val updated2 = organizationsDao.update(Util.createdBy, org, form.copy(visibility = Visibility.Organization))
-      updated2.visibility should be(Visibility.Organization)
+      updated2.visibility must be(Visibility.Organization)
     }
 
   }
 
-  it("user that creates org should be an admin") {
+  "user that creates org must be an admin" in {
     val user = Util.upsertUser(UUID.randomUUID.toString + "@test.apibuilder.io")
     val name = UUID.randomUUID.toString
     val org = organizationsDao.createWithAdministrator(user, Util.createOrganizationForm(name = name))
-    org.name should be(name)
+    org.name must be(name)
 
-    membershipsDao.isUserAdmin(user, org) should be(true)
+    membershipsDao.isUserAdmin(user, org) must be(true)
   }
 
-  describe("domain") {
+  "domain" must {
 
     val domainName = UUID.randomUUID.toString
     val domains = Seq(domainName + ".com", UUID.randomUUID.toString + ".org")
@@ -77,24 +77,24 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
       )
     )
 
-    it("creates with domains") {
-      org.domains.map(_.name).mkString(" ") should be(domains.mkString(" "))
+    "creates with domains" in {
+      org.domains.map(_.name).mkString(" ") must be(domains.mkString(" "))
       val fetched = organizationsDao.findByGuid(Authorization.All, org.guid).get
-      fetched.domains.map(_.name).sorted.mkString(" ") should be(domains.sorted.mkString(" "))
+      fetched.domains.map(_.name).sorted.mkString(" ") must be(domains.sorted.mkString(" "))
     }
 
-    it("defaults visibility to organization") {
+    "defaults visibility to organization" in {
       val fetched = organizationsDao.findByGuid(Authorization.All, org.guid).get
-      fetched.visibility should be(Visibility.Organization)
+      fetched.visibility must be(Visibility.Organization)
     }
 
   }
 
-  it("find by guid") {
-    assertEquals(organizationsDao.findByGuid(Authorization.All, Util.gilt.guid).get.guid, Util.gilt.guid)
+  "find by guid" in {
+    organizationsDao.findByGuid(Authorization.All, Util.gilt.guid).get.guid must equal(Util.gilt.guid)
   }
 
-  describe("findAll") {
+  "findAll" must {
 
     val user1 = Util.createRandomUser()
     val org1 = Util.createOrganization(user1)
@@ -102,79 +102,79 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
     val user2 = Util.createRandomUser()
     val org2 = Util.createOrganization(user2)
 
-    it("by key") {
-      organizationsDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, key = Some(org2.key)).map(_.guid) should be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, key = Some(UUID.randomUUID.toString)) should be(Nil)
+    "by key" in {
+      organizationsDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, key = Some(org2.key)).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, key = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
-    it("by name") {
-      organizationsDao.findAll(Authorization.All, name = Some(org1.name)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toUpperCase)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toLowerCase)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(org2.name)).map(_.guid) should be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)) should be(Nil)
+    "by name" in {
+      organizationsDao.findAll(Authorization.All, name = Some(org1.name)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toUpperCase)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toLowerCase)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(org2.name)).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
-    it("by namespace") {
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toUpperCase)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toLowerCase)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org2.namespace)).map(_.guid) should be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(UUID.randomUUID.toString)) should be(Nil)
+    "by namespace" in {
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toUpperCase)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toLowerCase)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org2.namespace)).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
-    it("by guid") {
-      organizationsDao.findAll(Authorization.All, guid = Some(org1.guid)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, guid = Some(org2.guid)).map(_.guid) should be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) should be(Nil)
+    "by guid" in {
+      organizationsDao.findAll(Authorization.All, guid = Some(org1.guid)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, guid = Some(org2.guid)).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) must be(Nil)
     }
 
-    it("by userGuid") {
-      organizationsDao.findAll(Authorization.All, userGuid = Some(user1.guid)).map(_.guid) should be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, userGuid = Some(user2.guid)).map(_.guid) should be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, userGuid = Some(UUID.randomUUID)) should be(Nil)
+    "by userGuid" in {
+      organizationsDao.findAll(Authorization.All, userGuid = Some(user1.guid)).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, userGuid = Some(user2.guid)).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, userGuid = Some(UUID.randomUUID)) must be(Nil)
     }
   }
 
-  describe("validation") {
+  "validation" must {
 
-    it("validates name") {
-      organizationsDao.validate(Util.createOrganizationForm(name = "this is a long name")) should be(Nil)
-      organizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message should be("name must be at least 3 characters")
-      organizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name)).head.message should be("Org with this name already exists")
+    "validates name" in {
+      organizationsDao.validate(Util.createOrganizationForm(name = "this is a long name")) must be(Nil)
+      organizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message must be("name must be at least 3 characters")
+      organizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name)).head.message must be("Org with this name already exists")
 
-      organizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) should be(Nil)
+      organizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) must be(Nil)
     }
 
-    it("validates key") {
-      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message should be("Key must be at least 3 characters")
-      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message should be("Org with this key already exists")
-      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) should be(Nil)
+    "validates key" in {
+      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message must be("Key must be at least 3 characters")
+      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message must be("Org with this key already exists")
+      organizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) must be(Nil)
     }
 
-    it("raises error if you try to create an org with a short name") {
+    "raises error if you try to create an org with a short name" in {
       intercept[java.lang.AssertionError] {
         organizationsDao.createWithAdministrator(Util.createdBy, Util.createOrganizationForm("a"))
-      }.getMessage should be("assertion failed: name must be at least 3 characters")
+      }.getMessage must be("assertion failed: name must be at least 3 characters")
     }
 
-    it("isDomainValid") {
-      organizationsDao.isDomainValid("bryzek.com") should be(true)
-      organizationsDao.isDomainValid("gilt.org") should be(true)
-      organizationsDao.isDomainValid("www.bryzek.com") should be(true)
-      organizationsDao.isDomainValid("WWW.GILT.COM") should be(true)
-      organizationsDao.isDomainValid("www gilt com") should be(false)
+    "isDomainValid" in {
+      organizationsDao.isDomainValid("bryzek.com") must be(true)
+      organizationsDao.isDomainValid("gilt.org") must be(true)
+      organizationsDao.isDomainValid("www.bryzek.com") must be(true)
+      organizationsDao.isDomainValid("WWW.GILT.COM") must be(true)
+      organizationsDao.isDomainValid("www gilt com") must be(false)
     }
 
-    it("validates domains") {
+    "validates domains" in {
       val name = UUID.randomUUID.toString
-      organizationsDao.validate(Util.createOrganizationForm(name = name, domains = None)) should be(Nil)
-      organizationsDao.validate(Util.createOrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message should be("Domain bad name is not valid. Expected a domain name like apibuilder.io")
+      organizationsDao.validate(Util.createOrganizationForm(name = name, domains = None)) must be(Nil)
+      organizationsDao.validate(Util.createOrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message must be("Domain bad name is not valid. Expected a domain name like apibuilder.io")
     }
   }
 
-  describe("Authorization") {
+  "Authorization" must {
 
     val publicUser = Util.createRandomUser()
     val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
@@ -182,34 +182,34 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
     val privateUser = Util.createRandomUser()
     val privateOrg = Util.createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))
 
-    describe("All") {
+    "All" must {
 
-      it("sees both orgs") {
-        organizationsDao.findAll(Authorization.All, guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.All, guid = Some(privateOrg.guid)).map(_.guid) should be(Seq(privateOrg.guid))
+      "sees both orgs" in {
+        organizationsDao.findAll(Authorization.All, guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.All, guid = Some(privateOrg.guid)).map(_.guid) must be(Seq(privateOrg.guid))
       }
 
     }
 
-    describe("PublicOnly") {
+    "PublicOnly" must {
 
-      it("sees only the public org") {
-        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(privateOrg.guid)).map(_.guid) should be(Nil)
+      "sees only the public org" in {
+        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(privateOrg.guid)).map(_.guid) must be(Nil)
       }
 
     }
 
-    describe("User") {
+    "User" must {
 
-      it("user can see own org") {
-        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(privateOrg.guid)).map(_.guid) should be(Seq(privateOrg.guid))
+      "user can see own org" in {
+        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(privateOrg.guid)).map(_.guid) must be(Seq(privateOrg.guid))
       }
 
-      it("other user cannot see private org") {
-        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(privateOrg.guid)).map(_.guid) should be(Nil)
+      "other user cannot see private org" in {
+        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(privateOrg.guid)).map(_.guid) must be(Nil)
       }
 
     }
