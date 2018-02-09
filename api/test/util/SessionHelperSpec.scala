@@ -3,8 +3,9 @@ package util
 import db.Util
 import org.joda.time.DateTime
 import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class SessionHelperSpec extends FunSpec with Matchers with util.TestApplication {
+class SessionHelperSpec extends PlaySpec with OneAppPerSuite {
 
   it("createAuthentication") {
     val user = Util.upsertUser("michael@mailinator.com")
