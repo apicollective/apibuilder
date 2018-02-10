@@ -2,20 +2,20 @@ package db
 
 import io.apibuilder.api.v0.models.{Organization, Publication}
 import lib.Role
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class SubsriptionDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class SubsriptionDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
-  lazy val org = Util.createOrganization()
+  lazy val org = createOrganization()
 
-  it("when a user loses admin role, we remove subscriptions that require admin") {
-    val user = Util.createRandomUser()
-    val membership = Util.createMembership(org, user, Role.Admin)
+  "when a user loses admin role, we remove subscriptions that require admin" in {
+    val user = createRandomUser()
+    val membership = createMembership(org, user, Role.Admin)
 
-    Publication.all.foreach { publication => Util.createSubscription(org, user, publication) }
+    Publication.all.foreach { publication => createSubscription(org, user, publication) }
 
-    membershipsDao.softDelete(Util.createdBy, membership)
+    membershipsDao.softDelete(testUser, membership)
 
     val subscriptions = subscriptionsDao.findAll(
       Authorization.All,
@@ -25,9 +25,9 @@ class SubsriptionDaoSpec extends FunSpec with Matchers with util.TestApplication
 
     Publication.all.foreach { publication =>
       if (SubscriptionsDao.PublicationsRequiredAdmin.contains(publication)) {
-        subscriptions.contains(publication) should be(false)
+        subscriptions.contains(publication) must be(false)
       } else {
-        subscriptions.contains(publication) should be(true)
+        subscriptions.contains(publication) must be(true)
       }
     }
 

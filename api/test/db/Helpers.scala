@@ -1,14 +1,16 @@
 package db
 
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
-import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
+import io.apibuilder.api.v0.models._
 import io.apibuilder.spec.v0.{models => spec}
-import play.api.libs.json.{Json, JsObject}
+import play.api.libs.json.Json
 import lib.Role
 import java.util.UUID
 
-object Util extends util.Daos {
-  // new play.core.StaticApplication(new java.io.File("."))
+trait Helpers extends util.Daos {
+
+  def createRandomName(suffix: String): String = {
+    s"z-test-$suffix-" + UUID.randomUUID.toString
+  }
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
@@ -32,18 +34,27 @@ object Util extends util.Daos {
   }
 
   def createOrganization(
-    createdBy: User = Util.createdBy,
+    createdBy: User = testUser,
     name: Option[String] = None,
     key: Option[String] = None,
     namespace: Option[String] = None,
     visibility: Visibility = Visibility.Organization
   ): Organization = {
-    val form = createOrganizationForm(
-      name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
-      key = key,
-      namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
-      visibility = visibility
+    createOrganization(
+      form = createOrganizationForm(
+        name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
+        key = key,
+        namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
+        visibility = visibility
+      ),
+      createdBy = createdBy
     )
+  }
+
+  def createOrganization(
+    form: OrganizationForm,
+    createdBy: User
+  ): Organization = {
     organizationsDao.createWithAdministrator(createdBy, form)
   }
 
@@ -65,7 +76,7 @@ object Util extends util.Daos {
     org: Organization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
   ): Application = {
-    applicationsDao.create(Util.createdBy, org, form)
+    applicationsDao.create(testUser, org, form)
   }
 
   def createApplicationForm(
@@ -80,6 +91,14 @@ object Util extends util.Daos {
     visibility = visibility
   )
 
+  def createAttributeForm(
+    name: String = createRandomName("attribute"),
+    description: Option[String] = None
+  ) = AttributeForm(
+    name = name,
+    description = description
+  )
+
   def createVersion(
     application: Application = createApplication(),
     version: String = "1.0.0",
@@ -87,11 +106,11 @@ object Util extends util.Daos {
     service: Option[spec.Service] = None
   ): Version = {
     versionsDao.create(
-      Util.createdBy,
+      testUser,
       application,
       version,
       original,
-      service.getOrElse { Util.createService(application) }
+      service.getOrElse { createService(application) }
     )
   }
 
@@ -109,11 +128,11 @@ object Util extends util.Daos {
 
   def createMembership(
     org: Organization,
-    user: User = Util.createRandomUser(),
+    user: User = createRandomUser(),
     role: Role = Role.Admin
   ): io.apibuilder.api.v0.models.Membership = {
-    val request = membershipRequestsDao.upsert(Util.createdBy, org, user, role)
-    membershipRequestsDao.accept(Util.createdBy, request)
+    val request = membershipRequestsDao.upsert(testUser, org, user, role)
+    membershipRequestsDao.accept(testUser, request)
 
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
       sys.error("membership could not be created")
@@ -122,7 +141,7 @@ object Util extends util.Daos {
 
   def createSubscription(
     org: Organization,
-    user: User = Util.createRandomUser(),
+    user: User = createRandomUser(),
     publication: Publication = Publication.all.head
   ): Subscription = {
     createSubscription(
@@ -139,7 +158,7 @@ object Util extends util.Daos {
     user: User,
     form: SubscriptionForm
   ): Subscription = {
-    subscriptionsDao.create(Util.createdBy, form)
+    subscriptionsDao.create(testUser, form)
   }
 
   def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(
@@ -158,13 +177,22 @@ object Util extends util.Daos {
     resources = Nil
   )
 
-
-  lazy val createdBy: User = {
-    play.api.Play.current.injector.instanceOf[db.UsersDao].AdminUser
+  def createUser(
+    form: UserForm = createUserForm()
+  ): User = {
+    usersDao.create(form)
   }
+
+  def createUserForm() = UserForm(
+    email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
+    password = UUID.randomUUID.toString,
+    name = None
+  )
 
   lazy val gilt: Organization = upsertOrganization("Gilt Test Org")
 
   lazy val testOrg: Organization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
+
+  lazy val testUser: User = createUser()
 
 }

@@ -120,7 +120,7 @@ class EmailVerificationsDao @Inject() (
       BaseQuery.
         equals("email_verifications.guid", guid).
         equals("email_verifications.user_guid", userGuid).
-        equals("email_verifications.email", email).
+        equals("lower(email_verifications.email)", email.map(_.toLowerCase)).
         equals("email_verifications.token", token).
         and(isExpired.map(Filters.isExpired("email_verifications", _))).
         and(isDeleted.map(Filters.isDeleted("email_verifications", _))).

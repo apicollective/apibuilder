@@ -25,7 +25,7 @@ object GeneratorServiceActor {
   private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext) {
-    servicesDao.findByGuid(Authorization.All, serviceGuid).map { sync(_) }
+    servicesDao.findByGuid(Authorization.All, serviceGuid).map { sync }
   }
 
   def sync(

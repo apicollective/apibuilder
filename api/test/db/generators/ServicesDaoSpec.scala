@@ -1,65 +1,64 @@
 package db.generators
 
 import db.Authorization
-import io.apibuilder.api.v0.models.{GeneratorServiceForm}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class ServicesDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class ServicesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
-  it("validate") {
-    val form = Util.createGeneratorServiceForm()
-    servicesDao.validate(form) should be(Nil)
-    servicesDao.validate(form.copy(uri = "foo")).map(_.message) should be(Seq("URI[foo] must start with http://, https://, or file://"))
+  "validate" in {
+    val form = createGeneratorServiceForm()
+    servicesDao.validate(form) must be(Nil)
+    servicesDao.validate(form.copy(uri = "foo")).map(_.message) must be(Seq("URI[foo] must start with http://, https://, or file://"))
 
-    val service = servicesDao.create(db.Util.createdBy, form)
-    servicesDao.validate(form).map(_.message) should be(Seq(s"URI[${form.uri}] already exists"))
+    servicesDao.create(testUser, form)
+    servicesDao.validate(form).map(_.message) must be(Seq(s"URI[${form.uri}] already exists"))
   }
 
-  describe("create") {
+  "create" must {
 
-    it("creates a service") {
-      val form = Util.createGeneratorServiceForm()
-      val service = servicesDao.create(db.Util.createdBy, form)
-      service.uri should be(form.uri)
+    "creates a service" in {
+      val form = createGeneratorServiceForm()
+      val service = servicesDao.create(testUser, form)
+      service.uri must be(form.uri)
     }
 
-    it("raises error on duplicate uri") {
-      val form = Util.createGeneratorServiceForm()
-      servicesDao.create(db.Util.createdBy, form)
+    "raises error on duplicate uri" in {
+      val form = createGeneratorServiceForm()
+      servicesDao.create(testUser, form)
       intercept[AssertionError] {
-        servicesDao.create(db.Util.createdBy, form)
+        servicesDao.create(testUser, form)
       }
     }
 
   }
 
-  it("softDelete") {
-    val service = servicesDao.create(db.Util.createdBy, Util.createGeneratorServiceForm())
-    servicesDao.softDelete(db.Util.createdBy, service)
-    servicesDao.findByGuid(Authorization.All, service.guid) should be(None)
-    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = None).map(_.guid) should be(Seq(service.guid))
-    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = Some(true)).map(_.guid) should be(Seq(service.guid))
+  "softDelete" in {
+    val service = servicesDao.create(testUser, createGeneratorServiceForm())
+    servicesDao.softDelete(testUser, service)
+    servicesDao.findByGuid(Authorization.All, service.guid) must be(None)
+    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = None).map(_.guid) must be(Seq(service.guid))
+    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = Some(true)).map(_.guid) must be(Seq(service.guid))
   }
 
-  describe("findAll") {
+  "findAll" must {
 
-    it("uri") {
-      val form = Util.createGeneratorServiceForm()
-      val service = servicesDao.create(db.Util.createdBy, form)
-      servicesDao.findAll(Authorization.All, uri = Some(form.uri)).map(_.uri) should be(Seq(form.uri))
-      servicesDao.findAll(Authorization.All, uri = Some(form.uri + "2")) should be(Nil)
+    "uri" in {
+      val form = createGeneratorServiceForm()
+      servicesDao.create(testUser, form)
+      servicesDao.findAll(Authorization.All, uri = Some(form.uri)).map(_.uri) must be(Seq(form.uri))
+      servicesDao.findAll(Authorization.All, uri = Some(form.uri + "2")) must be(Nil)
     }
 
-    it("generatorKey") {
-      val form = Util.createGeneratorServiceForm()
-      val service = servicesDao.create(db.Util.createdBy, form)
-      val gws = Util.createGenerator(service)
+    "generatorKey" in {
+      val form = createGeneratorServiceForm()
+      val service = servicesDao.create(testUser, form)
+      val gws = createGenerator(service)
 
-      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key)).map(_.guid) should be(Seq(service.guid))
-      servicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(gws.generator.key)).map(_.guid) should be(Seq(service.guid))
-      servicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(gws.generator.key)).map(_.guid) should be(Nil)
-      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key + "2")) should be(Nil)
+      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key)).map(_.guid) must be(Seq(service.guid))
+      servicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(gws.generator.key)).map(_.guid) must be(Seq(service.guid))
+      servicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(gws.generator.key)).map(_.guid) must be(Nil)
+      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key + "2")) must be(Nil)
     }
 
   }

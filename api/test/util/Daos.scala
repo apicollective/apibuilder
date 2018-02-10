@@ -1,37 +1,41 @@
 package util
 
 import db.generated.SessionsDao
+import play.api.Application
+import play.api.inject.Injector
 
 trait Daos {
+  def app: Application
+  def injector: Injector = app.injector
 
-  def applicationsDao = play.api.Play.current.injector.instanceOf[db.ApplicationsDao]
-  def attributesDao = play.api.Play.current.injector.instanceOf[db.AttributesDao]
-  def changesDao = play.api.Play.current.injector.instanceOf[db.ChangesDao]
-  def emailVerificationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationsDao]
-  def itemsDao = play.api.Play.current.injector.instanceOf[db.ItemsDao]
-  def membershipRequestsDao = play.api.Play.current.injector.instanceOf[db.MembershipRequestsDao]
-  def membershipsDao = play.api.Play.current.injector.instanceOf[db.MembershipsDao]
-  def usersDao = play.api.Play.current.injector.instanceOf[db.UsersDao]
+  def applicationsDao = injector.instanceOf[db.ApplicationsDao]
+  def attributesDao = injector.instanceOf[db.AttributesDao]
+  def changesDao = injector.instanceOf[db.ChangesDao]
+  def emailVerificationsDao = injector.instanceOf[db.EmailVerificationsDao]
+  def itemsDao = injector.instanceOf[db.ItemsDao]
+  def membershipRequestsDao = injector.instanceOf[db.MembershipRequestsDao]
+  def membershipsDao = injector.instanceOf[db.MembershipsDao]
+  def usersDao = injector.instanceOf[db.UsersDao]
 
-  def organizationAttributeValuesDao = play.api.Play.current.injector.instanceOf[db.OrganizationAttributeValuesDao]
-  def organizationDomainsDao = play.api.Play.current.injector.instanceOf[db.OrganizationDomainsDao]
-  def organizationLogsDao = play.api.Play.current.injector.instanceOf[db.OrganizationLogsDao]
-  def organizationsDao = play.api.Play.current.injector.instanceOf[db.OrganizationsDao]
-  def originalsDao = play.api.Play.current.injector.instanceOf[db.OriginalsDao]
-  def passwordResetRequestsDao = play.api.Play.current.injector.instanceOf[db.PasswordResetRequestsDao]
-  def sessionsDao =  play.api.Play.current.injector.instanceOf[SessionsDao]
+  def organizationAttributeValuesDao = injector.instanceOf[db.OrganizationAttributeValuesDao]
+  def organizationDomainsDao = injector.instanceOf[db.OrganizationDomainsDao]
+  def organizationLogsDao = injector.instanceOf[db.OrganizationLogsDao]
+  def organizationsDao = injector.instanceOf[db.OrganizationsDao]
+  def originalsDao = injector.instanceOf[db.OriginalsDao]
+  def passwordResetRequestsDao = injector.instanceOf[db.PasswordResetRequestsDao]
+  def sessionsDao =  injector.instanceOf[SessionsDao]
 
-  def subscriptionsDao = play.api.Play.current.injector.instanceOf[db.SubscriptionsDao]
-  def tasksDao = play.api.Play.current.injector.instanceOf[db.TasksDao]
-  def tokensDao = play.api.Play.current.injector.instanceOf[db.TokensDao]
-  def userPasswordsDao = play.api.Play.current.injector.instanceOf[db.UserPasswordsDao]
-  def versionsDao = play.api.Play.current.injector.instanceOf[db.VersionsDao]
+  def subscriptionsDao = injector.instanceOf[db.SubscriptionsDao]
+  def tasksDao = injector.instanceOf[db.TasksDao]
+  def tokensDao = injector.instanceOf[db.TokensDao]
+  def userPasswordsDao = injector.instanceOf[db.UserPasswordsDao]
+  def versionsDao = injector.instanceOf[db.VersionsDao]
 
-  def servicesDao = play.api.Play.current.injector.instanceOf[db.generators.ServicesDao]
-  def generatorsDao = play.api.Play.current.injector.instanceOf[db.generators.GeneratorsDao]
+  def servicesDao = injector.instanceOf[db.generators.ServicesDao]
+  def generatorsDao = injector.instanceOf[db.generators.GeneratorsDao]
 
-  def emails = play.api.Play.current.injector.instanceOf[actors.Emails]
-  def search = play.api.Play.current.injector.instanceOf[actors.Search]
+  def emails = injector.instanceOf[actors.Emails]
+  def search = injector.instanceOf[actors.Search]
 
-  def sessionHelper = play.api.Play.current.injector.instanceOf[SessionHelper]
+  def sessionHelper = injector.instanceOf[SessionHelper]
 }

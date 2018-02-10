@@ -79,12 +79,11 @@ lazy val api = project
       ws,
       jdbc,
       filters,
-      "org.postgresql"    %  "postgresql"    % "42.1.4",
+      "org.postgresql"    %  "postgresql"    % "42.2.1",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
-      "com.sendgrid"      %  "sendgrid-java" % "4.1.0",
-      "io.flow"           %% "lib-postgresql-play" % "0.1.36",
-      specs2              %  Test,
-      "org.scalatestplus" %% "play" % "1.4.0" % "test"
+      "com.sendgrid"      %  "sendgrid-java" % "4.1.2",
+      "io.flow"           %% "lib-postgresql-play" % "0.1.55",
+      "org.scalatestplus" %% "play" % "1.4.0" % Test
     )
   )
 
@@ -104,7 +103,8 @@ lazy val app = project
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
       "org.webjars" % "bootstrap" % "3.3.7",
-      "org.webjars" % "bootstrap-social" % "5.0.0"
+      "org.webjars" % "bootstrap-social" % "5.0.0",
+      "org.scalatestplus" %% "play" % "1.4.0" % Test
     )
   )
 

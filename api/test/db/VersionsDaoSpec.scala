@@ -2,14 +2,12 @@ package db
 
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import builder.OriginalValidator
-import io.apibuilder.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
-import io.apibuilder.spec.v0.models.{Application, Organization, Service}
-import io.apibuilder.spec.v0.models.json._
-import org.scalatest.{FunSpec, Matchers}
+import io.apibuilder.api.v0.models.OriginalType
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
-import play.api.libs.json.{Json, JsObject}
+import play.api.libs.json.Json
 
-class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
@@ -21,59 +19,61 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     ).toString
   )
 
-  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): io.apibuilder.api.v0.models.Application = {
-    Util.createApplication(
-      org = Util.testOrg,
-      form = Util.createApplicationForm().copy(key = Some(key))
+  private[this] def createApplicationByKey(
+    key: String = "test-" + UUID.randomUUID.toString
+  ): io.apibuilder.api.v0.models.Application = {
+    createApplication(
+      org = testOrg,
+      form = createApplicationForm().copy(key = Some(key))
     )
   }
 
-  describe("with an application") {
+  "with an application" must {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    val application: io.apibuilder.api.v0.models.Application = createApplication(applicationKey)
-    val service = Util.createService(application)
+    lazy val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(applicationKey)
+    lazy val service = createService(application)
 
-    it("create") {
-      val version = versionsDao.create(Util.createdBy, application, "1.0.0", Original, service)
-      Util.createVersion().version should be("1.0.0")
+    "create" in {
+      versionsDao.create(testUser, application, "1.0.0", Original, service)
+      createVersion().version must be("1.0.0")
     }
 
-    it("findByApplicationAndVersion") {
-      versionsDao.create(Util.createdBy, application, "1.0.1", Original, service)
-      versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) should be(Some(service))
+    "findByApplicationAndVersion" in {
+      versionsDao.create(testUser, application, "1.0.1", Original, service)
+      versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) must be(Some(service))
     }
 
-    it("soft delete") {
-      val version1 = versionsDao.create(Util.createdBy, application, "1.0.2", Original, service)
-      versionsDao.softDelete(Util.createdBy, version1)
+    "soft delete" in {
+      val version1 = versionsDao.create(testUser, application, "1.0.2", Original, service)
+      versionsDao.softDelete(testUser, version1)
 
-      val version2 = versionsDao.create(Util.createdBy, application, "1.0.2", Original, service)
+      val version2 = versionsDao.create(testUser, application, "1.0.2", Original, service)
       version2.copy(
         guid = version1.guid,
         audit = version1.audit
-      ) should be(version1)
-      version2.guid shouldNot be(version1.guid)
+      ) must be(version1)
+      version1.guid != version2.guid must be(true)
     }
 
   }
 
-  it("sorts properly") {
-    val app = createApplication()
-    val service = Util.createService(app)
-    versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
-    versionsDao.create(Util.createdBy, app, "1.0.2-dev", Original, service)
+  "sorts properly" in {
+    val app = createApplicationByKey()
+    val service = createService(app)
+    versionsDao.create(testUser, app, "1.0.2", Original, service)
+    versionsDao.create(testUser, app, "1.0.2-dev", Original, service)
 
     versionsDao.findAll(
       Authorization.All,
       applicationGuid = Some(app.guid)
-    ).map(_.version) should be(Seq("1.0.2", "1.0.2-dev"))
+    ).map(_.version) must be(Seq("1.0.2", "1.0.2-dev"))
   }
 
-  it("can parse original") {
-    val app = createApplication()
-    val service = Util.createService(app)
-    val version = versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+  "can parse original" in {
+    val app = createApplicationByKey()
+    val service = createService(app)
+    val version = versionsDao.create(testUser, app, "1.0.2", Original, service)
 
     val serviceConfig = ServiceConfiguration(
       orgKey = "test",
@@ -94,22 +94,22 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     }
   }
 
-  it("trims version number") {
-    val app = createApplication()
-    val service = Util.createService(app)
-    val version = versionsDao.create(Util.createdBy, app, " 1.0.2\n ", Original, service)
-    version.version should be("1.0.2")
+  "trims version number" in {
+    val app = createApplicationByKey()
+    val service = createService(app)
+    val version = versionsDao.create(testUser, app, " 1.0.2\n ", Original, service)
+    version.version must be("1.0.2")
   }
 
-  it("findAllVersions") {
-    val app = createApplication()
-    val service = Util.createService(app)
-    versionsDao.create(Util.createdBy, app, "1.0.1", Original, service)
-    versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+  "findAllVersions" in {
+    val app = createApplicationByKey()
+    val service = createService(app)
+    versionsDao.create(testUser, app, "1.0.1", Original, service)
+    versionsDao.create(testUser, app, "1.0.2", Original, service)
 
     versionsDao.findAllVersions(
       Authorization.All,
       applicationGuid = Some(app.guid)
-    ).map(_.version) should be(Seq("1.0.2", "1.0.1"))
+    ).map(_.version) must be(Seq("1.0.2", "1.0.1"))
   }
 }

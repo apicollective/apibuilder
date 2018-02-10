@@ -2,23 +2,22 @@ package db
 
 import lib.Role
 import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OriginalType, Visibility}
-import org.scalatest.{FunSpec, Matchers}
-import org.junit.Assert._
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 import play.api.libs.json.Json
 
-class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
-
-  private lazy val baseUrl = "http://localhost"
+class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
-    data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
+    data = Json.obj(
+      "name" -> s"test-${UUID.randomUUID}"
+    ).toString
   )
 
   private[this] def upsertApplication(
     nameOption: Option[String] = None,
-    org: Organization = Util.testOrg,
+    org: Organization = testOrg,
     visibility: Visibility = Visibility.Organization
   ): Application = {
     val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
@@ -28,7 +27,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
         description = None,
         visibility = visibility
       )
-      applicationsDao.create(Util.createdBy, org, applicationForm)
+      applicationsDao.create(testUser, org, applicationForm)
     }
   }
 
@@ -36,29 +35,29 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
     applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
   }
 
-  it("create") {
+  "create" in {
     val name = "Test %s".format(UUID.randomUUID)
     val application = upsertApplication(Some(name))
-    application.name should be(name)
+    application.name must be(name)
   }
 
-  describe("canUserUpdate") {
+  "canUserUpdate" must {
 
-    it("for an org I belong to") {
-      val user = Util.createRandomUser()
-      val org = Util.createOrganization(user)
-      val app = Util.createApplication(org)
-      applicationsDao.canUserUpdate(user, app) should be(true)
+    "for an org I belong to" in {
+      val user = createRandomUser()
+      val org = createOrganization(user)
+      val app = createApplication(org)
+      applicationsDao.canUserUpdate(user, app) must be(true)
     }
 
-    it("for an org I do NOT belong to") {
-      val app = Util.createApplication()
-      applicationsDao.canUserUpdate(Util.createRandomUser(), app) should be(false)
+    "for an org I do NOT belong to" in {
+      val app = createApplication()
+      applicationsDao.canUserUpdate(createRandomUser(), app) must be(false)
     }
 
   }
 
-  describe("validate") {
+  "validate" must {
 
     def createForm() = ApplicationForm(
       name = "Test %s".format(UUID.randomUUID),
@@ -67,34 +66,34 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
       visibility = Visibility.Organization
     )
 
-    it("returns empty if valid") {
-      applicationsDao.validate(Util.testOrg, createForm(), None) should be(Nil)
+    "returns empty if valid" in {
+      applicationsDao.validate(testOrg, createForm(), None) must be(Nil)
     }
 
-    it("returns error if name already exists") {
+    "returns error if name already exists" in {
       val form = createForm()
-      applicationsDao.create(Util.createdBy, Util.testOrg, form)
-      applicationsDao.validate(Util.testOrg, form, None).map(_.code) should be(Seq("validation_error"))
+      applicationsDao.create(testUser, testOrg, form)
+      applicationsDao.validate(testOrg, form, None).map(_.code) must be(Seq("validation_error"))
     }
 
-    it("returns empty if name exists but belongs to the application we are updating") {
+    "returns empty if name exists but belongs to the application we are updating" in {
       val form = createForm()
-      val application = applicationsDao.create(Util.createdBy, Util.testOrg, form)
-      applicationsDao.validate(Util.testOrg, form, Some(application)) should be(Nil)
+      val application = applicationsDao.create(testUser, testOrg, form)
+      applicationsDao.validate(testOrg, form, Some(application)) must be(Nil)
     }
 
-    it("key") {
+    "key" in {
       val form = createForm()
-      val application = applicationsDao.create(Util.createdBy, Util.testOrg, form)
+      val application = applicationsDao.create(testUser, testOrg, form)
 
       val newForm = form.copy(name = application.name + "2", key = Some(application.key))
-      applicationsDao.validate(Util.testOrg, newForm, None).map(_.message) should be(Seq("Application with this key already exists"))
-      applicationsDao.validate(Util.testOrg, newForm, Some(application)) should be(Nil)
+      applicationsDao.validate(testOrg, newForm, None).map(_.message) must be(Seq("Application with this key already exists"))
+      applicationsDao.validate(testOrg, newForm, Some(application)) must be(Nil)
     }
 
   }
 
-  describe("update") {
+  "update" must {
 
     def toForm(app: Application): ApplicationForm = {
       ApplicationForm(
@@ -105,153 +104,168 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
       )
     }
 
-    it("name") {
+    "name" in {
       val name = "Test %s".format(UUID.randomUUID)
       val application = upsertApplication(Some(name))
       val newName = application.name + "2"
-      applicationsDao.update(Util.createdBy, application, toForm(application).copy(name = newName))
-      findByKey(Util.testOrg, application.key).get.name should be(newName)
+      applicationsDao.update(testUser, application, toForm(application).copy(name = newName))
+      findByKey(testOrg, application.key).get.name must be(newName)
     }
 
-    it("description") {
+    "description" in {
       val application = upsertApplication()
       val newDescription = "Test %s".format(UUID.randomUUID)
-      findByKey(Util.testOrg, application.key).get.description should be(None)
-      applicationsDao.update(Util.createdBy, application, toForm(application).copy(description = Some(newDescription)))
-      findByKey(Util.testOrg, application.key).get.description should be(Some(newDescription))
+      findByKey(testOrg, application.key).get.description must be(None)
+      applicationsDao.update(testUser, application, toForm(application).copy(description = Some(newDescription)))
+      findByKey(testOrg, application.key).get.description must be(Some(newDescription))
     }
 
-    it("visibility") {
+    "visibility" in {
       val application = upsertApplication()
-      application.visibility should be(Visibility.Organization)
+      application.visibility must be(Visibility.Organization)
 
-      applicationsDao.update(Util.createdBy, application, toForm(application).copy(visibility = Visibility.Public))
-      findByKey(Util.testOrg, application.key).get.visibility should be(Visibility.Public)
+      applicationsDao.update(testUser, application, toForm(application).copy(visibility = Visibility.Public))
+      findByKey(testOrg, application.key).get.visibility must be(Visibility.Public)
 
-      applicationsDao.update(Util.createdBy, application, toForm(application).copy(visibility = Visibility.Organization))
-      findByKey(Util.testOrg, application.key).get.visibility should be(Visibility.Organization)
+      applicationsDao.update(testUser, application, toForm(application).copy(visibility = Visibility.Organization))
+      findByKey(testOrg, application.key).get.visibility must be(Visibility.Organization)
     }
   }
 
-  describe("findAll") {
+  "findAll" must {
 
-    val user = Util.createRandomUser()
-    val org = Util.createOrganization(user, Some("Public " + UUID.randomUUID().toString))
-    val publicApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
-    val privateApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-private", visibility = Visibility.Organization))
+    lazy val user = createRandomUser()
+    lazy val org = createOrganization(user, Some("Public " + UUID.randomUUID().toString))
+    lazy val publicApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
+    lazy val privateApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-private", visibility = Visibility.Organization))
 
-    it("by orgKey") {
+    def initialize(): Unit = {
+      publicApplication
+      privateApplication
+    }
+
+    "by orgKey" in {
+      initialize()
       val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
-      guids.contains(publicApplication.guid) should be(true)
-      guids.contains(privateApplication.guid) should be(true)
+      guids.contains(publicApplication.guid) must be(true)
+      guids.contains(privateApplication.guid) must be(true)
     }
 
-    it("by guid") {
+    "by guid" in {
+      initialize()
       val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), guid = Some(publicApplication.guid)).map(_.guid)
-      guids.contains(publicApplication.guid) should be(true)
-      guids.contains(privateApplication.guid) should be(false)
+      guids.contains(publicApplication.guid) must be(true)
+      guids.contains(privateApplication.guid) must be(false)
     }
 
-    it("by key") {
+    "by key" in {
+      initialize()
       val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(publicApplication.key)).map(_.guid)
-      guids.contains(publicApplication.guid) should be(true)
-      guids.contains(privateApplication.guid) should be(false)
+      guids.contains(publicApplication.guid) must be(true)
+      guids.contains(privateApplication.guid) must be(false)
     }
 
-    it("by name") {
+    "by name" in {
+      initialize()
       val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(publicApplication.name)).map(_.guid)
-      guids.contains(publicApplication.guid) should be(true)
-      guids.contains(privateApplication.guid) should be(false)
+      guids.contains(publicApplication.guid) must be(true)
+      guids.contains(privateApplication.guid) must be(false)
     }
 
-    it("hasVersion") {
-      val app = Util.createApplication(org)
+    "hasVersion" in {
+      initialize()
+      val app = createApplication(org)
 
       applicationsDao.findAll(
         Authorization.All,
         guid = Some(app.guid),
         hasVersion = Some(false)
-      ).map(_.guid) should be(Seq(app.guid))
+      ).map(_.guid) must be(Seq(app.guid))
 
       applicationsDao.findAll(
         Authorization.All,
         guid = Some(app.guid),
         hasVersion = Some(true)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
 
-      val service = Util.createService(app)
-      val version = versionsDao.create(Util.createdBy, app, "1.0.0", Original, service)
+      val service = createService(app)
+      versionsDao.create(testUser, app, "1.0.0", Original, service)
 
       applicationsDao.findAll(
         Authorization.All,
         guid = Some(app.guid),
         hasVersion = Some(false)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
 
       applicationsDao.findAll(
         Authorization.All,
         guid = Some(app.guid),
         hasVersion = Some(true)
-      ).map(_.guid) should be(Seq(app.guid))
+      ).map(_.guid) must be(Seq(app.guid))
 
     }
 
-    describe("Authorization") {
+    "Authorization" must {
 
-      describe("All") {
+      "All" must {
 
-        it("sees both applications") {
+        "sees both applications" in {
+          initialize()
           val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
-          guids.contains(publicApplication.guid) should be(true)
-          guids.contains(privateApplication.guid) should be(true)
+          guids.contains(publicApplication.guid) must be(true)
+          guids.contains(privateApplication.guid) must be(true)
         }
 
       }
 
-      describe("PublicOnly") {
+      "PublicOnly" must {
 
-        it("sees only the public application") {
+        "sees only the public application" in {
+          initialize()
           val guids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(org.key)).map(_.guid)
-          guids.contains(publicApplication.guid) should be(true)
-          guids.contains(privateApplication.guid) should be(false)
+          guids.contains(publicApplication.guid) must be(true)
+          guids.contains(privateApplication.guid) must be(false)
         }
 
       }
 
-      describe("User") {
+      "User" must {
 
-        it("user can see own application") {
+        "user can see own application" in {
+          initialize()
           val guids = applicationsDao.findAll(Authorization.User(user.guid), orgKey = Some(org.key)).map(_.guid)
-          guids.contains(publicApplication.guid) should be(true)
-          guids.contains(privateApplication.guid) should be(true)
+          guids.contains(publicApplication.guid) must be(true)
+          guids.contains(privateApplication.guid) must be(true)
         }
 
-        it("other user cannot see public nor private applications for a private org") {
-          val guids = applicationsDao.findAll(Authorization.User(Util.createdBy.guid), orgKey = Some(org.key)).map(_.guid)
-          guids.contains(publicApplication.guid) should be(false)
-          guids.contains(privateApplication.guid) should be(false)
+        "other user cannot see public nor private applications for a private org" in {
+          initialize()
+          val guids = applicationsDao.findAll(Authorization.User(testUser.guid), orgKey = Some(org.key)).map(_.guid)
+          guids.contains(publicApplication.guid) must be(false)
+          guids.contains(privateApplication.guid) must be(false)
         }
 
-        it("other user cannot see private application even for a public org") {
-          val myUser = Util.createRandomUser()
-          val myOrg = Util.createOrganization(visibility = Visibility.Public)
-          Util.createMembership(myOrg, myUser, Role.Member)
+        "other user cannot see private application even for a public org" in {
+          initialize()
+          val myUser = createRandomUser()
+          val myOrg = createOrganization(visibility = Visibility.Public)
+          createMembership(myOrg, myUser, Role.Member)
           val myPrivateApp = upsertApplication(org = myOrg)
           val myPublicApp = upsertApplication(org = myOrg, visibility = Visibility.Public)
 
-          val otherUser = Util.createRandomUser()
-          val otherOrg = Util.createOrganization(visibility = Visibility.Public)
-          Util.createMembership(otherOrg, otherUser, Role.Member)
+          val otherUser = createRandomUser()
+          val otherOrg = createOrganization(visibility = Visibility.Public)
+          createMembership(otherOrg, otherUser, Role.Member)
           val otherPrivateApp = upsertApplication(org = otherOrg)
           val otherPublicApp = upsertApplication(org = otherOrg, visibility = Visibility.Public)
 
           val myGuids = applicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(myOrg.key)).map(_.guid)
-          myGuids.contains(myPrivateApp.guid) should be(true)
-          myGuids.contains(myPublicApp.guid) should be(true)
+          myGuids.contains(myPrivateApp.guid) must be(true)
+          myGuids.contains(myPublicApp.guid) must be(true)
 
           val otherGuids = applicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(otherOrg.key)).map(_.guid)
-          otherGuids.contains(otherPrivateApp.guid) should be(false)
-          otherGuids.contains(otherPublicApp.guid) should be(true)
+          otherGuids.contains(otherPrivateApp.guid) must be(false)
+          otherGuids.contains(otherPublicApp.guid) must be(true)
         }
       }
 

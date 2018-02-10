@@ -1,9 +1,9 @@
 package controllers
 
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 import play.api.libs.ws.WSClient
-import play.api.test._
 
-class ApplicationMetadataSpec extends PlaySpecification with MockClient {
+class ApplicationMetadataSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,26 +15,26 @@ class ApplicationMetadataSpec extends PlaySpecification with MockClient {
     a
   }
 
-  "GET /:orgKey/:applicationKey/metadata/versions" in new WithServer(port = defaultPort) {
+  "GET /:orgKey/:applicationKey/metadata/versions" in {
     await(
       client.applications.getMetadataAndVersionsByApplicationKey(org.key, application.key)
-    ).map(_.version) must beEqualTo(
+    ).map(_.version) must equal(
       Seq("2.0.0", "1.0.0")
     )
   }
 
-  "GET /:orgKey/:applicationKey/metadata/versions/latest.txt" in new WithServer(port = defaultPort) {
+  "GET /:orgKey/:applicationKey/metadata/versions/latest.txt" in {
     val ws = app.injector.instanceOf[WSClient]
-    val auth = sessionHelper.createAuthentication(TestUser)
+    val auth = sessionHelper.createAuthentication(testUser)
 
     val result = await(
       ws.url(
-        s"http://localhost:$defaultPort/${org.key}/metadata/${application.key}/versions/latest.txt"
+        s"http://localhost:$port/${org.key}/metadata/${application.key}/versions/latest.txt"
       ).withHeaders(
         "Authorization" -> s"Session ${auth.session.id}"
       ).get()
     )
-    result.status must beEqualTo(200)
-    result.body must beEqualTo("2.0.0")
+    result.status must equal(200)
+    result.body must equal("2.0.0")
   }
 }

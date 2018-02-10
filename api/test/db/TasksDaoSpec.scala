@@ -1,35 +1,35 @@
 package db
 
-import io.apibuilder.internal.v0.models.{Task, TaskData, TaskDataDiffVersion, TaskDataUndefinedType}
-import org.scalatest.{FunSpec, Matchers}
+import io.apibuilder.internal.v0.models.{Task, TaskDataDiffVersion}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.postgresql.util.PSQLException
 import java.util.UUID
 
 import anorm._
+import io.apibuilder.api.v0.models.User
 import org.joda.time.DateTime
 import play.api.db._
-import play.api.Play.current
 
-class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
+class TasksDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   private[this] def setDeletedAt(task: Task, days: Int) {
     val query = s"""
       update tasks set deleted_at = timezone('utc', now()) - interval '$days days' where guid = {guid}::uuid
     """
 
-    DB.withConnection { implicit c =>
+    injector.instanceOf[DBApi].database("default").withConnection { implicit c =>
       SQL(query).on('guid -> task.guid).execute()
     }
   }
 
-  lazy val user = Util.createRandomUser()
+  private[this] lazy val user: User = createRandomUser()
 
   private[this] def createTaskDataDiffVersion(
     oldGuid: UUID = UUID.randomUUID,
     newGuid: UUID = UUID.randomUUID,
     numberAttempts: Int = 0
   ): Task = {
-    val guid = DB.withConnection { implicit c =>
+    val guid = injector.instanceOf[DBApi].database("default").withConnection { implicit c =>
       tasksDao.insert(c, user, TaskDataDiffVersion(oldGuid, newGuid))
     }
 
@@ -46,138 +46,138 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
     }
   }
 
-  it("findByGuid") {
+  "findByGuid" in {
     val oldGuid = UUID.randomUUID
     val newGuid = UUID.randomUUID
-    createTaskDataDiffVersion(oldGuid, newGuid).data should be(TaskDataDiffVersion(oldGuid, newGuid))
+    createTaskDataDiffVersion(oldGuid, newGuid).data must be(TaskDataDiffVersion(oldGuid, newGuid))
   }
 
-  it("softDelete") {
+  "softDelete" in {
     val task = createTaskDataDiffVersion()
     tasksDao.softDelete(user, task)
-    tasksDao.findByGuid(task.guid) should be(None)
+    tasksDao.findByGuid(task.guid) must be(None)
   }
 
-  it("incrementNumberAttempts") {
+  "incrementNumberAttempts" in {
     val task = createTaskDataDiffVersion()
     val original = task.numberAttempts
     tasksDao.incrementNumberAttempts(user, task)
     tasksDao.findByGuid(task.guid).getOrElse {
       sys.error("failed to find task")
-    }.numberAttempts should be(original + 1)
+    }.numberAttempts must be(original + 1)
   }
 
-  it("recordError") {
+  "recordError" in {
     val task = createTaskDataDiffVersion()
     tasksDao.recordError(user, task, "Test")
     tasksDao.findByGuid(task.guid).getOrElse {
       sys.error("failed to find task")
-    }.lastError should be(Some("Test"))
+    }.lastError must be(Some("Test"))
   }
 
-  describe("findAll") {
+  "findAll" must {
 
-    it("nOrFewerAttempts") {
+    "nOrFewerAttempts" in {
       val task = createTaskDataDiffVersion(numberAttempts = 2)
 
       tasksDao.findAll(
         guid = Some(task.guid),
         nOrFewerAttempts = Some(task.numberAttempts)
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
         nOrFewerAttempts = Some(task.numberAttempts - 1)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
     }
 
-    it("nOrMoreAttempts") {
+    "nOrMoreAttempts" in {
       val task = createTaskDataDiffVersion(numberAttempts = 2)
 
       tasksDao.findAll(
         guid = Some(task.guid),
         nOrMoreAttempts = Some(task.numberAttempts)
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
         nOrMoreAttempts = Some(task.numberAttempts + 1)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
     }
 
-    it("nOrMoreMinutesOld") {
+    "nOrMoreMinutesOld" in {
       val task = createTaskDataDiffVersion()
 
       tasksDao.findAll(
         guid = Some(task.guid),
         createdOnOrBefore = Some(DateTime.now.plusHours(1))
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
         createdOnOrBefore = Some(DateTime.now.minusHours(1))
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
     }
 
-    it("nOrMoreMinutesYoung") {
+    "nOrMoreMinutesYoung" in {
       val task = createTaskDataDiffVersion()
 
       tasksDao.findAll(
         guid = Some(task.guid),
         createdOnOrAfter = Some(DateTime.now.minusHours(1))
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
         createdOnOrAfter = Some(DateTime.now.plusHours(1))
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
     }
 
-    it("isDeleted") {
+    "isDeleted" in {
       val task = createTaskDataDiffVersion()
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = Some(false)
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = Some(true)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.softDelete(user, task)
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = Some(false)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = Some(true)
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
 
     }
 
-    it("deletedAtLeastNDaysAgo") {
+    "deletedAtLeastNDaysAgo" in {
       val task = createTaskDataDiffVersion()
 
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None,
         deletedAtLeastNDaysAgo = Some(0)
-      ) should be(Nil)
+      ) must be(Nil)
 
       tasksDao.softDelete(user, task)
 
@@ -185,37 +185,37 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
         guid = Some(task.guid),
         isDeleted = None,
         deletedAtLeastNDaysAgo = Some(90)
-      ).map(_.guid) should be(Nil)
+      ).map(_.guid) must be(Nil)
 
       setDeletedAt(task, 89)
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None,
         deletedAtLeastNDaysAgo = Some(90)
-      ) should be(Nil)
+      ) must be(Nil)
 
       setDeletedAt(task, 91)
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None,
         deletedAtLeastNDaysAgo = Some(90)
-      ).map(_.guid) should be(Seq(task.guid))
+      ).map(_.guid) must be(Seq(task.guid))
     }
   }
 
-  describe("purge") {
+  "purge" must {
 
-    it("raises error if recently deleted") {
+    "raises error if recently deleted" in {
       val task = createTaskDataDiffVersion()
       tasksDao.softDelete(user, task)
       val ex = intercept[PSQLException] {
         tasksDao.purge(user, task)
       }
       println(ex.getMessage)
-      ex.getMessage.contains("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records") should be(true)
+      ex.getMessage.contains("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records") must be(true)
     }
 
-    it("purges if old") {
+    "purges if old" in {
       val task = createTaskDataDiffVersion()
       tasksDao.softDelete(user, task)
       setDeletedAt(task, 45)
@@ -223,7 +223,7 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None
-      ) should be(Nil)
+      ) must be(Nil)
     }
 
   }

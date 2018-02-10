@@ -2,21 +2,22 @@ package controllers
 
 import io.apibuilder.api.v0.models.UserUpdateForm
 import java.util.UUID
-import play.api.test._
 
-class UsersSpec extends PlaySpecification with MockClient {
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+
+class UsersSpec extends PlaySpec with MockClient with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /users" in new WithServer(port = defaultPort) {
+  "POST /users" in {
     val form = createUserForm()
     val user = await {
       client.users.post(form)
     }
-    user.email must beEqualTo(form.email)
+    user.email must equal(form.email)
   }
 
-  "POST /users/authenticate" in new WithServer(port = defaultPort) {
+  "POST /users/authenticate" in {
     val form = createUserForm()
     val user = createUser(form)
 
@@ -34,20 +35,20 @@ class UsersSpec extends PlaySpecification with MockClient {
         )
       )
     }
-    updatedUser.name must beSome("joseph")
+    updatedUser.name must be(Some("joseph"))
   }
 
-  "GET /users by nickname" in new WithServer(port = defaultPort) {
+  "GET /users by nickname" in {
     val user1 = createUser()
     val user2 = createUser()
 
     await(
       client.users.get(nickname = Some(user1.nickname))
-    ).map(_.guid) must beEqualTo(Seq(user1.guid))
+    ).map(_.guid) must equal(Seq(user1.guid))
 
     await(
       client.users.get(nickname = Some(user2.nickname))
-    ).map(_.guid) must beEqualTo(Seq(user2.guid))
+    ).map(_.guid) must equal(Seq(user2.guid))
 
     await(
       client.users.get(nickname = Some(UUID.randomUUID.toString))
