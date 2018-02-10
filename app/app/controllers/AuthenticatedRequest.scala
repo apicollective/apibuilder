@@ -1,15 +1,13 @@
 package controllers
 
 import io.apibuilder.spec.v0.models.Method
-import lib.{ApiClient, Config}
+import lib.ApiClientProvider
 import models.MainTemplate
 import io.apibuilder.api.v0.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
-import play.api.Play.current
-import java.util.UUID
+
+import scala.concurrent.Future
 
 class AuthenticatedRequest[A](val sessionId: String, val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
@@ -29,7 +27,9 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def api(sessionId: Option[String] = None) = ApiClient(sessionId).client
+  private[this] lazy val apiClientProvider = play.api.Play.current.injector.instanceOf[ApiClientProvider]
+
+  def api(sessionId: Option[String] = None) = apiClientProvider.clientForSessionId(sessionId)
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
@@ -42,7 +42,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     }
 
     request.session.get("session_id").map { sessionId =>
-      ApiClient.getUserBySessionId(sessionId) match {
+      apiClientProvider.getUserBySessionId(sessionId) match {
 
         case None => {
           Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl)).withNewSession)

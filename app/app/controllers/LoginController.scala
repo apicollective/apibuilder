@@ -1,18 +1,24 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
-import lib.Util
+import lib.{ApiClientProvider, Github, Util}
 import models.MainTemplate
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.Future
 
+import scala.concurrent.Future
 import javax.inject.Inject
+
 import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
-class LoginController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class LoginController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider,
+  github: Github,
+  util: Util
+) extends Controller with I18nSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -38,7 +44,7 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    Ok(views.html.login.index(tpl, LoginController.Tab.Login, returnUrl))
+    Ok(views.html.login.index(tpl, github, LoginController.Tab.Login, returnUrl))
   }
 
   def legacy(returnUrl: Option[String]) = Action { implicit request =>
@@ -63,7 +69,7 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
             routes.ApplicationController.index().path
           }
           case Some(u) => {
-            Util.validateReturnUrl(u) match {
+            util.validateReturnUrl(u) match {
               case Left(errors) => {
                 Logger.warn(s"Ignoring redirect url[$u]: $errors")
                 "/"

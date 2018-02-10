@@ -21,15 +21,15 @@
           <ul class="nav nav-sidebar">
             @metadata.org.map { org =>
               <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
-              <li><a href="@routes.Subscriptions.index(orgKey = org.key)">@lib.Util.SubscriptionsText</a></li>
+              <li><a href="@routes.Subscriptions.index(orgKey = org.key)">@lib.Labels.SubscriptionsText</a></li>
 
               @if(metadata.isOrgMember) {
-                <li><a@if(metadata.settings.flatMap(_.section) == Some(models.SettingSection.Details)) { class="active" } href="@routes.Organizations.details(orgKey = org.key)">@lib.Util.OrgDetailsText</a></li>
+                <li><a@if(metadata.settings.flatMap(_.section) == Some(models.SettingSection.Details)) { class="active" } href="@routes.Organizations.details(orgKey = org.key)">@lib.Labels.OrgDetailsText</a></li>
               }
 
               @if(metadata.isOrgMember) {
                 @metadata.settings.map { settings =>
-                  <li><a@if(settings.section == Some(models.SettingSection.Attributes)) { class="active" } href="@routes.OrganizationAttributesController.index(org.key)">@lib.Util.OrgAttributesText</a></li>
+                  <li><a@if(settings.section == Some(models.SettingSection.Attributes)) { class="active" } href="@routes.OrganizationAttributesController.index(org.key)">@lib.Labels.OrgAttributesText</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Domains.index(orgKey = org.key)">Org Domains</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Org Members</a></li>
                 }
@@ -50,7 +50,7 @@
                       case io.apibuilder.api.v0.models.OriginalType.UNDEFINED(name) => name
                     }})</a></li>
                   }
-                  <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">@lib.Util.ServiceJsonText</a></li>
+                  <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">@lib.Labels.ServiceJsonText</a></li>
                 }
               }
 

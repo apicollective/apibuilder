@@ -1,19 +1,24 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{AttributeForm, User}
-import lib.{Pagination, PaginatedCollection}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import models.MainTemplate
+
 import scala.concurrent.Future
 import java.util.UUID
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc.{Action, Controller}
 
-class AttributesController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class AttributesController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(page: Int = 0) = Anonymous.async { implicit request =>
     for {
@@ -31,7 +36,7 @@ class AttributesController @Inject() (val messagesApi: MessagesApi) extends Cont
 
   def show(name: String, page: Int) = Anonymous.async { implicit request =>
     for {
-      attribute <- lib.ApiClient.callWith404(request.api.attributes.getByName(name))
+      attribute <- apiClientProvider.callWith404(request.api.attributes.getByName(name))
       generators <- request.api.generatorWithServices.get(
         attributeName = Some(name),
         limit = Pagination.DefaultLimit+1,
@@ -91,7 +96,7 @@ class AttributesController @Inject() (val messagesApi: MessagesApi) extends Cont
   }
 
   def deletePost(name: String) = Authenticated.async { implicit request =>
-    lib.ApiClient.callWith404(request.api.attributes.deleteByName(name)).map {
+    apiClientProvider.callWith404(request.api.attributes.deleteByName(name)).map {
       case None => Redirect(routes.AttributesController.index()).flashing("warning" -> s"Attribute not found")
       case Some(_) => Redirect(routes.AttributesController.index()).flashing("success" -> s"Attribute deleted")
     }

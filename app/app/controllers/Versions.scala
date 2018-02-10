@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import io.apibuilder.api.v0.models._
 import io.apibuilder.spec.v0.models.json._
-import lib.{Util, VersionTag}
+import lib.{ApiClientProvider, Labels, VersionTag}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -15,12 +15,15 @@ import play.api.mvc.{Action, Controller}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Versions @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
   private[this] val DefaultVersion = "0.0.1-dev"
   private[this] val LatestVersion = "latest"
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirectToLatest(orgKey: String, applicationKey: String) = Action {
     Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
@@ -30,7 +33,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
     for {
       applicationResponse <- request.api.applications.get(orgKey = orgKey, key = Some(applicationKey))
       versionsResponse <- request.api.versions.getByApplicationKey(orgKey, applicationKey)
-      versionOption <- lib.ApiClient.callWith404(
+      versionOption <- apiClientProvider.callWith404(
         request.api.versions.getByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       )
       generators <- request.api.generatorWithServices.get()
@@ -75,7 +78,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
   }
 
   def original(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    lib.ApiClient.callWith404(
+    apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
     ).map {
       case None => {
@@ -113,7 +116,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
   def example(
     orgKey: String, applicationKey: String, versionName: String, typeName: String, subTypeName: Option[String], optionalFields: Option[Boolean]
   ) = AnonymousOrg.async { implicit request =>
-    lib.ApiClient.callWith404(
+    apiClientProvider.callWith404(
       request.api.versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey, applicationKey, versionName, typeName, subTypeName = subTypeName, optionalFields = optionalFields)
     ).map {
       case None => {
@@ -132,7 +135,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
   }
 
   def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    lib.ApiClient.callWith404(
+    apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
     ).map {
       case None => {
@@ -151,7 +154,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
   def postDelete(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
-      result <- lib.ApiClient.callWith404(
+      result <- apiClientProvider.callWith404(
         request.api.versions.deleteByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       )
     } yield {
@@ -164,7 +167,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
 
   def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
-    lib.ApiClient.callWith404(
+    apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(request.org.key, applicationKey, versionName)
     ).flatMap {
       case None => {
@@ -215,7 +218,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
     applicationKey match {
 
       case None => Future {
-        val tpl = request.mainTemplate(Some(Util.AddApplicationText))
+        val tpl = request.mainTemplate(Some(Labels.AddApplicationText))
         val filledForm = Versions.uploadForm.fill(
           Versions.UploadData(
             version = DefaultVersion,
@@ -264,7 +267,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
     request.requireMember()
 
     val tpl = applicationKey match {
-      case None => request.mainTemplate(Some(Util.AddApplicationText))
+      case None => request.mainTemplate(Some(Labels.AddApplicationText))
       case Some(key) => request.mainTemplate(Some("Upload New Version"))
     }
     val boundForm = Versions.uploadForm.bindFromRequest

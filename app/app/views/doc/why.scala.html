@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.playRoutesFile.url, user, Some("Why Choose API Builder?")) {
 
@@ -64,13 +67,13 @@
     defined.</li>
 
     <li> <b>Integrated tooling</b>: API Builder itself offers a
-    comprehensive REST API (the entire @lib.Util.fullUrl("/") website
+    comprehensive REST API (the entire @util.fullUrl("/") website
     runs on the API Builder API) which means it is simple to automate
     any tasks as needed into your developer workflows. Teams have even
     written linters that enforce naming standards and conventions in
     the API itself, running as part of their suites of continuous
     integration tests.  Note also the
-    <a href="@lib.Util.ApibuilderCliGitHubUrl">simple to use CLI</a> -
+    <a href="@lib.Labels.ApibuilderCliGitHubUrl">simple to use CLI</a> -
     many teams never actually even use the user interface of API
     Builder on a daily basis given the completeness of the API and CLI
     tooling.</li>
@@ -100,14 +103,14 @@
     vs. continually adding optional fields to existing types.</li>
 
     <li> <b>Discovery</b>: Free hosting of all services at
-    @lib.Util.fullUrl("/"), including both private and public projects
+    @util.fullUrl("/"), including both private and public projects
     makes service discovery easy within a company.</li>
 
     <li> <b>Versioning</b>: API Builder records every single change to
     every API - presenting a list of safe and potentially breaking
     changes. Teams often use these lists to include in their own
     release notes. For example, here is the history of changes to
-    the <a href="/history?org=@lib.Util.ApibuilderApi.organizationKey&app=@lib.Util.ApibuilderApi.applicationKey">API
+    the <a href="/history?org=@lib.Labels.ApibuilderApi.organizationKey&app=@lib.Labels.ApibuilderApi.applicationKey">API
     Builder API itself</a>.</li>
   </ul>
   

@@ -1,5 +1,7 @@
 package lib
 
+import javax.inject.Inject
+
 import io.apibuilder.api.v0.models.ItemDetail
 
 case class ExampleService(
@@ -21,11 +23,7 @@ case class ExampleService(
 
 }
 
-object Util {
-
-  private[this] val ApiHost: String = Config.requiredString("apibuilder.api.host")
-  val Host: String = Config.requiredString("apibuilder.app.host")
-
+object Labels {
   val SubscriptionsText = "Subscriptions"
   val SubscriptionsVersionsCreateText = "For applications that I watch, email me when a version is created."
 
@@ -36,7 +34,7 @@ object Util {
 
   val ApibuilderApi = ExampleService("apicollective", "apibuilder-api")
   val ApibuilderExample = ApibuilderApi
-  val ApibuilderExampleWithVersionNumber = ExampleService("apicollective", "apibuilder-api", Config.requiredString("git.version"))
+  val ApibuilderExampleWithVersionNumber = ExampleService("apicollective", "apibuilder-api", "0.13.29")
   val ApibuilderGeneratorExample = ExampleService("apicollective", "apibuilder-generator")
   val ApibuilderSpecExample = ExampleService("apicollective", "apibuilder-spec")
   val Examples = Seq(ApibuilderExample, ApibuilderGeneratorExample, ApibuilderSpecExample)
@@ -46,6 +44,14 @@ object Util {
   val ApibuilderCliGitHubUrl = s"$gitHub/apibuilder-cli"
   val ApibuilderGeneratorGitHubUrl = s"$gitHub/apibuilder-generator"
   val ApibuilderSwaggerGeneratorGitHubUrl = s"$gitHub/apibuilder-swagger-generator"
+}
+
+class Util @Inject() (
+  config: Config
+) {
+
+  private[this] val ApiHost: String = config.requiredString("apibuilder.api.host")
+  val Host: String = config.requiredString("apibuilder.app.host")
 
   def fullUrl(stub: String): String = s"$Host$stub"
   def fullApiUrl(stub: String): String = s"$ApiHost$stub"

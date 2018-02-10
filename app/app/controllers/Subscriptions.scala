@@ -1,17 +1,14 @@
 package controllers
 
-import lib.Util
-import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm}
+import lib.{ApiClientProvider, Labels}
+import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
-
-import play.api.data._
-import play.api.data.Forms._
-
 import javax.inject.Inject
-import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
-import play.api.mvc.{Action, Controller}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc.Controller
 
 object Subscriptions {
 
@@ -20,14 +17,17 @@ object Subscriptions {
       case Publication.MembershipRequestsCreate => "Email me when a user applies to join the org."
       case Publication.MembershipsCreate => "Email me when a user joins the org."
       case Publication.ApplicationsCreate => "Email me when an application is created."
-      case Publication.VersionsCreate => Util.SubscriptionsVersionsCreateText
+      case Publication.VersionsCreate => Labels.SubscriptionsVersionsCreateText
       case Publication.UNDEFINED(key) => key
     }
   }
 
 }
 
-class Subscriptions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Subscriptions @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -37,7 +37,7 @@ class Subscriptions @Inject() (val messagesApi: MessagesApi) extends Controller 
       case Publication.MembershipsCreate => isAdmin
       case Publication.ApplicationsCreate => true
       case Publication.VersionsCreate => true
-      case Publication.UNDEFINED(key) => isAdmin
+      case Publication.UNDEFINED(_) => isAdmin
     }
   }
 
@@ -54,7 +54,7 @@ class Subscriptions @Inject() (val messagesApi: MessagesApi) extends Controller 
       val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
         Subscriptions.UserPublication(
           publication = p,
-          isSubscribed = !subscriptions.find(_.publication == p).isEmpty
+          isSubscribed = subscriptions.exists(_.publication == p)
         )
       }
       Ok(views.html.subscriptions.index(request.mainTemplate(), userPublications))

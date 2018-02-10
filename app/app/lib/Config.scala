@@ -1,13 +1,16 @@
 package lib
 
-import play.api.Logger
-import play.api.Play.current
+import javax.inject.Inject
+
+import play.api.{Configuration, Logger}
 
 /**
   * Wrapper on play config testing for empty strings and standardizing
   * error message for required configuration.
   */
-object Config {
+class Config @Inject() (
+  configuration: Configuration
+) {
 
   def requiredString(name: String): String = {
     optionalString(name).getOrElse {
@@ -18,7 +21,7 @@ object Config {
   }
 
   def optionalString(name: String): Option[String] = {
-    current.configuration.getString(name).map { value =>
+    configuration.getString(name).map { value =>
       if (value.trim == "") {
         val msg = s"Value for configuration parameter[$name] cannot be blank"
         Logger.error(msg)

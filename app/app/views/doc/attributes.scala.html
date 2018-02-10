@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.playRoutesFile.url, user, Some("Attributes")) {
   <p>
@@ -14,8 +17,8 @@
       <li> Attribute values can be set at the organization level,
       cascading to all of the applications that belong to that
       organization. Organization level values can be found by going to
-      your organization, clicking '@lib.Util.OrgDetailsText' in the
-      nav bar, then '@lib.Util.OrgAttributesText'.</li>
+      your organization, clicking '@lib.Labels.OrgDetailsText' in the
+      nav bar, then '@lib.Labels.OrgAttributesText'.</li>
   
       <li> A code generator can return a list of the attribute names on
       which it depends. API Builder will then send any matching attribute

@@ -1,22 +1,25 @@
 package controllers
 
 import io.apibuilder.api.v0.models.TokenForm
-import lib.{Pagination, PaginatedCollection}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import models.MainTemplate
 import play.api.data._
 import play.api.data.Forms._
 import java.util.UUID
 
 import scala.concurrent.Future
-
 import javax.inject.Inject
+
 import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
-class TokensController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class TokensController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
     Redirect(routes.TokensController.index())
@@ -54,7 +57,7 @@ class TokensController @Inject() (val messagesApi: MessagesApi) extends Controll
 
   def cleartext(guid: UUID) = Authenticated.async { implicit request =>
     for {
-      cleartextOption <- lib.ApiClient.callWith404(request.api.tokens.getCleartextByGuid(guid))
+      cleartextOption <- apiClientProvider.callWith404(request.api.tokens.getCleartextByGuid(guid))
     } yield {
       cleartextOption match {
         case None => {

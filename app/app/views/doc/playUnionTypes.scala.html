@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.playRoutesFile.url, user, Some("Play Union Types")) {
 
@@ -99,8 +102,8 @@
     information:
 
     <ul>
-      <li> <a href="@lib.Util.ApibuilderGeneratorGitHubUrl/tree/master/example-union-types-discriminator">example w/ discriminator</a> </li>
-      <li> <a href="@lib.Util.ApibuilderGeneratorGitHubUrl/tree/master/example-union-types">example w/out discriminator</a> </li>
+      <li> <a href="@lib.Labels.ApibuilderGeneratorGitHubUrl/tree/master/example-union-types-discriminator">example w/ discriminator</a> </li>
+      <li> <a href="@lib.Labels.ApibuilderGeneratorGitHubUrl/tree/master/example-union-types">example w/out discriminator</a> </li>
     </ul>
 
   </p>

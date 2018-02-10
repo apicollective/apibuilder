@@ -1,22 +1,23 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, User, Visibility}
-import io.apibuilder.spec.v0.models.Service
-import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.api.v0.models.{ApplicationForm, MoveForm, Visibility}
 import models._
-
 import javax.inject.Inject
-import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
-import play.api.mvc.{Action, Controller, Result}
+
+import lib.ApiClientProvider
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc.{Controller, Result}
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.json._
+
 import scala.concurrent.Future
 
-class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class ApplicationSettings @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] def withRedirect(
     result: Either[String, MainTemplate]
@@ -41,7 +42,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
   ): Future[Either[String, MainTemplate]] = {
     for {
       applicationResponse <- api.Applications.get(orgKey = base.org.get.key, key = Some(applicationKey))
-      versionOption <- lib.ApiClient.callWith404(
+      versionOption <- apiClientProvider.callWith404(
         api.Versions.getByApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
       )
     } yield {

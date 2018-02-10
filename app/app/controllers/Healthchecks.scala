@@ -2,12 +2,17 @@ package controllers
 
 import models.MainTemplate
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import lib.ApiClientProvider
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
-class Healthchecks @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Healthchecks @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def index() = Action.async { implicit request =>
     for {

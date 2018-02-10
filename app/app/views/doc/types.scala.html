@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.types.url, user, Some("Types")) {
 

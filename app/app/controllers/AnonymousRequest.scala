@@ -1,13 +1,13 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{ Membership, Organization, User, Visibility }
+import io.apibuilder.api.v0.models.{Membership, Organization, User, Visibility}
 import models.MainTemplate
-import lib.{ApiClient, Role}
+import lib.{ApiClientProvider, Role}
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
-import scala.concurrent.{ Await, Future }
+
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import play.api.Play.current
 
 class AnonymousRequest[A](
   resources: RequestResources,
@@ -76,11 +76,11 @@ case class RequestResources(
   val isMember = isAdmin || !memberships.find(_.role == Role.Member.key).isEmpty
 
   def requireUser() {
-    require(!user.isEmpty, "Action requires an authenticated user")
+    require(user.isDefined, "Action requires an authenticated user")
   }
 
   def requireOrg() {
-    require(!org.isEmpty, "Action requires an org")
+    require(org.isDefined, "Action requires an org")
   }
 
   def requireAdmin() {
@@ -101,15 +101,17 @@ object AnonymousRequest {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  private[this] lazy val apiClientProvider = play.api.Play.current.injector.instanceOf[ApiClientProvider]
+
   /**
     * Blocking call to fetch an organization
     */
   private[this] def getOrganization(sessionId: Option[String], key: String): Option[Organization] = {
-    ApiClient.awaitCallWith404( Authenticated.api(sessionId).Organizations.getByKey(key) )
+    apiClientProvider.awaitCallWith404( Authenticated.api(sessionId).Organizations.getByKey(key) )
   }
 
   def resources(requestPath: String, sessionId: Option[String]): RequestResources = {
-    val user = sessionId.flatMap { ApiClient.getUserBySessionId(_) }
+    val user = sessionId.flatMap { apiClientProvider.getUserBySessionId }
     val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(sessionId, _) }
 
     val memberships = (user, org) match {
@@ -134,8 +136,6 @@ object AnonymousRequest {
 
 object Anonymous extends ActionBuilder[AnonymousRequest] {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
     val resources = AnonymousRequest.resources(request.path, request.session.get("session_id"))
     block(new AnonymousRequest(resources, request))
@@ -143,8 +143,6 @@ object Anonymous extends ActionBuilder[AnonymousRequest] {
 }
 
 object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   def invokeBlock[A](request: Request[A], block: (AnonymousOrgRequest[A]) => Future[Result]) = {
     val resources = AnonymousRequest.resources(request.path, request.session.get("session_id"))
@@ -156,7 +154,7 @@ object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
 
       if (resources.isMember) {
         block(anonRequest)
-      } else if (resources.org.map(_.visibility) == Some(Visibility.Public)) {
+      } else if (resources.org.map(_.visibility).contains(Visibility.Public)) {
         block(anonRequest)
       } else {
         Future.successful(Redirect("/").flashing("warning" -> "Org not found or access denied"))

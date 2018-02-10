@@ -7,7 +7,7 @@ import play.api.mvc._
 
 class MembershipRequestReviews extends Controller {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def accept(orgKey: String, membershipRequestGuid: UUID) = AuthenticatedOrg.async { implicit request =>
     require(request.isAdmin, "You are not an administrator")

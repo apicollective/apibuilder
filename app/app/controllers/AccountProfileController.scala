@@ -1,16 +1,22 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
+import io.apibuilder.api.v0.models.UserUpdateForm
 import javax.inject.Inject
+
+import lib.ApiClientProvider
 import play.api.data._
 import play.api.data.Forms._
-import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
+
 import scala.concurrent.Future
 
-class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class AccountProfileController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
     Redirect(routes.AccountProfileController.index())
@@ -39,7 +45,7 @@ class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends 
 
     val form = AccountProfileController.profileForm.bindFromRequest
     form.fold (
-      errors => Future {
+      _ => Future {
         Ok(views.html.account.profile.edit(tpl, request.user, form))
       },
 
@@ -51,7 +57,7 @@ class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends 
             nickname = valid.nickname,
             name = valid.name
           )
-        ).map { user =>
+        ).map { _ =>
           Redirect(routes.AccountProfileController.index()).flashing("success" -> "Profile updated")
         }.recover {
           case r: io.apibuilder.api.v0.errors.ErrorsResponse => {

@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.index.url, user) {
 
@@ -14,7 +17,7 @@
 
     <p>Fully describe your REST service in an intuitive JSON format.
     Start by creating a service below, or by downloading
-    an <a href="@lib.Util.ApibuilderExample.originalJsonUrl">example</a>.</p>
+    an <a href="@lib.Labels.ApibuilderExample.originalJsonUrl">example</a>.</p>
 
     <p>API Builder has a very intuitive format that is simple to learn from
       <a href="@routes.DocController.apiJson">online docs</a> or from user-contributed

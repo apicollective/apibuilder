@@ -10,7 +10,8 @@ import play.core.parsers.FormUrlEncodedParser
 import scala.concurrent.Future
 
 class GithubController @javax.inject.Inject() (
-  ws: WSClient
+  ws: WSClient,
+  github: Github
 ) extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,7 +21,7 @@ class GithubController @javax.inject.Inject() (
   }
 
   def index(returnUrl: Option[String]) = Action {
-    Redirect(lib.Github.oauthUrl(returnUrl = returnUrl))
+    Redirect(github.oauthUrl(returnUrl = returnUrl))
   }
 
   def callback(
@@ -51,8 +52,8 @@ class GithubController @javax.inject.Inject() (
 
   private[this] def getAccessToken(code: String): Future[Either[Throwable, String]] = {
     val form = Json.obj(
-      "client_id" -> Github.clientId,
-      "client_secret" -> Github.clientSecret,
+      "client_id" -> github.clientId,
+      "client_secret" -> github.clientSecret,
       "code" -> code
     )
 
