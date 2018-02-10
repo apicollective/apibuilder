@@ -34,7 +34,7 @@ lazy val swagger = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.32",
+      "io.swagger" % "swagger-parser" % "1.0.34",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
@@ -98,10 +98,10 @@ lazy val app = project
     routesImport += "io.apibuilder.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % "1.14",
+      "org.apache.commons" % "commons-compress" % "1.16.1",
       "com.github.tototoshi" %% "scala-csv" % "1.3.5",
       "org.pegdown" % "pegdown" % "1.6.0",
-      "org.webjars" %% "webjars-play" % "2.6.0-M1",
+      "org.webjars" %% "webjars-play" % "2.6.3",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars" % "bootstrap-social" % "5.0.0",
       "org.scalatestplus" %% "play" % "1.4.0" % Test
@@ -161,4 +161,3 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
-version := "0.13.0"
