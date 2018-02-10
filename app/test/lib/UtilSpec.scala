@@ -1,8 +1,8 @@
 package lib
 
-import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class UtilSpec extends PlaySpec {
+class UtilSpec extends PlaySpec with OneAppPerSuite {
 
   "validateReturnUrl for invalid domains" in {
     Util.validateReturnUrl("") must be(Left(Seq("Redirect URL[] must start with / or a known domain")))
