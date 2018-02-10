@@ -79,9 +79,9 @@ lazy val api = project
       ws,
       jdbc,
       filters,
-      "org.postgresql"    %  "postgresql"    % "42.1.4",
+      "org.postgresql"    %  "postgresql"    % "42.2.1",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
-      "com.sendgrid"      %  "sendgrid-java" % "4.1.0",
+      "com.sendgrid"      %  "sendgrid-java" % "4.1.2",
       "io.flow"           %% "lib-postgresql-play" % "0.1.36",
       "org.scalatestplus" %% "play" % "1.4.0" % Test
     )
