@@ -2,15 +2,24 @@ package lib
 
 import io.apibuilder.api.v0.models.User
 import io.apibuilder.api.v0.{Authorization, Client}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
-import java.util.UUID
 import java.net.URLEncoder
+import javax.inject.Inject
 
-object ApiClient {
+class ApiClientProvider @Inject() (
+  config: Config
+) {
 
-  private[this] val unauthenticatedClient = ApiClient(None).client
+  private[this] val unauthenticatedClient = ApiClient(config, None).client
+
+  def clientForSessionId(sessionId: Option[String]) = {
+    sessionId match {
+      case None => unauthenticatedClient
+      case Some(sid) => ApiClient(config, Some(sid)).client
+    }
+  }
 
   def callWith404[T](
     f: Future[T]
@@ -44,10 +53,13 @@ object ApiClient {
 
 }
 
-case class ApiClient(sessionId: Option[String]) {
+case class ApiClient(
+  config: Config,
+  sessionId: Option[String]
+) {
 
-  private[this] val baseUrl = Config.requiredString("apibuilder.api.host")
-  private[this] val apiAuth = Authorization.Basic(Config.requiredString("apibuilder.api.token"))
+  private[this] val baseUrl = config.requiredString("apibuilder.api.host")
+  private[this] val apiAuth = Authorization.Basic(config.requiredString("apibuilder.api.token"))
 
   val client: Client = new io.apibuilder.api.v0.Client(
     baseUrl = baseUrl,

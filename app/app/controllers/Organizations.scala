@@ -2,7 +2,7 @@ package controllers
 
 import java.util.UUID
 
-import lib.{PaginatedCollection, Pagination, Role}
+import lib._
 import models.{SettingSection, SettingsMenu}
 import io.apibuilder.api.v0.models.{Organization, OrganizationForm, Visibility}
 import play.api.data._
@@ -12,20 +12,18 @@ import scala.concurrent.Future
 import javax.inject.Inject
 
 import io.apibuilder.api.v0.Client
-import play.api.Configuration
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.Controller
 
 class Organizations @Inject() (
-  configuration: Configuration,
+  apiClientProvider: ApiClientProvider,
+  config: Config,
   val messagesApi: MessagesApi
 ) extends Controller with I18nSupport {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apibuilderSupportEmail: String = configuration.getString("apibuilder.supportEmail").getOrElse {
-    sys.error("Missing apibuilderSupportEmail")
-  }
+  val apibuilderSupportEmail: String = config.requiredString("apibuilder.supportEmail")
 
   def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     request.api.Applications.get(
@@ -168,7 +166,7 @@ class Organizations @Inject() (
   }
 
   def edit(orgKey: String) = Authenticated.async { implicit request =>
-    lib.ApiClient.callWith404(request.api.Organizations.getByKey(orgKey)).map { orgOption =>
+    apiClientProvider.callWith404(request.api.Organizations.getByKey(orgKey)).map { orgOption =>
       orgOption match {
         case None => {
           Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
@@ -189,7 +187,7 @@ class Organizations @Inject() (
   }
 
   def editPost(orgKey: String) = Authenticated.async { implicit request =>
-    lib.ApiClient.callWith404(request.api.Organizations.getByKey(orgKey)).flatMap { orgOption =>
+    apiClientProvider.callWith404(request.api.Organizations.getByKey(orgKey)).flatMap { orgOption =>
       orgOption match {
         case None => Future {
           Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")

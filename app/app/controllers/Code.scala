@@ -2,15 +2,21 @@ package controllers
 
 import io.apibuilder.api.v0.Client
 import io.apibuilder.generator.v0.models.File
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import lib.ApiClientProvider
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller, Result}
 
-class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Code @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
-    lib.ApiClient.callWith404(
+    apiClientProvider.callWith404(
       request.api.Code.get(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
