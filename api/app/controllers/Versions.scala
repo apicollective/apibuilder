@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
+import io.apibuilder.api.v0.models.{ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.spec.v0.models.{Service, UnionType}
 import lib._
@@ -15,7 +15,8 @@ import play.api.libs.json._
 class Versions @Inject() (
   applicationsDao: ApplicationsDao,
   organizationsDao: OrganizationsDao,
-  versionsDao: VersionsDao
+  versionsDao: VersionsDao,
+  versionValidator: VersionValidator
 ) extends Controller {
 
   private[this] val DefaultVisibility = Visibility.Organization
@@ -112,12 +113,12 @@ class Versions @Inject() (
                   config = toServiceConfiguration(org, versionName),
                   original = OriginalUtil.toOriginal(form.originalForm),
                   fetcher = DatabaseServiceFetcher(request.authorization)
-                ).validate match {
+                ).validate() match {
                   case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
                   }
                   case Right(service) => {
-                    validateVersion(request.user, org, service.application.key) match {
+                    versionValidator.validate(request.user, org, service.application.key) match {
                       case Nil => {
                         upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service) match {
                           case Left(errors) => Conflict(Json.toJson(errors))
@@ -171,7 +172,7 @@ class Versions @Inject() (
                     Conflict(Json.toJson(Validation.errors(errors)))
                   }
                   case Right(service) => {
-                    validateVersion(request.user, org, service.application.key, Some(applicationKey)) match {
+                    versionValidator.validate(request.user, org, service.application.key, Some(applicationKey)) match {
                       case Nil => {
                         upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey)) match {
                           case Left(errors) => Conflict(Json.toJson(errors))
@@ -197,9 +198,9 @@ class Versions @Inject() (
 
   def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
     val auth = Authorization.User(request.user.guid)
-    organizationsDao.findByKey(auth, orgKey) map { org =>
+    organizationsDao.findByKey(auth, orgKey) foreach { org =>
       request.requireMember(org)
-      versionsDao.findVersion(auth, orgKey, applicationKey, version).map { version =>
+      versionsDao.findVersion(auth, orgKey, applicationKey, version).foreach { version =>
         versionsDao.softDelete(request.user, version)
       }
     }
@@ -261,19 +262,5 @@ class Versions @Inject() (
     orgNamespace = org.namespace,
     version = version
   )
-
-  private[this] def validateVersion(
-    user: User,
-    org: Organization,
-    applicationKey: String,
-    existingKey: Option[String] = None
-  ): Seq[String] = {
-    VersionValidator(
-      user = user,
-      org = org,
-      newApplicationKey = applicationKey,
-      existingApplicationKey = existingKey
-    ).validate
-  }
 
 }

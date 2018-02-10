@@ -1,36 +1,44 @@
 package db
 
+import javax.inject.Inject
 import io.apibuilder.api.v0.models.{Organization, User}
-import lib.Validation
 
-case class VersionValidator(
-  user: User,
-  org: Organization,
-  newApplicationKey: String,
-  existingApplicationKey: Option[String] = None
+class VersionValidator @Inject() (
+  applicationsDao: ApplicationsDao,
+  membershipsDao: MembershipsDao
 ) {
 
-  // TODO: Inject directly
-  private[this] def applicationsDao = play.api.Play.current.injector.instanceOf[ApplicationsDao]
-  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
+  def validate(
+    user: User,
+    org: Organization,
+    newApplicationKey: String,
+    existingApplicationKey: Option[String] = None
+  ): Seq[String] = {
+    val authErrors= validateAuthorization(user, org)
+    val keyErrors = validateKey(org, newApplicationKey, existingApplicationKey)
+    authErrors ++ keyErrors
+  }
 
-  val validate: Seq[String] = validateAuthorization() ++ validateKey()
-
-  private lazy val existing = existingApplicationKey.flatMap { applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
-
-  private[this] def validateAuthorization(): Seq[String] = {
-    membershipsDao.isUserMember(user, org) match {
-      case true => Nil
-      case false => Seq("You must be a member of this organization to update applications")
+  private[this] def validateAuthorization(user: User, org: Organization): Seq[String] = {
+    if (membershipsDao.isUserMember(user, org)) {
+      Nil
+    } else {
+      Seq("You must be a member of this organization to update applications")
     }
   }
 
-  private[this] def validateKey(): Seq[String] = {
+  private[this] def validateKey(
+    org: Organization,
+    newApplicationKey: String,
+    existingApplicationKey: Option[String]
+  ): Seq[String] = {
+    val existing = existingApplicationKey.flatMap { applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
+
     existing match {
       case None => {
         applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, newApplicationKey) match {
           case None => Nil
-          case Some(app) => Seq(s"An application with key[$newApplicationKey] already exists")
+          case Some(_) => Seq(s"An application with key[$newApplicationKey] already exists")
         }
       }
 
