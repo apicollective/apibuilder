@@ -5,10 +5,14 @@ import io.apibuilder.spec.v0.models.json._
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import play.api.libs.json.{JsNull, JsNumber, JsString, Json}
 
-class ExampleJsonSpec  extends PlaySpec with OneAppPerSuite with db.Helpers {
+class ExampleJsonSpec  extends PlaySpec
+  with OneAppPerSuite
+  with db.Helpers
+  with TestHelper
+{
   import ServiceBuilder._
 
-  private[this] lazy val service: Service = TestHelper.readService("../spec/apibuilder-spec.json")
+  private[this] lazy val service: Service = readService("../spec/apibuilder-spec.json")
   private[this] lazy val exampleAll = ExampleJson.allFields(service)
   private[this] lazy val exampleMinimal = ExampleJson.requiredFieldsOnly(service)
 

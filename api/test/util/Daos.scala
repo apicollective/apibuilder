@@ -1,6 +1,7 @@
 package util
 
 import db.generated.SessionsDao
+import lib.DatabaseServiceFetcher
 import play.api.Application
 import play.api.inject.Injector
 
@@ -11,6 +12,7 @@ trait Daos {
   def applicationsDao = injector.instanceOf[db.ApplicationsDao]
   def attributesDao = injector.instanceOf[db.AttributesDao]
   def changesDao = injector.instanceOf[db.ChangesDao]
+  def databaseServiceFetcher = injector.instanceOf[DatabaseServiceFetcher]
   def emailVerificationsDao = injector.instanceOf[db.EmailVerificationsDao]
   def itemsDao = injector.instanceOf[db.ItemsDao]
   def membershipRequestsDao = injector.instanceOf[db.MembershipRequestsDao]
