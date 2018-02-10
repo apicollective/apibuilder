@@ -163,7 +163,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     val nickname = user.nickname + "-2"
     val name = "Test User " + UUID.randomUUID.toString
 
-    usersDao.update(createdBy, user, UserUpdateForm(
+    usersDao.update(testUser, user, UserUpdateForm(
       email = " " + email + " ",
       nickname = nickname,
       name = Some(name)

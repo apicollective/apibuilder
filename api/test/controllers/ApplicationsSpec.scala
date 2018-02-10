@@ -13,7 +13,7 @@ class ApplicationsSpec extends PlaySpec with MockClient with OneServerPerSuite {
     await(client.applications.get(org.key, key = Some(key), limit = 1)).headOption
   }
 
-  private lazy val org = createOrganization(createdBy = TestUser)
+  private lazy val org = createOrganization(createdBy = testUser)
 
   "POST /:orgKey" in {
     val key = "test-" + UUID.randomUUID.toString

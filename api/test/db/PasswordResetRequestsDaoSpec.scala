@@ -7,19 +7,19 @@ class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with db.
 
   "create" in {
     val user = createRandomUser()
-    val pr = passwordResetRequestsDao.create(Some(createdBy), user)
+    val pr = passwordResetRequestsDao.create(Some(testUser), user)
     pr.userGuid must be(user.guid)
   }
 
   "isExpired" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
     emailVerificationsDao.isExpired(verification) must be(false)
   }
 
   "resetPassword" in {
     val user = createRandomUser()
-    val pr = passwordResetRequestsDao.create(Some(createdBy), user)
+    val pr = passwordResetRequestsDao.create(Some(testUser), user)
 
     val newPassword = "testing"
     userPasswordsDao.isValid(user.guid, newPassword) must be(false)

@@ -18,7 +18,7 @@ class GeneratorServicesSpec extends PlaySpec with MockClient with OneServerPerSu
     // TODO: Switch to REST API. But first need to resolve dependency
     // on fetching the list of generators from the service.
     // await(client.generatorServices.post(form))
-    servicesDao.create(TestUser, form)
+    servicesDao.create(testUser, form)
   }
 
   def createGeneratorServiceForm(

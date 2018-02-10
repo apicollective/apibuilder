@@ -24,12 +24,12 @@ trait MockClient extends db.Helpers
   private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
 
   private[this] lazy val apiToken = {
-    val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
+    val token = tokensDao.create(testUser, TokenForm(userGuid = testUser.guid))
     tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
   private[this] lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
 
-  lazy val client: Client = newClient(TestUser)
+  lazy val client: Client = newClient(testUser)
 
   def newClient(user: User): Client = {
     val auth = sessionHelper.createAuthentication(user)

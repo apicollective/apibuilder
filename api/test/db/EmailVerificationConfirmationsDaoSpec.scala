@@ -9,23 +9,23 @@ class EmailVerificationConfirmationsDaoSpec extends PlaySpec with OneAppPerSuite
 
   "upsert" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
 
-    val conf = emailVerificationConfirmationsDao.upsert(createdBy.guid, verification)
+    val conf = emailVerificationConfirmationsDao.upsert(testUser.guid, verification)
     conf.emailVerificationGuid must be(verification.guid)
 
-    val conf2 = emailVerificationConfirmationsDao.upsert(createdBy.guid, verification)
+    val conf2 = emailVerificationConfirmationsDao.upsert(testUser.guid, verification)
     conf2.guid must be(conf.guid)
   }
 
   "findAll" in {
     val user1 = createRandomUser()
-    val verification1 = emailVerificationsDao.create(createdBy, user1, user1.email)
-    val conf1 = emailVerificationConfirmationsDao.upsert(createdBy.guid, verification1)
+    val verification1 = emailVerificationsDao.create(testUser, user1, user1.email)
+    val conf1 = emailVerificationConfirmationsDao.upsert(testUser.guid, verification1)
 
     val user2 = createRandomUser()
-    val verification2 = emailVerificationsDao.create(createdBy, user2, user2.email)
-    val conf2 = emailVerificationConfirmationsDao.upsert(createdBy.guid, verification2)
+    val verification2 = emailVerificationsDao.create(testUser, user2, user2.email)
+    val conf2 = emailVerificationConfirmationsDao.upsert(testUser.guid, verification2)
 
     emailVerificationConfirmationsDao.findAll(guid = Some(conf1.guid)).map(_.guid) must be(Seq(conf1.guid))
     emailVerificationConfirmationsDao.findAll(guid = Some(conf2.guid)).map(_.guid) must be(Seq(conf2.guid))

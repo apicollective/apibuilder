@@ -10,7 +10,7 @@ trait Helpers extends db.Helpers {
   def createGeneratorService(
     form: GeneratorServiceForm = createGeneratorServiceForm()
   ): GeneratorService = {
-    servicesDao.create(createdBy, form)
+    servicesDao.create(testUser, form)
   }
 
   def createGeneratorServiceForm(
@@ -26,7 +26,7 @@ trait Helpers extends db.Helpers {
   ): GeneratorWithService = {
     val form = createGeneratorForm(service = service)
 
-    generatorsDao.upsert(createdBy, form)
+    generatorsDao.upsert(testUser, form)
     generatorsDao.findAll(
       Authorization.All,
       serviceGuid = Some(service.guid),

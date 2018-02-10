@@ -46,7 +46,7 @@ class SearchSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val newName = app.name + "2"
 
       applicationsDao.update(
-        updatedBy = createdBy,
+        updatedBy = testUser,
         app = app,
         form = form.copy(name = newName)
       )
@@ -65,7 +65,7 @@ class SearchSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val app = createApplication()
       search.indexApplication(app.guid)
 
-      applicationsDao.softDelete(createdBy, app)
+      applicationsDao.softDelete(testUser, app)
       search.indexApplication(app.guid)
       itemsDao.findAll(Authorization.All, guid = Some(app.guid)) must be(Nil)
     }

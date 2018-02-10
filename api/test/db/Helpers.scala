@@ -34,7 +34,7 @@ trait Helpers extends util.Daos {
   }
 
   def createOrganization(
-    createdBy: User = createdBy,
+    createdBy: User = testUser,
     name: Option[String] = None,
     key: Option[String] = None,
     namespace: Option[String] = None,
@@ -76,7 +76,7 @@ trait Helpers extends util.Daos {
     org: Organization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
   ): Application = {
-    applicationsDao.create(createdBy, org, form)
+    applicationsDao.create(testUser, org, form)
   }
 
   def createApplicationForm(
@@ -106,7 +106,7 @@ trait Helpers extends util.Daos {
     service: Option[spec.Service] = None
   ): Version = {
     versionsDao.create(
-      createdBy,
+      testUser,
       application,
       version,
       original,
@@ -131,8 +131,8 @@ trait Helpers extends util.Daos {
     user: User = createRandomUser(),
     role: Role = Role.Admin
   ): io.apibuilder.api.v0.models.Membership = {
-    val request = membershipRequestsDao.upsert(createdBy, org, user, role)
-    membershipRequestsDao.accept(createdBy, request)
+    val request = membershipRequestsDao.upsert(testUser, org, user, role)
+    membershipRequestsDao.accept(testUser, request)
 
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
       sys.error("membership could not be created")
@@ -158,7 +158,7 @@ trait Helpers extends util.Daos {
     user: User,
     form: SubscriptionForm
   ): Subscription = {
-    subscriptionsDao.create(TestUser, form)
+    subscriptionsDao.create(testUser, form)
   }
 
   def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(
@@ -193,8 +193,6 @@ trait Helpers extends util.Daos {
 
   lazy val testOrg: Organization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
-  // TODO: TestUser => testUser and remove createdBy
-  lazy val TestUser: User = createUser()
+  lazy val testUser: User = createUser()
 
-  lazy val createdBy = TestUser
 }

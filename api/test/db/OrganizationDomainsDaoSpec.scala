@@ -8,22 +8,22 @@ class OrganizationDomainsDaoSpec extends PlaySpec with OneAppPerSuite with db.He
   "create" in {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = createOrganization()
-    val domain = organizationDomainsDao.create(createdBy, org, domainName)
+    val domain = organizationDomainsDao.create(testUser, org, domainName)
     domain.domain.name must be(domainName)
 
     organizationDomainsDao.findAll(guid = Some(domain.guid)).map(_.guid) must be(Seq(domain.guid))
 
-    organizationDomainsDao.softDelete(createdBy, domain)
+    organizationDomainsDao.softDelete(testUser, domain)
     organizationDomainsDao.findAll(guid = Some(domain.guid)) must be(Nil)
   }
 
   "domains are unique per org" in {
     val domainName = UUID.randomUUID.toString + ".org"
     val org1 = createOrganization()
-    organizationDomainsDao.create(createdBy, org1, domainName)
+    organizationDomainsDao.create(testUser, org1, domainName)
 
     val org2 = createOrganization()
-    organizationDomainsDao.create(createdBy, org2, domainName)
+    organizationDomainsDao.create(testUser, org2, domainName)
 
     organizationsDao.findByGuid(Authorization.All, org1.guid).get.domains.map(_.name) must be(Seq(domainName))
     organizationsDao.findByGuid(Authorization.All, org2.guid).get.domains.map(_.name) must be(Seq(domainName))
@@ -32,7 +32,7 @@ class OrganizationDomainsDaoSpec extends PlaySpec with OneAppPerSuite with db.He
   "findAll" in {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = createOrganization()
-    val domain = organizationDomainsDao.create(createdBy, org, domainName)
+    val domain = organizationDomainsDao.create(testUser, org, domainName)
 
     organizationDomainsDao.findAll(organizationGuid = Some(org.guid)).map(_.guid) must be(Seq(domain.guid))
     organizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) must be(Nil)

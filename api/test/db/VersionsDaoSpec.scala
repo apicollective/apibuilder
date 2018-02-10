@@ -35,20 +35,20 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     lazy val service = createService(application)
 
     "create" in {
-      versionsDao.create(createdBy, application, "1.0.0", Original, service)
+      versionsDao.create(testUser, application, "1.0.0", Original, service)
       createVersion().version must be("1.0.0")
     }
 
     "findByApplicationAndVersion" in {
-      versionsDao.create(createdBy, application, "1.0.1", Original, service)
+      versionsDao.create(testUser, application, "1.0.1", Original, service)
       versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) must be(Some(service))
     }
 
     "soft delete" in {
-      val version1 = versionsDao.create(createdBy, application, "1.0.2", Original, service)
-      versionsDao.softDelete(createdBy, version1)
+      val version1 = versionsDao.create(testUser, application, "1.0.2", Original, service)
+      versionsDao.softDelete(testUser, version1)
 
-      val version2 = versionsDao.create(createdBy, application, "1.0.2", Original, service)
+      val version2 = versionsDao.create(testUser, application, "1.0.2", Original, service)
       version2.copy(
         guid = version1.guid,
         audit = version1.audit
@@ -61,8 +61,8 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   "sorts properly" in {
     val app = createApplicationByKey()
     val service = createService(app)
-    versionsDao.create(createdBy, app, "1.0.2", Original, service)
-    versionsDao.create(createdBy, app, "1.0.2-dev", Original, service)
+    versionsDao.create(testUser, app, "1.0.2", Original, service)
+    versionsDao.create(testUser, app, "1.0.2-dev", Original, service)
 
     versionsDao.findAll(
       Authorization.All,
@@ -73,7 +73,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   "can parse original" in {
     val app = createApplicationByKey()
     val service = createService(app)
-    val version = versionsDao.create(createdBy, app, "1.0.2", Original, service)
+    val version = versionsDao.create(testUser, app, "1.0.2", Original, service)
 
     val serviceConfig = ServiceConfiguration(
       orgKey = "test",
@@ -97,15 +97,15 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   "trims version number" in {
     val app = createApplicationByKey()
     val service = createService(app)
-    val version = versionsDao.create(createdBy, app, " 1.0.2\n ", Original, service)
+    val version = versionsDao.create(testUser, app, " 1.0.2\n ", Original, service)
     version.version must be("1.0.2")
   }
 
   "findAllVersions" in {
     val app = createApplicationByKey()
     val service = createService(app)
-    versionsDao.create(createdBy, app, "1.0.1", Original, service)
-    versionsDao.create(createdBy, app, "1.0.2", Original, service)
+    versionsDao.create(testUser, app, "1.0.1", Original, service)
+    versionsDao.create(testUser, app, "1.0.2", Original, service)
 
     versionsDao.findAllVersions(
       Authorization.All,

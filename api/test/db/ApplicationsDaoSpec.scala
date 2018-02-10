@@ -27,7 +27,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
         description = None,
         visibility = visibility
       )
-      applicationsDao.create(createdBy, org, applicationForm)
+      applicationsDao.create(testUser, org, applicationForm)
     }
   }
 
@@ -72,19 +72,19 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
     "returns error if name already exists" in {
       val form = createForm()
-      applicationsDao.create(createdBy, testOrg, form)
+      applicationsDao.create(testUser, testOrg, form)
       applicationsDao.validate(testOrg, form, None).map(_.code) must be(Seq("validation_error"))
     }
 
     "returns empty if name exists but belongs to the application we are updating" in {
       val form = createForm()
-      val application = applicationsDao.create(createdBy, testOrg, form)
+      val application = applicationsDao.create(testUser, testOrg, form)
       applicationsDao.validate(testOrg, form, Some(application)) must be(Nil)
     }
 
     "key" in {
       val form = createForm()
-      val application = applicationsDao.create(createdBy, testOrg, form)
+      val application = applicationsDao.create(testUser, testOrg, form)
 
       val newForm = form.copy(name = application.name + "2", key = Some(application.key))
       applicationsDao.validate(testOrg, newForm, None).map(_.message) must be(Seq("Application with this key already exists"))
@@ -108,7 +108,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val name = "Test %s".format(UUID.randomUUID)
       val application = upsertApplication(Some(name))
       val newName = application.name + "2"
-      applicationsDao.update(createdBy, application, toForm(application).copy(name = newName))
+      applicationsDao.update(testUser, application, toForm(application).copy(name = newName))
       findByKey(testOrg, application.key).get.name must be(newName)
     }
 
@@ -116,7 +116,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val application = upsertApplication()
       val newDescription = "Test %s".format(UUID.randomUUID)
       findByKey(testOrg, application.key).get.description must be(None)
-      applicationsDao.update(createdBy, application, toForm(application).copy(description = Some(newDescription)))
+      applicationsDao.update(testUser, application, toForm(application).copy(description = Some(newDescription)))
       findByKey(testOrg, application.key).get.description must be(Some(newDescription))
     }
 
@@ -124,10 +124,10 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val application = upsertApplication()
       application.visibility must be(Visibility.Organization)
 
-      applicationsDao.update(createdBy, application, toForm(application).copy(visibility = Visibility.Public))
+      applicationsDao.update(testUser, application, toForm(application).copy(visibility = Visibility.Public))
       findByKey(testOrg, application.key).get.visibility must be(Visibility.Public)
 
-      applicationsDao.update(createdBy, application, toForm(application).copy(visibility = Visibility.Organization))
+      applicationsDao.update(testUser, application, toForm(application).copy(visibility = Visibility.Organization))
       findByKey(testOrg, application.key).get.visibility must be(Visibility.Organization)
     }
   }
@@ -189,7 +189,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       ).map(_.guid) must be(Nil)
 
       val service = createService(app)
-      versionsDao.create(createdBy, app, "1.0.0", Original, service)
+      versionsDao.create(testUser, app, "1.0.0", Original, service)
 
       applicationsDao.findAll(
         Authorization.All,
@@ -240,7 +240,7 @@ class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
         "other user cannot see public nor private applications for a private org" in {
           initialize()
-          val guids = applicationsDao.findAll(Authorization.User(createdBy.guid), orgKey = Some(org.key)).map(_.guid)
+          val guids = applicationsDao.findAll(Authorization.User(testUser.guid), orgKey = Some(org.key)).map(_.guid)
           guids.contains(publicApplication.guid) must be(false)
           guids.contains(privateApplication.guid) must be(false)
         }

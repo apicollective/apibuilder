@@ -20,7 +20,7 @@ class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     val fromVersion = createVersion(application = app, version = "1.0.0")
     val toVersion = createVersion(application = app, version = "1.0.1")
     val diff = DiffBreaking(description)
-    changesDao.upsert(createdBy, fromVersion, toVersion, Seq(diff))
+    changesDao.upsert(testUser, fromVersion, toVersion, Seq(diff))
 
     changesDao.findAll(
       Authorization.All,
@@ -34,7 +34,7 @@ class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val fromVersion = createVersion(version = "1.0.0")
       val toVersion = createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
-      changesDao.upsert(createdBy, fromVersion, toVersion, Nil)
+      changesDao.upsert(testUser, fromVersion, toVersion, Nil)
       changesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
@@ -48,7 +48,7 @@ class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val breaking = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
       val nonBreaking = DiffNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
 
-      changesDao.upsert(createdBy, fromVersion, toVersion, Seq(breaking, nonBreaking))
+      changesDao.upsert(testUser, fromVersion, toVersion, Seq(breaking, nonBreaking))
 
       val actual = changesDao.findAll(
         Authorization.All,
@@ -65,8 +65,8 @@ class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       val toVersion = createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
       val diff = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
-      changesDao.upsert(createdBy, fromVersion, toVersion, Seq(diff, diff))
-      changesDao.upsert(createdBy, fromVersion, toVersion, Seq(diff))
+      changesDao.upsert(testUser, fromVersion, toVersion, Seq(diff, diff))
+      changesDao.upsert(testUser, fromVersion, toVersion, Seq(diff))
 
       changesDao.findAll(
         Authorization.All,
@@ -81,7 +81,7 @@ class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     val toVersion = createVersion(version = "1.0.1")
 
     intercept[AssertionError] {
-      changesDao.upsert(createdBy, fromVersion, toVersion, Nil)
+      changesDao.upsert(testUser, fromVersion, toVersion, Nil)
     }.getMessage must be("assertion failed: Versions must belong to same application")
   }
 
@@ -170,7 +170,7 @@ class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
         ).get,
         user
       )
-      changesDao.findAll(Authorization.User(createdBy.guid), guid = Some(change.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.User(testUser.guid), guid = Some(change.guid)).map(_.guid) must be(Seq(change.guid))
     }
   }
 

@@ -14,7 +14,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
   "create w/ explicit key" in {
     val name = UUID.randomUUID.toString
     val key = "key-" + UUID.randomUUID.toString
-    val org = createOrganization(createdBy, name = Some(name), key = Some(key))
+    val org = createOrganization(testUser, name = Some(name), key = Some(key))
     org.name must be(name)
     org.key must be(key)
   }
@@ -30,25 +30,25 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
     )
 
     "name" in {
-      val updated = organizationsDao.update(createdBy, org, form.copy(name = org.name + "2"))
+      val updated = organizationsDao.update(testUser, org, form.copy(name = org.name + "2"))
       updated.name must be(org.name + "2")
     }
 
     "key" in {
-      val updated = organizationsDao.update(createdBy, org, form.copy(key = Some(org.key + "2")))
+      val updated = organizationsDao.update(testUser, org, form.copy(key = Some(org.key + "2")))
       updated.key must be(org.key + "2")
     }
 
     "namespace" in {
-      val updated = organizationsDao.update(createdBy, org, form.copy(namespace = org.namespace + "2"))
+      val updated = organizationsDao.update(testUser, org, form.copy(namespace = org.namespace + "2"))
       updated.namespace must be(org.namespace + "2")
     }
   
     "visibility" in {
-      val updated = organizationsDao.update(createdBy, org, form.copy(visibility = Visibility.Public))
+      val updated = organizationsDao.update(testUser, org, form.copy(visibility = Visibility.Public))
       updated.visibility must be(Visibility.Public)
 
-      val updated2 = organizationsDao.update(createdBy, org, form.copy(visibility = Visibility.Organization))
+      val updated2 = organizationsDao.update(testUser, org, form.copy(visibility = Visibility.Organization))
       updated2.visibility must be(Visibility.Organization)
     }
 
@@ -68,7 +68,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
     val domainName = UUID.randomUUID.toString
     val domains = Seq(domainName + ".com", UUID.randomUUID.toString + ".org")
     lazy val org = organizationsDao.createWithAdministrator(
-      createdBy,
+      testUser,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
         domains = Some(domains),
@@ -172,7 +172,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers 
 
     "raises error if you try to create an org with a short name" in {
       intercept[java.lang.AssertionError] {
-        organizationsDao.createWithAdministrator(createdBy, createOrganizationForm("a"))
+        organizationsDao.createWithAdministrator(testUser, createOrganizationForm("a"))
       }.getMessage must be("assertion failed: name must be at least 3 characters")
     }
 

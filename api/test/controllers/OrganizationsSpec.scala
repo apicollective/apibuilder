@@ -57,11 +57,11 @@ class OrganizationsSpec extends PlaySpec with MockClient with OneServerPerSuite 
   "GET /organizations for an anonymous user shows only public organizations" in {
     val privateOrg = createOrganization(
       createOrganizationForm().copy(visibility = Visibility.Organization),
-      createdBy
+      testUser
     )
     val publicOrg = createOrganization(
       createOrganizationForm().copy(visibility = Visibility.Public),
-      createdBy
+      testUser
     )
     val anonymous = createUser()
 

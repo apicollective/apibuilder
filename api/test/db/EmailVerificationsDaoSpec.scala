@@ -14,34 +14,34 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
     // Let actor create the email verification
     // TODO: Change to eventually
     Thread.sleep(1500)
-    val verification1 = emailVerificationsDao.upsert(createdBy, user, user.email)
-    val verification2 = emailVerificationsDao.upsert(createdBy, user, user.email)
+    val verification1 = emailVerificationsDao.upsert(testUser, user, user.email)
+    val verification2 = emailVerificationsDao.upsert(testUser, user, user.email)
     verification2.guid must be(verification1.guid)
 
-    emailVerificationsDao.softDelete(createdBy, verification1)
-    val verification3 = emailVerificationsDao.upsert(createdBy, user, user.email)
+    emailVerificationsDao.softDelete(testUser, verification1)
+    val verification3 = emailVerificationsDao.upsert(testUser, user, user.email)
     verification3.guid != verification1.guid must be(true)
 
-    val verificationWithDifferentEmail = emailVerificationsDao.upsert(createdBy, user, "other-" + user.email)
+    val verificationWithDifferentEmail = emailVerificationsDao.upsert(testUser, user, "other-" + user.email)
     verificationWithDifferentEmail.guid != verification3.guid must be(true)
   }
 
   "create" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
     verification.userGuid must be(user.guid)
     verification.email must be(user.email)
   }
 
   "isExpired" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
     emailVerificationsDao.isExpired(verification) must be(false)
   }
 
   "confirm" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
     emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) must be(Nil)
 
     emailVerificationsDao.confirm(None, verification)
@@ -50,7 +50,7 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
 
   "findByGuid" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
 
     emailVerificationsDao.findByGuid(verification.guid).map(_.userGuid) must be(Some(user.guid))
     emailVerificationsDao.findByGuid(UUID.randomUUID) must be(None)
@@ -58,7 +58,7 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
 
   "findByToken" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(createdBy, user, user.email)
+    val verification = emailVerificationsDao.create(testUser, user, user.email)
 
     emailVerificationsDao.findByToken(verification.token).map(_.userGuid) must be(Some(user.guid))
     emailVerificationsDao.findByToken(UUID.randomUUID.toString) must be(None)
@@ -66,10 +66,10 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
 
   "findAll" in {
     val user1 = createRandomUser()
-    val verification1 = emailVerificationsDao.create(createdBy, user1, user1.email)
+    val verification1 = emailVerificationsDao.create(testUser, user1, user1.email)
 
     val user2 = createRandomUser()
-    val verification2 = emailVerificationsDao.create(createdBy, user2, user2.email)
+    val verification2 = emailVerificationsDao.create(testUser, user2, user2.email)
 
     emailVerificationsDao.findAll(userGuid = Some(user1.guid)).map(_.userGuid).distinct must be(Seq(user1.guid))
     emailVerificationsDao.findAll(userGuid = Some(user2.guid)).map(_.userGuid).distinct must be(Seq(user2.guid))
@@ -96,7 +96,7 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
     val org = createOrganization()
     val domain = UUID.randomUUID.toString + ".com"
 
-    organizationDomainsDao.create(createdBy, org, domain)
+    organizationDomainsDao.create(testUser, org, domain)
 
     val prefix = "test-user-" + UUID.randomUUID.toString
 
@@ -116,8 +116,8 @@ class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Hel
     membershipsDao.isUserMember(user, org) must be(false)
     membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
 
-    val verification = emailVerificationsDao.upsert(createdBy, user, user.email)
-    emailVerificationsDao.confirm(Some(createdBy), verification)
+    val verification = emailVerificationsDao.upsert(testUser, user, user.email)
+    emailVerificationsDao.confirm(Some(testUser), verification)
 
     membershipsDao.isUserMember(user, org) must be(true)
     membershipsDao.isUserMember(nonMatchingUser, org) must be(false)

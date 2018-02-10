@@ -25,7 +25,7 @@ class ApplicationMetadataSpec extends PlaySpec with MockClient with OneServerPer
 
   "GET /:orgKey/:applicationKey/metadata/versions/latest.txt" in {
     val ws = app.injector.instanceOf[WSClient]
-    val auth = sessionHelper.createAuthentication(TestUser)
+    val auth = sessionHelper.createAuthentication(testUser)
 
     val result = await(
       ws.url(
