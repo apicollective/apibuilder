@@ -30,8 +30,11 @@ trait ApibuilderController {
   }
 
   def withOrgMember(user: User, orgKey: String)(f: Organization => Result) = {
+    println(s"withOrgMember(${user.guid}, $orgKey)")
     withOrg(Authorization.User(user.guid), orgKey) { org =>
-      withRole(org, user, Role.Member) {
+      println(s"org[${org.guid}] membership check")
+      withRole(org, user, Role.All) {
+        println("is a member")
         f(org)
       }
     }
@@ -39,31 +42,32 @@ trait ApibuilderController {
 
   def withOrgAdmin(user: User, orgKey: String)(f: Organization => Result) = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
-      withRole(org, user, Role.Admin) {
+      withRole(org, user, Seq(Role.Admin)) {
         f(org)
       }
     }
   }
 
-  private[this] def withRole(org: Organization, user: User, role: Role)(f: => Result): Result = {
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role) match {
-      case None => {
-        val msg = role match {
-          case Role.Admin => s"an admin"
-          case Role.Member => "a member"
-        }
-        Results.Unauthorized(
-          Json.toJson(
-            Validation.error(
-              s"Action requires user to be $msg of the organization"
-            )
+  private[this] def withRole(org: Organization, user: User, roles: Seq[Role])(f: => Result): Result = {
+    val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
+      Authorization.All, org, user, roles
+    ).map(_.role)
+
+    if (actualRoles.isEmpty) {
+      val msg: String = if (roles.contains(Role.Admin)) {
+        s"an '${Role.Admin}'"
+      } else {
+        s"a '${Role.Member}'"
+      }
+      Results.Unauthorized(
+        Json.toJson(
+          Validation.error(
+            s"Must be $msg of the organization"
           )
         )
-      }
-
-      case Some(_) => {
-        f
-      }
+      )
+    } else {
+      f
     }
   }
 
