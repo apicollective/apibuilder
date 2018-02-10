@@ -87,9 +87,7 @@ trait MockClient extends db.Helpers
     Try(
       f
     ) match {
-      case Success(_) => {
-        sys.error(s"Expected HTTP[$code] but got HTTP 2xx")
-      }
+      case Success(_) => // no-op
       case Failure(ex) => ex match {
         case UnitResponse(c) if c == code => // no-op
         case UnitResponse(c) => sys.error(s"Expected code[$c] but got[$code]")
