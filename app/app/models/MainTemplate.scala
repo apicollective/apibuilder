@@ -64,14 +64,6 @@ case class MainTemplate(
 
 }
 
-object MainTemplate {
-
-  val supportEmail = current.configuration.getString("apibuilder.supportEmail").getOrElse {
-    sys.error("apibuilder.supportEmail is required")
-  }
-
-}
-
 // TODO: Remove this class and use Option[SettingSection] directly
 case class SettingsMenu(
   section: Option[SettingSection] = None

@@ -2,7 +2,7 @@ package controllers
 
 import io.apibuilder.api.v0.models._
 import io.apibuilder.api.v0.models.json._
-import lib.Validation
+import lib.{Config, Validation}
 import db._
 import javax.inject.{Inject, Singleton}
 

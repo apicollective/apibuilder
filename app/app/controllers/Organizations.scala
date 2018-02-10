@@ -12,12 +12,20 @@ import scala.concurrent.Future
 import javax.inject.Inject
 
 import io.apibuilder.api.v0.Client
+import play.api.Configuration
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.Controller
 
-class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Organizations @Inject() (
+  configuration: Configuration,
+  val messagesApi: MessagesApi
+) extends Controller with I18nSupport {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+
+  val apibuilderSupportEmail: String = configuration.getString("apibuilder.supportEmail").getOrElse {
+    sys.error("Missing apibuilderSupportEmail")
+  }
 
   def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     request.api.Applications.get(
@@ -91,7 +99,8 @@ class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller 
             org,
             adminsResponse,
             hasMembershipRequest,
-            isMember
+            isMember,
+            apibuilderSupportEmail
           ))
         }
       }

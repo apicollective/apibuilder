@@ -2,7 +2,8 @@
   org: io.apibuilder.api.v0.models.Organization,
   admins: Seq[io.apibuilder.api.v0.models.Membership],
   hasMembershipRequest: Boolean,
-  isMember: Boolean
+  isMember: Boolean,
+  supportEmail: String
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
@@ -19,7 +20,7 @@
         <em>
   
           This organization does not have any administrative users - you may
-          consider creating a new organization or email @models.MainTemplate.supportEmail
+          consider creating a new organization or email @supportEmail
           for help.
   
         </em>
