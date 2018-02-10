@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import io.apibuilder.api.v0.models._
 import io.apibuilder.spec.v0.models.json._
-import lib.{ApiClientProvider, Util, VersionTag}
+import lib.{ApiClientProvider, Labels, VersionTag}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}

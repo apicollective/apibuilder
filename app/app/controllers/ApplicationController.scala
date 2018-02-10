@@ -1,8 +1,9 @@
 package controllers
 
-import lib.{Pagination, PaginatedCollection}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
 class ApplicationController @Inject() (

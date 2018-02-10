@@ -15,7 +15,8 @@ import play.api.mvc.{Action, Controller}
 
 class LoginController @Inject() (
   val messagesApi: MessagesApi,
-  apiClientProvider: ApiClientProvider
+  apiClientProvider: ApiClientProvider,
+  util: Util
 ) extends Controller with I18nSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -67,7 +68,7 @@ class LoginController @Inject() (
             routes.ApplicationController.index().path
           }
           case Some(u) => {
-            Util.validateReturnUrl(u) match {
+            util.validateReturnUrl(u) match {
               case Left(errors) => {
                 Logger.warn(s"Ignoring redirect url[$u]: $errors")
                 "/"

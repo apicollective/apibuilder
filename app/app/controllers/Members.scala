@@ -156,7 +156,7 @@ class Members @Inject() (
   def downloadCsv(orgKey: String) = AuthenticatedOrg.async { implicit request =>
     request.requireAdmin()
     for {
-      path <- MemberDownload(request.sessionId, orgKey).csv()
+      path <- MemberDownload(apiClientProvider.clientForSessionId(Some(request.sessionId)), orgKey).csv()
     } yield {
       val date = DateHelper.mediumDateTime(UserTimeZone(request.user), DateTime.now())
       Ok.sendFile(

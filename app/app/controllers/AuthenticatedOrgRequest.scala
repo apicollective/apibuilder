@@ -1,11 +1,12 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{ Membership, Organization, User }
+import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import models.MainTemplate
-import lib.Role
+import lib.{ApiClientProvider, Role}
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
-import scala.concurrent.{ Await, Future }
+
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import play.api.Play.current
 import java.util.UUID
@@ -48,6 +49,8 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  private[this] lazy val apiClientProvider = play.api.Play.current.injector.instanceOf[ApiClientProvider]
+
   def invokeBlock[A](request: Request[A], block: (AuthenticatedOrgRequest[A]) => Future[Result]) = {
 
     def returnUrl(orgKey: Option[String]): Option[String] = {
@@ -65,7 +68,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
 
     request.session.get("session_id").map { sessionId =>
 
-      lib.ApiClient.awaitCallWith404(Authenticated.api().authentications.getSessionById(sessionId)) match {
+      apiClientProvider.awaitCallWith404(Authenticated.api().authentications.getSessionById(sessionId)) match {
 
         case None => {
           // have a user guid, but user does not exist
@@ -78,7 +81,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
-          val orgOption = lib.ApiClient.awaitCallWith404(Authenticated.api(Some(sessionId)).Organizations.getByKey(orgKey)).headOption
+          val orgOption = apiClientProvider.awaitCallWith404(Authenticated.api(Some(sessionId)).Organizations.getByKey(orgKey)).headOption
           val memberships = Await.result(Authenticated.api(Some(sessionId)).Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis)
           orgOption match {
             case None => {

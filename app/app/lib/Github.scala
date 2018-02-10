@@ -1,11 +1,14 @@
 package lib
 
 import java.net.URLEncoder
+import javax.inject.Inject
 
-object Github {
+class Github @Inject() (
+  config: Config
+) {
 
-  lazy val clientId: String = Config.requiredString("apibuilder.github.oauth.client.id")
-  lazy val clientSecret: String = Config.requiredString("apibuilder.github.oauth.client.secret")
+  lazy val clientId: String = config.requiredString("apibuilder.github.oauth.client.id")
+  lazy val clientSecret: String = config.requiredString("apibuilder.github.oauth.client.secret")
   private[this] lazy val baseUrl = Util.fullUrl("/login/github/callback")
 
   private[this] val Scopes = Seq("user:email")
