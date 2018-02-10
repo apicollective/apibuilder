@@ -656,7 +656,12 @@
 
 	{
 	  "method": "DELETE",
-	  "path": "/:guid"
+	  "path": "/:guid",
+	  "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
 	}
       ]
     },
@@ -718,7 +723,8 @@
           "description": "Deletes an organization and all of its associated applications.",
           "responses": {
             "204": { "type": "unit" },
-            "401": { "type": "unit" }
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
           }
         },
 
@@ -838,7 +844,12 @@
 	{
 	  "method": "DELETE",
 	  "description": "Remove this domain from this organization",
-	  "path": "/:name"
+	  "path": "/:name",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
         }
       ]
     },
@@ -872,7 +883,12 @@
 
         {
           "method": "DELETE",
-          "path": "/:guid"
+          "path": "/:guid",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
         }
       ]
     },
@@ -1002,7 +1018,12 @@
         {
           "method": "DELETE",
           "description": "Deletes a specific application and its associated versions.",
-          "path": "/:applicationKey"
+          "path": "/:applicationKey",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
         },
 
         {
@@ -1098,7 +1119,12 @@
         {
           "method": "DELETE",
           "description": "Deletes a specific version.",
-          "path": "/:applicationKey/:version"
+          "path": "/:applicationKey/:version",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
         },
 
         {
@@ -1161,11 +1187,10 @@
           "path": "/:guid",
 	  "description": "Deletes a generator service.",
 	  "responses": {
-            "204": { "type": "unit", "description": "Service successfully deleted" },
-            "404": { "type": "unit", "description": "Service not found" },
-            "403": { "type": "unit", "description": "Request is not authorized" }
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
           }
-
         }
       ]
       
@@ -1243,7 +1268,12 @@
 
         {
           "method": "DELETE",
-	  "path": "/:guid"
+	  "path": "/:guid",
+	  "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
         }
       ]
     },
@@ -1302,7 +1332,12 @@
 
         {
           "method": "DELETE",
-	  "path": "/:guid"
+	  "path": "/:guid",
+	  "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
         }
       ]
     },

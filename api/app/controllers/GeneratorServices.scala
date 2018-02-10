@@ -88,7 +88,7 @@ class GeneratorServices @Inject() (
           servicesDao.softDelete(request.user, service)
           NoContent
         } else {
-          Forbidden
+          Unauthorized
         }
       }
     }
