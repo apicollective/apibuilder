@@ -1,20 +1,22 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Attribute, AttributeSummary, AttributeValueForm, Organization, OrganizationForm, User}
+import io.apibuilder.api.v0.models._
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
-import db.{AttributesDao, Authorization, OrganizationsDao, OrganizationAttributeValuesDao}
+import db._
 import javax.inject.{Inject, Singleton}
+
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
+  val membershipsDao: MembershipsDao,
+  val organizationsDao: OrganizationsDao,
   attributesDao: AttributesDao,
-  organizationsDao: OrganizationsDao,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao
-) extends Controller {
+) extends Controller with ApibuilderController {
 
   def get(
     guid: Option[UUID],
@@ -42,9 +44,8 @@ class Organizations @Inject() (
   }
 
   def getByKey(key: String) = AnonymousRequest { request =>
-    organizationsDao.findByKey(request.authorization, key) match {
-      case None => NotFound
-      case Some(org) => Ok(Json.toJson(org))
+    withOrg(request.authorization, key) { org =>
+      Ok(Json.toJson(org))
     }
   }
 
@@ -90,11 +91,10 @@ class Organizations @Inject() (
   }
 
   def deleteByKey(key: String) = Authenticated { request =>
-    organizationsDao.findByUserAndKey(request.user, key).map { organization =>
-      request.requireAdmin(organization)
-      organizationsDao.softDelete(request.user, organization)
+    withOrgAdmin(request.user, key) { org =>
+      organizationsDao.softDelete(request.user, org)
+      NoContent
     }
-    NoContent
   }
 
   def getAttributesByKey(
@@ -103,7 +103,7 @@ class Organizations @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    withOrganization(request.user, key) { org =>
+    withOrg(request.authorization, key) { org =>
       Ok(
         Json.toJson(
           organizationAttributeValuesDao.findAll(
@@ -121,7 +121,7 @@ class Organizations @Inject() (
     key: String,
     name: String
   ) = Authenticated { request =>
-    withOrganization(request.user, key) { org =>
+    withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
         case Some(attr) => Ok(Json.toJson(attr))
@@ -130,7 +130,7 @@ class Organizations @Inject() (
   }
 
   def putAttributesByKeyAndName(key: String, name: String) = Authenticated(parse.json) { request =>
-    withOrganization(request.user, key) { org =>
+    withOrg(request.authorization, key) { org =>
       withAttribute(name) { attr =>
         request.body.validate[AttributeValueForm] match {
           case e: JsError => {
@@ -161,29 +161,13 @@ class Organizations @Inject() (
     key: String,
     name: String
   ) = Authenticated { request =>
-    withOrganization(request.user, key) { org =>
+    withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
         case Some(attr) => {
           organizationAttributeValuesDao.softDelete(request.user, attr)
           NoContent
         }
-      }
-    }
-  }
-
-  private[this] def withOrganization(
-    user: User,
-    key: String
-  ) (
-    f: Organization => Result
-  ) = {
-    organizationsDao.findByKey(Authorization.User(user.guid), key) match {
-      case None => {
-        NotFound
-      }
-      case Some(org) => {
-        f(org)
       }
     }
   }

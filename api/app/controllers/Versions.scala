@@ -14,8 +14,8 @@ import play.api.libs.json._
 @Singleton
 class Versions @Inject() (
   val membershipsDao: MembershipsDao,
+  val organizationsDao: OrganizationsDao,
   applicationsDao: ApplicationsDao,
-  organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator
 ) extends Controller with ApibuilderController {
@@ -97,50 +97,45 @@ class Versions @Inject() (
     orgKey: String,
     versionName: String
   ) = Authenticated { request =>
-    organizationsDao.findByUserAndKey(request.user, orgKey) match {
-      case None => {
-        Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
-      }
-      case Some(org) => {
-        request.body match {
-          case AnyContentAsJson(json) => {
-            json.validate[VersionForm] match {
-              case e: JsError => {
-                Conflict(Json.toJson(Validation.invalidJson(e)))
-              }
-              case s: JsSuccess[VersionForm] => {
-                val form = s.get
-                OriginalValidator(
-                  config = toServiceConfiguration(org, versionName),
-                  original = OriginalUtil.toOriginal(form.originalForm),
-                  fetcher = DatabaseServiceFetcher(request.authorization)
-                ).validate() match {
-                  case Left(errors) => {
-                    Conflict(Json.toJson(Validation.errors(errors)))
-                  }
-                  case Right(service) => {
-                    versionValidator.validate(request.user, org, service.application.key) match {
-                      case Nil => {
-                        upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service) match {
-                          case Left(errors) => Conflict(Json.toJson(errors))
-                          case Right(version) => Ok(Json.toJson(version))
-                        }
+    withOrg(request.authorization, orgKey) { org =>
+      request.body match {
+        case AnyContentAsJson(json) => {
+          json.validate[VersionForm] match {
+            case e: JsError => {
+              Conflict(Json.toJson(Validation.invalidJson(e)))
+            }
+            case s: JsSuccess[VersionForm] => {
+              val form = s.get
+              OriginalValidator(
+                config = toServiceConfiguration(org, versionName),
+                original = OriginalUtil.toOriginal(form.originalForm),
+                fetcher = DatabaseServiceFetcher(request.authorization)
+              ).validate() match {
+                case Left(errors) => {
+                  Conflict(Json.toJson(Validation.errors(errors)))
+                }
+                case Right(service) => {
+                  versionValidator.validate(request.user, org, service.application.key) match {
+                    case Nil => {
+                      upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service) match {
+                        case Left(errors) => Conflict(Json.toJson(errors))
+                        case Right(version) => Ok(Json.toJson(version))
                       }
-                      case errors => {
-                        Conflict(Json.toJson(Validation.errors(errors)))
-                      }
+                    }
+                    case errors => {
+                      Conflict(Json.toJson(Validation.errors(errors)))
                     }
                   }
                 }
               }
             }
           }
-
-          case _ => {
-            Conflict(Json.toJson(Validation.invalidJsonDocument()))
-          }
-
         }
+
+        case _ => {
+          Conflict(Json.toJson(Validation.invalidJsonDocument()))
+        }
+
       }
     }
   }
@@ -150,62 +145,54 @@ class Versions @Inject() (
     applicationKey: String,
     versionName: String
   ) = Authenticated { request =>
-    organizationsDao.findByUserAndKey(request.user, orgKey) match {
-      case None => {
-        Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
-      }
-
-      case Some(org: Organization) => {
-        request.body match {
-          case AnyContentAsJson(json) => {
-            json.validate[VersionForm] match {
-              case e: JsError => {
-                Conflict(Json.toJson(Validation.invalidJson(e)))
-              }
-              case s: JsSuccess[VersionForm] => {
-                val form = s.get
-                OriginalValidator(
-                  config = toServiceConfiguration(org, versionName),
-                  original = OriginalUtil.toOriginal(form.originalForm),
-                  fetcher = DatabaseServiceFetcher(request.authorization)
-                ).validate() match {
-                  case Left(errors) => {
-                    Conflict(Json.toJson(Validation.errors(errors)))
-                  }
-                  case Right(service) => {
-                    versionValidator.validate(request.user, org, service.application.key, Some(applicationKey)) match {
-                      case Nil => {
-                        upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey)) match {
-                          case Left(errors) => Conflict(Json.toJson(errors))
-                          case Right(version) => Ok(Json.toJson(version))
-                        }
+    withOrg(request.authorization, orgKey) { org =>
+      request.body match {
+        case AnyContentAsJson(json) => {
+          json.validate[VersionForm] match {
+            case e: JsError => {
+              Conflict(Json.toJson(Validation.invalidJson(e)))
+            }
+            case s: JsSuccess[VersionForm] => {
+              val form = s.get
+              OriginalValidator(
+                config = toServiceConfiguration(org, versionName),
+                original = OriginalUtil.toOriginal(form.originalForm),
+                fetcher = DatabaseServiceFetcher(request.authorization)
+              ).validate() match {
+                case Left(errors) => {
+                  Conflict(Json.toJson(Validation.errors(errors)))
+                }
+                case Right(service) => {
+                  versionValidator.validate(request.user, org, service.application.key, Some(applicationKey)) match {
+                    case Nil => {
+                      upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey)) match {
+                        case Left(errors) => Conflict(Json.toJson(errors))
+                        case Right(version) => Ok(Json.toJson(version))
                       }
-                      case errors => {
-                        Conflict(Json.toJson(Validation.errors(errors)))
-                      }
+                    }
+                    case errors => {
+                      Conflict(Json.toJson(Validation.errors(errors)))
                     }
                   }
                 }
               }
             }
           }
-          case _ => {
-            Conflict(Json.toJson(Validation.invalidJsonDocument()))
-          }
+        }
+        case _ => {
+          Conflict(Json.toJson(Validation.invalidJsonDocument()))
         }
       }
     }
   }
 
   def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
-    val auth = authorization(request.user)
-    organizationsDao.findByKey(auth, orgKey) foreach { org =>
-      requireMember(request.user, org)
-      versionsDao.findVersion(auth, orgKey, applicationKey, version).foreach { version =>
+    withOrgMember(request.user, orgKey) { _ =>
+      versionsDao.findVersion(request.authorization, orgKey, applicationKey, version).foreach { version =>
         versionsDao.softDelete(request.user, version)
       }
+      NoContent
     }
-    NoContent
   }
 
   private[this] def upsertVersion(

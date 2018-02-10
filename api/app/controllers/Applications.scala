@@ -2,8 +2,9 @@ package controllers
 
 import io.apibuilder.api.v0.models.{ApplicationForm, MoveForm}
 import io.apibuilder.api.v0.models.json._
-import db.{Authorization, OrganizationsDao, ApplicationsDao, VersionsDao}
+import db._
 import javax.inject.{Inject, Singleton}
+
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
@@ -11,10 +12,11 @@ import java.util.UUID
 
 @Singleton
 class Applications @Inject() (
+  val membershipsDao: MembershipsDao,
+  val organizationsDao: OrganizationsDao,
   applicationsDao: ApplicationsDao,
-  organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao
-) extends Controller {
+) extends Controller with ApibuilderController {
 
   def get(
     orgKey: String,
@@ -39,23 +41,20 @@ class Applications @Inject() (
   }
 
   def post(orgKey: String) = Authenticated(parse.json) { request =>
-    organizationsDao.findByUserAndKey(request.user, orgKey) match {
-      case None => NotFound
-      case Some(org) => {
-        request.body.validate[ApplicationForm] match {
-          case e: JsError => {
-            Conflict(Json.toJson(Validation.invalidJson(e)))
-          }
-          case s: JsSuccess[ApplicationForm] => {
-            val form = s.get
-            applicationsDao.validate(org, form) match {
-              case Nil => {
-                val app = applicationsDao.create(request.user, org, form)
-                Ok(Json.toJson(app))
-              }
-              case errors => {
-                Conflict(Json.toJson(errors))
-              }
+    withOrg(request.authorization, orgKey) { org =>
+      request.body.validate[ApplicationForm] match {
+        case e: JsError => {
+          Conflict(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[ApplicationForm] => {
+          val form = s.get
+          applicationsDao.validate(org, form) match {
+            case Nil => {
+              val app = applicationsDao.create(request.user, org, form)
+              Ok(Json.toJson(app))
+            }
+            case errors => {
+              Conflict(Json.toJson(errors))
             }
           }
         }
@@ -64,26 +63,23 @@ class Applications @Inject() (
   }
 
   def putByApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
-    organizationsDao.findByUserAndKey(request.user, orgKey) match {
-      case None => NotFound
-      case Some(org) => {
-        request.body.validate[ApplicationForm] match {
-          case e: JsError => {
-            Conflict(Json.toJson(Validation.invalidJson(e)))
-          }
-          case s: JsSuccess[ApplicationForm] => {
-            val form = s.get
-            applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
-              case None => Conflict(Json.toJson(Validation.error(s"application[$applicationKey] not found or inaccessible")))
-              case Some(existing) => {
-                applicationsDao.validate(org, form, Some(existing)) match {
-                  case Nil => {
-                    val app = applicationsDao.update(request.user, existing, form)
-                    Ok(Json.toJson(app))
-                  }
-                  case errors => {
-                    Conflict(Json.toJson(errors))
-                  }
+    withOrg(request.authorization, orgKey) { org =>
+      request.body.validate[ApplicationForm] match {
+        case e: JsError => {
+          Conflict(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[ApplicationForm] => {
+          val form = s.get
+          applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
+            case None => Conflict(Json.toJson(Validation.error(s"application[$applicationKey] not found or inaccessible")))
+            case Some(existing) => {
+              applicationsDao.validate(org, form, Some(existing)) match {
+                case Nil => {
+                  val app = applicationsDao.update(request.user, existing, form)
+                  Ok(Json.toJson(app))
+                }
+                case errors => {
+                  Conflict(Json.toJson(errors))
                 }
               }
             }
@@ -94,36 +90,32 @@ class Applications @Inject() (
   }
 
   def deleteByApplicationKey(orgKey: String, applicationKey: String) = Authenticated { request =>
-    organizationsDao.findByKey(request.authorization, orgKey) map { org =>
-      request.requireMember(org)
-      applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
+    withOrgMember(request.user, orgKey) { _ =>
+      applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).foreach { application =>
         applicationsDao.softDelete(request.user, application)
       }
+      NoContent
     }
-    NoContent
   }
 
   def postMoveByApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
-    organizationsDao.findByUserAndKey(request.user, orgKey) match {
-      case None => NotFound
-      case Some(org) => {
-        applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
-          case None => NotFound
-          case Some(app) => {
-            request.body.validate[MoveForm] match {
-              case e: JsError => {
-                Conflict(Json.toJson(Validation.invalidJson(e)))
-              }
-              case s: JsSuccess[MoveForm] => {
-                val form = s.get
-                applicationsDao.validateMove(request.authorization, app, form) match {
-                  case Nil => {
-                    val updatedApp = applicationsDao.move(request.user, app, form)
-                    Ok(Json.toJson(updatedApp))
-                  }
-                  case errors => {
-                    Conflict(Json.toJson(errors))
-                  }
+    withOrg(request.authorization, orgKey) { org =>
+      applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
+        case None => NotFound
+        case Some(app) => {
+          request.body.validate[MoveForm] match {
+            case e: JsError => {
+              Conflict(Json.toJson(Validation.invalidJson(e)))
+            }
+            case s: JsSuccess[MoveForm] => {
+              val form = s.get
+              applicationsDao.validateMove(request.authorization, app, form) match {
+                case Nil => {
+                  val updatedApp = applicationsDao.move(request.user, app, form)
+                  Ok(Json.toJson(updatedApp))
+                }
+                case errors => {
+                  Conflict(Json.toJson(errors))
                 }
               }
             }

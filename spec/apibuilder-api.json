@@ -715,7 +715,11 @@
         {
           "method": "DELETE",
           "path": "/:key",
-          "description": "Deletes an organization and all of its associated applications."
+          "description": "Deletes an organization and all of its associated applications.",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" }
+          }
         },
 
         {
