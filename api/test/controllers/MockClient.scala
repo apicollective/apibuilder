@@ -88,18 +88,12 @@ trait MockClient extends db.Helpers
       f
     ) match {
       case Success(_) => {
-        org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
+        sys.error(s"Expected HTTP[$code] but got HTTP 2xx")
       }
       case Failure(ex) => ex match {
-        case UnitResponse(c) if c == code => {
-          org.specs2.execute.Success()
-        }
-        case UnitResponse(c) => {
-          org.specs2.execute.Failure(s"Expected code[$c] but got[$code]")
-        }
-        case e => {
-          org.specs2.execute.Failure(s"Unexpected error: $e")
-        }
+        case UnitResponse(c) if c == code => // no-op
+        case UnitResponse(c) => sys.error(s"Expected code[$c] but got[$code]")
+        case e => sys.error(s"Unexpected error: $e")
       }
     }
   }

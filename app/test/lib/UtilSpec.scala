@@ -1,20 +1,20 @@
 package lib
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatestplus.play.PlaySpec
 
-class UtilSpec extends FunSpec with Matchers {
+class UtilSpec extends PlaySpec {
 
-  it("validateReturnUrl for invalid domains") {
-    Util.validateReturnUrl("") should be(Left(Seq("Redirect URL[] must start with / or a known domain")))
-    Util.validateReturnUrl("https://google.com/foo") should be(Left(Seq("Redirect URL[https://google.com/foo] must start with / or a known domain")))
+  "validateReturnUrl for invalid domains" in {
+    Util.validateReturnUrl("") must be(Left(Seq("Redirect URL[] must start with / or a known domain")))
+    Util.validateReturnUrl("https://google.com/foo") must be(Left(Seq("Redirect URL[https://google.com/foo] must start with / or a known domain")))
   }
 
-  it("validateReturnUrl for valid domains") {
-    Util.validateReturnUrl("/") should be(Right("/"))
-    Util.validateReturnUrl("https://www.apibuilder.io") should be(Right("/"))
-    Util.validateReturnUrl("https://www.apibuilder.io/") should be(Right("/"))
-    Util.validateReturnUrl("https://app.apibuilder.io") should be(Right("/"))
-    Util.validateReturnUrl("https://app.apibuilder.io/") should be(Right("/"))
+  "validateReturnUrl for valid domains" in {
+    Util.validateReturnUrl("/") must be(Right("/"))
+    Util.validateReturnUrl("https://www.apibuilder.io") must be(Right("/"))
+    Util.validateReturnUrl("https://www.apibuilder.io/") must be(Right("/"))
+    Util.validateReturnUrl("https://app.apibuilder.io") must be(Right("/"))
+    Util.validateReturnUrl("https://app.apibuilder.io/") must be(Right("/"))
   }
 
 }
