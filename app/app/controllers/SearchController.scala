@@ -1,6 +1,6 @@
 package controllers
 
-import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination, Util}
 import javax.inject.Inject
 
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -8,7 +8,8 @@ import play.api.mvc.Controller
 
 class SearchController @Inject() (
   val messagesApi: MessagesApi,
-  apiClientProvider: ApiClientProvider
+  apiClientProvider: ApiClientProvider,
+  util: Util
 ) extends Controller with I18nSupport {
   
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
@@ -30,6 +31,7 @@ class SearchController @Inject() (
         request.mainTemplate().copy(
           query = Some(finalQuery)
         ),
+        util,
         q = q,
         org = org,
         items = PaginatedCollection(page, items)

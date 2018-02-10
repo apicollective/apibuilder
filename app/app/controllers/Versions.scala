@@ -218,7 +218,7 @@ class Versions @Inject() (
     applicationKey match {
 
       case None => Future {
-        val tpl = request.mainTemplate(Some(Util.AddApplicationText))
+        val tpl = request.mainTemplate(Some(Labels.AddApplicationText))
         val filledForm = Versions.uploadForm.fill(
           Versions.UploadData(
             version = DefaultVersion,
@@ -267,7 +267,7 @@ class Versions @Inject() (
     request.requireMember()
 
     val tpl = applicationKey match {
-      case None => request.mainTemplate(Some(Util.AddApplicationText))
+      case None => request.mainTemplate(Some(Labels.AddApplicationText))
       case Some(key) => request.mainTemplate(Some("Upload New Version"))
     }
     val boundForm = Versions.uploadForm.bindFromRequest

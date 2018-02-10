@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.playRoutesFile.url, user, Some("API Tokens")) {
 
@@ -11,7 +14,7 @@
 
   <p>
     <pre>
-      curl @lib.Util.fullApiUrl("/organizations")
+      curl @util.fullApiUrl("/organizations")
 
         [
           {
@@ -46,7 +49,7 @@
   <p>
     Once you have your API token, verify that it is valid:
     <pre>
-      curl -u API_TOKEN: @lib.Util.fullApiUrl("/<your organization id>")
+      curl -u API_TOKEN: @util.fullApiUrl("/<your organization id>")
     </pre>
 
     You should now see your private applications in the response.
@@ -55,7 +58,7 @@
   <p>
 
     Full documentation of the API Builder API is available online at
-    <a href="@lib.Util.ApibuilderApi.docsUrl">@lib.Util.fullUrl(lib.Util.ApibuilderApi.docsUrl)</a>
+    <a href="@lib.Labels.ApibuilderApi.docsUrl">@util.fullUrl(lib.Labels.ApibuilderApi.docsUrl)</a>
 
   </p>
 

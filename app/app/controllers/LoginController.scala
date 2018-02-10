@@ -1,7 +1,7 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
-import lib.{ApiClientProvider, Util}
+import lib.{ApiClientProvider, Github, Util}
 import models.MainTemplate
 import play.api.data._
 import play.api.data.Forms._
@@ -16,6 +16,7 @@ import play.api.mvc.{Action, Controller}
 class LoginController @Inject() (
   val messagesApi: MessagesApi,
   apiClientProvider: ApiClientProvider,
+  github: Github,
   util: Util
 ) extends Controller with I18nSupport {
 
@@ -43,7 +44,7 @@ class LoginController @Inject() (
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    Ok(views.html.login.index(tpl, LoginController.Tab.Login, returnUrl))
+    Ok(views.html.login.index(tpl, github, LoginController.Tab.Login, returnUrl))
   }
 
   def legacy(returnUrl: Option[String]) = Action { implicit request =>

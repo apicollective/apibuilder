@@ -1,4 +1,5 @@
 @(tpl: models.MainTemplate,
+  util: lib.Util,
   q: Option[String],
   org: Option[String],
   items: lib.PaginatedCollection[io.apibuilder.api.v0.models.Item]
@@ -15,7 +16,7 @@
         @items.items.map { item =>
          <tr>
            <td>
-	     <a href="@lib.Util.searchUrl(item.detail).getOrElse("#")">@item.label</a>
+	     <a href="@util.searchUrl(item.detail).getOrElse("#")">@item.label</a>
              <br/><em>@item.description</em>
            </td>
          </tr>

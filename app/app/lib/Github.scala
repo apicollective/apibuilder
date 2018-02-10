@@ -4,12 +4,13 @@ import java.net.URLEncoder
 import javax.inject.Inject
 
 class Github @Inject() (
-  config: Config
+  config: Config,
+  util: Util
 ) {
 
   lazy val clientId: String = config.requiredString("apibuilder.github.oauth.client.id")
   lazy val clientSecret: String = config.requiredString("apibuilder.github.oauth.client.secret")
-  private[this] lazy val baseUrl = Util.fullUrl("/login/github/callback")
+  private[this] lazy val baseUrl = util.fullUrl("/login/github/callback")
 
   private[this] val Scopes = Seq("user:email")
 
@@ -17,7 +18,7 @@ class Github @Inject() (
 
   def oauthUrl(returnUrl: Option[String]): String = {
     val finalUrl = URLEncoder.encode(
-      Util.fullUrl(returnUrl.getOrElse("/")),
+      util.fullUrl(returnUrl.getOrElse("/")),
       "UTF-8"
     )
 

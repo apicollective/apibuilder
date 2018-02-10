@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.playRoutesFile.url, user, Some("Play Routes")) {
 
@@ -70,7 +73,7 @@
   </ol>
 
   <p>
-  For a real life example, view <a href="@lib.Util.ApibuilderGitHubUrl/blob/master/build.sbt">API Builder's build.sbt file</a>
+  For a real life example, view <a href="@lib.Labels.ApibuilderGitHubUrl/blob/master/build.sbt">API Builder's build.sbt file</a>
   </p>
 
 }  

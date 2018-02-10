@@ -1,4 +1,7 @@
-@(user: Option[io.apibuilder.api.v0.models.User])
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
 
 @doc.main(routes.DocController.examples.url, user, Some("Examples")) {
 
@@ -12,7 +15,7 @@
   <table class="table table-hover table-condensed">
     <tbody>
 
-       @lib.Util.Examples.map { example =>
+       @lib.Labels.Examples.map { example =>
          <tr>
            <td>@example.label</td>
            <td><a href="@example.docsUrl">Online docs</a></td>
