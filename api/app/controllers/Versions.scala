@@ -168,7 +168,7 @@ class Versions @Inject() (
                   config = toServiceConfiguration(org, versionName),
                   original = OriginalUtil.toOriginal(form.originalForm),
                   fetcher = DatabaseServiceFetcher(request.authorization)
-                ).validate match {
+                ).validate() match {
                   case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
                   }
