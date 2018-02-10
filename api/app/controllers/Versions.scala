@@ -13,11 +13,12 @@ import play.api.libs.json._
 
 @Singleton
 class Versions @Inject() (
+  val membershipsDao: MembershipsDao,
   applicationsDao: ApplicationsDao,
   organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator
-) extends Controller {
+) extends Controller with ApibuilderController {
 
   private[this] val DefaultVisibility = Visibility.Organization
 
@@ -197,9 +198,9 @@ class Versions @Inject() (
   }
 
   def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
-    val auth = Authorization.User(request.user.guid)
+    val auth = authorization(request.user)
     organizationsDao.findByKey(auth, orgKey) foreach { org =>
-      request.requireMember(org)
+      requireMember(request.user, org)
       versionsDao.findVersion(auth, orgKey, applicationKey, version).foreach { version =>
         versionsDao.softDelete(request.user, version)
       }
