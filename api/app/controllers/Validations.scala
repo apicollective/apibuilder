@@ -10,7 +10,9 @@ import play.api.mvc._
 import play.api.libs.json._
 
 @Singleton
-class Validations @Inject() () extends Controller {
+class Validations @Inject() (
+  databaseServiceFetcher: DatabaseServiceFetcher
+) extends Controller {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",
@@ -29,12 +31,12 @@ class Validations @Inject() () extends Controller {
         OriginalValidator(
           config = config,
           original = Original(fileType, contents),
-          fetcher = DatabaseServiceFetcher(request.authorization)
+          fetcher = databaseServiceFetcher.instance(request.authorization)
         ).validate match {
           case Left(errors) => {
             BadRequest(Json.toJson(Validation(false, errors)))
           }
-          case Right(service) => {
+          case Right(_) => {
             Ok(Json.toJson(Validation(true, Nil)))
           }
         }

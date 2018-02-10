@@ -16,6 +16,7 @@ class Versions @Inject() (
   val membershipsDao: MembershipsDao,
   val organizationsDao: OrganizationsDao,
   applicationsDao: ApplicationsDao,
+  databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator
 ) extends Controller with ApibuilderController {
@@ -109,7 +110,7 @@ class Versions @Inject() (
               OriginalValidator(
                 config = toServiceConfiguration(org, versionName),
                 original = OriginalUtil.toOriginal(form.originalForm),
-                fetcher = DatabaseServiceFetcher(request.authorization)
+                fetcher = databaseServiceFetcher.instance(request.authorization)
               ).validate() match {
                 case Left(errors) => {
                   Conflict(Json.toJson(Validation.errors(errors)))
@@ -157,7 +158,7 @@ class Versions @Inject() (
               OriginalValidator(
                 config = toServiceConfiguration(org, versionName),
                 original = OriginalUtil.toOriginal(form.originalForm),
-                fetcher = DatabaseServiceFetcher(request.authorization)
+                fetcher = databaseServiceFetcher.instance(request.authorization)
               ).validate() match {
                 case Left(errors) => {
                   Conflict(Json.toJson(Validation.errors(errors)))

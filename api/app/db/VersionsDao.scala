@@ -24,6 +24,7 @@ class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   applicationsDao: ApplicationsDao,
+  databaseServiceFetcher: DatabaseServiceFetcher,
   originalsDao: OriginalsDao,
   tasksDao: TasksDao,
   usersDao: UsersDao
@@ -356,7 +357,7 @@ class VersionsDao @Inject() (
             original = version.original.getOrElse {
               sys.error("Missing version")
             },
-            fetcher = DatabaseServiceFetcher(Authorization.All),
+            fetcher = databaseServiceFetcher.instance(Authorization.All),
             migration = VersionMigration(internal = true)
           )
           validator.validate() match {
