@@ -64,7 +64,7 @@ class ApplicationsSpec extends PlaySpec with MockClient with OneServerPerSuite {
     val org = createOrganization()
     val app1 = createApplication(org)
     val app2 = createApplication(org)
-    val version = createVersion(app2)
+    createVersion(app2)
 
     await(client.applications.get(org.key, hasVersion = None)).map(_.key).sorted must equal(Seq(app2.key, app1.key).sorted)
     await(client.applications.get(org.key, hasVersion = Some(false))).map(_.key) must equal(Seq(app1.key))

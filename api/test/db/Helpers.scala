@@ -158,7 +158,7 @@ trait Helpers extends util.Daos {
     user: User,
     form: SubscriptionForm
   ): Subscription = {
-    subscriptionsDao.create(createdBy, form)
+    subscriptionsDao.create(TestUser, form)
   }
 
   def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(
@@ -177,11 +177,24 @@ trait Helpers extends util.Daos {
     resources = Nil
   )
 
+  def createUser(
+    form: UserForm = createUserForm()
+  ): User = {
+    usersDao.create(form)
+  }
 
-  def createdBy: User = usersDao.AdminUser
+  def createUserForm() = UserForm(
+    email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
+    password = UUID.randomUUID.toString,
+    name = None
+  )
 
   lazy val gilt: Organization = upsertOrganization("Gilt Test Org")
 
   lazy val testOrg: Organization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
+  // TODO: TestUser => testUser and remove createdBy
+  lazy val TestUser: User = createUser()
+
+  lazy val createdBy = TestUser
 }

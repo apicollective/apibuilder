@@ -23,8 +23,6 @@ trait MockClient extends db.Helpers
 
   private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
 
-  lazy val TestUser: User = usersDao.create(createUserForm())
-
   private[this] lazy val apiToken = {
     val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
     tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
@@ -111,18 +109,6 @@ trait MockClient extends db.Helpers
   ): Attribute = {
     await(client.attributes.post(form))
   }
-
-  def createUser(
-    form: UserForm = createUserForm()
-  ): User = {
-    await(client.users.post(form))
-  }
-
-  def createUserForm() = UserForm(
-    email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
-    password = UUID.randomUUID.toString,
-    name = None
-  )
 
   def createSubscriptionForm(
     org: Organization = createOrganization(),

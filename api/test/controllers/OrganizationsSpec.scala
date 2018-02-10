@@ -42,8 +42,8 @@ class OrganizationsSpec extends PlaySpec with MockClient with OneServerPerSuite 
     val org2 = createOrganization()
 
     await(client.organizations.get(key = Some(UUID.randomUUID.toString))) must equal(Nil)
-    await(client.organizations.get(key = Some(org1.key))).head.guid must equal(org1.guid)
-    await(client.organizations.get(key = Some(org2.key))).head.guid must equal(org2.guid)
+    await(client.organizations.get(key = Some(org1.key))).map(_.guid) must equal(Seq(org1.guid))
+    await(client.organizations.get(key = Some(org2.key))).map(_.guid) must equal(Seq(org2.guid))
   }
 
   "GET /organizations/:key" in {
@@ -54,7 +54,7 @@ class OrganizationsSpec extends PlaySpec with MockClient with OneServerPerSuite 
     }
   }
 
-  "GET /organizations for an anonymous user shows only public orgs" in {
+  "GET /organizations for an anonymous user shows only public organizations" in {
     val privateOrg = createOrganization(
       createOrganizationForm().copy(visibility = Visibility.Organization),
       createdBy
