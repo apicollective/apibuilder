@@ -1,10 +1,4 @@
-[error] Error: Total 128, Failed 13, Errors 2, Passed 113
-[error] Failed tests:
-[error]     db.EmailVerificationsDaoSpec
-[error]     db.TasksDaoSpec
-[error] Error during tests:
-[error]     db.ApplicationsDaoSpec
-[error]     db.UserPasswordsDaoSpec
+Remove play.api.Play.current
 
 Bindables with multiple services
 
