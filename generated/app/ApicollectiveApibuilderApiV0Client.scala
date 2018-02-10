@@ -2320,7 +2320,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
 
@@ -2479,7 +2481,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2552,9 +2556,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/generator_services/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 403 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 403, 404")
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2758,7 +2762,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/memberships/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2835,7 +2841,8 @@ package io.apibuilder.api.v0 {
         _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401")
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
 
@@ -2986,7 +2993,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/subscriptions/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -3041,7 +3050,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/tokens/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -3223,7 +3234,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
 
@@ -3322,7 +3335,9 @@ package io.apibuilder.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/watches/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
