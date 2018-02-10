@@ -43,15 +43,14 @@ case class MainTemplate(
   def timeZone: UserTimeZone = UserTimeZone.Default
 
   def canEditAttribute(attribute: Attribute): Boolean = {
-    Some(attribute.audit.createdBy.guid) == user.map(_.guid)
-
+    user.map(_.guid).contains(attribute.audit.createdBy.guid)
   }
 
   def canEditApplication(applicationKey: String): Boolean = isOrgMember
 
   def canAdminApplication(applicationKey: String): Boolean = isOrgMember
 
-  def canDeleteOrganization(): Boolean = isOrgAdmin
+  def canDeleteOrganization: Boolean = isOrgAdmin
 
   /**
     * We allow only the author of a generator to delete it
@@ -66,10 +65,6 @@ case class MainTemplate(
 }
 
 object MainTemplate {
-
-  val gitVersion = current.configuration.getString("git.version").getOrElse {
-    sys.error("git.version is required")
-  }
 
   val supportEmail = current.configuration.getString("apibuilder.supportEmail").getOrElse {
     sys.error("apibuilder.supportEmail is required")
