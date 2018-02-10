@@ -83,17 +83,7 @@ class AuthenticatedRequest[A](
   request: Request[A]
 ) extends WrappedRequest[A](request) {
 
-  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
-
   val authorization = Authorization.User(user.guid)
-
-  def requireAdmin(org: Organization) {
-    require(membershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
-  }
-
-  def requireMember(org: Organization) {
-    require(membershipsDao.isUserMember(user, org), s"Action requires member role. User[${user.guid}] is not a member of Org[${org.key}]")
-  }
 
 }
 

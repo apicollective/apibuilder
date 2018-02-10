@@ -7,48 +7,19 @@ import lib.Validation
 import play.api.db._
 import javax.inject.{Inject, Singleton}
 import java.util.UUID
-import org.postgresql.util.PSQLException
 
-import scala.util.{Failure, Success, Try}
-
-case class FullWatchForm(
-  createdBy: User,
+case class ValidatedWatchForm(
+  org: Organization,
+  application: Application,
   form: WatchForm
-) {
-
-  // TODO: Inject directly
-  private[this] def applicationsDao = play.api.Play.current.injector.instanceOf[ApplicationsDao]
-  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
-  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
-
-  private[this] val auth = Authorization.User(createdBy.guid)
-
-  val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
-  val application: Option[Application] = org.flatMap { o =>
-    applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
-  }
-
-  private[this] lazy val user = usersDao.findByGuid(form.userGuid)
-
-  lazy val validate: Seq[Error] = {
-    val applicationKeyErrors = application match {
-      case None => Seq(s"Application[${form.applicationKey}] not found")
-      case Some(_) => Nil
-    }
-
-    val userErrors = user match {
-        case None => Seq("User not found")
-        case Some(_) => Nil
-    }
-
-    Validation.errors(applicationKeyErrors ++ userErrors)
-  }
-
-}
+)
 
 @Singleton
 class WatchesDao @Inject() (
-  @NamedDatabase("default") db: Database
+  @NamedDatabase("default") db: Database,
+  applicationsDao: ApplicationsDao,
+  organizationsDao: OrganizationsDao,
+  usersDao: UsersDao
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "watches")
@@ -94,45 +65,57 @@ class WatchesDao @Inject() (
     ({guid}::uuid, {user_guid}::uuid, {application_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, fullForm: FullWatchForm): Watch = {
-    val errors = fullForm.validate
-    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
-
-    val application = fullForm.application.getOrElse {
-      sys.error(s"Cannot find application[${fullForm.form.organizationKey}/${fullForm.form.applicationKey}]")
+  def validate(
+    auth: Authorization,
+    form: WatchForm
+  ): Either[Seq[Error], ValidatedWatchForm] = {
+    val userErrors = usersDao.findByGuid(form.userGuid) match {
+      case None => Seq("User not found")
+      case Some(_) => Nil
     }
 
+    val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
+    val application: Option[Application] = org.flatMap { o =>
+      applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
+    }
+
+    val applicationKeyErrors = application match {
+      case None => Seq(s"Application[${form.applicationKey}] not found")
+      case Some(_) => Nil
+    }
+
+
+    (applicationKeyErrors ++ userErrors).toList match {
+      case Nil => {
+        Right(
+          ValidatedWatchForm(
+            org = org.get,
+            application = application.get,
+            form = form
+          )
+        )
+      }
+      case errors => {
+        Left(Validation.errors(errors))
+      }
+    }
+  }
+
+  def upsert(createdBy: User, fullForm: ValidatedWatchForm): Watch = {
+    val application = fullForm.application
     val guid = UUID.randomUUID
 
-    // TODO: Remove try, using an on conflict clause in query
-    Try(
-      db.withConnection { implicit c =>
-        SQL(InsertQuery).on(
-          'guid -> guid,
-          'user_guid -> fullForm.form.userGuid,
-          'application_guid -> application.guid,
-          'created_by_guid -> createdBy.guid
-        ).execute()
-      }
-    ) match {
-      case Success(_) => {
-        findByGuid(Authorization.All, guid).getOrElse {
-          sys.error("Failed to create watch")
-        }
-      }
-      case Failure(e) => e match {
-        case e: PSQLException => {
-          findAll(
-            Authorization.All,
-            userGuid = Some(fullForm.form.userGuid),
-            organizationKey = Some(fullForm.org.get.key),
-            application = Some(application),
-            limit = 1
-          ).headOption.getOrElse {
-            sys.error(s"Failed to create watch")
-          }
-        }
-      }
+    db.withConnection { implicit c =>
+      SQL(InsertQuery).on(
+        'guid -> guid,
+        'user_guid -> fullForm.form.userGuid,
+        'application_guid -> application.guid,
+        'created_by_guid -> createdBy.guid
+      ).execute()
+    }
+
+    findByGuid(Authorization.All, guid).getOrElse {
+      sys.error("Failed to create watch")
     }
   }
 

@@ -29,7 +29,7 @@ class Memberships @Inject() (
           organizationKey = organizationKey,
           userGuid = userGuid,
           role = role,
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
       )

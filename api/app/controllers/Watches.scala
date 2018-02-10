@@ -1,6 +1,6 @@
 package controllers
 
-import db.{Authorization, WatchesDao, FullWatchForm}
+import db.WatchesDao
 import lib.Validation
 import io.apibuilder.api.v0.models.{User, Watch, WatchForm}
 import io.apibuilder.api.v0.models.json._
@@ -64,14 +64,11 @@ class Watches @Inject() (
         BadRequest(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[WatchForm] => {
-        val form = FullWatchForm(request.user, s.get)
-        form.validate match {
-          case Nil => {
-            val watch = watchesDao.upsert(request.user, form)
+        watchesDao.validate(request.authorization, s.get) match {
+          case Left(errors) => Conflict(Json.toJson(errors))
+          case Right(validatedForm) => {
+            val watch = watchesDao.upsert(request.user, validatedForm)
             Created(Json.toJson(watch))
-          }
-          case errors => {
-            Conflict(Json.toJson(errors))
           }
         }
       }
@@ -79,10 +76,13 @@ class Watches @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    watchesDao.findByUserAndGuid(request.user, guid).map { watch =>
-      watchesDao.softDelete(request.user, watch)
+    watchesDao.findByUserAndGuid(request.user, guid) match {
+      case None => NotFound
+      case Some(watch) => {
+        watchesDao.softDelete(request.user, watch)
+        NoContent
+      }
     }
-    NoContent
   }
 
 }

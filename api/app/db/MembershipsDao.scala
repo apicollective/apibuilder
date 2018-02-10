@@ -127,7 +127,7 @@ class MembershipsDao @Inject() (
       Authorization.All,
       organizationGuid = Some(organization.guid),
       userGuid = Some(user.guid),
-      limit = 1
+      limit = Some(1)
     ).headOption match {
       case None => false
       case Some(_) => true
@@ -140,11 +140,20 @@ class MembershipsDao @Inject() (
     user: User,
     role: Role
   ): Option[Membership] = {
-    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
+    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key), limit = Some(1)).headOption
+  }
+
+  def findByOrganizationAndUserAndRoles(
+    authorization: Authorization,
+    organization: Organization,
+    user: User,
+    roles: Seq[Role]
+  ): Seq[Membership] = {
+    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), roles = Some(roles), limit = None)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Membership] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -154,8 +163,9 @@ class MembershipsDao @Inject() (
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     role: Option[String] = None,
+    roles: Option[Seq[Role]] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Membership] = {
     // TODO Implement authorization
@@ -170,9 +180,10 @@ class MembershipsDao @Inject() (
           }
         ).bind("organization_key", organizationKey).
         equals("memberships.role", role).
+        optionalIn("memberships.role", roles.map(_.map(_.key))).
         and(isDeleted.map(Filters.isDeleted("memberships", _))).
         orderBy("lower(users.name), lower(users.email)").
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         anormSql().as(
           io.apibuilder.api.v0.anorm.parsers.Membership.parser().*

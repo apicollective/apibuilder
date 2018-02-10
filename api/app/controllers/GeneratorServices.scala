@@ -2,18 +2,20 @@ package controllers
 
 import db.generators.ServicesDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{User, GeneratorServiceForm}
+import io.apibuilder.api.v0.models.GeneratorServiceForm
 import io.apibuilder.api.v0.models.json._
-import io.apibuilder.generator.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
+import _root_.util.GeneratorServiceUtil
+
 import scala.util.{Failure, Success, Try}
 
 @Singleton
 class GeneratorServices @Inject() (
-  servicesDao: ServicesDao
+  servicesDao: ServicesDao,
+  generatorServiceUtil: GeneratorServiceUtil
 ) extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -56,7 +58,7 @@ class GeneratorServices @Inject() (
 
             // Now try to do the initial update; if it fails we delete the generator service.
             // TODO: Refactor so we can validate w/out creating first.
-            Try(actors.GeneratorServiceActor.sync(service)) match {
+            Try(generatorServiceUtil.sync(service)) match {
               case Success(_) => Ok(Json.toJson(service))
               case Failure(ex) => {
                 servicesDao.softDelete(request.user, service)
@@ -86,7 +88,7 @@ class GeneratorServices @Inject() (
           servicesDao.softDelete(request.user, service)
           NoContent
         } else {
-          Forbidden
+          Unauthorized
         }
       }
     }

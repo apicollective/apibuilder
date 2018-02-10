@@ -1,6 +1,5 @@
 package db
 
-import io.apibuilder.api.v0.models.User
 import anorm._
 import javax.inject.{Inject, Singleton}
 

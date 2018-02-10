@@ -5,7 +5,7 @@ import java.util.UUID
 
 class EmailVerificationConfirmationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
-  def emailVerificationConfirmationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationConfirmationsDao]
+  def emailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
 
   "upsert" in {
     val user = createRandomUser()

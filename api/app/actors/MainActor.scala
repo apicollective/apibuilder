@@ -3,6 +3,8 @@ package actors
 import lib.Role
 import akka.actor._
 import java.util.UUID
+
+import db.VersionsDao
 import play.api.{Logger, Mode}
 
 import scala.util.{Failure, Success, Try}
@@ -30,6 +32,7 @@ object MainActor {
 class MainActor @javax.inject.Inject() (
   app: play.api.Application,
   system: ActorSystem,
+  versionsDao: VersionsDao,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
   @javax.inject.Named("task-actor") taskActor: akka.actor.ActorRef,
@@ -101,12 +104,10 @@ class MainActor @javax.inject.Inject() (
   }
 
   private[this] def ensureServices() {
-    // TODO: Move to background actor and out of global
     Logger.info("[MainActor] Starting ensureServices()")
 
     Try {
-      // Logger.warn("Migration disabled")
-      play.api.Play.current.injector.instanceOf[_root_.db.VersionsDao].migrate()
+      versionsDao.migrate()
     } match {
       case Success(result) => Logger.info("ensureServices() completed: " + result)
       case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")

@@ -274,8 +274,8 @@ class UsersDao @Inject() (
       guid.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
       "Must have either a guid, email, token, sessionId, or nickname"
     )
-    import play.api.Play.current
-    DB.withConnection { implicit c =>
+
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("users.guid", guid).
         and(
