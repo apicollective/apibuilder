@@ -1,20 +1,24 @@
 package controllers
 
-import lib.{DateHelper, MemberDownload, Pagination, PaginatedCollection, Review, Role}
+import lib._
 import io.apibuilder.api.v0.models.{Organization, User}
 import models._
 import play.api.data._
 import play.api.data.Forms._
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import org.joda.time.DateTime
 import java.util.UUID
-
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.Controller
 
-class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Members @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -101,7 +105,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
     request.requireAdmin()
 
     for {
-      membership <- lib.ApiClient.callWith404(request.api.Memberships.getByGuid(guid))
+      membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
       memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
     } yield {
       memberships.find(_.role == Role.Member.key) match {
@@ -127,7 +131,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
     request.requireAdmin()
 
     for {
-      membership <- lib.ApiClient.callWith404(request.api.Memberships.getByGuid(guid))
+      membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
       memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
     } yield {
       memberships.find(_.role == Role.Admin.key) match {

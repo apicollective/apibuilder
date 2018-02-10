@@ -4,14 +4,20 @@ import io.apibuilder.api.v0.models.{Domain, Organization, User}
 import models._
 import play.api.data._
 import play.api.data.Forms._
+
 import scala.concurrent.Future
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import lib.ApiClientProvider
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
-class Domains @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Domains @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember

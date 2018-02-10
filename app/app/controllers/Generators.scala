@@ -2,20 +2,23 @@ package controllers
 
 import io.apibuilder.api.v0.models.{GeneratorServiceForm, User}
 import io.apibuilder.generator.v0.models.Generator
-import lib.{Pagination, PaginatedCollection}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
 
 import scala.concurrent.Future
-
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
-class Generators @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Generators @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
     Redirect(routes.Generators.index())
@@ -37,7 +40,7 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
 
   def show(key: String) = Anonymous.async { implicit request =>
     for {
-      generator <- lib.ApiClient.callWith404(request.api.generatorWithServices.getByKey(key))
+      generator <- apiClientProvider.callWith404(request.api.generatorWithServices.getByKey(key))
     } yield {
       generator match {
         case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")

@@ -1,19 +1,24 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{AttributeValueForm, User}
-import lib.{Pagination, PaginatedCollection}
-import models.{MainTemplate, SettingsMenu, SettingSection}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+import models.{MainTemplate, SettingSection, SettingsMenu}
+
 import scala.concurrent.Future
 import java.util.UUID
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc.{Action, Controller}
 
-class OrganizationAttributesController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class OrganizationAttributesController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
     Redirect(routes.AttributesController.index())

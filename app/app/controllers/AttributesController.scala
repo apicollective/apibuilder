@@ -18,7 +18,7 @@ class AttributesController @Inject() (
   apiClientProvider: ApiClientProvider
 ) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(page: Int = 0) = Anonymous.async { implicit request =>
     for {

@@ -1,18 +1,22 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
-import lib.Util
+import lib.{ApiClientProvider, Util}
 import models.MainTemplate
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.Future
 
+import scala.concurrent.Future
 import javax.inject.Inject
+
 import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
-class LoginController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class LoginController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -5,9 +5,12 @@ import javax.inject.Inject
 import play.api.i18n.{MessagesApi, I18nSupport}
 import play.api.mvc.{Action, Controller}
 
-class ApplicationController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class ApplicationController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect() = Action { request =>
     Redirect(request.path + "/")

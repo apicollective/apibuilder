@@ -8,9 +8,12 @@ import play.api.i18n.{MessagesApi, I18nSupport}
 import play.api.mvc.{Action, Controller}
 import scala.concurrent.Future
 
-class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class AccountProfileController @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
     Redirect(routes.AccountProfileController.index())

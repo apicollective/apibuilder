@@ -16,9 +16,9 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.Controller
 
 class Organizations @Inject() (
+  val messagesApi: MessagesApi,
   apiClientProvider: ApiClientProvider,
-  config: Config,
-  val messagesApi: MessagesApi
+  config: Config
 ) extends Controller with I18nSupport {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global

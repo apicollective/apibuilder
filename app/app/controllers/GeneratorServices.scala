@@ -1,18 +1,22 @@
 package controllers
 
-import lib.{Pagination, PaginatedCollection}
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import java.util.UUID
 import javax.inject.Inject
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.Controller
 
-class GeneratorServices @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class GeneratorServices @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(guid: UUID, page: Int = 0) = Anonymous.async { implicit request =>
     for {
-      service <- lib.ApiClient.callWith404(request.api.generatorServices.getByGuid(guid))
+      service <- apiClientProvider.callWith404(request.api.generatorServices.getByGuid(guid))
       generators <- request.api.generatorWithServices.get(
         serviceGuid = Some(guid),
         limit = Pagination.DefaultLimit+1,

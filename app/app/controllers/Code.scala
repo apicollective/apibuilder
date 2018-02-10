@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 import lib.ApiClientProvider
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller, Result}
+import play.api.mvc.{Controller, Result}
 
 class Code @Inject() (
   val messagesApi: MessagesApi,
@@ -70,7 +70,7 @@ class Code @Inject() (
   ) (
     f: Seq[File] => Result
   ) = {
-    lib.ApiClient.callWith404(
+    apiClientProvider.callWith404(
       api.Code.get(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => {

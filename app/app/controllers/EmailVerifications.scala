@@ -6,7 +6,7 @@ import play.api.mvc._
 
 class EmailVerifications extends Controller {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def get(token: String) = Anonymous.async { implicit request =>
     request.api.emailVerificationConfirmationForms.post(

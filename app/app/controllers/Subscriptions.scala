@@ -1,16 +1,16 @@
 package controllers
 
-import lib.Util
+import lib.{ApiClientProvider, Util}
 import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm}
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
-
 import play.api.data._
 import play.api.data.Forms._
-
 import javax.inject.Inject
+
 import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, Controller}
 
 object Subscriptions {
@@ -27,7 +27,10 @@ object Subscriptions {
 
 }
 
-class Subscriptions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class Subscriptions @Inject() (
+  val messagesApi: MessagesApi,
+  apiClientProvider: ApiClientProvider
+) extends Controller with I18nSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
