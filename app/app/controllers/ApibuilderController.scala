@@ -21,6 +21,7 @@ trait ApibuilderController extends BaseController with I18nSupport {
   protected def apibuilderControllerComponents: ApibuilderControllerComponents
 
   def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
+  def AnonymousOrg: AnonymousOrgActionBuilder = apibuilderControllerComponents.anonymousOrgActionBuilder
   def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
   def IdentifiedOrg: IdentifiedOrgActionBuilder = apibuilderControllerComponents.identifiedOrgActionBuilder
 
@@ -31,6 +32,7 @@ trait ApibuilderController extends BaseController with I18nSupport {
 @ImplementedBy(classOf[ApibuilderDefaultControllerComponents])
 trait ApibuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
+  def anonymousOrgActionBuilder: AnonymousOrgActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
   def identifiedOrgActionBuilder: IdentifiedOrgActionBuilder
   def controllerComponents: ControllerComponents
@@ -40,6 +42,7 @@ trait ApibuilderControllerComponents {
 class ApibuilderDefaultControllerComponents @Inject() (
   val controllerComponents: ControllerComponents,
   val anonymousActionBuilder: AnonymousActionBuilder,
+  val anonymousOrgActionBuilder: AnonymousOrgActionBuilder,
   val identifiedActionBuilder: IdentifiedActionBuilder,
   val identifiedOrgActionBuilder: IdentifiedOrgActionBuilder,
   val messagesApi: MessagesApi
@@ -54,7 +57,7 @@ case class AnonymousRequest[A](
   val memberships: Seq[Membership] = requestData.memberships
   val api = requestData.api
 
-  def mainTemplate(title: Option[String]) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
 }
 
 class AnonymousActionBuilder @Inject()(
@@ -88,7 +91,7 @@ case class IdentifiedRequest[A](
   val memberships: Seq[Membership] = requestData.memberships
   val api = requestData.api
 
-  def mainTemplate(title: Option[String]) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
 }
 
 class IdentifiedActionBuilder @Inject()(
@@ -114,6 +117,48 @@ class IdentifiedActionBuilder @Inject()(
   }
 }
 
+case class AnonymousOrgRequest[A](
+  requestData: ApibuilderRequestData,
+  request: Request[A]
+) extends WrappedRequest(request) {
+  val user: Option[User] = requestData.user
+  val org: Organization = requestData.org.getOrElse {
+    sys.error("IdentifiedOrg request must have an organization")
+  }
+  val memberships: Seq[Membership] = requestData.memberships
+  val api = requestData.api
+
+  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
+}
+
+class AnonymousOrgActionBuilder @Inject()(
+  val parser: BodyParsers.Default,
+  requestAuthenticationUtil: RequestAuthenticationUtil
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[AnonymousOrgRequest, AnyContent] {
+
+  def invokeBlock[A](
+    request: Request[A],
+    block: (AnonymousOrgRequest[A]
+      ) => Future[Result]): Future[Result] = {
+    val data = requestAuthenticationUtil.data(
+      requestPath = request.path,
+      sessionId = request.session.get("session_id")
+    )
+
+    data.org match {
+      case None => {
+        sys.error("TODO: Redirect to home page - invalid request")
+      }
+      case Some(_) => {
+        block(AnonymousOrgRequest(data, request))
+      }
+    }
+  }
+}
+
+
 case class IdentifiedOrgRequest[A](
   requestData: ApibuilderRequestData,
   request: Request[A]
@@ -127,7 +172,7 @@ case class IdentifiedOrgRequest[A](
   val memberships: Seq[Membership] = requestData.memberships
   val api = requestData.api
 
-  def mainTemplate(title: Option[String]) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
 }
 
 class IdentifiedOrgActionBuilder @Inject()(
