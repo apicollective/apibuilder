@@ -2,9 +2,10 @@ package controllers
 
 import io.apibuilder.api.v0.models.{Application, Organization, User, Watch, WatchForm}
 
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.scalatestplus.play.PlaySpec
 
-class WatchesSpec extends PlaySpec with MockClient with OneServerPerSuite {
+class WatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

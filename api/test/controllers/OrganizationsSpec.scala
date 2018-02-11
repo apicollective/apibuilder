@@ -3,9 +3,10 @@ package controllers
 import io.apibuilder.api.v0.models.Visibility
 import java.util.UUID
 
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.scalatestplus.play.PlaySpec
 
-class OrganizationsSpec extends PlaySpec with MockClient with OneServerPerSuite {
+class OrganizationsSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
