@@ -26,10 +26,10 @@ class ApibuilderDefaultControllerComponents @Inject() (
   val identifiedActionBuilder: IdentifiedActionBuilder
 ) extends ApibuilderControllerComponents
 
-case class AnonymousRequest[A](
+case class Anonymous[A](
   user: Option[User],
   request: Request[A]
-) {
+) extends WrappedRequest(request) {
   val authorization = user match {
     case None => Authorization.PublicOnly
     case Some(u) => Authorization.User(u.guid)
@@ -39,7 +39,7 @@ case class AnonymousRequest[A](
 case class IdentifiedRequest[A](
   user: User,
   request: Request[A]
-) {
+) extends WrappedRequest(request) {
   val authorization = Authorization.User(user.guid)
 }
 
@@ -48,14 +48,14 @@ class AnonymousActionBuilder @Inject()(
   val appConfig: AppConfig
 )(
   implicit val executionContext: ExecutionContext
-) extends ActionBuilder[AnonymousRequest, AnyContent] {
+) extends ActionBuilder[Anonymous, AnyContent] {
 
   def invokeBlock[A](
     request: Request[A],
-    block: (AnonymousRequest[A]
+    block: (Anonymous[A]
   ) => Future[Result]): Future[Result] = {
     val user: Option[User] = None
-    block(AnonymousRequest(user, request))
+    block(Anonymous(user, request))
   }
 }
 

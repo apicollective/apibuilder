@@ -36,7 +36,7 @@ class MembershipRequests @Inject() (
     role: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     val requests = membershipRequestsDao.findAll(
       request.authorization,
       organizationGuid = organizationGuid,
@@ -49,7 +49,7 @@ class MembershipRequests @Inject() (
     Ok(Json.toJson(requests))
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[MembershipRequestForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error(e.toString)))
@@ -87,7 +87,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postAcceptByGuid(guid: UUID) = Authenticated { request =>
+  def postAcceptByGuid(guid: UUID) = Identified { request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
@@ -97,7 +97,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postDeclineByGuid(guid: UUID) = Authenticated { request =>
+  def postDeclineByGuid(guid: UUID) = Identified { request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {

@@ -35,7 +35,7 @@ class Users @Inject() (
     email: Option[String],
     nickname: Option[String],
     token: Option[String]
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     require(request.tokenUser.isDefined, "Missing API Token")
     val users = usersDao.findAll(
       guid = guid,
@@ -46,7 +46,7 @@ class Users @Inject() (
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = AnonymousRequest { request =>
+  def getByGuid(guid: UUID) = Anonymous { request =>
     require(request.tokenUser.isDefined, "Missing API Token")
     usersDao.findByGuid(guid) match {
       case None => NotFound
@@ -54,7 +54,7 @@ class Users @Inject() (
     }
   }
 
-  def post() = AnonymousRequest(parse.json) { request =>
+  def post() = Anonymous(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -74,7 +74,7 @@ class Users @Inject() (
     }
   }
 
-  def putByGuid(guid: UUID) = Authenticated(parse.json) { request =>
+  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
     request.body.validate[UserUpdateForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -114,7 +114,7 @@ class Users @Inject() (
     }
   }
 
-  def postAuthenticate() = AnonymousRequest(parse.json) { request =>
+  def postAuthenticate() = Anonymous(parse.json) { request =>
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

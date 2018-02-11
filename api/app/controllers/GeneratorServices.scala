@@ -27,7 +27,7 @@ class GeneratorServices @Inject() (
     generatorKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     val services = servicesDao.findAll(
       request.authorization,
       guid = guid,
@@ -39,14 +39,14 @@ class GeneratorServices @Inject() (
     Ok(Json.toJson(services))
   }
 
-  def getByGuid(guid: UUID) = AnonymousRequest { request =>
+  def getByGuid(guid: UUID) = Anonymous { request =>
     servicesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(service) => Ok(Json.toJson(service))
     }
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[GeneratorServiceForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -78,7 +78,7 @@ class GeneratorServices @Inject() (
 
   def deleteByGuid(
     guid: UUID
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     servicesDao.findByGuid(request.authorization, guid) match {
       case None => {
         NotFound

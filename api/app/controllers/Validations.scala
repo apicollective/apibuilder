@@ -20,7 +20,7 @@ class Validations @Inject() (
     version = "0.0.1-dev"
   )
 
-  def post() = AnonymousRequest(parse.temporaryFile) { request =>
+  def post() = Anonymous(parse.temporaryFile) { request =>
     val contents = scala.io.Source.fromFile(request.body.file, "UTF-8").getLines.mkString("\n")
     OriginalUtil.guessType(contents) match {
       case None => {

@@ -34,7 +34,7 @@ class Code @Inject() (
     applicationKey: String,
     versionName: String,
     generatorKey: String
-  ) = AnonymousRequest.async { request =>
+  ) = Anonymous.async { request =>
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
       case None => {
         Future.successful(NotFound)

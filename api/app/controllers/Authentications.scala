@@ -16,7 +16,7 @@ class Authentications @Inject() (
   usersDao: UsersDao
 ) extends BaseController {
 
-  def getSessionById(sessionId: String) = AnonymousRequest { _ =>
+  def getSessionById(sessionId: String) = Anonymous { _ =>
     sessionsDao.findById(sessionId) match {
       case None => NotFound
       case Some(session) => {

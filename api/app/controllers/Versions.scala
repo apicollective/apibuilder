@@ -24,7 +24,7 @@ class Versions @Inject() (
 
   private[this] val DefaultVisibility = Visibility.Organization
 
-  def getByApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
+  def getByApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = Anonymous { request =>
     val versions = applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
       versionsDao.findAll(
         request.authorization,
@@ -36,7 +36,7 @@ class Versions @Inject() (
     Ok(Json.toJson(versions))
   }
 
-  def getByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = AnonymousRequest { request =>
+  def getByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Anonymous { request =>
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
@@ -45,7 +45,7 @@ class Versions @Inject() (
 
   def getExampleByApplicationKeyAndVersionAndTypeName(
     orgKey: String, applicationKey: String, version: String, typeName: String, subTypeName: Option[String], optionalFields: Option[Boolean]
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => {
@@ -98,7 +98,7 @@ class Versions @Inject() (
   def postByVersion(
     orgKey: String,
     versionName: String
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body match {
         case AnyContentAsJson(json) => {
@@ -146,7 +146,7 @@ class Versions @Inject() (
     orgKey: String,
     applicationKey: String,
     versionName: String
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body match {
         case AnyContentAsJson(json) => {
@@ -188,7 +188,7 @@ class Versions @Inject() (
     }
   }
 
-  def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
+  def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Identified { request =>
     withOrgMember(request.user, orgKey) { _ =>
       versionsDao.findVersion(request.authorization, orgKey, applicationKey, version).foreach { version =>
         versionsDao.softDelete(request.user, version)
