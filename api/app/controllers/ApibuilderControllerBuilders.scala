@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import db.Authorization
 import io.apibuilder.api.v0.models.User
 import lib.AppConfig
 import play.api.mvc._
@@ -9,19 +10,38 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ApibuilderControllerBuilders {
+  protected def apibuilderControllerComponents: ApibuilderControllerComponents
+
+  def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
+  def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
+}
+
+trait ApibuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
 }
 
+class ApibuilderDefaultControllerComponents @Inject() (
+  val anonymousActionBuilder: AnonymousActionBuilder,
+  val identifiedActionBuilder: IdentifiedActionBuilder
+) extends ApibuilderControllerComponents
+
 case class AnonymousRequest[A](
   user: Option[User],
   request: Request[A]
-)
+) {
+  val authorization = user match {
+    case None => Authorization.PublicOnly
+    case Some(u) => Authorization.User(u.guid)
+  }
+}
 
 case class IdentifiedRequest[A](
   user: User,
   request: Request[A]
-)
+) {
+  val authorization = Authorization.User(user.guid)
+}
 
 class AnonymousActionBuilder @Inject()(
   val parser: BodyParsers.Default,
