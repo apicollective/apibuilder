@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import com.google.inject.ImplementedBy
-import db.{Authorization, MembershipsDao, OrganizationsDao}
+import db.{Authorization, MembershipsDao, OrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
 import lib.{AppConfig, Role, Validation}
@@ -135,7 +135,8 @@ class AnonymousActionBuilder @Inject()(
 
 class IdentifiedActionBuilder @Inject()(
   val parser: BodyParsers.Default,
-  val appConfig: AppConfig
+  val appConfig: AppConfig,
+  val usersDao: UsersDao
 )(
   implicit val executionContext: ExecutionContext
 ) extends ActionBuilder[IdentifiedRequest, AnyContent] {
