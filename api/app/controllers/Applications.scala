@@ -27,7 +27,7 @@ class Applications @Inject() (
     hasVersion: Option[Boolean],
     limit: Long = 25,
     offset: Long = 0
-  ) = AnonymousRequest { request =>
+  ) = AuthenticatedAction { request =>
     val applications = applicationsDao.findAll(
       request.authorization,
       orgKey = Some(orgKey),

@@ -1,118 +1,112 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Organization, User}
-import io.apibuilder.api.v0.models.json._
-import db.{Authorization, MembershipsDao, UsersDao}
-import play.api.libs.json.Json
+import javax.inject.Inject
+
+import db.UsersDao
+import io.apibuilder.api.v0.models.User
 import play.api.mvc._
-import play.api.mvc.Results.Unauthorized
-import scala.concurrent.Future
 import util.BasicAuthorization
-import lib.Validation
 
-private[controllers] case class UserAuth(
+import scala.concurrent.{ExecutionContext, Future}
 
+class AnonymousRequest[A](
   /**
     * The user as identified by the api token
     */
-  tokenUser: Option[User],
+  val tokenUser: Option[User],
 
   /**
     * The actual user as identified by the session Id
     */
-  user: Option[User]
-)
+  val user: Option[User],
+
+  request: Request[A]
+) extends WrappedRequest[A](request)
 
 
-private[controllers] object RequestHelper {
+class AuthenticationHeaderResolver @Inject() (
+  usersDao: UsersDao
+) {
 
-  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
+  private[this] val AuthorizationHeader = "Authorization"
 
-  val AuthorizationHeader = "Authorization"
-
-  def userAuth(headers: Headers): UserAuth = {
-    val tokenUser: Option[User] = BasicAuthorization.get(headers.get(AuthorizationHeader)).flatMap {
+  def anonymousRequest[A](request: Request[A]): AnonymousRequest[A] = {
+    val tokenUser: Option[User] = BasicAuthorization.get(request.headers.get(AuthorizationHeader)).flatMap {
       case BasicAuthorization.Token(t) => usersDao.findByToken(t)
       case BasicAuthorization.Session(id) => usersDao.findBySessionId(id)
       case _: BasicAuthorization.User => None
     }
 
     tokenUser match {
-      case None => UserAuth(None, None)
+      case None => {
+        new AnonymousRequest(None, None, request)
+      }
+
       case Some(u) => {
         if (UsersDao.AdminUserEmails.contains(u.email)) {
-          UserAuth(Some(u), None)
+          new AnonymousRequest(Some(u), None, request)
         } else {
-          UserAuth(Some(u), Some(u))
+          new AnonymousRequest(Some(u), Some(u), request)
         }
       }
     }
   }
-
 }
 
-class AnonymousRequest[A](
-  val tokenUser: Option[User],
-  val user: Option[User],
-  request: Request[A]
-) extends WrappedRequest[A](request) {
+class AnonymousAction @Inject()(
+  authenticationHeaderResolver: AuthenticationHeaderResolver,
+  val parser: BodyParsers.Default
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[AnonymousRequest, AnyContent]
+  with ActionTransformer[Request, AnonymousRequest]
+{
 
-  val authorization = Authorization(user.map(_.guid))
 
-}
-
-object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
-
-  def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
-    val userAuth = RequestHelper.userAuth(request.headers)
-
-    block(
-      new AnonymousRequest(
-        tokenUser = userAuth.tokenUser,
-        user = userAuth.user,
-        request = request
-      )
-    )
+  def transform[A](request: Request[A]) = {
+    Future {
+      authenticationHeaderResolver.anonymousRequest(request)
+    }
   }
-
 }
 
 class AuthenticatedRequest[A](
   val tokenUser: User,
   val user: User,
   request: Request[A]
-) extends WrappedRequest[A](request) {
+) extends WrappedRequest[A](request)
 
-  val authorization = Authorization.User(user.guid)
+class AuthenticatedAction @Inject()(
+  authenticationHeaderResolver: AuthenticationHeaderResolver,
+  val parser: BodyParsers.Default
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[AuthenticatedRequest, AnyContent]
+  with ActionTransformer[Request, AuthenticatedRequest]
+{
 
-}
+  type ResultBlock[A] = (AuthenticatedAction) => Future[Result]
 
-object Authenticated extends ActionBuilder[AuthenticatedRequest] {
+  def invokeBlock[A](request: Request[A], block: ResultBlock[A]): Future[Result] = {
+    builder.authenticate(request, { authRequest: AuthenticatedRequest[A, User] =>
+      block(new AuthMessagesRequest[A](authRequest.user, messagesApi, request))
+    })
+  }
 
-  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
-    val userAuth = RequestHelper.userAuth(request.headers)
-
-    userAuth.user match {
-      case None => {
-        Future.successful(
-          Unauthorized(
-            Json.toJson(
-              Validation.unauthorized(
-                "Authorization failed. Verify the 'Authorization' header is provided and contains a valid token"
-              )
-            )
+  def transform[A](request: Request[A]) = {
+    Future {
+      val anon = authenticationHeaderResolver.anonymousRequest(request)
+      (anon.tokenUser, anon.user) match {
+        case (Some(tokenUser), Some(user)) => {
+          new AuthenticatedRequest(
+            tokenUser = tokenUser,
+            user = user,
+            request = request
           )
-        )
-      }
-
-      case Some(user) => {
-        block(new AuthenticatedRequest(
-          userAuth.tokenUser.get,
-          user,
-          request)
-        )
+        }
+        case (_, _) => sys.error("Not authenticated")
       }
     }
   }
-
 }
+
