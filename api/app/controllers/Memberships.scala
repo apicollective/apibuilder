@@ -10,8 +10,9 @@ import play.api.libs.json.Json
 
 @Singleton
 class Memberships @Inject() (
-  membershipsDao: MembershipsDao
-) extends Controller {
+  membershipsDao: MembershipsDao,
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
   def get(
     organizationGuid: Option[UUID],

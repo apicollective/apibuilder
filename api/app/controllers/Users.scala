@@ -15,11 +15,12 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.Future
 
 class Users @Inject() (
+  val controllerComponents: ControllerComponents,
+  wsClient: WSClient,
   sessionHelper: SessionHelper,
   usersDao: UsersDao,
-  userPasswordsDao: UserPasswordsDao,
-  ws: WSClient
-) extends Controller {
+  userPasswordsDao: UserPasswordsDao
+) extends BaseController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -148,9 +149,9 @@ class Users @Inject() (
         val headers = "Authorization" -> s"Bearer $token"
 
         for {
-          userResponse <- ws.url("https://api.github.com/user").withHeaders(headers).get()
+          userResponse <- wsClient.url("https://api.github.com/user").addHttpHeaders(headers).get()
 
-          emailsResponse <- ws.url("https://api.github.com/user/emails").withHeaders(headers).get()
+          emailsResponse <- wsClient.url("https://api.github.com/user/emails").addHttpHeaders(headers).get()
         } yield {
           val obj = Json.parse(userResponse.body).as[JsObject]
           val login = (obj \ "login").asOpt[String].getOrElse {

@@ -1,8 +1,12 @@
 package controllers
 
+import javax.inject.Inject
+
 import play.api.mvc._
 
-class AccountController extends Controller {
+class AccountController @Inject() (
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

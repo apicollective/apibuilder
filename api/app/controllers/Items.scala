@@ -9,8 +9,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Items @Inject() (
+  val controllerComponents: ControllerComponents,
   itemsDao: ItemsDao
-) extends Controller {
+) extends BaseController {
 
   def get(
     q: Option[String],

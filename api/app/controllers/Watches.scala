@@ -2,7 +2,7 @@ package controllers
 
 import db.WatchesDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{User, Watch, WatchForm}
+import io.apibuilder.api.v0.models.WatchForm
 import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
@@ -11,8 +11,9 @@ import java.util.UUID
 
 @Singleton
 class Watches @Inject() (
+  val controllerComponents: ControllerComponents,
   watchesDao: WatchesDao
-) extends Controller {
+) extends BaseController {
 
   def get(
     guid: Option[UUID],
@@ -61,7 +62,7 @@ class Watches @Inject() (
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[WatchForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[WatchForm] => {
         watchesDao.validate(request.authorization, s.get) match {

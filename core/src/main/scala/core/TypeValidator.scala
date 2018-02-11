@@ -154,7 +154,7 @@ case class TypeValidator(
               case Some(v) => {
                 v.value.flatMap { value =>
                   validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
-                } match {
+                }.toList match {
                   case Nil => None
                   case errors => Some(errors.mkString(", "))
                 }

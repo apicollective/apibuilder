@@ -12,17 +12,20 @@ import lib.{Pager, Validation}
 import play.api.libs.json._
 import play.api.mvc._
 import _root_.util.UserAgent
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
 
 @Singleton
 class Code @Inject() (
+  val controllerComponents: ControllerComponents,
+  wSClient: WSClient,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
   userAgent: UserAgent
-) extends Controller {
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -58,7 +61,7 @@ class Code @Inject() (
 
                 val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
 
-                new Client(service.uri).invocations.postByKey(
+                new Client(wSClient, service.uri).invocations.postByKey(
                   key = gws.generator.key,
                   invocationForm = InvocationForm(
                     service = version.service,

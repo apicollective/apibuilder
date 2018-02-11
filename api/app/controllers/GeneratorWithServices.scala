@@ -9,8 +9,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class GeneratorWithServices @Inject() (
+  val controllerComponents: ControllerComponents,
   generatorsDao: GeneratorsDao
-) extends Controller {
+) extends BaseController {
 
   def get(
     guid: Option[UUID],

@@ -2,8 +2,8 @@ package controllers
 
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
-import lib.{Review, Role, Validation}
-import db.{Authorization, MembershipRequestsDao, OrganizationsDao, UsersDao}
+import lib.{Role, Validation}
+import db.{MembershipRequestsDao, OrganizationsDao, UsersDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -11,10 +11,11 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipRequests @Inject() (
+  val controllerComponents: ControllerComponents,
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao,
   usersDao: UsersDao
-) extends Controller {
+) extends BaseController {
 
   case class MembershipRequestForm(
     org_guid: java.util.UUID,

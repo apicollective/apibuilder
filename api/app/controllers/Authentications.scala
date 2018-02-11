@@ -11,9 +11,10 @@ import play.api.mvc._
 
 @Singleton
 class Authentications @Inject() (
+  val controllerComponents: ControllerComponents,
   sessionsDao: SessionsDao,
   usersDao: UsersDao
-) extends Controller {
+) extends BaseController {
 
   def getSessionById(sessionId: String) = AnonymousRequest { _ =>
     sessionsDao.findById(sessionId) match {

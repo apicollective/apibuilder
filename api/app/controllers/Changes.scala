@@ -8,8 +8,9 @@ import play.api.libs.json._
 
 @Singleton
 class Changes @Inject() (
+  val controllerComponents: ControllerComponents,
   changesDao: ChangesDao
-) extends Controller {
+) extends BaseController {
 
   def get(
     orgKey: Option[String],

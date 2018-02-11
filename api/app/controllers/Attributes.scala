@@ -11,8 +11,9 @@ import java.util.UUID
 
 @Singleton
 class Attributes @Inject() (
-  attributesDao: AttributesDao
-) extends Controller {
+  attributesDao: AttributesDao,
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
   def get(
     guid: Option[UUID],
@@ -39,7 +40,7 @@ class Attributes @Inject() (
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[AttributeForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[AttributeForm] => {
         val form = s.get

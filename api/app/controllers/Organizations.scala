@@ -2,7 +2,7 @@ package controllers
 
 import io.apibuilder.api.v0.models._
 import io.apibuilder.api.v0.models.json._
-import lib.{Config, Validation}
+import lib.Validation
 import db._
 import javax.inject.{Inject, Singleton}
 
@@ -12,11 +12,12 @@ import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
+  val controllerComponents: ControllerComponents,
   val membershipsDao: MembershipsDao,
   val organizationsDao: OrganizationsDao,
   attributesDao: AttributesDao,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao
-) extends Controller with ApibuilderController {
+) extends BaseController with ApibuilderController {
 
   def get(
     guid: Option[UUID],

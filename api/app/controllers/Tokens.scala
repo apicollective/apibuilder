@@ -1,8 +1,8 @@
 package controllers
 
-import db.{Authorization, TokensDao}
+import db.TokensDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{User, Token, TokenForm}
+import io.apibuilder.api.v0.models.TokenForm
 import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
@@ -11,8 +11,9 @@ import java.util.UUID
 
 @Singleton
 class Tokens @Inject() (
+  val controllerComponents: ControllerComponents,
   tokensDao: TokensDao
-) extends Controller {
+) extends BaseController {
 
   def getUsersByUserGuid(
     userGuid: java.util.UUID,
@@ -44,7 +45,7 @@ class Tokens @Inject() (
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[TokenForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[TokenForm] => {
         val form = s.get
@@ -62,10 +63,12 @@ class Tokens @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    tokensDao.findByGuid(request.authorization, guid).map { token =>
-      tokensDao.softDelete(request.user, token)
+    tokensDao.findByGuid(request.authorization, guid) match {
+      case None => NotFound
+      case Some(token) => {
+        tokensDao.softDelete(request.user, token)
+        NoContent
+      }
     }
-    NoContent
   }
-
 }

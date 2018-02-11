@@ -14,9 +14,10 @@ import java.util.UUID
 class Applications @Inject() (
   val membershipsDao: MembershipsDao,
   val organizationsDao: OrganizationsDao,
+  val controllerComponents: ControllerComponents,
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao
-) extends Controller with ApibuilderController {
+) extends BaseController with ApibuilderController {
 
   def get(
     orgKey: String,

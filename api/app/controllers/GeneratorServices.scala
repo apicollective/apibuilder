@@ -14,9 +14,10 @@ import scala.util.{Failure, Success, Try}
 
 @Singleton
 class GeneratorServices @Inject() (
+  val controllerComponents: ControllerComponents,
   servicesDao: ServicesDao,
   generatorServiceUtil: GeneratorServiceUtil
-) extends Controller {
+) extends BaseController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

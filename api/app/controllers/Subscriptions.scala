@@ -11,8 +11,9 @@ import java.util.UUID
 
 @Singleton
 class Subscriptions @Inject() (
+  val controllerComponents: ControllerComponents,
   subscriptionsDao: SubscriptionsDao
-) extends Controller {
+) extends BaseController {
 
   def get(
     guid: Option[UUID],
@@ -44,7 +45,7 @@ class Subscriptions @Inject() (
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
@@ -62,11 +63,13 @@ class Subscriptions @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    subscriptionsDao.findByUserAndGuid(request.user, guid).foreach { subscription =>
-      subscriptionsDao.softDelete(request.user, subscription)
+    subscriptionsDao.findByUserAndGuid(request.user, guid) match {
+      case None => NotFound
+      case Some(subscription) => {
+        subscriptionsDao.softDelete(request.user, subscription)
+        NoContent
+      }
     }
-    NoContent
   }
-
 
 }
