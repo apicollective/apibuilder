@@ -3,17 +3,14 @@ package controllers
 import io.apibuilder.api.v0.models.UserUpdateForm
 import javax.inject.Inject
 
-import lib.ApiClientProvider
 import play.api.data._
 import play.api.data.Forms._
-import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.Future
 
 class AccountProfileController @Inject() (
-  val controllerComponents: ControllerComponents,
-  apiClientProvider: ApiClientProvider
-) extends BaseController {
+  val apibuilderControllerComponents: ApibuilderControllerComponents
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,12 +18,12 @@ class AccountProfileController @Inject() (
     Redirect(routes.AccountProfileController.index())
   }
 
-  def index() = Authenticated { implicit request =>
+  def index() = Identified { implicit request =>
     val tpl = request.mainTemplate(Some("Profile"))
     Ok(views.html.account.profile.index(tpl, request.user))
   }
 
-  def edit() = Authenticated { implicit request =>
+  def edit() = Identified { implicit request =>
     val form = AccountProfileController.profileForm.fill(
       AccountProfileController.ProfileData(
         email = request.user.email,
@@ -39,7 +36,7 @@ class AccountProfileController @Inject() (
     Ok(views.html.account.profile.edit(tpl, request.user, form))
   }
 
-  def postEdit = Authenticated.async { implicit request =>
+  def postEdit = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Edit Profile"))
 
     val form = AccountProfileController.profileForm.bindFromRequest

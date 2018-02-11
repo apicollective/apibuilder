@@ -11,9 +11,9 @@ import javax.inject.Inject
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class Generators @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -51,7 +51,7 @@ class Generators @Inject() (
     }
   }
 
-  def create() = Authenticated { implicit request =>
+  def create() = Identified { implicit request =>
     val filledForm = Generators.generatorServiceCreateFormData.fill(
       Generators.GeneratorServiceCreateFormData(
         uri = ""
@@ -61,7 +61,7 @@ class Generators @Inject() (
     Ok(views.html.generators.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Authenticated.async { implicit request =>
+  def createPost = Identified.async { implicit request =>
     val form = Generators.generatorServiceCreateFormData.bindFromRequest
     form.fold (
 

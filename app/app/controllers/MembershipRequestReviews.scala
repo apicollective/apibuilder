@@ -6,12 +6,12 @@ import javax.inject.Inject
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class MembershipRequestReviews @Inject() (
-  val controllerComponents: ControllerComponents
-) extends BaseController {
+  val apibuilderControllerComponents: ApibuilderControllerComponents
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-  def accept(orgKey: String, membershipRequestGuid: UUID) = AuthenticatedOrg.async { implicit request =>
+  def accept(orgKey: String, membershipRequestGuid: UUID) = IdentifiedOrg.async { implicit request =>
     require(request.isAdmin, "You are not an administrator")
 
     for {
@@ -21,7 +21,7 @@ class MembershipRequestReviews @Inject() (
     }
   }
 
-  def decline(orgKey: String, membershipRequestGuid: UUID) = AuthenticatedOrg.async { implicit request =>
+  def decline(orgKey: String, membershipRequestGuid: UUID) = IdentifiedOrg.async { implicit request =>
     require(request.isAdmin, "You are not an administrator")
 
     for {

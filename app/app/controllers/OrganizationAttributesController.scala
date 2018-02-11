@@ -13,9 +13,9 @@ import play.api.data._
 import play.api.mvc.{Action, BaseController, ControllerComponents}
 
 class OrganizationAttributesController @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -23,7 +23,7 @@ class OrganizationAttributesController @Inject() (
     Redirect(routes.AttributesController.index())
   }
 
-  def index(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+  def index(orgKey: String) = IdentifiedOrg.async { implicit request =>
     // TODO: Paginate once we exceed limit
     for {
       attributes <- request.api.attributes.get(
@@ -49,7 +49,7 @@ class OrganizationAttributesController @Inject() (
     }
   }
 
-  def edit(orgKey: String, name: String) = AuthenticatedOrg.async { implicit request =>
+  def edit(orgKey: String, name: String) = IdentifiedOrg.async { implicit request =>
     for {
       attr <- request.api.attributes.getByName(name)
       values <- request.api.organizations.getAttributesByKey(
@@ -68,7 +68,7 @@ class OrganizationAttributesController @Inject() (
     }
   }
 
-  def editPost(orgKey: String, name: String) = AuthenticatedOrg.async { implicit request =>
+  def editPost(orgKey: String, name: String) = IdentifiedOrg.async { implicit request =>
     request.api.attributes.getByName(name).flatMap { attr =>
       val tpl = request.mainTemplate(Some("Edit Attribute"))
 

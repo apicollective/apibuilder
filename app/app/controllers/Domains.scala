@@ -12,25 +12,25 @@ import lib.ApiClientProvider
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class Domains @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(orgKey: String) = AuthenticatedOrg { implicit request =>
+  def index(orgKey: String) = IdentifiedOrg { implicit request =>
     request.requireMember
     val tpl = request.mainTemplate(title = Some("Domains"))
     Ok(views.html.domains.index(tpl.copy(settings = Some(SettingsMenu(section = Some(SettingSection.Domains))))))
   }
 
-  def create(orgKey: String) = AuthenticatedOrg { implicit request =>
+  def create(orgKey: String) = IdentifiedOrg { implicit request =>
     request.requireAdmin
     val tpl = request.mainTemplate(title = Some("Add Domain"))
     Ok(views.html.domains.form(tpl, Domains.domainForm))
   }
 
-  def postCreate(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+  def postCreate(orgKey: String) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin
     val tpl = request.mainTemplate(title = Some("Add Domain"))
     val boundForm = Domains.domainForm.bindFromRequest
@@ -57,7 +57,7 @@ class Domains @Inject() (
 
   }
 
-  def postRemove(orgKey: String, domain: String) = AuthenticatedOrg.async { implicit request =>
+  def postRemove(orgKey: String, domain: String) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin
 
     for {

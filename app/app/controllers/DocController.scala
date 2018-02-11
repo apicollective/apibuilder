@@ -6,9 +6,9 @@ import lib.Util
 import play.api.mvc._
 
 class DocController @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   util: Util
-) extends BaseController {
+) extends ApibuilderController {
 
   def redirect = Action { implicit request =>
     Redirect(routes.DocController.index())

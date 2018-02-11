@@ -15,10 +15,10 @@ import io.apibuilder.api.v0.Client
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class Organizations @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider,
   config: Config
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -42,14 +42,14 @@ class Organizations @Inject() (
     }
   }
 
-  def details(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+  def details(orgKey: String) = IdentifiedOrg.async { implicit request =>
     hasMembershipRequests(request.api, request.isAdmin, request.org.guid).map { haveMembershipRequests =>
       val tpl = request.mainTemplate().copy(settings = Some(SettingsMenu(section = Some(SettingSection.Details))))
       Ok(views.html.organizations.details(tpl, request.org, haveMembershipRequests = haveMembershipRequests))
     }
   }
 
-  def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
+  def membershipRequests(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin
 
     for {
@@ -66,7 +66,7 @@ class Organizations @Inject() (
     }
   }
 
-  def requestMembership(orgKey: String) = Authenticated.async { implicit request =>
+  def requestMembership(orgKey: String) = Identified.async { implicit request =>
     for {
       orgResponse <- request.api.Organizations.get(key = Some(orgKey))
       membershipsResponse <- request.api.Memberships.get(
@@ -104,7 +104,7 @@ class Organizations @Inject() (
     }
   }
 
-  def postRequestMembership(orgKey: String) = Authenticated.async { implicit request =>
+  def postRequestMembership(orgKey: String) = Identified.async { implicit request =>
     request.api.Organizations.get(key = Some(orgKey)).flatMap { orgs =>
       orgs.headOption match {
         case None => Future {
@@ -121,7 +121,7 @@ class Organizations @Inject() (
     }
   }
 
-  def create() = Authenticated { implicit request =>
+  def create() = Identified { implicit request =>
     val filledForm = Organizations.orgForm.fill(
       Organizations.OrgData(
         name = "",
@@ -134,7 +134,7 @@ class Organizations @Inject() (
     Ok(views.html.organizations.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Authenticated.async { implicit request =>
+  def createPost = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Organization"))
 
     val form = Organizations.orgForm.bindFromRequest
@@ -164,7 +164,7 @@ class Organizations @Inject() (
     )
   }
 
-  def edit(orgKey: String) = Authenticated.async { implicit request =>
+  def edit(orgKey: String) = Identified.async { implicit request =>
     apiClientProvider.callWith404(request.api.Organizations.getByKey(orgKey)).map { orgOption =>
       orgOption match {
         case None => {
@@ -185,7 +185,7 @@ class Organizations @Inject() (
     }
   }
 
-  def editPost(orgKey: String) = Authenticated.async { implicit request =>
+  def editPost(orgKey: String) = Identified.async { implicit request =>
     apiClientProvider.callWith404(request.api.Organizations.getByKey(orgKey)).flatMap { orgOption =>
       orgOption match {
         case None => Future {
@@ -226,7 +226,7 @@ class Organizations @Inject() (
     }
   }
 
-  def deletePost(orgKey: String) = Authenticated.async { implicit request =>
+  def deletePost(orgKey: String) = Identified.async { implicit request =>
     for {
       _ <- request.api.Organizations.deleteByKey(orgKey)
     } yield {

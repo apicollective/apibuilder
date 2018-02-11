@@ -5,8 +5,8 @@ import javax.inject.Inject
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class LogoutController @Inject() (
-  val controllerComponents: ControllerComponents
-) extends BaseController {
+  val apibuilderControllerComponents: ApibuilderControllerComponents
+) extends ApibuilderController {
 
 
   def logged_out = Action { implicit request =>

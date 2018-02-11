@@ -13,11 +13,11 @@ import play.api._
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class LoginController @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider,
   github: Github,
   util: Util
-) extends BaseController {
+) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

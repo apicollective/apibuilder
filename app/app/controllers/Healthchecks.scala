@@ -7,9 +7,9 @@ import lib.ApiClientProvider
 import play.api.mvc.{Action, BaseController, ControllerComponents}
 
 class Healthchecks @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

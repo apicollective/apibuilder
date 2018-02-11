@@ -6,10 +6,10 @@ import javax.inject.Inject
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class SearchController @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider,
   util: Util
-) extends BaseController {
+) extends ApibuilderController {
   
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

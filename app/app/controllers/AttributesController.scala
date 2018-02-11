@@ -13,9 +13,9 @@ import play.api.data._
 import play.api.mvc.{Action, BaseController, ControllerComponents}
 
 class AttributesController @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -55,7 +55,7 @@ class AttributesController @Inject() (
     }
   }
 
-  def create() = Authenticated { implicit request =>
+  def create() = Identified { implicit request =>
     val filledForm = AttributesController.attributesFormData.fill(
       AttributesController.AttributeFormData(
         name = "",
@@ -66,7 +66,7 @@ class AttributesController @Inject() (
     Ok(views.html.attributes.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Authenticated.async { implicit request =>
+  def createPost = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Attribute"))
 
     val form = AttributesController.attributesFormData.bindFromRequest
@@ -94,7 +94,7 @@ class AttributesController @Inject() (
     )
   }
 
-  def deletePost(name: String) = Authenticated.async { implicit request =>
+  def deletePost(name: String) = Identified.async { implicit request =>
     apiClientProvider.callWith404(request.api.attributes.deleteByName(name)).map {
       case None => Redirect(routes.AttributesController.index()).flashing("warning" -> s"Attribute not found")
       case Some(_) => Redirect(routes.AttributesController.index()).flashing("success" -> s"Attribute deleted")

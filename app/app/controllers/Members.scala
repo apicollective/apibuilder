@@ -15,13 +15,13 @@ import javax.inject.Inject
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class Members @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
+  def show(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
     request.requireMember()
     for {
       orgs <- request.api.Organizations.get(key = Some(orgKey))
@@ -46,7 +46,7 @@ class Members @Inject() (
     }
   }
 
-  def add(orgKey: String) = AuthenticatedOrg { implicit request =>
+  def add(orgKey: String) = IdentifiedOrg { implicit request =>
     request.requireMember()
     val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = Role.Member.key, email = "", nickname = ""))
 
@@ -54,7 +54,7 @@ class Members @Inject() (
     Ok(views.html.members.add(tpl, filledForm))
   }
 
-  def addPost(orgKey: String) = AuthenticatedOrg { implicit request =>
+  def addPost(orgKey: String) = IdentifiedOrg { implicit request =>
     request.requireMember()
     val tpl = request.mainTemplate(Some("Add Member")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
 
@@ -90,7 +90,7 @@ class Members @Inject() (
     )
   }
 
-  def postRemove(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
+  def postRemove(orgKey: String, guid: UUID) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin()
 
     for {
@@ -100,7 +100,7 @@ class Members @Inject() (
     }
   }
 
-  def postRevokeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
+  def postRevokeAdmin(orgKey: String, guid: UUID) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin()
 
     for {
@@ -126,7 +126,7 @@ class Members @Inject() (
     }
   }
 
-  def postMakeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
+  def postMakeAdmin(orgKey: String, guid: UUID) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin()
 
     for {
@@ -152,7 +152,7 @@ class Members @Inject() (
     }
   }
 
-  def downloadCsv(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+  def downloadCsv(orgKey: String) = IdentifiedOrg.async { implicit request =>
     request.requireAdmin()
     for {
       path <- MemberDownload(apiClientProvider.clientForSessionId(Some(request.sessionId)), orgKey).csv()

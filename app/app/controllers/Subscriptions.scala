@@ -24,9 +24,9 @@ object Subscriptions {
 }
 
 class Subscriptions @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -42,7 +42,7 @@ class Subscriptions @Inject() (
 
   def index(
     org: String
-  ) = AuthenticatedOrg.async { implicit request =>
+  ) = IdentifiedOrg.async { implicit request =>
     for {
       subscriptions <- request.api.subscriptions.get(
         organizationKey = Some(request.org.key),
@@ -63,7 +63,7 @@ class Subscriptions @Inject() (
   def postToggle(
     org: String,
     publication: Publication
-  ) = AuthenticatedOrg.async { implicit request =>
+  ) = IdentifiedOrg.async { implicit request =>
     for {
       subscriptions <- request.api.subscriptions.get(
         organizationKey = Some(request.org.key),

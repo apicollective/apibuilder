@@ -10,10 +10,10 @@ import play.core.parsers.FormUrlEncodedParser
 import scala.concurrent.Future
 
 class GithubController @javax.inject.Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   ws: WSClient,
   github: Github
-) extends BaseController {
+) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

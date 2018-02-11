@@ -103,7 +103,7 @@ class ApibuilderDefaultControllerComponents @Inject() (
   val organizationsDao: OrganizationsDao
 ) extends ApibuilderControllerComponents
 
-case class Anonymous[A](
+case class AnonymousRequest[A](
   user: Option[User],
   request: Request[A]
 ) extends WrappedRequest(request) {
@@ -125,14 +125,14 @@ class AnonymousActionBuilder @Inject()(
   requestAuthenticationUtil: RequestAuthenticationUtil
 )(
   implicit val executionContext: ExecutionContext
-) extends ActionBuilder[Anonymous, AnyContent] {
+) extends ActionBuilder[AnonymousRequest, AnyContent] {
 
   def invokeBlock[A](
     request: Request[A],
-    block: (Anonymous[A]
+    block: (AnonymousRequest[A]
   ) => Future[Result]): Future[Result] = {
     block(
-      Anonymous(
+      AnonymousRequest(
         user = requestAuthenticationUtil.user(request.headers),
         request = request
       )

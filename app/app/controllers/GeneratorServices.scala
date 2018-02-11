@@ -7,9 +7,9 @@ import javax.inject.Inject
 import play.api.mvc.{BaseController, ControllerComponents}
 
 class GeneratorServices @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

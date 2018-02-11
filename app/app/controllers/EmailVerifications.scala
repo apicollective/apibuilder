@@ -6,8 +6,8 @@ import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
 import play.api.mvc._
 
 class EmailVerifications @Inject() (
-  val controllerComponents: ControllerComponents
-) extends BaseController {
+  val apibuilderControllerComponents: ApibuilderControllerComponents
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

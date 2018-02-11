@@ -2,11 +2,9 @@ package controllers
 
 import javax.inject.Inject
 
-import play.api.mvc._
-
 class AccountController @Inject() (
-  val controllerComponents: ControllerComponents
-) extends BaseController {
+  val apibuilderControllerComponents: ApibuilderControllerComponents
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -14,7 +12,7 @@ class AccountController @Inject() (
     Redirect(routes.AccountController.index())
   }
 
-  def index() = Authenticated { implicit request =>
+  def index() = Identified { implicit request =>
     Redirect(routes.AccountProfileController.index())
   }
 

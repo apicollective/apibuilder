@@ -15,9 +15,9 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 class Versions @Inject() (
-  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] val DefaultVersion = "0.0.1-dev"
   private[this] val LatestVersion = "latest"
@@ -165,7 +165,7 @@ class Versions @Inject() (
   }
 
 
-  def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+  def postWatch(orgKey: String, applicationKey: String, versionName: String) = IdentifiedOrg.async { implicit request =>
     apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(request.org.key, applicationKey, versionName)
     ).flatMap {
@@ -211,7 +211,7 @@ class Versions @Inject() (
   def create(
     orgKey: String,
     applicationKey: Option[String] = None
-  ) = AuthenticatedOrg.async { implicit request =>
+  ) = IdentifiedOrg.async { implicit request =>
     request.requireMember()
 
     applicationKey match {
@@ -262,7 +262,7 @@ class Versions @Inject() (
   def createPost(
     orgKey: String,
     applicationKey: Option[String] = None
-  ) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
+  ) = IdentifiedOrg.async(parse.multipartFormData) { implicit request =>
     request.requireMember()
 
     val tpl = applicationKey match {
