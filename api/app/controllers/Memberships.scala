@@ -1,17 +1,15 @@
 package controllers
 
-import io.apibuilder.api.v0.models.Membership
 import io.apibuilder.api.v0.models.json._
-import db.{Authorization, MembershipsDao}
+import db.MembershipsDao
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import play.api.mvc._
 import play.api.libs.json.Json
 
 @Singleton
 class Memberships @Inject() (
-  membershipsDao: MembershipsDao,
-  val controllerComponents: ControllerComponents
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  membershipsDao: MembershipsDao
 ) extends ApibuilderController {
 
   def get(
