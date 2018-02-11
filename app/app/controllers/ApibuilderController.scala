@@ -5,6 +5,7 @@ import javax.inject.Inject
 import com.google.inject.ImplementedBy
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import lib.{ApibuilderRequestData, RequestAuthenticationUtil}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,7 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *   - anonymous / api key / session based access
   *   - utilities to check for organization role
   */
-trait ApibuilderController extends BaseController {
+trait ApibuilderController extends BaseController with I18nSupport {
 
   protected def apibuilderControllerComponents: ApibuilderControllerComponents
 
@@ -23,7 +24,7 @@ trait ApibuilderController extends BaseController {
   def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
 
   def controllerComponents: ControllerComponents = apibuilderControllerComponents.controllerComponents
-
+  override def messagesApi: MessagesApi = apibuilderControllerComponents.messagesApi
 }
 
 @ImplementedBy(classOf[ApibuilderDefaultControllerComponents])
@@ -31,12 +32,14 @@ trait ApibuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
   def controllerComponents: ControllerComponents
+  def messagesApi: MessagesApi
 }
 
 class ApibuilderDefaultControllerComponents @Inject() (
   val controllerComponents: ControllerComponents,
   val anonymousActionBuilder: AnonymousActionBuilder,
-  val identifiedActionBuilder: IdentifiedActionBuilder
+  val identifiedActionBuilder: IdentifiedActionBuilder,
+  val messagesApi: MessagesApi
 ) extends ApibuilderControllerComponents
 
 case class AnonymousRequest[A](
@@ -46,6 +49,7 @@ case class AnonymousRequest[A](
   val user: Option[User] = requestData.user
   val org: Option[Organization] = requestData.org
   val memberships: Seq[Membership] = requestData.memberships
+  val api = requestData.api
 
   def mainTemplate(title: Option[String]) = requestData.mainTemplate(title)
 }
@@ -59,6 +63,7 @@ case class IdentifiedRequest[A](
   }
   val org: Option[Organization] = requestData.org
   val memberships: Seq[Membership] = requestData.memberships
+  val api = requestData.api
 
   def mainTemplate(title: Option[String]) = requestData.mainTemplate(title)
 }

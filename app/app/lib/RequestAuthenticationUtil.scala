@@ -2,10 +2,12 @@ package lib
 
 import javax.inject.Inject
 
+import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import models.MainTemplate
 
 case class ApibuilderRequestData(
+  api: Client,
   requestPath: String,
   sessionId: Option[String],
   user: Option[User],
@@ -65,6 +67,7 @@ class RequestAuthenticationUtil @Inject() (
     }
 
     ApibuilderRequestData(
+      api = apiClientProvider.clientForSessionId(sessionId),
       requestPath = requestPath,
       sessionId = sessionId,
       user = user,
