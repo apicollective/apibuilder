@@ -12,8 +12,9 @@ import java.util.UUID
 @Singleton
 class Tokens @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   tokensDao: TokensDao
-) extends BaseController {
+) extends ApibuilderController {
 
   def getUsersByUserGuid(
     userGuid: java.util.UUID,

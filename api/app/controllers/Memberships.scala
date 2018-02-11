@@ -12,7 +12,7 @@ import play.api.libs.json.Json
 class Memberships @Inject() (
   membershipsDao: MembershipsDao,
   val controllerComponents: ControllerComponents
-) extends BaseController {
+) extends ApibuilderController {
 
   def get(
     organizationGuid: Option[UUID],

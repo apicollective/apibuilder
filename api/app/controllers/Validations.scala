@@ -11,8 +11,9 @@ import play.api.libs.json._
 @Singleton
 class Validations @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   databaseServiceFetcher: DatabaseServiceFetcher
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",

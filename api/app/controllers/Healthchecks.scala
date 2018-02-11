@@ -9,9 +9,10 @@ import play.api.libs.json._
 class Healthchecks @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] val Result = Json.toJson(Map("status" -> "healthy"))
 

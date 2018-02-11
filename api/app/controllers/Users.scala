@@ -16,11 +16,12 @@ import scala.concurrent.Future
 
 class Users @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   wsClient: WSClient,
   sessionHelper: SessionHelper,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
-) extends BaseController {
+) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -12,8 +12,9 @@ import java.util.UUID
 @Singleton
 class Watches @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   watchesDao: WatchesDao
-) extends BaseController {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],

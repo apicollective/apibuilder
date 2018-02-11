@@ -12,8 +12,9 @@ import java.util.UUID
 @Singleton
 class Subscriptions @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   subscriptionsDao: SubscriptionsDao
-) extends BaseController {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],

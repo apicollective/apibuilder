@@ -8,13 +8,13 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc._
 
-
 @Singleton
 class Authentications @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   sessionsDao: SessionsDao,
   usersDao: UsersDao
-) extends BaseController {
+) extends ApibuilderController {
 
   def getSessionById(sessionId: String) = Anonymous { _ =>
     sessionsDao.findById(sessionId) match {

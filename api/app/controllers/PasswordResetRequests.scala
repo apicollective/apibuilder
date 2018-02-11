@@ -11,9 +11,10 @@ import play.api.libs.json._
 @Singleton
 class PasswordResetRequests @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   passwordResetRequestsDao: PasswordResetRequestsDao,
   usersDao: UsersDao
-) extends BaseController {
+) extends ApibuilderController {
 
   def post() = Anonymous(parse.json) { request =>
     request.body.validate[PasswordResetRequest] match {

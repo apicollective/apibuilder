@@ -12,13 +12,11 @@ import java.util.UUID
 
 @Singleton
 class Applications @Inject() (
-  val membershipsDao: MembershipsDao,
-  val organizationsDao: OrganizationsDao,
   val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao
-) extends BaseController with ApibuilderController with ApibuilderControllerBuilders {
+) extends ApibuilderController {
 
   def get(
     orgKey: String,

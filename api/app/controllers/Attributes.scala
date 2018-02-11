@@ -11,16 +11,17 @@ import java.util.UUID
 
 @Singleton
 class Attributes @Inject() (
-  attributesDao: AttributesDao,
-  val controllerComponents: ControllerComponents
-) extends BaseController {
+  val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  attributesDao: AttributesDao
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Action { _ =>
+  ) = Anonymous { _ =>
     val attributes = attributesDao.findAll(
       guid = guid,
       name = name,

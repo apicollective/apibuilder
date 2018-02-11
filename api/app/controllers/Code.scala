@@ -19,13 +19,14 @@ import scala.concurrent.Future
 @Singleton
 class Code @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   wSClient: WSClient,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
   userAgent: UserAgent
-) extends BaseController {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

@@ -14,13 +14,14 @@ import play.api.libs.json._
 @Singleton
 class Versions @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   val membershipsDao: MembershipsDao,
   val organizationsDao: OrganizationsDao,
   applicationsDao: ApplicationsDao,
   databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator
-) extends BaseController with ApibuilderController {
+) extends ApibuilderController with ApibuilderController {
 
   private[this] val DefaultVisibility = Visibility.Organization
 

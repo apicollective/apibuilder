@@ -12,10 +12,11 @@ import play.api.libs.json._
 @Singleton
 class Domains @Inject() (
   val controllerComponents: ControllerComponents,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   val membershipsDao: MembershipsDao,
   val organizationsDao: OrganizationsDao,
   organizationDomainsDao: OrganizationDomainsDao
-) extends BaseController with ApibuilderController {
+) extends ApibuilderController with ApibuilderController {
 
   def post(orgKey: String) = Identified(parse.json) { request =>
     withOrgAdmin(request.user, orgKey) { org =>
