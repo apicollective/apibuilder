@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import com.google.inject.ImplementedBy
 import db.{Authorization, MembershipsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
@@ -82,6 +83,7 @@ trait ApibuilderController extends BaseController {
   }
 }
 
+@ImplementedBy(classOf[ApibuilderDefaultControllerComponents])
 trait ApibuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
