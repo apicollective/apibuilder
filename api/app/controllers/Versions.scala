@@ -15,13 +15,11 @@ import play.api.libs.json._
 class Versions @Inject() (
   val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
-  val membershipsDao: MembershipsDao,
-  val organizationsDao: OrganizationsDao,
   applicationsDao: ApplicationsDao,
   databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator
-) extends ApibuilderController with ApibuilderController {
+) extends ApibuilderController {
 
   private[this] val DefaultVisibility = Visibility.Organization
 

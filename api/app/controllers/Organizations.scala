@@ -14,11 +14,9 @@ import java.util.UUID
 class Organizations @Inject() (
   val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
-  val membershipsDao: MembershipsDao,
-  val organizationsDao: OrganizationsDao,
   attributesDao: AttributesDao,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao
-) extends ApibuilderController with ApibuilderController {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],

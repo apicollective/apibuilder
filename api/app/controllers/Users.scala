@@ -36,8 +36,8 @@ class Users @Inject() (
     email: Option[String],
     nickname: Option[String],
     token: Option[String]
-  ) = Anonymous { request =>
-    require(request.tokenUser.isDefined, "Missing API Token")
+  ) = Identified { request =>
+    requireSystemUser(request.user)
     val users = usersDao.findAll(
       guid = guid,
       email = email,
@@ -47,8 +47,8 @@ class Users @Inject() (
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = Anonymous { request =>
-    require(request.tokenUser.isDefined, "Missing API Token")
+  def getByGuid(guid: UUID) = Identified { request =>
+    requireSystemUser(request.user)
     usersDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => Ok(Json.toJson(user))
@@ -85,6 +85,8 @@ class Users @Inject() (
         usersDao.findByGuid(guid.toString) match {
 
           case None => NotFound
+
+          case Some(u: User) if u.guid != request.user.guid=> Unauthorized
 
           case Some(_: User) => {
             val existingUser = usersDao.findByGuid(guid)
@@ -183,4 +185,10 @@ class Users @Inject() (
     }
   }
 
+  private[this] def requireSystemUser(user: User): Unit = {
+    require(
+      user.guid == UsersDao.AdminUserGuid,
+      "Action restricted to the system admin user"
+    )
+  }
 }

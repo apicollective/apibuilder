@@ -12,6 +12,7 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ApibuilderController extends BaseController {
+
   protected def apibuilderControllerComponents: ApibuilderControllerComponents
 
   def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
