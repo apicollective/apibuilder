@@ -1,0 +1,77 @@
+package lib
+
+import javax.inject.Inject
+
+import io.apibuilder.api.v0.models.{Membership, Organization, User}
+import models.MainTemplate
+
+case class ApibuilderRequestData(
+  requestPath: String,
+  sessionId: Option[String],
+  user: Option[User],
+  org: Option[Organization],
+  memberships: Seq[Membership]
+) {
+  val isAdmin = memberships.exists { membership => Role.fromString(membership.role).contains(Role.Admin) }
+  val isMember = isAdmin || memberships.exists { membership => Role.fromString(membership.role).contains(Role.Member) }
+
+  def mainTemplate(title: Option[String] = None): MainTemplate = {
+    MainTemplate(
+      requestPath = requestPath,
+      title = title,
+      user = user,
+      org = org,
+      isOrgMember = isMember,
+      isOrgAdmin = isAdmin
+    )
+  }
+}
+
+/**
+* Helpers to fetch a user from an incoming request header
+*/
+class RequestAuthenticationUtil @Inject() (
+  apiClientProvider: ApiClientProvider
+) {
+
+  private[this] def getMemberships(
+    sessionId: Option[String],
+    org: Organization,
+    user: User
+  ): Seq[Membership] = {
+    apiClientProvider.awaitCallWith404 {
+      apiClientProvider.clientForSessionId(sessionId).memberships.get(
+        orgKey = Some(org.key),
+        userGuid = Some(user.guid)
+      )
+    }.getOrElse(Nil)
+  }
+
+  private[this] def getOrganization(sessionId: Option[String], key: String): Option[Organization] = {
+    apiClientProvider.awaitCallWith404 {
+      apiClientProvider.clientForSessionId(sessionId).organizations.getByKey(key)
+    }
+  }
+
+  def data(requestPath: String, sessionId: Option[String]): ApibuilderRequestData = {
+    val user = sessionId.flatMap { apiClientProvider.getUserBySessionId }
+    val org = requestPath.split("/").drop(1).headOption.flatMap { orgKey =>
+      getOrganization(sessionId, orgKey)
+    }
+
+    val memberships = (user, org) match {
+      case (Some(u), Some(o)) => getMemberships(sessionId, o, u)
+      case _ => Seq.empty
+    }
+
+    ApibuilderRequestData(
+      requestPath = requestPath,
+      sessionId = sessionId,
+      user = user,
+      org = org,
+      memberships = memberships
+    )
+
+  }
+
+}
