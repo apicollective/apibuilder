@@ -3,10 +3,10 @@ package controllers
 import javax.inject.Inject
 
 import com.google.inject.ImplementedBy
-import db.{Authorization, MembershipsDao, OrganizationsDao, UsersDao}
+import db.{Authorization, MembershipsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
-import lib.{AppConfig, Role, Validation}
+import lib.{AppConfig, RequestAuthenticationUtil, Role, Validation}
 import play.api.libs.json.Json
 import play.api.mvc._
 
@@ -119,7 +119,8 @@ case class IdentifiedRequest[A](
 
 class AnonymousActionBuilder @Inject()(
   val parser: BodyParsers.Default,
-  val appConfig: AppConfig
+  val appConfig: AppConfig,
+  requestAuthenticationUtil: RequestAuthenticationUtil
 )(
   implicit val executionContext: ExecutionContext
 ) extends ActionBuilder[Anonymous, AnyContent] {
@@ -128,15 +129,19 @@ class AnonymousActionBuilder @Inject()(
     request: Request[A],
     block: (Anonymous[A]
   ) => Future[Result]): Future[Result] = {
-    val user: Option[User] = None
-    block(Anonymous(user, request))
+    block(
+      Anonymous(
+        user = requestAuthenticationUtil.user(request.headers),
+        request = request
+      )
+    )
   }
 }
 
 class IdentifiedActionBuilder @Inject()(
   val parser: BodyParsers.Default,
   val appConfig: AppConfig,
-  val usersDao: UsersDao
+  requestAuthenticationUtil: RequestAuthenticationUtil
 )(
   implicit val executionContext: ExecutionContext
 ) extends ActionBuilder[IdentifiedRequest, AnyContent] {
@@ -145,12 +150,9 @@ class IdentifiedActionBuilder @Inject()(
     request: Request[A],
     block: (IdentifiedRequest[A]
   ) => Future[Result]): Future[Result] = {
-    println(s"HEADERS: ${request.headers.toString}")
-
-    Future.successful(Results.Unauthorized)
-    //auth(request.headers)(AuthData.Identified.fromMap) match {
-    //    case None => Future.successful(unauthorized(request))
-    //   case Some(ad) => block(new IdentifiedRequest(ad, request))
-    // }
+    requestAuthenticationUtil.user(request.headers) match {
+      case None => Future.successful(Results.Unauthorized)
+      case Some(user) => block(IdentifiedRequest(user, request))
+    }
   }
 }
