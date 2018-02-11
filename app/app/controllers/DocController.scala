@@ -3,15 +3,15 @@ package controllers
 import javax.inject.Inject
 
 import lib.Util
-import play.api._
 import play.api.mvc._
 
 class DocController @Inject() (
+  val controllerComponents: ControllerComponents,
   util: Util
-) extends Controller {
+) extends BaseController {
 
   def redirect = Action { implicit request =>
-    Redirect(routes.DocController.index)
+    Redirect(routes.DocController.index())
   }
 
   def index = Anonymous { implicit request =>

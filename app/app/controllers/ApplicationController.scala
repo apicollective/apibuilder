@@ -3,13 +3,12 @@ package controllers
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import javax.inject.Inject
 
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 class ApplicationController @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

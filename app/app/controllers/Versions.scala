@@ -8,17 +8,16 @@ import io.apibuilder.spec.v0.models.json._
 import lib.{ApiClientProvider, Labels, VersionTag}
 import play.api.data.Forms._
 import play.api.data._
-import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json._
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 class Versions @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   private[this] val DefaultVersion = "0.0.1-dev"
   private[this] val LatestVersion = "latest"
@@ -182,7 +181,7 @@ class Versions @Inject() (
           }
         }
       }
-      case Some(version) => {
+      case Some(_) => {
         Await.result(request.api.watches.get(
           userGuid = Some(request.user.guid),
           organizationKey = Some(orgKey),
@@ -268,7 +267,7 @@ class Versions @Inject() (
 
     val tpl = applicationKey match {
       case None => request.mainTemplate(Some(Labels.AddApplicationText))
-      case Some(key) => request.mainTemplate(Some("Upload New Version"))
+      case Some(_) => request.mainTemplate(Some("Upload New Version"))
     }
     val boundForm = Versions.uploadForm.bindFromRequest
     boundForm.fold (
@@ -286,7 +285,7 @@ class Versions @Inject() (
 
           case Some(file) => {
             val path = File.createTempFile("api", "json")
-            file.ref.moveTo(path, true)
+            file.ref.moveTo(path, replace = true)
             val versionForm = VersionForm(
               originalForm = OriginalForm(
                 `type` = valid.originalType.map(OriginalType(_)),
@@ -344,11 +343,9 @@ class Versions @Inject() (
           userGuid = Some(u.guid),
           organizationKey = Some(orgKey),
           applicationKey = Some(applicationKey)
-        ).map { watches =>
-          watches match {
-            case Nil => false
-            case _ => true
-          }
+        ).map {
+          case Nil => false
+          case _ => true
         }
       }
     }

@@ -8,15 +8,14 @@ import scala.concurrent.Future
 import java.util.UUID
 import javax.inject.Inject
 
-import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.data.Forms._
 import play.api.data._
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, BaseController, ControllerComponents}
 
 class AttributesController @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

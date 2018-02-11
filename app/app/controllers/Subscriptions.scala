@@ -7,8 +7,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import javax.inject.Inject
 
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.Controller
+import play.api.mvc.{BaseController, ControllerComponents}
 
 object Subscriptions {
 
@@ -25,9 +24,9 @@ object Subscriptions {
 }
 
 class Subscriptions @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

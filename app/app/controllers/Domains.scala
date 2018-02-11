@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Domain, Organization, User}
+import io.apibuilder.api.v0.models.Domain
 import models._
 import play.api.data._
 import play.api.data.Forms._
@@ -9,13 +9,12 @@ import scala.concurrent.Future
 import javax.inject.Inject
 
 import lib.ApiClientProvider
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 class Domains @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

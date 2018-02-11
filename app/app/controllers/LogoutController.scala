@@ -2,13 +2,11 @@ package controllers
 
 import models.MainTemplate
 import javax.inject.Inject
-import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 class LogoutController @Inject() (
-  val messagesApi: MessagesApi
-) extends Controller with I18nSupport {
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
 
   def logged_out = Action { implicit request =>

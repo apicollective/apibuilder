@@ -12,13 +12,12 @@ import org.joda.time.DateTime
 import java.util.UUID
 import javax.inject.Inject
 
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.Controller
+import play.api.mvc.{BaseController, ControllerComponents}
 
 class Members @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -79,7 +78,7 @@ class Members @Inject() (
 
             case Some(user: User) => {
               val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
-              val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
+              Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
               Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
             }
           }
@@ -95,7 +94,7 @@ class Members @Inject() (
     request.requireAdmin()
 
     for {
-      response <- request.api.Memberships.deleteByGuid(guid)
+      _ <- request.api.Memberships.deleteByGuid(guid)
     } yield {
       Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"Member removed")
     }

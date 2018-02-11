@@ -1,23 +1,21 @@
 package controllers
 
-import io.apibuilder.api.v0.models.TokenForm
-import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import models.MainTemplate
-import play.api.data._
-import play.api.data.Forms._
 import java.util.UUID
-
-import scala.concurrent.Future
 import javax.inject.Inject
 
-import play.api._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import io.apibuilder.api.v0.models.TokenForm
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+
+import play.api.data._
+import play.api.data.Forms._
+import play.api.mvc.{BaseController, ControllerComponents}
+
+import scala.concurrent.Future
 
 class TokensController @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -49,7 +47,7 @@ class TokensController @Inject() (
           Redirect(routes.TokensController.index()).flashing("warning" -> "Token not found")
         }
         case Some(cleartextToken) => {
-          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), tokens.head))
+          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), cleartextToken))
         }
       }
     }
@@ -104,7 +102,7 @@ class TokensController @Inject() (
 
   def postDelete(guid: UUID) = Authenticated.async { implicit request =>
     for {
-      result <- request.api.tokens.deleteByGuid(guid)
+      _ <- request.api.tokens.deleteByGuid(guid)
     } yield {
       Redirect(routes.TokensController.index()).flashing("success" -> "Token deleted")
     }

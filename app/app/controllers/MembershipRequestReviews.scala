@@ -1,11 +1,13 @@
 package controllers
 
 import java.util.UUID
+import javax.inject.Inject
 
-import play.api._
-import play.api.mvc._
+import play.api.mvc.{BaseController, ControllerComponents}
 
-class MembershipRequestReviews extends Controller {
+class MembershipRequestReviews @Inject() (
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -13,7 +15,7 @@ class MembershipRequestReviews extends Controller {
     require(request.isAdmin, "You are not an administrator")
 
     for {
-      review <- request.api.MembershipRequests.postAcceptByGuid(membershipRequestGuid)
+      _ <- request.api.MembershipRequests.postAcceptByGuid(membershipRequestGuid)
     } yield {
       Redirect(routes.Organizations.membershipRequests(orgKey)).flashing("success" -> "Request accepted")
     }

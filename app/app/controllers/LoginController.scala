@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
+import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest}
 import lib.{ApiClientProvider, Github, Util}
 import models.MainTemplate
 import play.api.data._
@@ -10,15 +10,14 @@ import scala.concurrent.Future
 import javax.inject.Inject
 
 import play.api._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{BaseController, ControllerComponents}
 
 class LoginController @Inject() (
-  val messagesApi: MessagesApi,
+  val controllerComponents: ControllerComponents,
   apiClientProvider: ApiClientProvider,
   github: Github,
   util: Util
-) extends Controller with I18nSupport {
+) extends BaseController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

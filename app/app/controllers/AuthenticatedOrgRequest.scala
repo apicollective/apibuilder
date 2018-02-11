@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Membership, Organization, User}
+import io.apibuilder.api.v0.models.{Organization, User}
 import models.MainTemplate
 import lib.{ApiClientProvider, Role}
 import play.api.mvc._
@@ -8,8 +8,6 @@ import play.api.mvc.Results.Redirect
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import play.api.Play.current
-import java.util.UUID
 
 class AuthenticatedOrgRequest[A](
   val org: Organization,
