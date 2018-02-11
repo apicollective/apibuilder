@@ -6,7 +6,7 @@ import com.google.inject.ImplementedBy
 import db.{Authorization, MembershipsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
-import lib.{AppConfig, RequestAuthenticationUtil, Role, Validation}
+import lib.{RequestAuthenticationUtil, Role, Validation}
 import play.api.libs.json.Json
 import play.api.mvc._
 
@@ -119,7 +119,6 @@ case class IdentifiedRequest[A](
 
 class AnonymousActionBuilder @Inject()(
   val parser: BodyParsers.Default,
-  val appConfig: AppConfig,
   requestAuthenticationUtil: RequestAuthenticationUtil
 )(
   implicit val executionContext: ExecutionContext
@@ -140,7 +139,6 @@ class AnonymousActionBuilder @Inject()(
 
 class IdentifiedActionBuilder @Inject()(
   val parser: BodyParsers.Default,
-  val appConfig: AppConfig,
   requestAuthenticationUtil: RequestAuthenticationUtil
 )(
   implicit val executionContext: ExecutionContext
