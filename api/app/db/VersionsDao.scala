@@ -7,14 +7,15 @@ import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import io.flow.postgresql.Query
 import builder.OriginalValidator
-import core.VersionMigration
-import lib.{DatabaseServiceFetcher, ServiceConfiguration, VersionTag}
+import core.{ServiceFetcher, VersionMigration}
+import lib.{DatabaseServiceFetcher, ServiceConfiguration, ServiceUri, VersionTag}
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
 import java.util.UUID
+
 import scala.annotation.tailrec
 
 case class MigrationStats(good: Long, bad: Long)
@@ -24,7 +25,6 @@ class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   applicationsDao: ApplicationsDao,
-  databaseServiceFetcher: DatabaseServiceFetcher,
   originalsDao: OriginalsDao,
   tasksDao: TasksDao,
   usersDao: UsersDao
@@ -357,7 +357,7 @@ class VersionsDao @Inject() (
             original = version.original.getOrElse {
               sys.error("Missing version")
             },
-            fetcher = databaseServiceFetcher.instance(Authorization.All),
+            fetcher = databaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
           validator.validate() match {
@@ -415,5 +415,19 @@ class VersionsDao @Inject() (
       'json -> Json.toJson(service).as[JsObject].toString.trim,
       'user_guid -> user.guid
     ).execute()
+  }
+
+  private[this] def databaseServiceFetcher(auth: Authorization) = {
+    new ServiceFetcher {
+      override def fetch(uri: String): Service = {
+        val serviceUri = ServiceUri.parse(uri).getOrElse {
+          sys.error(s"could not parse URI[$uri]")
+        }
+
+        findVersion(auth, serviceUri.org, serviceUri.app, serviceUri.version).map(_.service).getOrElse {
+          sys.error(s"Error while fetching service for URI[$serviceUri] - could not find [${serviceUri.org}/${serviceUri.app}:${serviceUri.version}]")
+        }
+      }
+    }
   }
 }

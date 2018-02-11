@@ -16,17 +16,12 @@ class DatabaseServiceFetcher @Inject() (
   def instance(authorization: Authorization): ServiceFetcher = {
     new ServiceFetcher {
       override def fetch(uri: String): Service = {
-        ServiceUri.parse(uri) match {
+        val serviceUri = ServiceUri.parse(uri).getOrElse {
+          sys.error(s"could not parse URI[$uri]")
+        }
 
-          case None => {
-            sys.error(s"could not parse URI[$uri]")
-          }
-
-          case Some(serviceUri) => {
-            versionsDao.findVersion(authorization, serviceUri.org, serviceUri.app, serviceUri.version).headOption.map(_.service).getOrElse {
-              sys.error(s"Error while fetching service for URI[$uri] - could not find [${serviceUri.org}/${serviceUri.app}:${serviceUri.version}]")
-            }
-          }
+        versionsDao.findVersion(authorization, serviceUri.org, serviceUri.app, serviceUri.version).map(_.service).getOrElse {
+          sys.error(s"Error while fetching service for URI[$serviceUri] - could not find [${serviceUri.org}/${serviceUri.app}:${serviceUri.version}]")
         }
       }
     }
