@@ -86,7 +86,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       original = version.original.getOrElse {
         sys.error("Missing original")
       },
-      fetcher = DatabaseServiceFetcher(Authorization.All)
+      fetcher = databaseServiceFetcher.instance(Authorization.All)
     )
     validator.validate() match {
       case Left(errors) => fail(errors.mkString("\n"))
