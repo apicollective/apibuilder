@@ -1,11 +1,10 @@
-import play.PlayImport.PlayKeys._
-import play.sbt.PlayImport._
+import play.sbt.PlayScala._
 
 name := "apibuilder"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.11.12"
+scalaVersion in ThisBuild := "2.12.4"
 
 lazy val lib = project
   .in(file("lib"))
@@ -13,7 +12,7 @@ lazy val lib = project
 
 val avroVersion = "1.8.2"
 
-val playJsonVersion = "2.4.11"
+val playJsonVersion = "2.6.11"
 
 lazy val avro = project
   .in(file("avro"))
@@ -76,14 +75,17 @@ lazy val api = project
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release",
     libraryDependencies ++= Seq(
-      ws,
-      jdbc,
       filters,
+      guice,
+      jdbc,
+      ws,
+      "com.typesafe.play" %% "play-json-joda" % "2.6.8",
+      "com.typesafe.play" %% "play-json" % "2.6.8",
       "org.postgresql"    %  "postgresql"    % "42.2.1",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "4.1.2",
-      "io.flow"           %% "lib-postgresql-play" % "0.1.55",
-      "org.scalatestplus" %% "play" % "1.4.0" % Test
+      "io.flow"           %% "lib-postgresql-play-play26" % "0.1.68",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
     )
   )
 
@@ -98,13 +100,16 @@ lazy val app = project
     routesImport += "io.apibuilder.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
+      guice,
+      "com.typesafe.play" %% "play-json-joda" % "2.6.8",
+      "com.typesafe.play" %% "play-json" % "2.6.8",
       "org.apache.commons" % "commons-compress" % "1.16.1",
       "com.github.tototoshi" %% "scala-csv" % "1.3.5",
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.3",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars" % "bootstrap-social" % "5.0.0",
-      "org.scalatestplus" %% "play" % "1.4.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
     )
   )
 
@@ -115,7 +120,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus" %% "play" % "1.4.0" % "test"
+      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
     )
   )
 
