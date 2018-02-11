@@ -7,11 +7,17 @@ import db.{Authorization, MembershipsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
 import lib.{RequestAuthenticationUtil, Role, Validation}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Main trait for controllers to implement.
+  * Extends the play base controller to wire up authentication to include:
+  *   - anonymous / api key / session based access
+  *   - utilities to check for organization role
+  */
 trait ApibuilderController extends BaseController {
 
   protected def apibuilderControllerComponents: ApibuilderControllerComponents
@@ -27,11 +33,7 @@ trait ApibuilderController extends BaseController {
   def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result) = {
     organizationsDao.findByKey(auth, orgKey) match {
       case None => Results.NotFound(
-        Json.toJson(
-          Validation.error(
-            s"Organization[$orgKey] does not exist or you are not authorized to access it"
-          )
-        )
+        jsonError(s"Organization[$orgKey] does not exist or you are not authorized to access it")
       )
 
       case Some(org) => {
@@ -41,11 +43,8 @@ trait ApibuilderController extends BaseController {
   }
 
   def withOrgMember(user: User, orgKey: String)(f: Organization => Result) = {
-    println(s"withOrgMember(${user.guid}, $orgKey)")
     withOrg(Authorization.User(user.guid), orgKey) { org =>
-      println(s"org[${org.guid}] membership check")
       withRole(org, user, Role.All) {
-        println("is a member")
         f(org)
       }
     }
@@ -71,15 +70,19 @@ trait ApibuilderController extends BaseController {
         s"a '${Role.Member}'"
       }
       Results.Unauthorized(
-        Json.toJson(
-          Validation.error(
-            s"Must be $msg of the organization"
-          )
-        )
+        jsonError(s"Must be $msg of the organization")
       )
     } else {
       f
     }
+  }
+
+  private[this] def jsonError(message: String): JsValue = {
+    Json.toJson(
+      Validation.error(
+        message
+      )
+    )
   }
 }
 
