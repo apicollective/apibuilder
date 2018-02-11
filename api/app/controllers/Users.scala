@@ -7,7 +7,6 @@ import util.SessionHelper
 import db.{UserPasswordsDao, UsersDao}
 import javax.inject.Inject
 
-import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
 import java.util.UUID
 
@@ -36,7 +35,11 @@ class Users @Inject() (
     nickname: Option[String],
     token: Option[String]
   ) = Identified { request =>
-    requireSystemUser(request.user)
+    if (!Seq(guid, email, nickname, token).exists(_.isDefined)) {
+      // require system user to show more then one user
+      requireSystemUser(request.user)
+    }
+
     val users = usersDao.findAll(
       guid = guid,
       email = email,

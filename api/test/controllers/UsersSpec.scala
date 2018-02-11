@@ -20,7 +20,7 @@ class UsersSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
   "POST /users/authenticate" in {
     val form = createUserForm()
-    val user = createUser(form)
+    createUser(form)
 
     val auth = await(
       client.users.postAuthenticate(form.email, form.password)
