@@ -18,7 +18,6 @@ import scala.concurrent.Future
 
 @Singleton
 class Code @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   wSClient: WSClient,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,

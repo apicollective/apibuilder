@@ -14,7 +14,6 @@ import scala.util.{Failure, Success, Try}
 
 @Singleton
 class GeneratorServices @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   servicesDao: ServicesDao,
   generatorServiceUtil: GeneratorServiceUtil

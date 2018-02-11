@@ -12,7 +12,6 @@ import java.util.UUID
 
 @Singleton
 class Applications @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao

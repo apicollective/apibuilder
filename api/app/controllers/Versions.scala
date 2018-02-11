@@ -13,7 +13,6 @@ import play.api.libs.json._
 
 @Singleton
 class Versions @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   applicationsDao: ApplicationsDao,
   databaseServiceFetcher: DatabaseServiceFetcher,

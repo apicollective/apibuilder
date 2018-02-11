@@ -12,7 +12,6 @@ import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   attributesDao: AttributesDao,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao

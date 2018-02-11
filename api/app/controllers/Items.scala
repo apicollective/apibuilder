@@ -9,7 +9,6 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Items @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   itemsDao: ItemsDao
 ) extends ApibuilderController {

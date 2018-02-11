@@ -15,7 +15,6 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.Future
 
 class Users @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   wsClient: WSClient,
   sessionHelper: SessionHelper,

@@ -18,6 +18,8 @@ trait ApibuilderController extends BaseController {
   def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
   def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
 
+  def controllerComponents: ControllerComponents = apibuilderControllerComponents.controllerComponents
+
   def membershipsDao: MembershipsDao = apibuilderControllerComponents.membershipsDao
   def organizationsDao: OrganizationsDao = apibuilderControllerComponents.organizationsDao
 
@@ -83,11 +85,13 @@ trait ApibuilderController extends BaseController {
 trait ApibuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
+  def controllerComponents: ControllerComponents
   def membershipsDao: MembershipsDao
   def organizationsDao: OrganizationsDao
 }
 
 class ApibuilderDefaultControllerComponents @Inject() (
+  val controllerComponents: ControllerComponents,
   val anonymousActionBuilder: AnonymousActionBuilder,
   val identifiedActionBuilder: IdentifiedActionBuilder,
   val membershipsDao: MembershipsDao,

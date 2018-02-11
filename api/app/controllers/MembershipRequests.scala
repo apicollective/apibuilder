@@ -11,7 +11,6 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipRequests @Inject() (
-  val controllerComponents: ControllerComponents,
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao,
