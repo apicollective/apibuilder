@@ -17,7 +17,7 @@ class Applications @Inject() (
   val controllerComponents: ControllerComponents,
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao
-) extends BaseController with ApibuilderController {
+) extends BaseController with ApibuilderController with ApibuilderControllerBuilders {
 
   def get(
     orgKey: String,
@@ -27,7 +27,7 @@ class Applications @Inject() (
     hasVersion: Option[Boolean],
     limit: Long = 25,
     offset: Long = 0
-  ) = AuthenticatedAction { request =>
+  ) = IdentifiedRequest { request =>
     val applications = applicationsDao.findAll(
       request.authorization,
       orgKey = Some(orgKey),
