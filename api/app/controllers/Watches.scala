@@ -36,7 +36,7 @@ class Watches @Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    watchesDao.findByUserAndGuid(request.user, guid) match {
+    watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => Ok(Json.toJson(watch))
     }
@@ -77,7 +77,7 @@ class Watches @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    watchesDao.findByUserAndGuid(request.user, guid) match {
+    watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => {
         watchesDao.softDelete(request.user, watch)

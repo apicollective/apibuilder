@@ -98,9 +98,8 @@ class SubscriptionsSpec extends PlaySpec with MockClient with GuiceOneServerPerS
       client.subscriptions.deleteByGuid(subscription.guid)
     }
 
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must equal(()) // test idempotence
     expectNotFound {
-      client.subscriptions.getByGuid(subscription.guid)
+      client.subscriptions.deleteByGuid(subscription.guid)
     }
 
     // now recreate

@@ -228,14 +228,6 @@ class OrganizationsDao @Inject() (
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
-  def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
-    findByGuid(Authorization.User(user.guid), guid)
-  }
-
-  def findByUserAndKey(user: User, orgKey: String): Option[Organization] = {
-    findByKey(Authorization.User(user.guid), orgKey)
-  }
-
   def findByKey(authorization: Authorization, orgKey: String): Option[Organization] = {
     findAll(authorization, key = Some(orgKey), limit = 1).headOption
   }

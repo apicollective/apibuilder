@@ -36,7 +36,7 @@ class Subscriptions @Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    subscriptionsDao.findByUserAndGuid(request.user, guid) match {
+    subscriptionsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
@@ -63,7 +63,7 @@ class Subscriptions @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    subscriptionsDao.findByUserAndGuid(request.user, guid) match {
+    subscriptionsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(subscription) => {
         subscriptionsDao.softDelete(request.user, subscription)

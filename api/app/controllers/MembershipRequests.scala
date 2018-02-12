@@ -4,7 +4,6 @@ import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
 import lib.{Role, Validation}
 import db.{MembershipRequestsDao, OrganizationsDao, UsersDao}
-import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -56,7 +55,7 @@ class MembershipRequests @Inject() (
       }
       case s: JsSuccess[MembershipRequestForm] => {
         val form = s.get
-        organizationsDao.findByUserAndGuid(request.user, form.org_guid) match {
+        organizationsDao.findByGuid(request.authorization, form.org_guid) match {
           case None => {
             Conflict(Json.toJson(Validation.error("Organization not found or not authorized to make changes to this org")))
           }
