@@ -41,12 +41,12 @@ class RequestAuthenticationUtil @Inject() (
     org: Organization,
     user: User
   ): Seq[Membership] = {
-    apiClientProvider.awaitCallWith404 {
+    apiClientProvider.await {
       apiClientProvider.clientForSessionId(sessionId).memberships.get(
         orgKey = Some(org.key),
         userGuid = Some(user.guid)
       )
-    }.getOrElse(Nil)
+    }
   }
 
   private[this] def getOrganization(sessionId: Option[String], key: String): Option[Organization] = {

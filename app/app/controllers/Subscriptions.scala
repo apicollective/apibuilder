@@ -3,8 +3,8 @@ package controllers
 import lib.{ApiClientProvider, Labels}
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+//import scala.concurrent.Await
+//import scala.concurrent.duration._
 import javax.inject.Inject
 
 object Subscriptions {
@@ -48,7 +48,7 @@ class Subscriptions @Inject() (
         limit = Publication.all.size + 1
       )
     } yield {
-      val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
+      val userPublications = Publication.all.filter { p => offerPublication(request.requestData.isAdmin, p) }.map { p =>
         Subscriptions.UserPublication(
           publication = p,
           isSubscribed = subscriptions.exists(_.publication == p)
@@ -71,21 +71,20 @@ class Subscriptions @Inject() (
     } yield {
       subscriptions.headOption match {
         case None => {
-          Await.result(
+          apiClientProvider.await(
             request.api.subscriptions.post(
               SubscriptionForm(
                 organizationKey = request.org.key,
                 userGuid = request.user.guid,
                 publication = publication
               )
-            ),
-            1000.millis
+            )
           )
           Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription added")
         }
         case Some(subscription) => {
-          Await.result(
-            request.api.subscriptions.deleteByGuid(subscription.guid), 1000.millis
+          apiClientProvider.await(
+            request.api.subscriptions.deleteByGuid(subscription.guid)
           )
           Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription removed")
         }

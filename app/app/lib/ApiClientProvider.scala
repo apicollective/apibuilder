@@ -62,6 +62,15 @@ class ApiClientProvider @Inject() (
     )
   }
 
+  def await[T](
+    future: Future[T]
+  )(implicit ec: ExecutionContext): T = {
+    Await.result(
+      future,
+      1000.millis
+    )
+  }
+
   /**
     * Blocking call to fetch a user. If the provided session id is not
     * valid, returns none.
