@@ -62,35 +62,30 @@ class Subscriptions @Inject() (
     org: String,
     publication: Publication
   ) = IdentifiedOrg.async { implicit request =>
-    for {
-      subscriptions <- request.api.subscriptions.get(
-        organizationKey = Some(request.org.key),
-        userGuid = Some(request.user.guid),
-        publication = Some(publication)
-      )
-    } yield {
+    request.api.subscriptions.get(
+      organizationKey = Some(request.org.key),
+      userGuid = Some(request.user.guid),
+      publication = Some(publication)
+    ).flatMap { subscriptions =>
       subscriptions.headOption match {
         case None => {
-          apiClientProvider.await(
-            request.api.subscriptions.post(
-              SubscriptionForm(
-                organizationKey = request.org.key,
-                userGuid = request.user.guid,
-                publication = publication
-              )
+          request.api.subscriptions.post(
+            SubscriptionForm(
+              organizationKey = request.org.key,
+              userGuid = request.user.guid,
+              publication = publication
             )
-          )
-          Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription added")
+          ).map { _ =>
+            Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription added")
+          }
         }
         case Some(subscription) => {
-          apiClientProvider.await(
-            request.api.subscriptions.deleteByGuid(subscription.guid)
-          )
-          Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription removed")
+          request.api.subscriptions.deleteByGuid(subscription.guid).map { _ =>
+            Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription removed")
+          }
         }
       }
     }
-
   }
 
 }

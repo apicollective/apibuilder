@@ -53,7 +53,7 @@ class ApiClientProvider @Inject() (
     }
   }
 
-  def awaitCallWith404[T](
+  private[lib] def awaitCallWith404[T](
     future: Future[T]
   )(implicit ec: ExecutionContext): Option[T] = {
     Await.result(
@@ -62,7 +62,7 @@ class ApiClientProvider @Inject() (
     )
   }
 
-  def await[T](
+  private[lib] def await[T](
     future: Future[T]
   )(implicit ec: ExecutionContext): T = {
     Await.result(
