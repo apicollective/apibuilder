@@ -22,7 +22,7 @@ class Config @Inject() (
   }
 
   def optionalString(name: String): Option[String] = {
-    configuration.getString(name).map { value =>
+    configuration.getOptional[String](name).map { value =>
       value.trim match {
         case "" => {
           val msg = s"Value for configuration parameter[$name], if specified, cannot be blank"
