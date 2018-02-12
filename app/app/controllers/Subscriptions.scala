@@ -7,8 +7,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import javax.inject.Inject
 
-import play.api.mvc.{BaseController, ControllerComponents}
-
 object Subscriptions {
 
   case class UserPublication(publication: Publication, isSubscribed: Boolean) {

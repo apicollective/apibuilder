@@ -9,8 +9,6 @@ import lib.{ApiClientProvider, Labels, VersionTag}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json._
-import play.api.mvc.{BaseController, ControllerComponents}
-
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 

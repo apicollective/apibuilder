@@ -3,8 +3,6 @@ package controllers
 import lib.{ApiClientProvider, PaginatedCollection, Pagination, Util}
 import javax.inject.Inject
 
-import play.api.mvc.{BaseController, ControllerComponents}
-
 class SearchController @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider,

@@ -12,8 +12,6 @@ import scala.concurrent.Future
 import javax.inject.Inject
 
 import io.apibuilder.api.v0.Client
-import play.api.mvc.{BaseController, ControllerComponents}
-
 class Organizations @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider,

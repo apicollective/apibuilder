@@ -3,8 +3,6 @@ package controllers
 import java.util.UUID
 import javax.inject.Inject
 
-import play.api.mvc.{BaseController, ControllerComponents}
-
 class MembershipRequestReviews @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents
 ) extends ApibuilderController {

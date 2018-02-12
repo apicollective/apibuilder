@@ -8,8 +8,6 @@ import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 
 import play.api.data._
 import play.api.data.Forms._
-import play.api.mvc.{BaseController, ControllerComponents}
-
 import scala.concurrent.Future
 
 class TokensController @Inject() (

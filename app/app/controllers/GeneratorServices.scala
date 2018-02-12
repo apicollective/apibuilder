@@ -4,8 +4,6 @@ import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import java.util.UUID
 import javax.inject.Inject
 
-import play.api.mvc.{BaseController, ControllerComponents}
-
 class GeneratorServices @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider

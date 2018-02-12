@@ -8,8 +8,6 @@ import play.api.data._
 import scala.concurrent.Future
 import javax.inject.Inject
 
-import play.api.mvc.{BaseController, ControllerComponents}
-
 class Generators @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
