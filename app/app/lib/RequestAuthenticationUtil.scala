@@ -6,6 +6,8 @@ import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import models.MainTemplate
 
+import scala.concurrent.ExecutionContext
+
 case class ApibuilderRequestData(
   api: Client,
   requestPath: String,
@@ -40,6 +42,8 @@ class RequestAuthenticationUtil @Inject() (
     sessionId: Option[String],
     org: Organization,
     user: User
+  ) (
+    implicit ec: ExecutionContext
   ): Seq[Membership] = {
     apiClientProvider.await {
       apiClientProvider.clientForSessionId(sessionId).memberships.get(
@@ -49,13 +53,23 @@ class RequestAuthenticationUtil @Inject() (
     }
   }
 
-  private[this] def getOrganization(sessionId: Option[String], key: String): Option[Organization] = {
+  private[this] def getOrganization(
+    sessionId: Option[String],
+    key: String
+  ) (
+    implicit ec: ExecutionContext
+  ): Option[Organization] = {
     apiClientProvider.awaitCallWith404 {
       apiClientProvider.clientForSessionId(sessionId).organizations.getByKey(key)
     }
   }
 
-  def data(requestPath: String, sessionId: Option[String]): ApibuilderRequestData = {
+  def data(
+    requestPath: String,
+    sessionId: Option[String]
+  ) (
+    implicit ec: ExecutionContext
+  ): ApibuilderRequestData = {
     val user = sessionId.flatMap { apiClientProvider.getUserBySessionId }
     val org = requestPath.split("/").drop(1).headOption.flatMap { orgKey =>
       getOrganization(sessionId, orgKey)

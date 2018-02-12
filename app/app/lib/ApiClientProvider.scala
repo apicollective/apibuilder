@@ -31,14 +31,14 @@ class ApiClientProvider @Inject() (
 
   private[this] val unauthenticatedClient = newClient(None)
 
-  def clientForSessionId(sessionId: Option[String]) = {
+  def clientForSessionId(sessionId: Option[String]): Client  = {
     sessionId match {
       case None => unauthenticatedClient
       case Some(sid) => clientForSessionId(sid)
     }
   }
 
-  def clientForSessionId(sessionId: String) = {
+  def clientForSessionId(sessionId: String): Client = {
     newClient(Some(sessionId))
   }
 
