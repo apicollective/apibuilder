@@ -1,19 +1,12 @@
 package controllers
 
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-
-import scala.concurrent.Future
-import io.apibuilder.api.v0.errors.UnitResponse
 import javax.inject.Inject
 
-import play.api._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
-
 class HistoryController @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -36,15 +29,17 @@ class HistoryController @Inject() (
         offset = page * Pagination.DefaultLimit
       )
     } yield {
-      Ok(views.html.history.index(
-        request.mainTemplate().copy(title = Some("History")),
-        changes = PaginatedCollection(page, changes),
-        orgKey = orgKey,
-        appKey = appKey,
-        from = from,
-        to = to,
-        typ = `type`
-      ))
+      Ok(
+        views.html.history.index(
+          request.mainTemplate().copy(title = Some("History")),
+          changes = PaginatedCollection(page, changes),
+          orgKey = orgKey,
+          appKey = appKey,
+          from = from,
+          to = to,
+          typ = `type`
+        )
+      )
     }
   }
 

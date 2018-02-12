@@ -1,26 +1,39 @@
 package controllers
 
+import javax.inject.Inject
+
+import com.google.inject.ImplementedBy
 import db.{Authorization, MembershipsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
-import lib.{Role, Validation}
-import play.api.libs.json.Json
-import play.api.mvc.{Result, Results}
+import lib.{RequestAuthenticationUtil, Role, Validation}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc._
 
-trait ApibuilderController {
+import scala.concurrent.{ExecutionContext, Future}
 
-  def membershipsDao: MembershipsDao
+/**
+  * Main trait for controllers to implement.
+  * Extends the play base controller to wire up authentication to include:
+  *   - anonymous / api key / session based access
+  *   - utilities to check for organization role
+  */
+trait ApibuilderController extends BaseController {
 
-  def organizationsDao: OrganizationsDao
+  protected def apibuilderControllerComponents: ApibuilderControllerComponents
+
+  def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
+  def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
+
+  def controllerComponents: ControllerComponents = apibuilderControllerComponents.controllerComponents
+
+  def membershipsDao: MembershipsDao = apibuilderControllerComponents.membershipsDao
+  def organizationsDao: OrganizationsDao = apibuilderControllerComponents.organizationsDao
 
   def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result) = {
     organizationsDao.findByKey(auth, orgKey) match {
       case None => Results.NotFound(
-        Json.toJson(
-          Validation.error(
-            s"Organization[$orgKey] does not exist or you are not authorized to access it"
-          )
-        )
+        jsonError(s"Organization[$orgKey] does not exist or you are not authorized to access it")
       )
 
       case Some(org) => {
@@ -30,11 +43,8 @@ trait ApibuilderController {
   }
 
   def withOrgMember(user: User, orgKey: String)(f: Organization => Result) = {
-    println(s"withOrgMember(${user.guid}, $orgKey)")
     withOrg(Authorization.User(user.guid), orgKey) { org =>
-      println(s"org[${org.guid}] membership check")
       withRole(org, user, Role.All) {
-        println("is a member")
         f(org)
       }
     }
@@ -60,15 +70,90 @@ trait ApibuilderController {
         s"a '${Role.Member}'"
       }
       Results.Unauthorized(
-        Json.toJson(
-          Validation.error(
-            s"Must be $msg of the organization"
-          )
-        )
+        jsonError(s"Must be $msg of the organization")
       )
     } else {
       f
     }
   }
 
+  private[this] def jsonError(message: String): JsValue = {
+    Json.toJson(
+      Validation.error(
+        message
+      )
+    )
+  }
+}
+
+@ImplementedBy(classOf[ApibuilderDefaultControllerComponents])
+trait ApibuilderControllerComponents {
+  def anonymousActionBuilder: AnonymousActionBuilder
+  def identifiedActionBuilder: IdentifiedActionBuilder
+  def controllerComponents: ControllerComponents
+  def membershipsDao: MembershipsDao
+  def organizationsDao: OrganizationsDao
+}
+
+class ApibuilderDefaultControllerComponents @Inject() (
+  val controllerComponents: ControllerComponents,
+  val anonymousActionBuilder: AnonymousActionBuilder,
+  val identifiedActionBuilder: IdentifiedActionBuilder,
+  val membershipsDao: MembershipsDao,
+  val organizationsDao: OrganizationsDao
+) extends ApibuilderControllerComponents
+
+case class AnonymousRequest[A](
+  user: Option[User],
+  request: Request[A]
+) extends WrappedRequest(request) {
+  val authorization = user match {
+    case None => Authorization.PublicOnly
+    case Some(u) => Authorization.User(u.guid)
+  }
+}
+
+case class IdentifiedRequest[A](
+  user: User,
+  request: Request[A]
+) extends WrappedRequest(request) {
+  val authorization = Authorization.User(user.guid)
+}
+
+class AnonymousActionBuilder @Inject()(
+  val parser: BodyParsers.Default,
+  requestAuthenticationUtil: RequestAuthenticationUtil
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[AnonymousRequest, AnyContent] {
+
+  def invokeBlock[A](
+    request: Request[A],
+    block: (AnonymousRequest[A]
+  ) => Future[Result]): Future[Result] = {
+    block(
+      AnonymousRequest(
+        user = requestAuthenticationUtil.user(request.headers),
+        request = request
+      )
+    )
+  }
+}
+
+class IdentifiedActionBuilder @Inject()(
+  val parser: BodyParsers.Default,
+  requestAuthenticationUtil: RequestAuthenticationUtil
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[IdentifiedRequest, AnyContent] {
+
+  def invokeBlock[A](
+    request: Request[A],
+    block: (IdentifiedRequest[A]
+  ) => Future[Result]): Future[Result] = {
+    requestAuthenticationUtil.user(request.headers) match {
+      case None => Future.successful(Results.Unauthorized)
+      case Some(user) => block(IdentifiedRequest(user, request))
+    }
+  }
 }

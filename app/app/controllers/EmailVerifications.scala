@@ -1,10 +1,12 @@
 package controllers
 
-import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
-import play.api._
-import play.api.mvc._
+import javax.inject.Inject
 
-class EmailVerifications extends Controller {
+import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
+
+class EmailVerifications @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

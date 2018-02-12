@@ -8,8 +8,9 @@ import play.api.libs.json._
 
 @Singleton
 class Changes @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   changesDao: ChangesDao
-) extends Controller {
+) extends ApibuilderController {
 
   def get(
     orgKey: Option[String],
@@ -19,7 +20,7 @@ class Changes @Inject() (
     `type`: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     val changes = changesDao.findAll(
       request.authorization,
       organizationKey = orgKey,

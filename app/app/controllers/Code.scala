@@ -7,13 +7,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 
 import lib.ApiClientProvider
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Controller, Result}
+import play.api.mvc.{BaseController, ControllerComponents, Result}
 
 class Code @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     apiClientProvider.callWith404(

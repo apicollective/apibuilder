@@ -127,10 +127,6 @@ class WatchesDao @Inject() (
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
-  def findByUserAndGuid(user: User, guid: UUID): Option[Watch] = {
-    findByGuid(Authorization.User(user.guid), guid)
-  }
-
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,

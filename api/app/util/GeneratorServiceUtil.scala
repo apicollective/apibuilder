@@ -8,11 +8,13 @@ import db.generators.{GeneratorsDao, ServicesDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.Client
 import play.api.Logger
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 class GeneratorServiceUtil @Inject() (
+  wSClient: WSClient,
   servicesDao: ServicesDao,
   generatorsDao: GeneratorsDao,
   usersDao: UsersDao
@@ -27,7 +29,7 @@ class GeneratorServiceUtil @Inject() (
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ) {
-    val client = new Client(service.uri)
+    val client = new Client(wSClient, service.uri)
 
     var iteration = 0
     val limit = 100

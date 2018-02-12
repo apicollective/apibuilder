@@ -9,8 +9,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class GeneratorWithServices @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   generatorsDao: GeneratorsDao
-) extends Controller {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],
@@ -20,7 +21,7 @@ class GeneratorWithServices @Inject() (
     key: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     val generators = generatorsDao.findAll(
       request.authorization,
       guid = guid,
@@ -34,7 +35,7 @@ class GeneratorWithServices @Inject() (
     Ok(Json.toJson(generators))
   }
 
-  def getByKey(key: String) = AnonymousRequest { request =>
+  def getByKey(key: String) = Anonymous { request =>
     generatorsDao.findAll(
       request.authorization,
       key = Some(key),

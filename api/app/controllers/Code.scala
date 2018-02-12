@@ -12,17 +12,20 @@ import lib.{Pager, Validation}
 import play.api.libs.json._
 import play.api.mvc._
 import _root_.util.UserAgent
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
 
 @Singleton
 class Code @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  wSClient: WSClient,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
   userAgent: UserAgent
-) extends Controller {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -31,7 +34,7 @@ class Code @Inject() (
     applicationKey: String,
     versionName: String,
     generatorKey: String
-  ) = AnonymousRequest.async { request =>
+  ) = Anonymous.async { request =>
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
       case None => {
         Future.successful(NotFound)
@@ -58,7 +61,7 @@ class Code @Inject() (
 
                 val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
 
-                new Client(service.uri).invocations.postByKey(
+                new Client(wSClient, service.uri).invocations.postByKey(
                   key = gws.generator.key,
                   invocationForm = InvocationForm(
                     service = version.service,

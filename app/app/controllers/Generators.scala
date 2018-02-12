@@ -1,22 +1,17 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{GeneratorServiceForm, User}
-import io.apibuilder.generator.v0.models.Generator
+import io.apibuilder.api.v0.models.GeneratorServiceForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
 
 import scala.concurrent.Future
 import javax.inject.Inject
 
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
-
 class Generators @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -54,7 +49,7 @@ class Generators @Inject() (
     }
   }
 
-  def create() = Authenticated { implicit request =>
+  def create() = Identified { implicit request =>
     val filledForm = Generators.generatorServiceCreateFormData.fill(
       Generators.GeneratorServiceCreateFormData(
         uri = ""
@@ -64,9 +59,7 @@ class Generators @Inject() (
     Ok(views.html.generators.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Authenticated.async { implicit request =>
-    val tpl = request.mainTemplate(Some("Add Generator"))
-
+  def createPost = Identified.async { implicit request =>
     val form = Generators.generatorServiceCreateFormData.bindFromRequest
     form.fold (
 
@@ -79,7 +72,7 @@ class Generators @Inject() (
           GeneratorServiceForm(
             uri = valid.uri
           )
-        ).map { generator =>
+        ).map { _ =>
           Redirect(routes.Generators.index()).flashing("success" -> "Generator created")
         }.recover {
           case r: io.apibuilder.api.v0.errors.ErrorsResponse => {

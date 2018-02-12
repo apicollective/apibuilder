@@ -4,21 +4,23 @@ import models.MainTemplate
 import javax.inject.Inject
 
 import lib.ApiClientProvider
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
 
 class Healthchecks @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index() = Action.async { implicit request =>
+  def index() = Anonymous.async { implicit request =>
     for {
-      orgs <- Authenticated.api().Organizations.get(key = Some("apicollective"), limit = 1)
+      orgs <- request.api.organizations.get(key = Some("apicollective"), limit = 1)
     } yield {
-      val tpl = MainTemplate(requestPath = request.path, title = Some("Healthcheck"), org = orgs.headOption)
+      val tpl = MainTemplate(
+        requestPath = request.path,
+        title = Some("Healthcheck"),
+        org = orgs.headOption
+      )
       Ok(views.html.healthchecks.index(tpl))
     }
   }

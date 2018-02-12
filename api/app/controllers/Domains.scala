@@ -11,12 +11,11 @@ import play.api.libs.json._
 
 @Singleton
 class Domains @Inject() (
-  val membershipsDao: MembershipsDao,
-  val organizationsDao: OrganizationsDao,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   organizationDomainsDao: OrganizationDomainsDao
-) extends Controller with ApibuilderController {
+) extends ApibuilderController {
 
-  def post(orgKey: String) = Authenticated(parse.json) { request =>
+  def post(orgKey: String) = Identified(parse.json) { request =>
     withOrgAdmin(request.user, orgKey) { org =>
       request.body.validate[Domain] match {
         case e: JsError => {
@@ -41,7 +40,7 @@ class Domains @Inject() (
     }
   }
 
-  def deleteByName(orgKey: String, name: String) = Authenticated { request =>
+  def deleteByName(orgKey: String, name: String) = Identified { request =>
     withOrgAdmin(request.user, orgKey) { org =>
       org.domains.find(_.name == name).foreach { domain =>
         organizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).foreach { orgDomain =>

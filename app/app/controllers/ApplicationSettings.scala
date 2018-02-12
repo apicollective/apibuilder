@@ -5,17 +5,16 @@ import models._
 import javax.inject.Inject
 
 import lib.ApiClientProvider
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Controller, Result}
+import play.api.mvc.{BaseController, ControllerComponents, Result}
 import play.api.data._
 import play.api.data.Forms._
 
 import scala.concurrent.Future
 
 class ApplicationSettings @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -64,7 +63,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  def show(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+  def show(orgKey: String, applicationKey: String, versionName: String) = IdentifiedOrg.async { implicit request =>
     for {
       tpl <- mainTemplate(request.api, request.mainTemplate(None), applicationKey, versionName)
     } yield {
@@ -74,7 +73,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  def edit(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+  def edit(orgKey: String, applicationKey: String, versionName: String) = IdentifiedOrg.async { implicit request =>
     for {
       tpl <- mainTemplate(request.api, request.mainTemplate(None), applicationKey, versionName)
     } yield {
@@ -85,7 +84,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  def postEdit(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+  def postEdit(orgKey: String, applicationKey: String, versionName: String) = IdentifiedOrg.async { implicit request =>
     mainTemplate(request.api, request.mainTemplate(None), applicationKey, versionName).flatMap { result =>
       result match {
         case Left(error) => Future {
@@ -122,7 +121,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  def postDelete(orgKey: String, applicationKey: String) = AuthenticatedOrg.async { implicit request =>
+  def postDelete(orgKey: String, applicationKey: String) = IdentifiedOrg.async { implicit request =>
     for {
       result <- request.api.Applications.deleteByApplicationKey(request.org.key, applicationKey)
     } yield {
@@ -130,7 +129,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  def move(orgKey: String, applicationKey: String) = AuthenticatedOrg.async { implicit request =>
+  def move(orgKey: String, applicationKey: String) = IdentifiedOrg.async { implicit request =>
     for {
       tpl <- mainTemplate(request.api, request.mainTemplate(None), applicationKey)
     } yield {
@@ -140,7 +139,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  def postMove(orgKey: String, applicationKey: String) = AuthenticatedOrg.async { implicit request =>
+  def postMove(orgKey: String, applicationKey: String) = IdentifiedOrg.async { implicit request =>
     mainTemplate(request.api, request.mainTemplate(None), applicationKey).flatMap { result =>
       result match {
         case Left(error) => Future {

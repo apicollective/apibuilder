@@ -2,19 +2,19 @@ package controllers
 
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
-import lib.{Review, Role, Validation}
-import db.{Authorization, MembershipRequestsDao, OrganizationsDao, UsersDao}
-import play.api.mvc._
+import lib.{Role, Validation}
+import db.{MembershipRequestsDao, OrganizationsDao, UsersDao}
 import play.api.libs.json._
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipRequests @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao,
   usersDao: UsersDao
-) extends Controller {
+) extends ApibuilderController {
 
   case class MembershipRequestForm(
     org_guid: java.util.UUID,
@@ -35,7 +35,7 @@ class MembershipRequests @Inject() (
     role: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     val requests = membershipRequestsDao.findAll(
       request.authorization,
       organizationGuid = organizationGuid,
@@ -48,14 +48,14 @@ class MembershipRequests @Inject() (
     Ok(Json.toJson(requests))
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[MembershipRequestForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error(e.toString)))
       }
       case s: JsSuccess[MembershipRequestForm] => {
         val form = s.get
-        organizationsDao.findByUserAndGuid(request.user, form.org_guid) match {
+        organizationsDao.findByGuid(request.authorization, form.org_guid) match {
           case None => {
             Conflict(Json.toJson(Validation.error("Organization not found or not authorized to make changes to this org")))
           }
@@ -86,7 +86,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postAcceptByGuid(guid: UUID) = Authenticated { request =>
+  def postAcceptByGuid(guid: UUID) = Identified { request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
@@ -96,7 +96,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postDeclineByGuid(guid: UUID) = Authenticated { request =>
+  def postDeclineByGuid(guid: UUID) = Identified { request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {

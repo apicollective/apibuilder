@@ -3,26 +3,26 @@ code:
     apibuilder-api:
       version: latest
       generators:
-        play_2_4_client: generated/app
+        play_2_6_client: generated/app
         play_2_x_routes: api/conf/routes
-        anorm_2_x_parsers: api/app/generated
+        anorm_2_6_parsers: api/app/generated
     apibuilder-spec:
       version: latest
       generators:
-        play_2_4_client: generated/app
-        anorm_2_x_parsers: api/app/generated
+        play_2_6_client: generated/app
+        anorm_2_6_parsers: api/app/generated
     apibuilder-common:
       version: latest
       generators:
         play_2_x_json: generated/app
-        anorm_2_x_parsers: api/app/generated
+        anorm_2_6_parsers: api/app/generated
     apibuilder-generator:
       version: latest
       generators:
-        play_2_4_client: generated/app
-        anorm_2_x_parsers: api/app/generated
+        play_2_6_client: generated/app
+        anorm_2_6_parsers: api/app/generated
     apibuilder-internal:
       version: latest
       generators:
         play_2_x_json: generated/app
-        anorm_2_x_parsers: api/app/generated
+        anorm_2_6_parsers: api/app/generated

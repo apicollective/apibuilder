@@ -142,10 +142,6 @@ class SubscriptionsDao @Inject() (
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
-  def findByUserAndGuid(user: User, guid: UUID): Option[Subscription] = {
-    findAll(Authorization.User(user.guid), guid = Some(guid), limit = 1).headOption
-  }
-
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,

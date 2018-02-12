@@ -11,15 +11,16 @@ import java.util.UUID
 
 @Singleton
 class Attributes @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   attributesDao: AttributesDao
-) extends Controller {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Action { _ =>
+  ) = Anonymous { _ =>
     val attributes = attributesDao.findAll(
       guid = guid,
       name = name,
@@ -36,10 +37,10 @@ class Attributes @Inject() (
     }
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[AttributeForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[AttributeForm] => {
         val form = s.get
@@ -56,7 +57,7 @@ class Attributes @Inject() (
     }
   }
 
-  def deleteByName(name: String) = Authenticated { request =>
+  def deleteByName(name: String) = Identified { request =>
     attributesDao.findByName(name) match {
       case None => {
         NotFound

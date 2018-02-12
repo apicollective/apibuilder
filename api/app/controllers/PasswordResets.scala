@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Authentication, PasswordReset}
+import io.apibuilder.api.v0.models.PasswordReset
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import db.{PasswordResetRequestsDao, UserPasswordsDao, UsersDao}
@@ -11,13 +11,14 @@ import play.api.libs.json._
 
 @Singleton
 class PasswordResets @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   passwordResetRequestsDao: PasswordResetRequestsDao,
   sessionHelper: SessionHelper,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
-) extends Controller {
+) extends ApibuilderController {
 
-  def post() = AnonymousRequest(parse.json) { request =>
+  def post() = Anonymous(parse.json) { request =>
     request.body.validate[PasswordReset] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

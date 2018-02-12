@@ -1,9 +1,10 @@
 package controllers
 
-import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.WSClient
 
-class ApplicationMetadataSpec extends PlaySpec with MockClient with OneServerPerSuite {
+class ApplicationMetadataSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -30,7 +31,7 @@ class ApplicationMetadataSpec extends PlaySpec with MockClient with OneServerPer
     val result = await(
       ws.url(
         s"http://localhost:$port/${org.key}/metadata/${application.key}/versions/latest.txt"
-      ).withHeaders(
+      ).addHttpHeaders(
         "Authorization" -> s"Session ${auth.session.id}"
       ).get()
     )

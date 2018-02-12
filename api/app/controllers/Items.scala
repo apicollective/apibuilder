@@ -9,14 +9,15 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Items @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   itemsDao: ItemsDao
-) extends Controller {
+) extends ApibuilderController {
 
   def get(
     q: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     val items = itemsDao.findAll(
       request.authorization,
       q = q,
@@ -28,7 +29,7 @@ class Items @Inject() (
 
   def getByGuid(
     guid: UUID
-  ) = AnonymousRequest { request =>
+  ) = Anonymous { request =>
     itemsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(item) => Ok(Json.toJson(item))

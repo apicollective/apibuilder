@@ -1,8 +1,7 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Original, OriginalType, Validation}
+import io.apibuilder.api.v0.models.{Original, Validation}
 import io.apibuilder.api.v0.models.json._
-import core.ServiceFetcher
 import lib.{DatabaseServiceFetcher, OriginalUtil, ServiceConfiguration}
 import javax.inject.{Inject, Singleton}
 import builder.OriginalValidator
@@ -11,8 +10,9 @@ import play.api.libs.json._
 
 @Singleton
 class Validations @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   databaseServiceFetcher: DatabaseServiceFetcher
-) extends Controller {
+) extends ApibuilderController {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",
@@ -20,11 +20,14 @@ class Validations @Inject() (
     version = "0.0.1-dev"
   )
 
-  def post() = AnonymousRequest(parse.temporaryFile) { request =>
+  def post() = Anonymous(parse.temporaryFile) { request =>
     val contents = scala.io.Source.fromFile(request.body.file, "UTF-8").getLines.mkString("\n")
     OriginalUtil.guessType(contents) match {
       case None => {
-        BadRequest(Json.toJson(Validation(false, Seq("Could not determine the type of file from the content."))))
+        UnprocessableEntity(Json.toJson(Validation(
+          valid = false,
+          errors = Seq("Could not determine the type of file from the content.")
+        )))
       }
 
       case Some(fileType) => {
@@ -32,12 +35,18 @@ class Validations @Inject() (
           config = config,
           original = Original(fileType, contents),
           fetcher = databaseServiceFetcher.instance(request.authorization)
-        ).validate match {
+        ).validate() match {
           case Left(errors) => {
-            BadRequest(Json.toJson(Validation(false, errors)))
+            UnprocessableEntity(Json.toJson(Validation(
+              valid = false,
+              errors = errors
+            )))
           }
           case Right(_) => {
-            Ok(Json.toJson(Validation(true, Nil)))
+            Ok(Json.toJson(Validation(
+              valid = true,
+              errors = Nil
+            )))
           }
         }
       }

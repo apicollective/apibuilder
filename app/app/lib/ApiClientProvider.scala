@@ -8,17 +8,38 @@ import scala.concurrent.duration._
 import java.net.URLEncoder
 import javax.inject.Inject
 
+import play.api.libs.ws.WSClient
+
 class ApiClientProvider @Inject() (
+  wSClient: WSClient,
   config: Config
 ) {
 
-  private[this] val unauthenticatedClient = ApiClient(config, None).client
+  private[this] val baseUrl = config.requiredString("apibuilder.api.host")
+  private[this] val apiAuth = Authorization.Basic(config.requiredString("apibuilder.api.token"))
 
-  def clientForSessionId(sessionId: Option[String]) = {
+  private[this] def newClient(sessionId: Option[String]): Client = {
+    new io.apibuilder.api.v0.Client(
+      wSClient,
+      baseUrl = baseUrl,
+      auth = Some(apiAuth),
+      defaultHeaders = sessionId.map { id =>
+        "Authorization" -> ("Session " + URLEncoder.encode(id, "UTF-8"))
+      }.toSeq
+    )
+  }
+
+  private[this] val unauthenticatedClient = newClient(None)
+
+  def clientForSessionId(sessionId: Option[String]): Client  = {
     sessionId match {
       case None => unauthenticatedClient
-      case Some(sid) => ApiClient(config, Some(sid)).client
+      case Some(sid) => clientForSessionId(sid)
     }
+  }
+
+  def clientForSessionId(sessionId: String): Client = {
+    newClient(Some(sessionId))
   }
 
   def callWith404[T](
@@ -32,11 +53,20 @@ class ApiClientProvider @Inject() (
     }
   }
 
-  def awaitCallWith404[T](
+  private[lib] def awaitCallWith404[T](
     future: Future[T]
   )(implicit ec: ExecutionContext): Option[T] = {
     Await.result(
       callWith404(future),
+      1000.millis
+    )
+  }
+
+  private[lib] def await[T](
+    future: Future[T]
+  )(implicit ec: ExecutionContext): T = {
+    Await.result(
+      future,
       1000.millis
     )
   }
@@ -50,23 +80,5 @@ class ApiClientProvider @Inject() (
   )(implicit ec: ExecutionContext): Option[User] = {
     awaitCallWith404( unauthenticatedClient.authentications.getSessionById(sessionId) ).map(_.user)
   }
-
-}
-
-case class ApiClient(
-  config: Config,
-  sessionId: Option[String]
-) {
-
-  private[this] val baseUrl = config.requiredString("apibuilder.api.host")
-  private[this] val apiAuth = Authorization.Basic(config.requiredString("apibuilder.api.token"))
-
-  val client: Client = new io.apibuilder.api.v0.Client(
-    baseUrl = baseUrl,
-    auth = Some(apiAuth),
-    defaultHeaders = sessionId.map { id =>
-      "Authorization" -> ("Session " + URLEncoder.encode(id, "UTF-8"))
-    }.toSeq
-  )
 
 }

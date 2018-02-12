@@ -3,12 +3,9 @@ package controllers
 import lib.{ApiClientProvider, Labels}
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+//import scala.concurrent.Await
+//import scala.concurrent.duration._
 import javax.inject.Inject
-
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.Controller
 
 object Subscriptions {
 
@@ -25,9 +22,9 @@ object Subscriptions {
 }
 
 class Subscriptions @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,7 +40,7 @@ class Subscriptions @Inject() (
 
   def index(
     org: String
-  ) = AuthenticatedOrg.async { implicit request =>
+  ) = IdentifiedOrg.async { implicit request =>
     for {
       subscriptions <- request.api.subscriptions.get(
         organizationKey = Some(request.org.key),
@@ -51,7 +48,7 @@ class Subscriptions @Inject() (
         limit = Publication.all.size + 1
       )
     } yield {
-      val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
+      val userPublications = Publication.all.filter { p => offerPublication(request.requestData.isAdmin, p) }.map { p =>
         Subscriptions.UserPublication(
           publication = p,
           isSubscribed = subscriptions.exists(_.publication == p)
@@ -64,37 +61,31 @@ class Subscriptions @Inject() (
   def postToggle(
     org: String,
     publication: Publication
-  ) = AuthenticatedOrg.async { implicit request =>
-    for {
-      subscriptions <- request.api.subscriptions.get(
-        organizationKey = Some(request.org.key),
-        userGuid = Some(request.user.guid),
-        publication = Some(publication)
-      )
-    } yield {
+  ) = IdentifiedOrg.async { implicit request =>
+    request.api.subscriptions.get(
+      organizationKey = Some(request.org.key),
+      userGuid = Some(request.user.guid),
+      publication = Some(publication)
+    ).flatMap { subscriptions =>
       subscriptions.headOption match {
         case None => {
-          Await.result(
-            request.api.subscriptions.post(
-              SubscriptionForm(
-                organizationKey = request.org.key,
-                userGuid = request.user.guid,
-                publication = publication
-              )
-            ),
-            1000.millis
-          )
-          Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription added")
+          request.api.subscriptions.post(
+            SubscriptionForm(
+              organizationKey = request.org.key,
+              userGuid = request.user.guid,
+              publication = publication
+            )
+          ).map { _ =>
+            Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription added")
+          }
         }
         case Some(subscription) => {
-          Await.result(
-            request.api.subscriptions.deleteByGuid(subscription.guid), 1000.millis
-          )
-          Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription removed")
+          request.api.subscriptions.deleteByGuid(subscription.guid).map { _ =>
+            Redirect(routes.Subscriptions.index(org)).flashing("success" -> "Subscription removed")
+          }
         }
       }
     }
-
   }
 
 }

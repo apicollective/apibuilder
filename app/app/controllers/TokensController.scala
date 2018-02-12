@@ -1,23 +1,19 @@
 package controllers
 
-import io.apibuilder.api.v0.models.TokenForm
-import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import models.MainTemplate
-import play.api.data._
-import play.api.data.Forms._
 import java.util.UUID
-
-import scala.concurrent.Future
 import javax.inject.Inject
 
-import play.api._
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, Controller}
+import io.apibuilder.api.v0.models.TokenForm
+import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+
+import play.api.data._
+import play.api.data.Forms._
+import scala.concurrent.Future
 
 class TokensController @Inject() (
-  val messagesApi: MessagesApi,
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   apiClientProvider: ApiClientProvider
-) extends Controller with I18nSupport {
+) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -25,7 +21,7 @@ class TokensController @Inject() (
     Redirect(routes.TokensController.index())
   }
 
-  def index(page: Int = 0) = Authenticated.async { implicit request =>
+  def index(page: Int = 0) = Identified.async { implicit request =>
     for {
       tokens <- request.api.tokens.getUsersByUserGuid(
         request.user.guid,
@@ -37,7 +33,7 @@ class TokensController @Inject() (
     }
   }
 
-  def show(guid: UUID) = Authenticated.async { implicit request =>
+  def show(guid: UUID) = Identified.async { implicit request =>
     for {
       tokens <- request.api.tokens.getUsersByUserGuid(
         request.user.guid,
@@ -49,13 +45,13 @@ class TokensController @Inject() (
           Redirect(routes.TokensController.index()).flashing("warning" -> "Token not found")
         }
         case Some(cleartextToken) => {
-          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), tokens.head))
+          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), cleartextToken))
         }
       }
     }
   }
 
-  def cleartext(guid: UUID) = Authenticated.async { implicit request =>
+  def cleartext(guid: UUID) = Identified.async { implicit request =>
     for {
       cleartextOption <- apiClientProvider.callWith404(request.api.tokens.getCleartextByGuid(guid))
     } yield {
@@ -70,11 +66,11 @@ class TokensController @Inject() (
     }
   }
 
-  def create() = Authenticated { implicit request =>
+  def create() = Identified { implicit request =>
     Ok(views.html.tokens.create(request.mainTemplate(Some("Create token")), TokensController.tokenForm))
   }
 
-  def postCreate = Authenticated.async { implicit request =>
+  def postCreate = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Create token"))
 
     val form = TokensController.tokenForm.bindFromRequest
@@ -102,9 +98,9 @@ class TokensController @Inject() (
     )
   }
 
-  def postDelete(guid: UUID) = Authenticated.async { implicit request =>
+  def postDelete(guid: UUID) = Identified.async { implicit request =>
     for {
-      result <- request.api.tokens.deleteByGuid(guid)
+      _ <- request.api.tokens.deleteByGuid(guid)
     } yield {
       Redirect(routes.TokensController.index()).flashing("success" -> "Token deleted")
     }

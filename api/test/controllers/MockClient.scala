@@ -6,6 +6,7 @@ import db.Authorization
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
+import play.api.libs.ws.WSClient
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 
 import scala.concurrent.{Await, Future}
@@ -20,6 +21,8 @@ trait MockClient extends db.Helpers
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def port: Int
+
+  def wsClient: WSClient = injector.instanceOf[WSClient]
 
   private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
 
@@ -38,6 +41,7 @@ trait MockClient extends db.Helpers
 
   def newSessionClient(sessionId: String): Client = {
     new io.apibuilder.api.v0.Client(
+      wsClient,
       s"http://localhost:$port",
       Some(apiAuth),
       defaultHeaders = Seq("Authorization" -> s"Session $sessionId")

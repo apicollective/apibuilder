@@ -3,7 +3,6 @@ package controllers
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
 import io.apibuilder.api.v0.models.json._
 import db.EmailVerificationsDao
-import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import lib.Validation
 import play.api.mvc._
@@ -11,10 +10,11 @@ import play.api.libs.json._
 
 @Singleton
 class EmailVerificationConfirmationForms @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   emailVerificationsDao: EmailVerificationsDao
-) extends Controller {
+) extends ApibuilderController {
 
-  def post() = AnonymousRequest(parse.json) { request =>
+  def post() = Anonymous(parse.json) { request =>
     request.body.validate[EmailVerificationConfirmationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

@@ -2,7 +2,7 @@ package controllers
 
 import db.WatchesDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{User, Watch, WatchForm}
+import io.apibuilder.api.v0.models.WatchForm
 import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
@@ -11,8 +11,9 @@ import java.util.UUID
 
 @Singleton
 class Watches @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   watchesDao: WatchesDao
-) extends Controller {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],
@@ -21,7 +22,7 @@ class Watches @Inject() (
     applicationKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     val watches = watchesDao.findAll(
       request.authorization,
       guid = guid,
@@ -34,8 +35,8 @@ class Watches @Inject() (
     Ok(Json.toJson(watches))
   }
 
-  def getByGuid(guid: UUID) = Authenticated { request =>
-    watchesDao.findByUserAndGuid(request.user, guid) match {
+  def getByGuid(guid: UUID) = Identified { request =>
+    watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => Ok(Json.toJson(watch))
     }
@@ -45,7 +46,7 @@ class Watches @Inject() (
     userGuid: scala.Option[_root_.java.util.UUID],
     organizationKey: String,
     applicationKey: String
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     watchesDao.findAll(
       request.authorization,
       userGuid = userGuid,
@@ -58,10 +59,10 @@ class Watches @Inject() (
     }
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[WatchForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[WatchForm] => {
         watchesDao.validate(request.authorization, s.get) match {
@@ -75,8 +76,8 @@ class Watches @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Authenticated { request =>
-    watchesDao.findByUserAndGuid(request.user, guid) match {
+  def deleteByGuid(guid: UUID) = Identified { request =>
+    watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => {
         watchesDao.softDelete(request.user, watch)

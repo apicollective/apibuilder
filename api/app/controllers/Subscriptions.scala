@@ -11,8 +11,9 @@ import java.util.UUID
 
 @Singleton
 class Subscriptions @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   subscriptionsDao: SubscriptionsDao
-) extends Controller {
+) extends ApibuilderController {
 
   def get(
     guid: Option[UUID],
@@ -21,7 +22,7 @@ class Subscriptions @Inject() (
     publication: Option[Publication],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     val subscriptions = subscriptionsDao.findAll(
       request.authorization,
       guid = guid,
@@ -34,17 +35,17 @@ class Subscriptions @Inject() (
     Ok(Json.toJson(subscriptions))
   }
 
-  def getByGuid(guid: UUID) = Authenticated { request =>
-    subscriptionsDao.findByUserAndGuid(request.user, guid) match {
+  def getByGuid(guid: UUID) = Identified { request =>
+    subscriptionsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
@@ -61,12 +62,14 @@ class Subscriptions @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Authenticated { request =>
-    subscriptionsDao.findByUserAndGuid(request.user, guid).foreach { subscription =>
-      subscriptionsDao.softDelete(request.user, subscription)
+  def deleteByGuid(guid: UUID) = Identified { request =>
+    subscriptionsDao.findByGuid(request.authorization, guid) match {
+      case None => NotFound
+      case Some(subscription) => {
+        subscriptionsDao.softDelete(request.user, subscription)
+        NoContent
+      }
     }
-    NoContent
   }
-
 
 }

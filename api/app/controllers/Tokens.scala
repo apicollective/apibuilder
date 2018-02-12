@@ -1,8 +1,8 @@
 package controllers
 
-import db.{Authorization, TokensDao}
+import db.TokensDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{User, Token, TokenForm}
+import io.apibuilder.api.v0.models.TokenForm
 import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
@@ -11,15 +11,16 @@ import java.util.UUID
 
 @Singleton
 class Tokens @Inject() (
+  val apibuilderControllerComponents: ApibuilderControllerComponents,
   tokensDao: TokensDao
-) extends Controller {
+) extends ApibuilderController {
 
   def getUsersByUserGuid(
     userGuid: java.util.UUID,
     guid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     val tokens = tokensDao.findAll(
       request.authorization,
       userGuid = Some(userGuid),
@@ -32,7 +33,7 @@ class Tokens @Inject() (
 
   def getCleartextByGuid(
     guid: UUID
-  ) = Authenticated { request =>
+  ) = Identified { request =>
     tokensDao.findCleartextByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {
@@ -41,10 +42,10 @@ class Tokens @Inject() (
     }
   }
 
-  def post() = Authenticated(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[TokenForm] match {
       case e: JsError => {
-        BadRequest(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[TokenForm] => {
         val form = s.get
@@ -61,11 +62,13 @@ class Tokens @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Authenticated { request =>
-    tokensDao.findByGuid(request.authorization, guid).map { token =>
-      tokensDao.softDelete(request.user, token)
+  def deleteByGuid(guid: UUID) = Identified { request =>
+    tokensDao.findByGuid(request.authorization, guid) match {
+      case None => NotFound
+      case Some(token) => {
+        tokensDao.softDelete(request.user, token)
+        NoContent
+      }
     }
-    NoContent
   }
-
 }
