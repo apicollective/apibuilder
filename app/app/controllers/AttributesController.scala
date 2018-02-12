@@ -1,16 +1,13 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{AttributeForm, User}
+import io.apibuilder.api.v0.models.AttributeForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import models.MainTemplate
 
 import scala.concurrent.Future
-import java.util.UUID
 import javax.inject.Inject
 
 import play.api.data.Forms._
 import play.api.data._
-import play.api.mvc.{Action, BaseController, ControllerComponents}
 
 class AttributesController @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,

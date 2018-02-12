@@ -3,7 +3,6 @@ package controllers
 import javax.inject.Inject
 
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
-import play.api.mvc._
 
 class EmailVerifications @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents

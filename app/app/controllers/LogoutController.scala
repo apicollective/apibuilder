@@ -2,7 +2,6 @@ package controllers
 
 import models.MainTemplate
 import javax.inject.Inject
-import play.api.mvc.{BaseController, ControllerComponents}
 
 class LogoutController @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents

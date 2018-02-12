@@ -9,8 +9,7 @@ import play.api.data.Forms._
 import scala.concurrent.Future
 import javax.inject.Inject
 
-import play.api._
-import play.api.mvc.{BaseController, ControllerComponents}
+import play.api.Logger
 
 class LoginController @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
@@ -27,8 +26,8 @@ class LoginController @Inject() (
     Redirect(routes.LoginController.index())
   }
 
-  def developmentLogin = Action.async {
-    Authenticated.api().authentications.getSessionById(DevSessionId).map { result =>
+  def developmentLogin = Anonymous.async { request =>
+    request.api.authentications.getSessionById(DevSessionId).map { result =>
       Redirect("/").
         withSession { "session_id" -> result.session.id }.
         flashing("success" -> s"You have been logged in as ${result.user.nickname}")
@@ -53,7 +52,7 @@ class LoginController @Inject() (
     Ok(views.html.login.legacy(tpl, LoginController.Tab.Login, lForm, rForm))
   }
 
-  def legacyPost = Action.async { implicit request =>
+  def legacyPost = Anonymous.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
     val form = LoginController.loginForm.bindFromRequest
     form.fold (
@@ -70,7 +69,7 @@ class LoginController @Inject() (
           case Some(u) => {
             util.validateReturnUrl(u) match {
               case Left(errors) => {
-                Logger.warn(s"Ignoring redirect url[$u]: $errors")
+                Logger.warn(s"[LoginController] Invalid redirect url[$u] Ignoring and redirecting to '/': $errors")
                 "/"
               }
               case Right(validUrl) => {
@@ -80,7 +79,7 @@ class LoginController @Inject() (
           }
         }
 
-        Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { auth =>
+        request.api.Users.postAuthenticate(email = validForm.email, password = validForm.password).map { auth =>
           Redirect(url).withSession { "session_id" -> auth.session.id }
         }.recover {
           case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
@@ -97,7 +96,7 @@ class LoginController @Inject() (
     Ok(views.html.login.forgotPassword(tpl, LoginController.forgotPasswordForm))
   }
 
-  def postForgotPassword = Action.async { implicit request =>
+  def postForgotPassword = Anonymous.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
     val form = LoginController.forgotPasswordForm.bindFromRequest
     form.fold (
@@ -107,7 +106,7 @@ class LoginController @Inject() (
       },
 
       validForm => {
-        Authenticated.api().passwordResetRequests.post(
+        request.api.passwordResetRequests.post(
           passwordResetRequest = PasswordResetRequest(email = validForm.email)
         ).map { _ =>
           Ok(views.html.login.forgotPasswordConfirmation(tpl, validForm.email))
@@ -123,7 +122,7 @@ class LoginController @Inject() (
     Ok(views.html.login.resetPassword(tpl, token, LoginController.resetPasswordForm))
   }
 
-  def postResetPassword(token: String) = Action.async { implicit request =>
+  def postResetPassword(token: String) = Anonymous.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
     val form = LoginController.resetPasswordForm.bindFromRequest
     form.fold (
@@ -133,7 +132,7 @@ class LoginController @Inject() (
       },
 
       validForm => {
-        Authenticated.api().passwordResets.post(
+        request.api.passwordResets.post(
           passwordReset = PasswordReset(token = token, password = validForm.password)
         ).map { result =>
           Redirect("/").
