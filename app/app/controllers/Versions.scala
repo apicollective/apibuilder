@@ -47,7 +47,7 @@ class Versions @Inject() (
 
             case None => {
               if (LatestVersion == versionName) {
-                if (request.isMember) {
+                if (request.requestData.isMember) {
                   Redirect(routes.Versions.create(orgKey, application = Some(applicationKey))).flashing("success" -> s"Application does not yet have any versions")
                 } else {
                   Redirect(routes.Organizations.show(orgKey)).flashing("success" -> s"Application does not have any versions")
@@ -212,46 +212,47 @@ class Versions @Inject() (
     orgKey: String,
     applicationKey: Option[String] = None
   ) = IdentifiedOrg.async { implicit request =>
-    request.requireMember()
+    request.withMember {
 
-    applicationKey match {
+      applicationKey match {
 
-      case None => Future {
-        val tpl = request.mainTemplate(Some(Labels.AddApplicationText))
-        val filledForm = Versions.uploadForm.fill(
-          Versions.UploadData(
-            version = DefaultVersion,
-            visibility = Visibility.Organization.toString,
-            originalType = None
+        case None => Future {
+          val tpl = request.mainTemplate(Some(Labels.AddApplicationText))
+          val filledForm = Versions.uploadForm.fill(
+            Versions.UploadData(
+              version = DefaultVersion,
+              visibility = Visibility.Organization.toString,
+              originalType = None
+            )
           )
-        )
-        Ok(views.html.versions.form(tpl, applicationKey, filledForm))
-      }
+          Ok(views.html.versions.form(tpl, applicationKey, filledForm))
+        }
 
-      case Some(key) => {
-        for {
-          applicationResponse <- request.api.Applications.get(orgKey = orgKey, key = Some(key))
-          versionsResponse <- request.api.versions.getByApplicationKey(orgKey, key, limit = 1)
-        } yield {
-          applicationResponse.headOption match {
-            case None => {
-              Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${key}")
-            }
-            case Some(application) => {
-              val tpl = request.mainTemplate(Some(s"${application.name}: Upload new version")).copy(
-                application = Some(application),
-                version = versionsResponse.headOption.map(_.version)
-              )
-              val filledForm = Versions.uploadForm.fill(
-                Versions.UploadData(
-                  version = versionsResponse.headOption.map(v => VersionTag(v.version).nextMicro().getOrElse(v.version)).getOrElse(DefaultVersion),
-                  visibility = application.visibility.toString,
-                  originalType = None
+        case Some(key) => {
+          for {
+            applicationResponse <- request.api.Applications.get(orgKey = orgKey, key = Some(key))
+            versionsResponse <- request.api.versions.getByApplicationKey(orgKey, key, limit = 1)
+          } yield {
+            applicationResponse.headOption match {
+              case None => {
+                Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${key}")
+              }
+              case Some(application) => {
+                val tpl = request.mainTemplate(Some(s"${application.name}: Upload new version")).copy(
+                  application = Some(application),
+                  version = versionsResponse.headOption.map(_.version)
                 )
-              )
+                val filledForm = Versions.uploadForm.fill(
+                  Versions.UploadData(
+                    version = versionsResponse.headOption.map(v => VersionTag(v.version).nextMicro().getOrElse(v.version)).getOrElse(DefaultVersion),
+                    visibility = application.visibility.toString,
+                    originalType = None
+                  )
+                )
 
-              val isFirstVersion = versionsResponse.isEmpty
-              Ok(views.html.versions.form(tpl, applicationKey, filledForm, isFirstVersion = Some(isFirstVersion)))
+                val isFirstVersion = versionsResponse.isEmpty
+                Ok(views.html.versions.form(tpl, applicationKey, filledForm, isFirstVersion = Some(isFirstVersion)))
+              }
             }
           }
         }
@@ -263,71 +264,71 @@ class Versions @Inject() (
     orgKey: String,
     applicationKey: Option[String] = None
   ) = IdentifiedOrg.async(parse.multipartFormData) { implicit request =>
-    request.requireMember()
+    request.withMember {
+      val tpl = applicationKey match {
+        case None => request.mainTemplate(Some(Labels.AddApplicationText))
+        case Some(_) => request.mainTemplate(Some("Upload New Version"))
+      }
+      val boundForm = Versions.uploadForm.bindFromRequest
+      boundForm.fold(
 
-    val tpl = applicationKey match {
-      case None => request.mainTemplate(Some(Labels.AddApplicationText))
-      case Some(_) => request.mainTemplate(Some("Upload New Version"))
-    }
-    val boundForm = Versions.uploadForm.bindFromRequest
-    boundForm.fold (
+        errors => Future {
+          Ok(views.html.versions.form(tpl, applicationKey, errors))
+        },
 
-      errors => Future {
-        Ok(views.html.versions.form(tpl, applicationKey, errors))
-      },
+        valid => {
 
-      valid => {
+          request.body.file("file") match {
+            case None => Future {
+              Ok(views.html.versions.form(tpl, applicationKey, boundForm, Seq("Please select a non empty file to upload")))
+            }
 
-        request.body.file("file") match {
-          case None => Future {
-            Ok(views.html.versions.form(tpl, applicationKey, boundForm, Seq("Please select a non empty file to upload")))
-          }
+            case Some(file) => {
+              val path = File.createTempFile("api", "json")
+              file.ref.moveTo(path, replace = true)
+              val versionForm = VersionForm(
+                originalForm = OriginalForm(
+                  `type` = valid.originalType.map(OriginalType(_)),
+                  data = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim
+                ),
+                Some(Visibility(valid.visibility))
+              )
 
-          case Some(file) => {
-            val path = File.createTempFile("api", "json")
-            file.ref.moveTo(path, replace = true)
-            val versionForm = VersionForm(
-              originalForm = OriginalForm(
-                `type` = valid.originalType.map(OriginalType(_)),
-                data = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim
-              ),
-              Some(Visibility(valid.visibility))
-            )
-
-            applicationKey match {
-              case None => {
-                request.api.versions.postByVersion(
-                  orgKey = request.org.key,
-                  version = valid.version,
-                  versionForm = versionForm
-                ).map { version =>
-                  Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version updated" )
-                }.recover {
-                  case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
-                    Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
+              applicationKey match {
+                case None => {
+                  request.api.versions.postByVersion(
+                    orgKey = request.org.key,
+                    version = valid.version,
+                    versionForm = versionForm
+                  ).map { version =>
+                    Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing("success" -> "Application version updated")
+                  }.recover {
+                    case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
+                      Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
+                    }
                   }
                 }
-              }
 
-              case Some(key) => {
-                request.api.versions.putByApplicationKeyAndVersion(
-                  orgKey = request.org.key,
-                  applicationKey = key,
-                  version = valid.version,
-                  versionForm = versionForm
-                ).map { version =>
-                  Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version created" )
-                }.recover {
-                  case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
-                    Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
+                case Some(key) => {
+                  request.api.versions.putByApplicationKeyAndVersion(
+                    orgKey = request.org.key,
+                    applicationKey = key,
+                    version = valid.version,
+                    versionForm = versionForm
+                  ).map { version =>
+                    Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing("success" -> "Application version created")
+                  }.recover {
+                    case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
+                      Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
+                    }
                   }
                 }
               }
             }
           }
         }
-      }
-    )
+      )
+    }
   }
 
   private[this] def isWatching(
@@ -337,16 +338,16 @@ class Versions @Inject() (
     applicationKey: String
   ): Future[Boolean] = {
     user match {
-      case None => Future { false }
+      case None => {
+        Future.successful(false)
+      }
+
       case Some(u) => {
         api.watches.get(
           userGuid = Some(u.guid),
           organizationKey = Some(orgKey),
           applicationKey = Some(applicationKey)
-        ).map {
-          case Nil => false
-          case _ => true
-        }
+        ).map(_.nonEmpty)
       }
     }
   }

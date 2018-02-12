@@ -2,7 +2,6 @@ package controllers
 
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import javax.inject.Inject
-import play.api.mvc.{BaseController, ControllerComponents}
 
 class HistoryController @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
@@ -30,15 +29,17 @@ class HistoryController @Inject() (
         offset = page * Pagination.DefaultLimit
       )
     } yield {
-      Ok(views.html.history.index(
-        request.mainTemplate().copy(title = Some("History")),
-        changes = PaginatedCollection(page, changes),
-        orgKey = orgKey,
-        appKey = appKey,
-        from = from,
-        to = to,
-        typ = `type`
-      ))
+      Ok(
+        views.html.history.index(
+          request.mainTemplate().copy(title = Some("History")),
+          changes = PaginatedCollection(page, changes),
+          orgKey = orgKey,
+          appKey = appKey,
+          from = from,
+          to = to,
+          typ = `type`
+        )
+      )
     }
   }
 

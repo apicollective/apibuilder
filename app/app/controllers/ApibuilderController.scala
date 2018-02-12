@@ -173,6 +173,23 @@ case class IdentifiedOrgRequest[A](
   val api = requestData.api
 
   def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
+
+  def withMember[T](f: => T) = {
+    if (requestData.isMember) {
+      f
+    } else {
+      sys.error("Membership required")
+    }
+  }
+
+  def withAdmin[T](f: => T) = {
+    if (requestData.isAdmin) {
+      f
+    } else {
+      sys.error("Membership as 'admin' required")
+    }
+  }
+
 }
 
 class IdentifiedOrgActionBuilder @Inject()(
