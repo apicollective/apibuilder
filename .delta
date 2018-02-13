@@ -9,7 +9,7 @@ builds:
   - app:
       dockerfile: app/Dockerfile
       initial.number.instances: 2
-      instance.type: t2.large
+      instance.type: m4.large
       port.container: 9000
       port.host: 7070
       version: 1.3
