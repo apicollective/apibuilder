@@ -214,42 +214,35 @@ case class ServiceSpecValidator(
         }
       }
     }
-    
-    val unionTypeErrors = service.unions.flatMap { union =>
-      union.types.find(_.`type` == union.name) match {
-        case Some(_) => {
-          Seq(s"Union[${union.name}] cannot contain itself as one of its types")
-        }
-        case None => {
-          union.discriminator match {
-            case None => {
-              union.types.filter { t => t.default.isDefined }.toList match {
-                case Nil => None
-                case types => Seq(
-                  s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")
-                )
-              }
-            }
 
-            case Some(discriminator) => {
-              if (ReservedDiscriminatorValues.contains(discriminator)) {
-                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved and cannot be used as a discriminator")
-              } else {
-                Text.validateName(discriminator) match {
-                  case Nil => {
-                    unionTypesWithNamedField(union, discriminator) match {
-                      case Nil => Nil
-                      case types => {
-                        Seq(
-                          s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
-                            types.mkString(", ")
-                        )
-                      }
-                    }
+    val discriminatorErrors = service.unions.flatMap { union =>
+      union.discriminator match {
+        case None => {
+          union.types.filter { t => t.default.isDefined }.toList match {
+            case Nil => None
+            case types => Seq(
+              s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")
+            )
+          }
+        }
+
+        case Some(discriminator) => {
+          if (ReservedDiscriminatorValues.contains(discriminator)) {
+            Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved and cannot be used as a discriminator")
+          } else {
+            Text.validateName(discriminator) match {
+              case Nil => {
+                unionTypesWithNamedField(union, discriminator) match {
+                  case Nil => Nil
+                  case types => {
+                    Seq(
+                      s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                        types.mkString(", ")
+                    )
                   }
-                  case errs => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errs.mkString(", "))
                 }
               }
+              case errs => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errs.mkString(", "))
             }
           }
         }
@@ -258,7 +251,7 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
+    nameErrors ++ typeErrors ++ invalidTypes ++ validateUnionCyclicReferences() ++ discriminatorErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
   }
 
   private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
@@ -279,6 +272,41 @@ case class ServiceSpecValidator(
             }
           }
         }
+      }
+    }
+  }
+
+  private[this] def validateUnionCyclicReferences(): Seq[String] = {
+    val unionNames = service.unions.map(_.name).toSet
+
+    val unionDeps: Map[String, Set[String]] = service.unions.map { union =>
+      union.name -> union.types.collect {
+        case t if unionNames.contains(t.`type`) => t.`type`
+      }.toSet
+    }.toMap
+
+    def findCycle(union: String, acc: List[String]): Option[List[String]] = {
+      if (acc.contains(union)) {
+        Some(acc)
+      } else {
+        val newAcc = union :: acc
+        unionDeps(union).foldLeft(None: Option[List[String]]) { case (res, child) =>
+          res.orElse(findCycle(child, newAcc))
+        }
+      }
+    }
+
+    val allCycles = service.unions.flatMap { union => findCycle(union.name, Nil) }
+
+    val deduped = allCycles.groupBy(_.sorted).values.toSeq.map(_.head)
+
+    deduped.map { cycle =>
+      if (cycle.size == 1) {
+        s"Union[${cycle.head}] cannot contain itself as one of its types or sub-types"
+      } else {
+        // need to reverse the order and duplicate the start of the cycle, so that c->b->a becomes a->b->c->a
+        val reversed = (cycle.last :: cycle).reverse
+        s"Union[${reversed.head}] cannot contain itself as one of its types or sub-types: ${reversed.mkString("->")}"
       }
     }
   }

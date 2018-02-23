@@ -94,7 +94,29 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
     it("rejects circular type") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "user", "guest", "registered"))
-      validator.errors should be(Seq("Union[user] cannot contain itself as one of its types"))
+      validator.errors should be(Seq("Union[user] cannot contain itself as one of its types or sub-types"))
+    }
+
+    it("rejects indirectly circular type") {
+      val json = """{
+        "name": "Union Types Test",
+
+        "unions": {
+          "foo": {
+            "types": [ { "type": "bar" } ]
+          },
+          "bar": {
+            "types": [ { "type": "baz" } ]
+          },
+          "baz": {
+            "types": [ { "type": "foo" } ]
+          }
+        },
+        "models": {},
+        "resources": {}
+      }"""
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
+      validator.errors should be(Seq("Union[bar] cannot contain itself as one of its types or sub-types: bar->baz->foo->bar"))
     }
 
     it("rejects invalid types") {
