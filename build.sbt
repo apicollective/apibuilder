@@ -70,7 +70,8 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     testOptions += Tests.Argument("-oF"),
-    routesImport += "io.apibuilder.api.v0.Bindables._",
+    routesImport += "io.apibuilder.api.v0.Bindables.Core._",
+    routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release",
@@ -97,7 +98,8 @@ lazy val app = project
   .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "io.apibuilder.api.v0.Bindables._",
+    routesImport += "io.apibuilder.api.v0.Bindables.Core._",
+    routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       guice,
