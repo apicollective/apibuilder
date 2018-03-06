@@ -2,7 +2,7 @@ builds:
   - api:
       dockerfile: api/Dockerfile
       initial.number.instances: 2
-      instance.type: t2.medium
+      instance.type: m5.large
       port.container: 9000
       port.host: 7071
       version: 1.3
