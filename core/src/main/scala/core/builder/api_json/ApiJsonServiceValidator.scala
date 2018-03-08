@@ -1,11 +1,14 @@
 package builder.api_json
 
+import akka.http.scaladsl
+import akka.http.scaladsl.model
 import builder.JsonUtil
 import core.{Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
 import io.apibuilder.spec.v0.models.Service
-import play.api.libs.json.{Json, JsObject}
-import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
+import play.api.libs.json.{JsObject, Json}
+import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
+
 import scala.util.{Failure, Success, Try}
 
 case class ApiJsonServiceValidator(
@@ -81,7 +84,8 @@ case class ApiJsonServiceValidator(
             validateUnions ++
             validateModels ++
             validateFields ++
-            validateEnums
+            validateEnums ++
+            validateAnnotations
           }
 
           case errs => {
@@ -129,7 +133,7 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace"),
       optionalArraysOfObjects = Seq("imports", "headers"),
-      optionalObjects = Seq("apidoc", "info", "enums", "models", "unions", "resources")
+      optionalObjects = Seq("apidoc", "info", "enums", "models", "unions", "resources", "annotations")
     )
   }
 
@@ -200,14 +204,22 @@ case class ApiJsonServiceValidator(
     union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors ++ defaultErrors
   }
 
+  private def validateAnnotations(): Seq[String] = {
+    val warnings = internalService.get.annotations.flatMap(_.warnings)
+
+    val missingNames = internalService.get.annotations.filter(_.name.isEmpty).map(_=>
+      "Annotations must have a name"
+    )
+
+
+
+    warnings ++ missingNames
+  }
+
   private def validateEnums(): Seq[String] = {
     val warnings = internalService.get.enums.flatMap(_.warnings)
 
     val attributeErrors = internalService.get.enums.flatMap { enum =>
-      validateAttributes(s"Enum[${enum.name}]", enum.attributes)
-    }
-
-    val typeErrors = internalService.get.enums.flatMap { enum =>
       validateAttributes(s"Enum[${enum.name}]", enum.attributes)
     }
 
@@ -273,6 +285,8 @@ case class ApiJsonServiceValidator(
         s"Model[${model.name}] field[${f.name.get}]: " + f.warnings.mkString(", ")
       }
     }
+
+
 
     missingTypes ++ missingNames ++ attributeErrors ++ warnings
   }

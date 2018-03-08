@@ -3,9 +3,9 @@ package core
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
 import io.apibuilder.api.v0.models.{Original, OriginalType}
-import io.apibuilder.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
+import io.apibuilder.spec.v0.models.{ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service}
 import lib.Text
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 

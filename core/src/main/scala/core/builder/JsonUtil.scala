@@ -1,6 +1,7 @@
 package builder
 
-import play.api.libs.json.{JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue}
+import play.api.libs.json._
+
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -169,6 +170,17 @@ object JsonUtil {
   def asOptBoolean(value: JsLookupResult): Option[Boolean] = {
     value.toOption.flatMap { asOptBoolean }
   }
+
+  def asSeqOfString(value: JsValue): Seq[String] = {
+    value match {
+      case JsNull => Nil
+      case a: JsArray => a.value.flatMap(v=> asOptString(v))
+      case JsString(text) => parseString(text).toSeq
+      case v => parseString(v.toString()).toSeq
+    }
+  }
+
+  def asSeqOfString(value: JsLookupResult): Seq[String] = asSeqOfString(value.getOrElse(JsNull))
 
   def parseBoolean(value: String): Option[Boolean] = {
     if (value == "true") {

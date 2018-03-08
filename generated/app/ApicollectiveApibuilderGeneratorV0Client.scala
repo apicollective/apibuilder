@@ -385,11 +385,11 @@ package io.apibuilder.generator.v0 {
     import Models._
 
     object Core {
-      implicit val pathBindableDateTimeIso8601: PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
-      implicit val queryStringBindableDateTimeIso8601: QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit def pathBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit def queryStringBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
 
-      implicit val pathBindableDateIso8601: PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
-      implicit val queryStringBindableDateIso8601: QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+      implicit def pathBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
+      implicit def queryStringBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
     }
 
     object Models {
@@ -401,8 +401,8 @@ package io.apibuilder.generator.v0 {
         override def example: io.apibuilder.generator.v0.models.FileFlag = io.apibuilder.generator.v0.models.FileFlag.Scaffolding
         override def validValues: Seq[io.apibuilder.generator.v0.models.FileFlag] = io.apibuilder.generator.v0.models.FileFlag.all
       }
-      implicit val pathBindableFileFlag: PathBindable[io.apibuilder.generator.v0.models.FileFlag] = ApibuilderPathBindable(fileFlagConverter)
-      implicit val queryStringBindableFileFlag: QueryStringBindable[io.apibuilder.generator.v0.models.FileFlag] = ApibuilderQueryStringBindable(fileFlagConverter)
+      implicit def pathBindableFileFlag(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.generator.v0.models.FileFlag] = ApibuilderPathBindable(fileFlagConverter)
+      implicit def queryStringBindableFileFlag(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.generator.v0.models.FileFlag] = ApibuilderQueryStringBindable(fileFlagConverter)
     }
 
     trait ApibuilderTypeConverter[T] {

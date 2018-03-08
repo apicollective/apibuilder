@@ -78,7 +78,8 @@
 	{ "name": "unions", "type": "[union]", "default": "[]" },
 	{ "name": "models", "type": "[model]", "default": "[]" },
 	{ "name": "resources", "type": "[resource]", "default": "[]" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
+    { "name": "annotations", "type": "[annotation]", "default": "[]" }
       ]
     },
 
@@ -161,7 +162,8 @@
 	{ "name": "minimum", "type": "long", "required": false },
 	{ "name": "maximum", "type": "long", "required": false },
 	{ "name": "example", "type": "string", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
+	{ "name": "annotations", "type": "[string]", "default": "[]" }
       ]
     },
 
@@ -286,13 +288,21 @@
     "attribute": {
       "description": "Represents an additional attribute that is attached to one of the objects in apibuilder. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
 	    "fields": [
-	      { "name": "name", "type": "string" },
-	      { "name": "value", "type": "object" },
-	      { "name": "description", "type": "string", "required": false },
-	      { "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "name", "type": "string" },
+	{ "name": "value", "type": "object" },
+	{ "name": "description", "type": "string", "required": false },
+	{ "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
-    }
-
+		},
+		
+    "annotation": {
+			"description": "Used to indicate an API concern for a field that is specific to the field's usage but not necessarily its data type. For example, you might use annotations to mark that certain fields contain PII or PCI data and thus should not be stored once processing is complete. Annotations communicate meaning to consumers of an API and may also be used within an implementation or tooling; for example, using static analysis tools to detect logging of sensitive data.",
+      "fields": [
+	{ "name": "name", "type": "string" },
+	{ "name": "description", "type": "string", "required": false },
+	{ "name": "deprecation", "type": "deprecation", "required": false }
+	    ]
+		}
   }
 
 }

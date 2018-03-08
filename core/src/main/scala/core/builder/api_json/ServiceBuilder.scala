@@ -40,6 +40,7 @@ case class ServiceBuilder(
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
     val attributes = internal.attributes.map { AttributeBuilder(_) }
+    val annotations = internal.annotations.map{ AnnotationsBuilder(_) }
 
     val info = internal.info match {
       case None => Info(
@@ -68,7 +69,8 @@ case class ServiceBuilder(
       models = models,
       headers = headers,
       resources = resources,
-      attributes = attributes
+      attributes = attributes,
+      annotations = annotations
     )
   }
 
@@ -512,7 +514,8 @@ case class ServiceBuilder(
         minimum = internal.minimum,
         maximum = internal.maximum,
         example = internal.example,
-        attributes = internal.attributes.map { AttributeBuilder(_) }
+        attributes = internal.attributes.map { AttributeBuilder(_) },
+        annotations = internal.annotations
       )
     }
 
@@ -529,7 +532,18 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_))
       )
     }
+  }
 
+  object AnnotationsBuilder {
+    def apply(
+      internal: InternalAnnotationForm
+    ): Annotation = {
+      Annotation(
+        name = internal.name,
+        description = internal.description,
+        deprecation = internal.deprecation.map(DeprecationBuilder(_))
+      )
+    }
   }
 
   private[this] def rightOrError[T](value: Either[Seq[String], T]): T = {
@@ -538,5 +552,4 @@ case class ServiceBuilder(
       case Right(v) => v
     }
   }
-
 }

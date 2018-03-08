@@ -31,7 +31,8 @@ case class ServiceDiff(
     diffEnums(),
     diffUnions(),
     diffModels(),
-    diffResources()
+    diffResources(),
+    diffAnnotations()
   ).flatten
 
   private[this] def diffApidoc(): Seq[Diff] = {
@@ -295,6 +296,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew("resource", a.resources.map(_.`type`), b.resources.map(_.`type`))
   }
 
+
   private[this] def diffResource(a: Resource, b: Resource): Seq[Diff] = {
     assert(a.`type` == b.`type`, "Resource types must be the same")
     val prefix = s"resource ${a.`type`}"
@@ -304,6 +306,23 @@ case class ServiceDiff(
     Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     diffOperations(a.`type`, a.operations, b.operations)
+  }
+
+  private[this] def diffAnnotations(): Seq[Diff] = {
+    a.annotations.flatMap { annotA =>
+      b.annotations.find(_.name == annotA.name) match {
+        case None => Some(DiffNonBreaking(Helpers.removed("annotation", annotA.name)))
+        case Some(annotB) => diffAnnotation(annotA, annotB)
+      }
+    } ++ Helpers.findNew("annotation", a.annotations.map(_.name), b.annotations.map(_.name))
+  }
+
+  private[this] def diffAnnotation(a: Annotation, b: Annotation): Seq[Diff] = {
+    assert(a.name == b.name, "Annotation names must be the same")
+    val prefix = s"resource ${a.name}"
+
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+      Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
   private[this] def operationKey(op: Operation): String = {
