@@ -120,13 +120,14 @@ package io.apibuilder.spec.v0.models {
   /**
    * An import is used to declare a dependency on another application. This allows
    * you to reference the models and or enums from that application in your own app.
-   *
+   * 
    * @param uri Full URI to the service.json file of the service we are importing
    * @param namespace the fully qualified namespace that we have imported
    * @param version The version of the service that we are importing
-   * @param enums Models made available by this import
+   * @param enums Enums made available by this import
    * @param unions Unions made available by this import
    * @param models Models made available by this import
+   * @param annotations Annotations made available by this import
    */
   case class Import(
     uri: String,
@@ -136,7 +137,8 @@ package io.apibuilder.spec.v0.models {
     version: String,
     enums: Seq[String] = Nil,
     unions: Seq[String] = Nil,
-    models: Seq[String] = Nil
+    models: Seq[String] = Nil,
+    annotations: Seq[io.apibuilder.spec.v0.models.Annotation] = Nil
   )
 
   /**
@@ -274,7 +276,7 @@ package io.apibuilder.spec.v0.models {
 
   /**
    * Metadata about one of the types that is part of a union type
-   *
+   * 
    * @param `type` The name of a type (a primitive, model name, or enum name) that makes up this
    *        union type
    * @param default If true, indicates that this type should be used as the default when
@@ -298,7 +300,7 @@ package io.apibuilder.spec.v0.models {
    * Provides future compatibility in clients - in the future, when a type is added
    * to the union ResponseCode, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
-   *
+   * 
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
@@ -911,7 +913,8 @@ package io.apibuilder.spec.v0.models {
         (__ \ "version").read[String] and
         (__ \ "enums").read[Seq[String]] and
         (__ \ "unions").read[Seq[String]] and
-        (__ \ "models").read[Seq[String]]
+        (__ \ "models").read[Seq[String]] and
+        (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
       )(Import.apply _)
     }
 
@@ -924,7 +927,8 @@ package io.apibuilder.spec.v0.models {
         "version" -> play.api.libs.json.JsString(obj.version),
         "enums" -> play.api.libs.json.Json.toJson(obj.enums),
         "unions" -> play.api.libs.json.Json.toJson(obj.unions),
-        "models" -> play.api.libs.json.Json.toJson(obj.models)
+        "models" -> play.api.libs.json.Json.toJson(obj.models),
+        "annotations" -> play.api.libs.json.Json.toJson(obj.annotations)
       )
     }
 

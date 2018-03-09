@@ -70,7 +70,7 @@ case class ServiceBuilder(
       headers = headers,
       resources = resources,
       attributes = attributes,
-      annotations = annotations
+      annotations = annotations ++ imports.flatMap(_.annotations).distinct
     )
   }
 
@@ -414,7 +414,8 @@ case class ServiceBuilder(
             version = service.version,
             enums = service.enums.map(_.name),
             unions = service.unions.map(_.name),
-            models = service.models.map(_.name)
+            models = service.models.map(_.name),
+            annotations = service.annotations
           )
         }
       }

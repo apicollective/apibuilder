@@ -211,8 +211,6 @@ case class ApiJsonServiceValidator(
       "Annotations must have a name"
     )
 
-
-
     warnings ++ missingNames
   }
 

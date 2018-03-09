@@ -374,6 +374,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
       enums: String = "enums",
       unions: String = "unions",
       models: String = "models",
+      annotations: String = "annotations",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.spec.v0.models.Import] = {
       SqlParser.str(prefixOpt.getOrElse("") + uri) ~
@@ -383,8 +384,9 @@ package io.apibuilder.spec.v0.anorm.parsers {
       SqlParser.str(prefixOpt.getOrElse("") + version) ~
       SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + enums) ~
       SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + unions) ~
-      SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + models) map {
-        case uri ~ namespace ~ organization ~ application ~ version ~ enums ~ unions ~ models => {
+      SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + models) ~
+      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Annotation]](prefixOpt.getOrElse("") + annotations) map {
+        case uri ~ namespace ~ organization ~ application ~ version ~ enums ~ unions ~ models ~ annotations => {
           io.apibuilder.spec.v0.models.Import(
             uri = uri,
             namespace = namespace,
@@ -393,7 +395,8 @@ package io.apibuilder.spec.v0.anorm.parsers {
             version = version,
             enums = enums,
             unions = unions,
-            models = models
+            models = models,
+            annotations = annotations
           )
         }
       }
