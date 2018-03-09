@@ -120,7 +120,7 @@ package io.apibuilder.spec.v0.models {
   /**
    * An import is used to declare a dependency on another application. This allows
    * you to reference the models and or enums from that application in your own app.
-   * 
+   *
    * @param uri Full URI to the service.json file of the service we are importing
    * @param namespace the fully qualified namespace that we have imported
    * @param version The version of the service that we are importing
@@ -274,7 +274,7 @@ package io.apibuilder.spec.v0.models {
 
   /**
    * Metadata about one of the types that is part of a union type
-   * 
+   *
    * @param `type` The name of a type (a primitive, model name, or enum name) that makes up this
    *        union type
    * @param default If true, indicates that this type should be used as the default when
@@ -298,7 +298,7 @@ package io.apibuilder.spec.v0.models {
    * Provides future compatibility in clients - in the future, when a type is added
    * to the union ResponseCode, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
-   * 
+   *
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
@@ -817,7 +817,7 @@ package io.apibuilder.spec.v0.models {
         (__ \ "maximum").readNullable[Long] and
         (__ \ "example").readNullable[String] and
         (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "annotations").read[Seq[String]]
+        (__ \ "annotations").readWithDefault[Seq[String]](Nil)
       )(Field.apply _)
     }
 
@@ -1235,7 +1235,7 @@ package io.apibuilder.spec.v0.models {
         (__ \ "models").read[Seq[io.apibuilder.spec.v0.models.Model]] and
         (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]] and
         (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
+        (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
       )(Service.apply _)
     }
 

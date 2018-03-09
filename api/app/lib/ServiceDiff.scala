@@ -26,7 +26,7 @@ case class ServiceDiff(
     diffBaseUrl(),
     diffDescription(),
     diffAttributes(),
-    diffHeaders,
+    diffHeaders(),
     diffImports(),
     diffEnums(),
     diffUnions(),
@@ -87,7 +87,7 @@ case class ServiceDiff(
   }
 
   private[this] def diffHeaders(): Seq[Diff] = {
-    val added = b.headers.map(_.name).filter(h => a.headers.find(_.name == h).isEmpty)
+    val added = b.headers.map(_.name).filter(h => !a.headers.exists(_.name == h))
 
     a.headers.flatMap { headerA =>
       b.headers.find(_.name == headerA.name) match {
@@ -319,7 +319,7 @@ case class ServiceDiff(
 
   private[this] def diffAnnotation(a: Annotation, b: Annotation): Seq[Diff] = {
     assert(a.name == b.name, "Annotation names must be the same")
-    val prefix = s"resource ${a.name}"
+    val prefix = s"annotation ${a.name}"
 
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
       Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
@@ -330,7 +330,7 @@ case class ServiceDiff(
   }
 
   private[this] def diffOperations(resourceType: String, a: Seq[Operation], b: Seq[Operation]): Seq[Diff] = {
-    val added = b.filter(opB => a.find( opA => operationKey(opB) == operationKey(opA) ).isEmpty)
+    val added = b.filter(opB => !a.exists(opA => operationKey(opB) == operationKey(opA)))
     val prefix = s"resource $resourceType"
 
     a.flatMap { opA =>

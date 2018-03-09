@@ -949,7 +949,7 @@ class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with
     }
 
     "remove annotation" in {
-      ServiceDiff(base, withAnnotation).differences must be(
+      ServiceDiff(withAnnotation, base).differences must be(
         Seq(
           DiffNonBreaking("annotation removed: red")
         )
@@ -959,7 +959,7 @@ class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with
     "change resource" in {
       ServiceDiff(withAnnotation, base.copy(annotations = Seq(annot.copy(description = None)))).differences must be(
         Seq(
-          DiffNonBreaking("annotation red description removed")
+          DiffNonBreaking("annotation red description removed: Field interests the red team")
         )
       )
 

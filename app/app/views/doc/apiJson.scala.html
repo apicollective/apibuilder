@@ -22,7 +22,8 @@
       "models": <em>JSON Object of <a href="#model">Model</a> (optional)</em>,
       "unions": <em>JSON Object of <a href="#union">Union</a> (optional)</em>,
       "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>,
-      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a></em> (optional)
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a></em> (optional),
+      "annotations": <em>JSON Array of <a href="#annotation">Annotation</a></em> (optional)
     }
     </pre>
 
@@ -40,6 +41,7 @@
       <li><em>models</em> JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
       <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of a type that this resource represents. The type must be the name of a model or an enum. See <a href="#resource">Resource</a></li>
       <li><em>attributes</em> JSON array defining additional meta data about this service. Attributes are used to add custom extensions to API Builder and are typically used by generators to enable advanced code generation. See <a href="#attribute">Attribute</a></li>
+      <li><em>annotations</em> JSON array defining annotations or tags that can be applied to fields regardless of their type. Annotations are intended to convey usage hints to consumers of the API. See <a href="#annotation">Annotations</a></li>
     </ul>
 
   </p>
@@ -542,7 +544,6 @@
       }
     }
     </pre>
-  </p>
 
   <a name="deprecation"></a>
   <h2>Deprecation declaration</h2>
@@ -564,5 +565,38 @@
     </ul>
 
   </p>
+
+  <a name="annotation"></a>
+  <h2>Annotation declaration</h2>
+
+  <p>
+    An annotation is just a short key that can be used to tag any field in any model of this API. The
+    intent is to convey additional information about how a field might be used that isn't apparent
+    in either the field's type or API semantics. For example, if you wanted to clearly identify
+    fields of an API that may contain private customer data, you would create a <em>privacy</em>
+    annotation and add <em>"annotations": ["privacy"]</em> to all such fields.
+  </p>
+  <p>
+    Generated code may preserve annotations either in the type system, documentation or via metaprogramming
+    facilities depending on language support. Generated documentation should include the tag when displaying
+    a field, along with a link to the annotation's declaration.
+  </p>
+
+  <pre>
+  {
+    "name": <em>string</em>,
+    "description": <em>string (optional)</em>,
+    "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+  }
+  </pre>
+
+  where
+  <ul>
+    <li><em>name</em> the name of the header.</li>
+    <li><em>description</em> optional, but recommended to explain how
+      you intend the tag to clarify the usage of a field,
+      possibly including links to additional documentation
+    <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
+  </ul>
 
 }
