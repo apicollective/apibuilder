@@ -819,7 +819,7 @@ package io.apibuilder.spec.v0.models {
         (__ \ "maximum").readNullable[Long] and
         (__ \ "example").readNullable[String] and
         (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "annotations").readWithDefault[Seq[String]](Nil)
+        (__ \ "annotations").read[Seq[String]]
       )(Field.apply _)
     }
 
@@ -914,7 +914,7 @@ package io.apibuilder.spec.v0.models {
         (__ \ "enums").read[Seq[String]] and
         (__ \ "unions").read[Seq[String]] and
         (__ \ "models").read[Seq[String]] and
-        (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
+        (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
       )(Import.apply _)
     }
 
@@ -1239,7 +1239,7 @@ package io.apibuilder.spec.v0.models {
         (__ \ "models").read[Seq[io.apibuilder.spec.v0.models.Model]] and
         (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]] and
         (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
+        (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
       )(Service.apply _)
     }
 
