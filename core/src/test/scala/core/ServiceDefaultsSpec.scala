@@ -70,8 +70,9 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     validator.errors().mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
-  it("fields with defaults must be marked required") {
-    val json = """
+  it("fields with defaults may be marked optional") {
+    val jsonOpt =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -85,8 +86,28 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("user.created_at has a default specified. It must be marked required")
+    val validator = TestHelper.serviceValidatorFromApiJson(jsonOpt)
+    validator.errors().mkString("") should be("")
+  }
+
+  it("fields with defaults may be marked required") {
+    val jsonReq = """
+    {
+      "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "created_at", "type": "date-iso8601", "default": "2014-01-01", "required": true }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = TestHelper.serviceValidatorFromApiJson(jsonReq)
+    validator.errors().mkString("") should be("")
   }
 
   def buildMinMaxErrors(
