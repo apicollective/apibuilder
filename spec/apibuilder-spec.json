@@ -79,7 +79,7 @@
         { "name": "models", "type": "[model]", "default": "[]" },
         { "name": "resources", "type": "[resource]", "default": "[]" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false}
+        { "name": "annotations", "type": "[annotation]", "default": "[]"}
       ]
     },
 
@@ -163,7 +163,7 @@
         { "name": "maximum", "type": "long", "required": false },
         { "name": "example", "type": "string", "required": false },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "annotations", "type": "[string]", "default": "[]", "required": false }
+        { "name": "annotations", "type": "[string]", "default": "[]"}
       ]
     },
 

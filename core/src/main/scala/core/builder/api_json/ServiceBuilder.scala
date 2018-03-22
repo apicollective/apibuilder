@@ -1,9 +1,10 @@
 package builder.api_json
 
-import core.{Importer, ServiceFetcher, VersionMigration, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion}
+import core.{Importer, ServiceFetcher, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion, VersionMigration}
 import lib.{Methods, Primitives, ServiceConfiguration, Text, UrlKey}
 import io.apibuilder.spec.v0.models._
 import play.api.libs.json._
+
 import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(

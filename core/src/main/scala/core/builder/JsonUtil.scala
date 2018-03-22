@@ -1,6 +1,6 @@
 package builder
 
-import play.api.libs.json.{JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue}
+import play.api.libs.json.{JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue, JsNull}
 
 import scala.util.{Failure, Success, Try}
 

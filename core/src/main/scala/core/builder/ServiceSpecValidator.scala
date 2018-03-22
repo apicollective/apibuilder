@@ -1,7 +1,7 @@
 package builder
 
 import core.{TypeValidator, TypesProvider, Util}
-import io.apibuilder.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
+import io.apibuilder.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, Header, Annotation, ParameterLocation, ResponseCode, ResponseCodeInt, Operation, Method}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 
 case class ServiceSpecValidator(
