@@ -7,7 +7,7 @@ code:
         play_2_x_routes: api/conf/routes
         anorm_2_6_parsers: api/app/generated
     apibuilder-spec:
-      version: 0.14.13-dev
+      version: latest
       generators:
         play_2_6_client: generated/app
         anorm_2_6_parsers: api/app/generated
