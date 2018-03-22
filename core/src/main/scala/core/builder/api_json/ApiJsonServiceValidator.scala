@@ -284,8 +284,6 @@ case class ApiJsonServiceValidator(
       }
     }
 
-
-
     missingTypes ++ missingNames ++ attributeErrors ++ warnings
   }
 
