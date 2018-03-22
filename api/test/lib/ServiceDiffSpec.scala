@@ -2,9 +2,10 @@ package lib
 
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
-
 import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 import io.apibuilder.spec.v0.models._
+import org.json4s.scalap.scalasig.ClassFileParser
+import org.json4s.scalap.scalasig.ClassFileParser.Annotation
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
 class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with TestHelper {
@@ -927,7 +928,7 @@ class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with
   //annotations inform how data provided to or extracted from a service might be used. they should be add/removable
   //without breaking the builds of dependent code (though warnings may be created and linters and other analytical tools may fail)
   "annotations" must {
-    val annot = Annotation(
+    val annot = ClassFileParser.Annotation(
       "red",
       description = Some("Field interests the red team"),
       deprecation = None

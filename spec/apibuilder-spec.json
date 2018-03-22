@@ -79,7 +79,7 @@
         { "name": "models", "type": "[model]", "default": "[]" },
         { "name": "resources", "type": "[resource]", "default": "[]" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "annotations", "type": "[annotation]", "default": "[]"}
+        { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false}
       ]
     },
 
@@ -163,7 +163,7 @@
         { "name": "maximum", "type": "long", "required": false },
         { "name": "example", "type": "string", "required": false },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "annotations", "type": "[string]", "default": "[]"}
+        { "name": "annotations", "type": "[string]", "default": "[]", "required": false}
       ]
     },
 
@@ -275,7 +275,7 @@
         { "name": "enums", "type": "[string]", "description": "Enums made available by this import", "default": "[]" },
         { "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
         { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
-        { "name": "annotations", "type": "[annotation]", "description": "Annotations made available by this import", "default": "[]" }
+        { "name": "annotations", "type": "[annotation]", "description": "Annotations made available by this import", "default": "[]", "required": false }
       ]
     },
 
