@@ -599,6 +599,42 @@ package io.apibuilder.api.v0.models {
     description: String
   ) extends ItemDetail
 
+  sealed trait AppSortBy extends _root_.scala.Product with _root_.scala.Serializable
+
+  object AppSortBy {
+
+    case object Name extends AppSortBy { override def toString = "name" }
+    case object CreatedAt extends AppSortBy { override def toString = "created_at" }
+    case object UpdatedAt extends AppSortBy { override def toString = "updated_at" }
+    case object Visibility extends AppSortBy { override def toString = "visibility" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends AppSortBy
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all: scala.List[AppSortBy] = scala.List(Name, CreatedAt, UpdatedAt, Visibility)
+
+    private[this]
+    val byName: Map[String, AppSortBy] = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): AppSortBy = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[AppSortBy] = byName.get(value.toLowerCase)
+
+  }
+
   sealed trait OriginalType extends _root_.scala.Product with _root_.scala.Serializable
 
   object OriginalType {
@@ -704,6 +740,40 @@ package io.apibuilder.api.v0.models {
 
   }
 
+  sealed trait SortOrder extends _root_.scala.Product with _root_.scala.Serializable
+
+  object SortOrder {
+
+    case object Asc extends SortOrder { override def toString = "asc" }
+    case object Desc extends SortOrder { override def toString = "desc" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends SortOrder
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all: scala.List[SortOrder] = scala.List(Asc, Desc)
+
+    private[this]
+    val byName: Map[String, SortOrder] = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): SortOrder = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[SortOrder] = byName.get(value.toLowerCase)
+
+  }
+
   /**
    * Controls who is able to view this version
    */
@@ -797,6 +867,36 @@ package io.apibuilder.api.v0.models {
       }
     }
 
+    implicit val jsonReadsApibuilderApiAppSortBy = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.AppSortBy] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.AppSortBy] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.AppSortBy(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.AppSortBy(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesApibuilderApiAppSortBy(obj: io.apibuilder.api.v0.models.AppSortBy) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectAppSortBy(obj: io.apibuilder.api.v0.models.AppSortBy) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesApibuilderApiAppSortBy: play.api.libs.json.Writes[AppSortBy] = {
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.AppSortBy] {
+        def writes(obj: io.apibuilder.api.v0.models.AppSortBy) = {
+          jsonWritesApibuilderApiAppSortBy(obj)
+        }
+      }
+    }
+
     implicit val jsonReadsApibuilderApiOriginalType = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.OriginalType] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.OriginalType] = {
         js match {
@@ -853,6 +953,36 @@ package io.apibuilder.api.v0.models {
       new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Publication] {
         def writes(obj: io.apibuilder.api.v0.models.Publication) = {
           jsonWritesApibuilderApiPublication(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsApibuilderApiSortOrder = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.SortOrder] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.SortOrder] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.SortOrder(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.SortOrder(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesApibuilderApiSortOrder(obj: io.apibuilder.api.v0.models.SortOrder) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectSortOrder(obj: io.apibuilder.api.v0.models.SortOrder) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesApibuilderApiSortOrder: play.api.libs.json.Writes[SortOrder] = {
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.SortOrder] {
+        def writes(obj: io.apibuilder.api.v0.models.SortOrder) = {
+          jsonWritesApibuilderApiSortOrder(obj)
         }
       }
     }
@@ -2111,6 +2241,15 @@ package io.apibuilder.api.v0 {
     object Models {
       import io.apibuilder.api.v0.models._
 
+      val appSortByConverter: ApibuilderTypeConverter[io.apibuilder.api.v0.models.AppSortBy] = new ApibuilderTypeConverter[io.apibuilder.api.v0.models.AppSortBy] {
+        override def convert(value: String): io.apibuilder.api.v0.models.AppSortBy = io.apibuilder.api.v0.models.AppSortBy(value)
+        override def convert(value: io.apibuilder.api.v0.models.AppSortBy): String = value.toString
+        override def example: io.apibuilder.api.v0.models.AppSortBy = io.apibuilder.api.v0.models.AppSortBy.Name
+        override def validValues: Seq[io.apibuilder.api.v0.models.AppSortBy] = io.apibuilder.api.v0.models.AppSortBy.all
+      }
+      implicit def pathBindableAppSortBy(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.api.v0.models.AppSortBy] = ApibuilderPathBindable(appSortByConverter)
+      implicit def queryStringBindableAppSortBy(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.api.v0.models.AppSortBy] = ApibuilderQueryStringBindable(appSortByConverter)
+
       val originalTypeConverter: ApibuilderTypeConverter[io.apibuilder.api.v0.models.OriginalType] = new ApibuilderTypeConverter[io.apibuilder.api.v0.models.OriginalType] {
         override def convert(value: String): io.apibuilder.api.v0.models.OriginalType = io.apibuilder.api.v0.models.OriginalType(value)
         override def convert(value: io.apibuilder.api.v0.models.OriginalType): String = value.toString
@@ -2128,6 +2267,15 @@ package io.apibuilder.api.v0 {
       }
       implicit def pathBindablePublication(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.api.v0.models.Publication] = ApibuilderPathBindable(publicationConverter)
       implicit def queryStringBindablePublication(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.api.v0.models.Publication] = ApibuilderQueryStringBindable(publicationConverter)
+
+      val sortOrderConverter: ApibuilderTypeConverter[io.apibuilder.api.v0.models.SortOrder] = new ApibuilderTypeConverter[io.apibuilder.api.v0.models.SortOrder] {
+        override def convert(value: String): io.apibuilder.api.v0.models.SortOrder = io.apibuilder.api.v0.models.SortOrder(value)
+        override def convert(value: io.apibuilder.api.v0.models.SortOrder): String = value.toString
+        override def example: io.apibuilder.api.v0.models.SortOrder = io.apibuilder.api.v0.models.SortOrder.Asc
+        override def validValues: Seq[io.apibuilder.api.v0.models.SortOrder] = io.apibuilder.api.v0.models.SortOrder.all
+      }
+      implicit def pathBindableSortOrder(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.api.v0.models.SortOrder] = ApibuilderPathBindable(sortOrderConverter)
+      implicit def queryStringBindableSortOrder(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.api.v0.models.SortOrder] = ApibuilderQueryStringBindable(sortOrderConverter)
 
       val visibilityConverter: ApibuilderTypeConverter[io.apibuilder.api.v0.models.Visibility] = new ApibuilderTypeConverter[io.apibuilder.api.v0.models.Visibility] {
         override def convert(value: String): io.apibuilder.api.v0.models.Visibility = io.apibuilder.api.v0.models.Visibility(value)
@@ -2337,6 +2485,8 @@ package io.apibuilder.api.v0 {
         hasVersion: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0,
+        sortBy: _root_.scala.Option[io.apibuilder.api.v0.models.AppSortBy] = None,
+        order: _root_.scala.Option[io.apibuilder.api.v0.models.SortOrder] = None,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.apibuilder.api.v0.models.Application]] = {
         val queryParameters = Seq(
@@ -2345,7 +2495,9 @@ package io.apibuilder.api.v0 {
           key.map("key" -> _),
           hasVersion.map("has_version" -> _.toString),
           Some("limit" -> limit.toString),
-          Some("offset" -> offset.toString)
+          Some("offset" -> offset.toString),
+          sortBy.map("sort_by" -> _.toString),
+          order.map("order" -> _.toString)
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
@@ -3585,6 +3737,8 @@ package io.apibuilder.api.v0 {
       hasVersion: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0,
+      sortBy: _root_.scala.Option[io.apibuilder.api.v0.models.AppSortBy] = None,
+      order: _root_.scala.Option[io.apibuilder.api.v0.models.SortOrder] = None,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.apibuilder.api.v0.models.Application]]
 

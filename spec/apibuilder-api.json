@@ -68,6 +68,22 @@
 	{ "name": "service_json", "description": "This is the canonical service spec for apibuilder itself. See https://www.apibuilder.io/apicollective/apibuilder-spec/latest#model-service" },
 	{ "name": "swagger", "description": "The original in the Swagger JSON or YAML format" }
       ]
+    },
+
+    "app_sort_by": {
+      "values": [
+        { "name": "name" },
+        { "name": "created_at" },
+        { "name": "updated_at" },
+        { "name": "visibility" }
+      ]
+    },
+
+    "sort_order": {
+      "values": [
+        { "name": "asc" },
+        { "name": "desc" }
+      ]
     }
 
   },
@@ -987,7 +1003,9 @@
             { "name": "key", "type": "string", "required": false, "description": "The key of an application. Case in-sensitive. Exact match", "required": false },
 	    { "name": "has_version", "type": "boolean", "description": "If true, we return applications that have at least one version. If false, we return applications that have no versions in the system", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
-            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
+            { "name": "sort_by", "type": "app_sort_by", "required": false },
+            { "name": "order", "type": "sort_order", "required": false }
           ],
           "responses": {
             "200": { "type": "[application]" }
