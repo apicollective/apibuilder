@@ -27,24 +27,6 @@ object DateHelper {
     }
   }
 
-  def shortDateTime(
-    tz: UserTimeZone,
-    dateTime: DateTime
-  ): String = shortDateTimeOption(tz, Some(dateTime))
-
-  def shortDateTimeOption(
-    tz: UserTimeZone,
-    dateTime: Option[DateTime],
-    default: String = DefaultLabel
-  ): String = {
-    dateTime match {
-      case None => default
-      case Some(dt) => {
-        DateTimeFormat.shortDateTime.withZone(DateTimeZone.forID(tz.name)).print(dt) + s" ${tz.label}"
-      }
-    }
-  }
-
   def mediumDateTime(
     tz: UserTimeZone,
     dateTime: DateTime

@@ -37,15 +37,6 @@ class WatchesDao @Inject() (
            applications.key as application_key,
            applications.visibility as application_visibility,
            applications.description as application_description,
-           coalesce(
-             (select versions.created_at
-               from versions
-               where versions.application_guid = applications.guid
-               and versions.deleted_at is null
-               order by versions.version_sort_key desc, versions.created_at desc
-               limit 1),
-             applications.updated_at
-           ) as application_last_updated_at,
            ${AuditsDao.queryWithAlias("applications", "application")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,

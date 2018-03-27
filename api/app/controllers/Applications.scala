@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{ApplicationForm, AppSortBy, MoveForm, SortOrder}
+import io.apibuilder.api.v0.models.{ApplicationForm, MoveForm}
 import io.apibuilder.api.v0.models.json._
 import db._
 import javax.inject.{Inject, Singleton}
@@ -24,9 +24,7 @@ class Applications @Inject() (
     key: Option[String],
     hasVersion: Option[Boolean],
     limit: Long = 25,
-    offset: Long = 0,
-    sorting: Option[AppSortBy],
-    ordering: Option[SortOrder]
+    offset: Long = 0
   ) = Identified { request =>
     val applications = applicationsDao.findAll(
       request.authorization,
@@ -36,9 +34,7 @@ class Applications @Inject() (
       guid = guid,
       hasVersion = hasVersion,
       limit = limit,
-      offset = offset,
-      sorting = sorting,
-      ordering = ordering
+      offset = offset
     )
     Ok(Json.toJson(applications))
   }

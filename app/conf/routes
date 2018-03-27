@@ -79,7 +79,7 @@ GET     /search                                                   controllers.Se
 
 # Start dynamic routing by org key
 
-GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0, sortBy: Option[io.apibuilder.api.v0.models.AppSortBy] ?= None, ord: Option[io.apibuilder.api.v0.models.SortOrder] ?= None)
+GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/details                                          controllers.Organizations.details(orgKey: String)
 
 GET     /:orgKey/domains                                          controllers.Domains.index(orgKey: String)
