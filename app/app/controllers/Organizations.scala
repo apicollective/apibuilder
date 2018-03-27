@@ -4,7 +4,7 @@ import java.util.UUID
 
 import lib._
 import models.{SettingSection, SettingsMenu}
-import io.apibuilder.api.v0.models.{Organization, OrganizationForm, Visibility}
+import io.apibuilder.api.v0.models.{AppSortBy, Organization, OrganizationForm, SortOrder, Visibility}
 import play.api.data._
 import play.api.data.Forms._
 
@@ -23,18 +23,22 @@ class Organizations @Inject() (
 
   val apibuilderSupportEmail: String = config.requiredString("apibuilder.supportEmail")
 
-  def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
+  def show(orgKey: String, page: Int = 0, sortBy: Option[AppSortBy] = None, ord: Option[SortOrder] = None) = AnonymousOrg.async { implicit request =>
     request.api.Applications.get(
       orgKey = orgKey,
       limit = Pagination.DefaultLimit+1,
-      offset = page * Pagination.DefaultLimit
+      offset = page * Pagination.DefaultLimit,
+      sortBy = sortBy,
+      order = ord
     ).flatMap { applications =>
       hasMembershipRequests(request.api, request.requestData.isAdmin, request.org.guid).map { haveMembershipRequests =>
         Ok(
           views.html.organizations.show(
             request.mainTemplate().copy(title = Some(request.org.name)),
             applications = PaginatedCollection(page, applications),
-            haveMembershipRequests = haveMembershipRequests
+            haveMembershipRequests = haveMembershipRequests,
+            sortBy = sortBy,
+            ord = ord
           )
         )
       }

@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
+import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
 import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.internal.v0.models.TaskDataIndexApplication
 import io.flow.postgresql.Query
@@ -27,7 +27,16 @@ class ApplicationsDao @Inject() (
            ${AuditsDao.query("applications")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
-           ${AuditsDao.queryWithAlias("organizations", "organization")}
+           ${AuditsDao.queryWithAlias("organizations", "organization")},
+           coalesce(
+             (select versions.created_at
+               from versions
+               where versions.application_guid = applications.guid
+               and versions.deleted_at is null
+               order by versions.version_sort_key desc, versions.created_at desc
+               limit 1),
+             applications.updated_at
+           ) as last_updated_at
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
     """
@@ -299,10 +308,12 @@ class ApplicationsDao @Inject() (
     hasVersion: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
-    offset: Long = 0
+    offset: Long = 0,
+    sorting: Option[AppSortBy] = None,
+    ordering: Option[SortOrder] = None
   ): Seq[Application] = {
     db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery).
+      val appQuery = authorization.applicationFilter(BaseQuery).
         equals("applications.guid", guid).
         equals("organizations.key", orgKey).
         and(
@@ -332,10 +343,19 @@ class ApplicationsDao @Inject() (
         ).
         and(isDeleted.map(Filters.isDeleted("applications", _))).
         limit(limit).
-        offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.Application.parser().*
-        )
+        offset(offset)
+      sorting.fold(appQuery) { sorting =>
+        val sort = sorting match {
+          case AppSortBy.Visibility => "applications.visibility"
+          case AppSortBy.CreatedAt  => "applications.created_at"
+          case AppSortBy.UpdatedAt  => "last_updated_at"
+          case _                    => "applications.name"
+        }
+        val ord = ordering.getOrElse(SortOrder.Asc).toString
+        appQuery.orderBy(s"$sort $ord")
+      }.anormSql().as {
+        io.apibuilder.api.v0.anorm.parsers.Application.parser().*
+      }
     }
   }
 
