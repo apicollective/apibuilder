@@ -53,10 +53,14 @@ package io.apibuilder.api.v0.anorm.conversions {
 
   object Types {
     import io.apibuilder.api.v0.models.json._
+    implicit val columnToSeqApibuilderApiAppSortBy: Column[Seq[_root_.io.apibuilder.api.v0.models.AppSortBy]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AppSortBy]] }
+    implicit val columnToMapApibuilderApiAppSortBy: Column[Map[String, _root_.io.apibuilder.api.v0.models.AppSortBy]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.AppSortBy]] }
     implicit val columnToSeqApibuilderApiOriginalType: Column[Seq[_root_.io.apibuilder.api.v0.models.OriginalType]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.OriginalType]] }
     implicit val columnToMapApibuilderApiOriginalType: Column[Map[String, _root_.io.apibuilder.api.v0.models.OriginalType]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.OriginalType]] }
     implicit val columnToSeqApibuilderApiPublication: Column[Seq[_root_.io.apibuilder.api.v0.models.Publication]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Publication]] }
     implicit val columnToMapApibuilderApiPublication: Column[Map[String, _root_.io.apibuilder.api.v0.models.Publication]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.Publication]] }
+    implicit val columnToSeqApibuilderApiSortOrder: Column[Seq[_root_.io.apibuilder.api.v0.models.SortOrder]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.SortOrder]] }
+    implicit val columnToMapApibuilderApiSortOrder: Column[Map[String, _root_.io.apibuilder.api.v0.models.SortOrder]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.SortOrder]] }
     implicit val columnToSeqApibuilderApiVisibility: Column[Seq[_root_.io.apibuilder.api.v0.models.Visibility]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Visibility]] }
     implicit val columnToMapApibuilderApiVisibility: Column[Map[String, _root_.io.apibuilder.api.v0.models.Visibility]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.Visibility]] }
     implicit val columnToSeqApibuilderApiApplication: Column[Seq[_root_.io.apibuilder.api.v0.models.Application]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Application]] }
