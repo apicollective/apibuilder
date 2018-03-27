@@ -276,6 +276,7 @@
         { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." },
         { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this application" },
         { "name": "description", "type": "string", "required": false },
+        { "name": "last_updated_at", "type": "date-time-iso8601", "description": "The updated_at of this application or created_at of it's latest version" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },

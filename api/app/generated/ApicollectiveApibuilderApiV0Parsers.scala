@@ -85,6 +85,7 @@ package io.apibuilder.api.v0.anorm.parsers {
       key: String = "key",
       visibility: String = "visibility",
       description: String = "description",
+      lastUpdatedAt: String = "last_updated_at",
       auditPrefix: String = "audit",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.api.v0.models.Application] = {
@@ -94,8 +95,9 @@ package io.apibuilder.api.v0.anorm.parsers {
       SqlParser.str(prefixOpt.getOrElse("") + key) ~
       io.apibuilder.api.v0.anorm.parsers.Visibility.parser(prefixOpt.getOrElse("") + visibility) ~
       SqlParser.str(prefixOpt.getOrElse("") + description).? ~
+      SqlParser.get[_root_.org.joda.time.DateTime](prefixOpt.getOrElse("") + lastUpdatedAt) ~
       io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix(prefixOpt.getOrElse("") + auditPrefix) map {
-        case guid ~ organization ~ name ~ key ~ visibility ~ description ~ audit => {
+        case guid ~ organization ~ name ~ key ~ visibility ~ description ~ lastUpdatedAt ~ audit => {
           io.apibuilder.api.v0.models.Application(
             guid = guid,
             organization = organization,
@@ -103,6 +105,7 @@ package io.apibuilder.api.v0.anorm.parsers {
             key = key,
             visibility = visibility,
             description = description,
+            lastUpdatedAt = lastUpdatedAt,
             audit = audit
           )
         }

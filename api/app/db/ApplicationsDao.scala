@@ -314,23 +314,6 @@ class ApplicationsDao @Inject() (
     sorting: Option[AppSortBy] = None,
     ordering: Option[SortOrder] = None
   ): Seq[Application] = {
-    findAllWithVersion(authorization, orgKey, guid, name, key, version, hasVersion, isDeleted, limit, offset, sorting, ordering).map(_._1)
-  }
-
-  def findAllWithVersion(
-    authorization: Authorization,
-    orgKey: Option[String] = None,
-    guid: Option[UUID] = None,
-    name: Option[String] = None,
-    key: Option[String] = None,
-    version: Option[Version] = None,
-    hasVersion: Option[Boolean] = None,
-    isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
-    offset: Long = 0,
-    sorting: Option[AppSortBy] = None,
-    ordering: Option[SortOrder] = None
-  ): Seq[~[Application, DateTime]] = {
     db.withConnection { implicit c =>
       val appQuery = authorization.applicationFilter(BaseQuery).
         equals("applications.guid", guid).
@@ -373,8 +356,7 @@ class ApplicationsDao @Inject() (
         val ord = ordering.getOrElse(SortOrder.Asc).toString
         appQuery.orderBy(s"$sort $ord")
       }.anormSql().as {
-        val query = io.apibuilder.api.v0.anorm.parsers.Application.parser() ~ SqlParser.get[_root_.org.joda.time.DateTime]("last_updated_at")
-        query.*
+        io.apibuilder.api.v0.anorm.parsers.Application.parser().*
       }
     }
   }

@@ -69,6 +69,7 @@ package io.apibuilder.api.v0.models {
    * @param key Used as a unique key in the URL path. Key is automatically derived from the
    *        application name.
    * @param visibility Controls who is able to view this application
+   * @param lastUpdatedAt The updated_at of this application or created_at of it's latest version
    */
   case class Application(
     guid: _root_.java.util.UUID,
@@ -77,6 +78,7 @@ package io.apibuilder.api.v0.models {
     key: String,
     visibility: io.apibuilder.api.v0.models.Visibility,
     description: _root_.scala.Option[String] = None,
+    lastUpdatedAt: _root_.org.joda.time.DateTime,
     audit: io.apibuilder.common.v0.models.Audit
   )
 
@@ -1025,6 +1027,7 @@ package io.apibuilder.api.v0.models {
         (__ \ "key").read[String] and
         (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility] and
         (__ \ "description").readNullable[String] and
+        (__ \ "last_updated_at").read[_root_.org.joda.time.DateTime] and
         (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
       )(Application.apply _)
     }
@@ -1036,6 +1039,7 @@ package io.apibuilder.api.v0.models {
         "name" -> play.api.libs.json.JsString(obj.name),
         "key" -> play.api.libs.json.JsString(obj.key),
         "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "last_updated_at" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.lastUpdatedAt)),
         "audit" -> io.apibuilder.common.v0.models.json.jsObjectAudit(obj.audit)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
