@@ -11,8 +11,6 @@ import play.api.db._
 import play.api.libs.json._
 import java.util.UUID
 
-import org.joda.time.DateTime
-
 @Singleton
 class ApplicationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
