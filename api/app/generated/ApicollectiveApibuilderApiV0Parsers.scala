@@ -14,6 +14,18 @@ package io.apibuilder.api.v0.anorm.parsers {
   import io.apibuilder.generator.v0.anorm.conversions.Types._
   import io.apibuilder.spec.v0.anorm.conversions.Types._
 
+  object AppSortBy {
+
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.AppSortBy] = parser(prefixOpt = Some(s"$prefix$sep"))
+
+    def parser(name: String = "app_sort_by", prefixOpt: Option[String] = None): RowParser[io.apibuilder.api.v0.models.AppSortBy] = {
+      SqlParser.str(prefixOpt.getOrElse("") + name) map {
+        case value => io.apibuilder.api.v0.models.AppSortBy(value)
+      }
+    }
+
+  }
+
   object OriginalType {
 
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.OriginalType] = parser(prefixOpt = Some(s"$prefix$sep"))
@@ -33,6 +45,18 @@ package io.apibuilder.api.v0.anorm.parsers {
     def parser(name: String = "publication", prefixOpt: Option[String] = None): RowParser[io.apibuilder.api.v0.models.Publication] = {
       SqlParser.str(prefixOpt.getOrElse("") + name) map {
         case value => io.apibuilder.api.v0.models.Publication(value)
+      }
+    }
+
+  }
+
+  object SortOrder {
+
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.SortOrder] = parser(prefixOpt = Some(s"$prefix$sep"))
+
+    def parser(name: String = "sort_order", prefixOpt: Option[String] = None): RowParser[io.apibuilder.api.v0.models.SortOrder] = {
+      SqlParser.str(prefixOpt.getOrElse("") + name) map {
+        case value => io.apibuilder.api.v0.models.SortOrder(value)
       }
     }
 
@@ -61,6 +85,7 @@ package io.apibuilder.api.v0.anorm.parsers {
       key: String = "key",
       visibility: String = "visibility",
       description: String = "description",
+      lastUpdatedAt: String = "last_updated_at",
       auditPrefix: String = "audit",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.api.v0.models.Application] = {
@@ -70,8 +95,9 @@ package io.apibuilder.api.v0.anorm.parsers {
       SqlParser.str(prefixOpt.getOrElse("") + key) ~
       io.apibuilder.api.v0.anorm.parsers.Visibility.parser(prefixOpt.getOrElse("") + visibility) ~
       SqlParser.str(prefixOpt.getOrElse("") + description).? ~
+      SqlParser.get[_root_.org.joda.time.DateTime](prefixOpt.getOrElse("") + lastUpdatedAt) ~
       io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix(prefixOpt.getOrElse("") + auditPrefix) map {
-        case guid ~ organization ~ name ~ key ~ visibility ~ description ~ audit => {
+        case guid ~ organization ~ name ~ key ~ visibility ~ description ~ lastUpdatedAt ~ audit => {
           io.apibuilder.api.v0.models.Application(
             guid = guid,
             organization = organization,
@@ -79,6 +105,7 @@ package io.apibuilder.api.v0.anorm.parsers {
             key = key,
             visibility = visibility,
             description = description,
+            lastUpdatedAt = lastUpdatedAt,
             audit = audit
           )
         }

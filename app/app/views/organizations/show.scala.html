@@ -1,6 +1,8 @@
 @(tpl: models.MainTemplate,
   applications: lib.PaginatedCollection[io.apibuilder.api.v0.models.Application],
-  haveMembershipRequests: Boolean
+  haveMembershipRequests: Boolean,
+  sortBy: Option[io.apibuilder.api.v0.models.AppSortBy],
+  ord: Option[io.apibuilder.api.v0.models.SortOrder]
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
@@ -24,19 +26,49 @@
 
   } else {
     <table class="table table-hover table-condensed">
+      <thead>
+        <th>
+          <a href="@routes.Organizations.show(tpl.org.get.key, applications.page, Some(io.apibuilder.api.v0.models.AppSortBy.Name), lib.AppOrderHelper.newOrder(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.Name))">
+            Name @lib.AppOrderHelper.orderImage(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.Name)
+          </a>
+        </th>
+        <th>Description</th>
+        <th>
+          <a href="@routes.Organizations.show(tpl.org.get.key, applications.page, Some(io.apibuilder.api.v0.models.AppSortBy.Visibility), lib.AppOrderHelper.newOrder(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.Visibility))">
+            @icon("icons/eye-2x.png", "Visibility")@lib.AppOrderHelper.orderImage(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.Visibility)
+          </a>
+        </th>
+        <th>
+          <a href="@routes.Organizations.show(tpl.org.get.key, applications.page, Some(io.apibuilder.api.v0.models.AppSortBy.CreatedAt), lib.AppOrderHelper.newOrder(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.CreatedAt))">
+            Created At @lib.AppOrderHelper.orderImage(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.CreatedAt)
+          </a>
+        </th>
+        <th>
+          <a href="@routes.Organizations.show(tpl.org.get.key, applications.page, Some(io.apibuilder.api.v0.models.AppSortBy.UpdatedAt), lib.AppOrderHelper.newOrder(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.UpdatedAt))">
+            Updated At @lib.AppOrderHelper.orderImage(sortBy, ord, io.apibuilder.api.v0.models.AppSortBy.UpdatedAt)
+          </a>
+        </th>
+        </th>
+      </thead>
       <tbody>
         @applications.items.map { application =>
          <tr>
-           <td>
-             <a href="@routes.Versions.show(tpl.org.get.key, application.key, "latest")">@application.name</a>
-
+           <td><a href="@routes.Versions.show(tpl.org.get.key, application.key, "latest")">@application.name</a>
              @{application.visibility match {
-                case io.apibuilder.api.v0.models.Visibility.Public => ""
-                case io.apibuilder.api.v0.models.Visibility.Organization | io.apibuilder.api.v0.models.Visibility.User => icon("icons/lock-locked-2x.png", "Private")
-                case io.apibuilder.api.v0.models.Visibility.UNDEFINED(name) => name
+               case io.apibuilder.api.v0.models.Visibility.Organization | io.apibuilder.api.v0.models.Visibility.User =>
+                 icon("icons/lock-locked-2x.png", "Private")
+               case _ => ""
              }}
            </td>
            <td>@lib.Text.truncate(application.description.getOrElse(""))</td>
+           <td>@{application.visibility match {
+             case io.apibuilder.api.v0.models.Visibility.Public => icon("icons/globe-2x.png", "Public")
+             case io.apibuilder.api.v0.models.Visibility.Organization => icon("icons/people-2x.png", "Organization")
+             case io.apibuilder.api.v0.models.Visibility.User => icon("icons/person-2x.png", "User")
+             case io.apibuilder.api.v0.models.Visibility.UNDEFINED(name) => name
+           }}&nbsp;&nbsp;&nbsp;&nbsp;</td>
+           <td>@lib.DateHelper.shortDateTime(tpl.timeZone, application.audit.createdAt)</td>
+           <td>@lib.DateHelper.shortDateTime(tpl.timeZone, application.lastUpdatedAt)</td>
          </tr>
        }
       </tbody>
@@ -45,10 +77,10 @@
     @if(applications.hasPrevious || applications.hasNext) {
       <ul class="pager">
         @if(applications.hasPrevious) {
-          <li><a href="@routes.Organizations.show(tpl.org.get.key, applications.page - 1)">Previous</a></li>
+          <li><a href="@routes.Organizations.show(tpl.org.get.key, applications.page - 1, sortBy, ord)">Previous</a></li>
         }
         @if(applications.hasNext) {
-          <li><a href="@routes.Organizations.show(tpl.org.get.key, applications.page + 1)">Next</a></li>
+          <li><a href="@routes.Organizations.show(tpl.org.get.key, applications.page + 1, sortBy, ord)">Next</a></li>
         }
       </ul>
     }
