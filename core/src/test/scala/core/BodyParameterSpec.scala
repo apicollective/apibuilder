@@ -104,6 +104,14 @@ class BodyParameterSpec extends FunSpec with Matchers {
     }
   }
 
+  it("validates that body can be specified for DELETE operations") {
+    // we saw this in the magento swagger spec. HTTP says body CAN be provided and suggests
+    // ignoring it
+    val method = "POST"
+    val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(method, """{ "type": "message" }""", "boolean"))
+    validator.errors().isEmpty should be(true)
+  }
+
   it("supports models in body") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "message" }""", "boolean"))
     validator.errors().mkString("") should be("")

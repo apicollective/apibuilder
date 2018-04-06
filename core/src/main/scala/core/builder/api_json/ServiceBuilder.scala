@@ -1,9 +1,11 @@
 package builder.api_json
 
-import core.{Importer, ServiceFetcher, VersionMigration, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion}
+import core.{Importer, ServiceFetcher, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion, VersionMigration}
 import lib.{Methods, Primitives, ServiceConfiguration, Text, UrlKey}
 import io.apibuilder.spec.v0.models._
+import lib.Methods.{MethodsNotAcceptingBodies, supportsBody}
 import play.api.libs.json._
+
 import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(
@@ -186,6 +188,21 @@ case class ServiceBuilder(
 
   object OperationBuilder {
 
+    /**
+      * Historically apibuilder placed parameters by default for GET and DELETE in
+      * the query parameters. Maintain this convention to avoid breaking APIs
+      */
+    private[this] def defaultParameterLocation(verb: String): ParameterLocation = {
+      if (supportsBody(verb)) {
+        verb.toUpperCase().trim match {
+          case "DELETE" => ParameterLocation.Query
+          case _ => ParameterLocation.Form
+        }
+      } else {
+        ParameterLocation.Query
+      }
+    }
+
     def apply(
       internal: InternalOperationForm,
       resourcePath: String,
@@ -194,7 +211,14 @@ case class ServiceBuilder(
       union: Option[TypesProviderUnion] = None
     ): Operation = {
       val method = internal.method.getOrElse("")
-      val defaultLocation = if (internal.body.isDefined || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
+      val defaultLocation = if (internal.body.isDefined) {
+        ParameterLocation.Query
+      } else {
+        internal.method match {
+          case None => ParameterLocation.Form
+          case Some(m) => defaultParameterLocation(m)
+        }
+      }
 
       val pathParameters = internal.namedPathParameters.map { name =>
         internal.parameters.find(_.name.contains(name)) match {
