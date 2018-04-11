@@ -456,10 +456,7 @@ case class ServiceSpecValidator(
     service.models.flatMap { model =>
       model.fields.flatMap { field =>
         field.default.flatMap { default =>
-          field.required match {
-            case false => Some(s"${model.name}.${field.name} has a default specified. It must be marked required")
-            case true => validateDefault(s"${model.name}.${field.name}", field.`type`, default)
-          }
+          validateDefault(s"${model.name}.${field.name}", field.`type`, default)
         }
       }
     } match {
