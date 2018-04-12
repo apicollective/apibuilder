@@ -212,8 +212,8 @@ package io.apibuilder.generator.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderGeneratorAttribute: play.api.libs.json.Writes[Attribute] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Attribute] {
+    implicit def jsonWritesApibuilderGeneratorAttribute: play.api.libs.json.OWrites[Attribute] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.Attribute] {
         def writes(obj: io.apibuilder.generator.v0.models.Attribute) = {
           jsObjectAttribute(obj)
         }
@@ -234,8 +234,8 @@ package io.apibuilder.generator.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderGeneratorError: play.api.libs.json.Writes[Error] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Error] {
+    implicit def jsonWritesApibuilderGeneratorError: play.api.libs.json.OWrites[Error] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.Error] {
         def writes(obj: io.apibuilder.generator.v0.models.Error) = {
           jsObjectError(obj)
         }
@@ -265,8 +265,8 @@ package io.apibuilder.generator.v0.models {
       })
     }
 
-    implicit def jsonWritesApibuilderGeneratorFile: play.api.libs.json.Writes[File] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.File] {
+    implicit def jsonWritesApibuilderGeneratorFile: play.api.libs.json.OWrites[File] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.File] {
         def writes(obj: io.apibuilder.generator.v0.models.File) = {
           jsObjectFile(obj)
         }
@@ -298,8 +298,8 @@ package io.apibuilder.generator.v0.models {
       })
     }
 
-    implicit def jsonWritesApibuilderGeneratorGenerator: play.api.libs.json.Writes[Generator] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Generator] {
+    implicit def jsonWritesApibuilderGeneratorGenerator: play.api.libs.json.OWrites[Generator] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.Generator] {
         def writes(obj: io.apibuilder.generator.v0.models.Generator) = {
           jsObjectGenerator(obj)
         }
@@ -316,8 +316,8 @@ package io.apibuilder.generator.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderGeneratorHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Healthcheck] {
+    implicit def jsonWritesApibuilderGeneratorHealthcheck: play.api.libs.json.OWrites[Healthcheck] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.Healthcheck] {
         def writes(obj: io.apibuilder.generator.v0.models.Healthcheck) = {
           jsObjectHealthcheck(obj)
         }
@@ -338,8 +338,8 @@ package io.apibuilder.generator.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderGeneratorInvocation: play.api.libs.json.Writes[Invocation] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Invocation] {
+    implicit def jsonWritesApibuilderGeneratorInvocation: play.api.libs.json.OWrites[Invocation] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.Invocation] {
         def writes(obj: io.apibuilder.generator.v0.models.Invocation) = {
           jsObjectInvocation(obj)
         }
@@ -364,8 +364,8 @@ package io.apibuilder.generator.v0.models {
       })
     }
 
-    implicit def jsonWritesApibuilderGeneratorInvocationForm: play.api.libs.json.Writes[InvocationForm] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.InvocationForm] {
+    implicit def jsonWritesApibuilderGeneratorInvocationForm: play.api.libs.json.OWrites[InvocationForm] = {
+      new play.api.libs.json.OWrites[io.apibuilder.generator.v0.models.InvocationForm] {
         def writes(obj: io.apibuilder.generator.v0.models.InvocationForm) = {
           jsObjectInvocationForm(obj)
         }

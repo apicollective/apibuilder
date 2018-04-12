@@ -17,7 +17,7 @@ package io.apibuilder.internal.v0.models {
   case class Task(
     guid: _root_.java.util.UUID,
     data: io.apibuilder.internal.v0.models.TaskData,
-    numberAttempts: Long = 0,
+    numberAttempts: Long = 0L,
     lastError: _root_.scala.Option[String] = None
   )
 
@@ -105,8 +105,8 @@ package io.apibuilder.internal.v0.models {
       })
     }
 
-    implicit def jsonWritesApibuilderInternalTask: play.api.libs.json.Writes[Task] = {
-      new play.api.libs.json.Writes[io.apibuilder.internal.v0.models.Task] {
+    implicit def jsonWritesApibuilderInternalTask: play.api.libs.json.OWrites[Task] = {
+      new play.api.libs.json.OWrites[io.apibuilder.internal.v0.models.Task] {
         def writes(obj: io.apibuilder.internal.v0.models.Task) = {
           jsObjectTask(obj)
         }
@@ -155,8 +155,8 @@ package io.apibuilder.internal.v0.models {
       }
     }
 
-    implicit def jsonWritesApibuilderInternalTaskData: play.api.libs.json.Writes[TaskData] = {
-      new play.api.libs.json.Writes[io.apibuilder.internal.v0.models.TaskData] {
+    implicit def jsonWritesApibuilderInternalTaskData: play.api.libs.json.OWrites[TaskData] = {
+      new play.api.libs.json.OWrites[io.apibuilder.internal.v0.models.TaskData] {
         def writes(obj: io.apibuilder.internal.v0.models.TaskData) = {
           jsObjectTaskData(obj)
         }
