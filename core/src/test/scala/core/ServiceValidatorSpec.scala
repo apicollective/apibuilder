@@ -265,12 +265,12 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors().mkString("") should be("")
     val headers = validator.service().resources.head.operations.head.responses.head.headers
     headers.size should be(1)
-    headers.get(0).name should be("foo")
-    headers.get(0).`type` should be("string")
+    headers.get.head.name should be("foo")
+    headers.get.head.`type` should be("string")
 
-    TestHelper.serviceValidatorFromApiJson(json.format(s"$stringHeader, $stringHeader")).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] appears more than once")
+    TestHelper.serviceValidatorFromApiJson(json.format(s"$stringHeader, $stringHeader")).errors().mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] appears more than once")
 
-    TestHelper.serviceValidatorFromApiJson(json.format(userHeader)).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] type[user] is invalid: Must be a string or the name of an enum")
+    TestHelper.serviceValidatorFromApiJson(json.format(userHeader)).errors().mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] type[user] is invalid: Must be a string or the name of an enum")
   }
 
   it("operations w/ a valid response validates correct") {
@@ -389,6 +389,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
+
       "resources": {
         "user": {
           "operations": [

@@ -2,9 +2,9 @@ package lib
 
 object Methods {
 
-  val MethodsNotAcceptingBodies = Seq("GET", "DELETE")
+  val MethodsNotAcceptingBodies: Set[String] = Set("GET")
 
-  def isJsonDocumentMethod(verb: String): Boolean = {
+  def supportsBody(verb: String): Boolean = {
     !MethodsNotAcceptingBodies.contains(verb.toUpperCase)
   }
 

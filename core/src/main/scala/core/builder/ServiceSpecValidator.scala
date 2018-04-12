@@ -598,7 +598,7 @@ case class ServiceSpecValidator(
     }
 
     val invalidMethods = service.resources.flatMap { resource =>
-      resource.operations.filter(op => op.body.isDefined && !Methods.isJsonDocumentMethod(op.method.toString)).map { op =>
+      resource.operations.filter(op => op.body.isDefined && !Methods.supportsBody(op.method.toString)).map { op =>
         opLabel(resource, op, s"Cannot specify body for HTTP method[${op.method}]")
       }
     }
