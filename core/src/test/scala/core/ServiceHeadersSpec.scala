@@ -7,7 +7,7 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
   describe("valid service") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "headers": [
@@ -67,7 +67,7 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
   describe("validation of headers") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "headers": [

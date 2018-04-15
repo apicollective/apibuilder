@@ -9,7 +9,7 @@ class InlineEnumInModelFieldsSpec extends FunSpec with Matchers {
   ): String = {
     s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": {

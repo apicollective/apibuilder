@@ -6,7 +6,7 @@ class EnumValueSpec extends FunSpec with Matchers {
 
   private[this] val baseJson: String = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "enums": {
         %s

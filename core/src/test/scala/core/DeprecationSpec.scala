@@ -10,7 +10,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("enum") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "enums": {
@@ -41,7 +41,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("enum value") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "enums": {
@@ -66,7 +66,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("union") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "unions": {
@@ -113,7 +113,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("union type") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "unions": {
@@ -153,7 +153,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("model") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -184,7 +184,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("field") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -210,7 +210,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("resource") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -244,7 +244,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("operation") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -272,7 +272,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("parameter") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -307,7 +307,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("response") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -342,7 +342,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("body") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -377,7 +377,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("headers") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "headers": [
@@ -398,7 +398,7 @@ class DeprecationSpec extends FunSpec with Matchers {
   it("does not require a description") {
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "headers": [

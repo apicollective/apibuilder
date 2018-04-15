@@ -8,7 +8,7 @@ class BrokenSpec extends FunSpec with Matchers {
   it("support arrays as types in fields") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "vendor": {
@@ -31,7 +31,7 @@ class BrokenSpec extends FunSpec with Matchers {
   it("support arrays as types in operations") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "vendor": {

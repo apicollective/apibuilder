@@ -7,7 +7,7 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
   describe("with service") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "enums": {
@@ -78,7 +78,7 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
   it("allows empty path for resource") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -117,7 +117,7 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
   describe("resource types") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "enums": {

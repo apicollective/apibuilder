@@ -8,7 +8,7 @@ class ApidocVersionSpec extends FunSpec with Matchers {
   describe("json documenent with no apidoc node") {
 
     val json = """
-      { "name": "Api Doc" }
+      { "name": "API Builder" }
     """
 
     it("defaults to latest version") {
@@ -23,7 +23,7 @@ class ApidocVersionSpec extends FunSpec with Matchers {
 
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": {
         "version": "%s"
       }
