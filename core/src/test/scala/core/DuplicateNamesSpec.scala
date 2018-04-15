@@ -8,7 +8,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "some_user": {
@@ -34,7 +34,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "enums": {
         "foo": {
@@ -56,7 +56,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -78,7 +78,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {

@@ -10,7 +10,7 @@ class InfoSpec extends FunSpec with Matchers {
 
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": {
         "version": "0.9.7"
       },

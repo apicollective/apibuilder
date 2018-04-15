@@ -21,7 +21,7 @@ class InlineEnumsSpec extends FunSpec with Matchers {
   ): String = {
     s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 $extras
       "models": {
         "user": {

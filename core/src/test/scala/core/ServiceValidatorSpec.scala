@@ -45,7 +45,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -62,7 +62,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -81,7 +81,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "models": {
         "user": {
           "fields": [
@@ -101,7 +101,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -120,7 +120,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "models": {
         "user": {
           "fields": [
@@ -140,7 +140,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -159,7 +159,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -191,7 +191,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -229,7 +229,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -277,7 +277,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -313,7 +313,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -347,7 +347,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -380,7 +380,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -418,7 +418,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -452,7 +452,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -548,7 +548,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "models": {
         "user": {
           "plural": "users",
@@ -583,7 +583,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
         val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "models": {
         "user": {
           "plural": "users",

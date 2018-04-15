@@ -6,7 +6,7 @@ class ServiceParametersSpec extends FunSpec with Matchers {
   it("fails object type path parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -34,7 +34,7 @@ class ServiceParametersSpec extends FunSpec with Matchers {
   it("fails unit type path parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -62,7 +62,7 @@ class ServiceParametersSpec extends FunSpec with Matchers {
   it("fails object type query parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -90,7 +90,7 @@ class ServiceParametersSpec extends FunSpec with Matchers {
   it("fails unit type header parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -118,7 +118,7 @@ class ServiceParametersSpec extends FunSpec with Matchers {
   it("fails [object] type query parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
