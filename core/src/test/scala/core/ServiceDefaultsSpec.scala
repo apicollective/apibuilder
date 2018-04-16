@@ -7,7 +7,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("accepts defaults for date-iso8601") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -28,7 +28,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("accepts strings and values as defaults for booleans") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -55,7 +55,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("rejects invalid boolean defaults") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
@@ -74,7 +74,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     val jsonOpt =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -93,7 +93,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("fields with defaults may be marked required") {
     val jsonReq = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {
@@ -123,7 +123,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
 
     val json = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "models": {
         "user": {
           "fields": [

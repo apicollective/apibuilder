@@ -8,7 +8,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
   describe("with a service") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "enums": {
@@ -108,7 +108,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     val baseJson = s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "unions": {
@@ -172,7 +172,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
   it("passes correctly specified path parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -200,7 +200,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
   it("fails missing path parameters") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -227,7 +227,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
   it("fails incorrectly named path parameters in the middle of the path") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }
@@ -255,7 +255,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
   it("fails incorrectly named path parameters at the end of the path") {
     val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": { "fields": [ { "name": "id", "type": "long" } ] }

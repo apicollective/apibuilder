@@ -20,7 +20,7 @@ class InlineModelsSpec extends FunSpec with Matchers {
   ): String = {
     s"""
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": {
@@ -65,7 +65,7 @@ class InlineModelsSpec extends FunSpec with Matchers {
   it("supports an inline model containing a field with an inline enum") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "models": {
         "user": {

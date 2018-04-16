@@ -186,6 +186,7 @@
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
+    When a field is marked as required, it must be present in any form of a model for that form to be valid. In client-server scenario, this means that any defaults that are present in the model must be applied by the client. If you want a default to be applied by the receiver, you should mark the field as <pre>"required": false</pre>.
   </p>
 
   <a name="resource"></a>

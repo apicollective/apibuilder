@@ -1,6 +1,6 @@
 {
   "base_url": "http://localhost:9000",
-  "name": "Api Doc",
+  "name": "API Builder",
   "models": {
     "category": {
       "fields": [
