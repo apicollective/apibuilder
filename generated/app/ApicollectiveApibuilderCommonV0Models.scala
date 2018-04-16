@@ -89,8 +89,8 @@ package io.apibuilder.common.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderCommonAudit: play.api.libs.json.OWrites[Audit] = {
-      new play.api.libs.json.OWrites[io.apibuilder.common.v0.models.Audit] {
+    implicit def jsonWritesApibuilderCommonAudit: play.api.libs.json.Writes[Audit] = {
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.Audit] {
         def writes(obj: io.apibuilder.common.v0.models.Audit) = {
           jsObjectAudit(obj)
         }
@@ -107,8 +107,8 @@ package io.apibuilder.common.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderCommonHealthcheck: play.api.libs.json.OWrites[Healthcheck] = {
-      new play.api.libs.json.OWrites[io.apibuilder.common.v0.models.Healthcheck] {
+    implicit def jsonWritesApibuilderCommonHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.Healthcheck] {
         def writes(obj: io.apibuilder.common.v0.models.Healthcheck) = {
           jsObjectHealthcheck(obj)
         }
@@ -129,8 +129,8 @@ package io.apibuilder.common.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderCommonReference: play.api.libs.json.OWrites[Reference] = {
-      new play.api.libs.json.OWrites[io.apibuilder.common.v0.models.Reference] {
+    implicit def jsonWritesApibuilderCommonReference: play.api.libs.json.Writes[Reference] = {
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.Reference] {
         def writes(obj: io.apibuilder.common.v0.models.Reference) = {
           jsObjectReference(obj)
         }
@@ -147,8 +147,8 @@ package io.apibuilder.common.v0.models {
       )
     }
 
-    implicit def jsonWritesApibuilderCommonReferenceGuid: play.api.libs.json.OWrites[ReferenceGuid] = {
-      new play.api.libs.json.OWrites[io.apibuilder.common.v0.models.ReferenceGuid] {
+    implicit def jsonWritesApibuilderCommonReferenceGuid: play.api.libs.json.Writes[ReferenceGuid] = {
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.ReferenceGuid] {
         def writes(obj: io.apibuilder.common.v0.models.ReferenceGuid) = {
           jsObjectReferenceGuid(obj)
         }

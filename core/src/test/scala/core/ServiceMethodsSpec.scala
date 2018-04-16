@@ -7,7 +7,7 @@ class ServiceMethodsSpec extends FunSpec with Matchers {
   it("missing method") {
     val json = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
 
       "models": {

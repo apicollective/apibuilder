@@ -35,7 +35,11 @@
         { "name": "Query" },
         { "name": "Form" },
         { "name": "Header" }
+<<<<<<< HEAD
       ]
+=======
+     ]
+>>>>>>> 8e0166be35d31c21ebb95c7c3991f8dac171d644
     },
 
     "response_code_option": {
@@ -78,8 +82,12 @@
         { "name": "unions", "type": "[union]", "default": "[]" },
         { "name": "models", "type": "[model]", "default": "[]" },
         { "name": "resources", "type": "[resource]", "default": "[]" },
+<<<<<<< HEAD
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
         { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false}
+=======
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
+>>>>>>> 8e0166be35d31c21ebb95c7c3991f8dac171d644
       ]
     },
 
@@ -162,8 +170,12 @@
         { "name": "minimum", "type": "long", "required": false },
         { "name": "maximum", "type": "long", "required": false },
         { "name": "example", "type": "string", "required": false },
+<<<<<<< HEAD
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
         { "name": "annotations", "type": "[string]", "default": "[]", "required": false}
+=======
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
+>>>>>>> 8e0166be35d31c21ebb95c7c3991f8dac171d644
       ]
     },
 
@@ -272,10 +284,16 @@
         { "name": "organization", "type": "organization" },
         { "name": "application", "type": "application" },
         { "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
+<<<<<<< HEAD
         { "name": "enums", "type": "[string]", "description": "Enums made available by this import", "default": "[]" },
         { "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
         { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
         { "name": "annotations", "type": "[annotation]", "description": "Annotations made available by this import", "default": "[]", "required": false }
+=======
+        { "name": "enums", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
+        { "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
+        { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" }
+>>>>>>> 8e0166be35d31c21ebb95c7c3991f8dac171d644
       ]
     },
 
@@ -294,6 +312,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
+<<<<<<< HEAD
     },
                 
     "annotation": {
@@ -303,6 +322,8 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
+=======
+>>>>>>> 8e0166be35d31c21ebb95c7c3991f8dac171d644
     }
   }
 

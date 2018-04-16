@@ -8,7 +8,7 @@ class InlineUnionsSpec extends FunSpec with Matchers {
     val json =
       """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
 
       "unions": {
         "user": {
@@ -58,7 +58,7 @@ class InlineUnionsSpec extends FunSpec with Matchers {
   it("supports an inline union in response") {
     val json = """
                  |{
-                 |  "name": "Api Doc",
+                 |  "name": "API Builder",
                  |
                  |  "models": {
                  |    "user": {

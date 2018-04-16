@@ -7,7 +7,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
 
   val baseJson = """
     {
-      "name": "Api Doc",
+      "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
