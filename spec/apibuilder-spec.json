@@ -17,30 +17,30 @@
   "enums": {
     "method": {
       "values": [
-	{ "name": "GET" },
-	{ "name": "POST" },
-	{ "name": "PUT" },
-	{ "name": "PATCH" },
-	{ "name": "DELETE" },
-	{ "name": "HEAD" },
-	{ "name": "CONNECT" },
-	{ "name": "OPTIONS" },
-	{ "name": "TRACE" }
+        { "name": "GET" },
+        { "name": "POST" },
+        { "name": "PUT" },
+        { "name": "PATCH" },
+        { "name": "DELETE" },
+        { "name": "HEAD" },
+        { "name": "CONNECT" },
+        { "name": "OPTIONS" },
+        { "name": "TRACE" }
       ]
     },
 
     "parameter_location": {
       "values": [
-	{ "name": "Path" },
-	{ "name": "Query" },
-	{ "name": "Form" },
-	{ "name": "Header" }
+        { "name": "Path" },
+        { "name": "Query" },
+        { "name": "Form" },
+        { "name": "Header" }
      ]
     },
 
     "response_code_option": {
       "values": [
-	{ "name": "Default" }
+        { "name": "Default" }
       ]
     }
   },
@@ -48,8 +48,8 @@
   "unions": {
     "response_code": {
       "types": [
-	{ "type": "integer", "description": "Documents an HTTP status code (e.g. 200, 409, etc.)" },
-	{ "type": "response_code_option", "description": "An individual operation can specify a response code of default to handle all other response codes. This is most useful for providing consistent error handling from an operation." }
+        { "type": "integer", "description": "Documents an HTTP status code (e.g. 200, 409, etc.)" },
+        { "type": "response_code_option", "description": "An individual operation can specify a response code of default to handle all other response codes. This is most useful for providing consistent error handling from an operation." }
       ]
     }
   },
@@ -57,240 +57,240 @@
   "models": {
     "apidoc": {
       "fields": [
-	{ "name": "version", "type": "string", "example": "1.0.3" }
+        { "name": "version", "type": "string", "example": "1.0.3" }
       ]
     },
 
     "service": {
       "fields": [
-	{ "name": "apidoc", "type": "apidoc", "description": "Documents that this is an apibuilder document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apibuilder. Note naming refers to the original name of this project, 'apidoc', and is left here to avoid a breaking change for preexisting services." },
-	{ "name": "name", "type": "string" },
-	{ "name": "organization", "type": "organization" },
-	{ "name": "application", "type": "application" },
-	{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "io.apibuilder" },
-	{ "name": "version", "type": "string", "example": "1.0.0" },
-	{ "name": "base_url", "type": "string", "required": false },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "info", "type": "info" },
-	{ "name": "headers", "type": "[header]", "default": "[]" },
-	{ "name": "imports", "type": "[import]", "default": "[]" },
-	{ "name": "enums", "type": "[enum]", "default": "[]" },
-	{ "name": "unions", "type": "[union]", "default": "[]" },
-	{ "name": "models", "type": "[model]", "default": "[]" },
-	{ "name": "resources", "type": "[resource]", "default": "[]" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "apidoc", "type": "apidoc", "description": "Documents that this is an apibuilder document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apibuilder. Note naming refers to the original name of this project, 'apidoc', and is left here to avoid a breaking change for preexisting services." },
+        { "name": "name", "type": "string" },
+        { "name": "organization", "type": "organization" },
+        { "name": "application", "type": "application" },
+        { "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "io.apibuilder" },
+        { "name": "version", "type": "string", "example": "1.0.0" },
+        { "name": "base_url", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "info", "type": "info" },
+        { "name": "headers", "type": "[header]", "default": "[]" },
+        { "name": "imports", "type": "[import]", "default": "[]" },
+        { "name": "enums", "type": "[enum]", "default": "[]" },
+        { "name": "unions", "type": "[union]", "default": "[]" },
+        { "name": "models", "type": "[model]", "default": "[]" },
+        { "name": "resources", "type": "[resource]", "default": "[]" },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "organization": {
       "fields": [
-	{ "name": "key", "type": "string", "description": "Unique key identifying the organization that owns this service" }
+        { "name": "key", "type": "string", "description": "Unique key identifying the organization that owns this service" }
       ]
     },
 
     "application": {
       "fields": [
-	{ "name": "key", "type": "string", "description": "Unique key identifying this application" }
+        { "name": "key", "type": "string", "description": "Unique key identifying this application" }
       ]
     },
 
     "enum": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "plural", "type": "string" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "values", "type": "[enum_value]" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "name", "type": "string" },
+        { "name": "plural", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "values", "type": "[enum_value]" },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "enum_value": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
-	{ "name": "value", "type": "string", "required": false, "description": "The actual string representation of this value. If not specified, defaults to 'name'" }        
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" },
+        { "name": "value", "type": "string", "required": false, "description": "The actual string representation of this value. If not specified, defaults to 'name'" }        
       ]
     },
 
     "union": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "plural", "type": "string" },
-	{ "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apibuilder itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "name", "type": "string" },
+        { "name": "plural", "type": "string" },
+        { "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apibuilder itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "union_type": {
       "description": "Metadata about one of the types that is part of a union type",
       "fields": [
-	{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
-	{ "name": "default", "type": "boolean", "required": false, "description": "If true, indicates that this type should be used as the default when deserializing union types. This field is only used by union types that require a discriminator and sets the default value for that disciminator during deserialization." },
+        { "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" },
+        { "name": "default", "type": "boolean", "required": false, "description": "If true, indicates that this type should be used as the default when deserializing union types. This field is only used by union types that require a discriminator and sets the default value for that disciminator during deserialization." },
         { "name": "discriminator_value", "type": "string", "required": false, "description": "The discriminator value defines the string to use in the discriminator field to identify this type. If not specified, the discriminator value will default to the name of the type itself." }
       ]
     },
 
     "model": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "plural", "type": "string" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "fields", "type": "[field]" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "name", "type": "string" },
+        { "name": "plural", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "fields", "type": "[field]" },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "field": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "type", "type": "string" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "default", "type": "string", "required": false },
-	{ "name": "required", "type": "boolean" },
-	{ "name": "minimum", "type": "long", "required": false },
-	{ "name": "maximum", "type": "long", "required": false },
-	{ "name": "example", "type": "string", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "name", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "default", "type": "string", "required": false },
+        { "name": "required", "type": "boolean" },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "example", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "resource": {
       "fields": [
-	{ "name": "type", "type": "string", "description": "The type of this resource will map to a defined model, enum, or union type" },
-	{ "name": "plural", "type": "string" },
-	{ "name": "path", "type": "string", "required": false, "description": "The path to this specific resource. This was added in 2016 to help us differentiate between the resource path and the operation path which can be helpful when, for example, generating method names for operations. This field is optional as some of our input formats (e.g. swagger) do not explicitly differentiate resoure paths." },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "operations", "type": "[operation]" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "type", "type": "string", "description": "The type of this resource will map to a defined model, enum, or union type" },
+        { "name": "plural", "type": "string" },
+        { "name": "path", "type": "string", "required": false, "description": "The path to this specific resource. This was added in 2016 to help us differentiate between the resource path and the operation path which can be helpful when, for example, generating method names for operations. This field is optional as some of our input formats (e.g. swagger) do not explicitly differentiate resoure paths." },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "operations", "type": "[operation]" },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "operation": {
       "fields": [
-	{ "name": "method", "type": "method" },
-	{ "name": "path", "type": "string", "description": "The full path to this operation, relative to the service's base url." },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "body", "type": "body", "required": false },
-	{ "name": "parameters", "type": "[parameter]", "default": "[]" },
-	{ "name": "responses", "type": "[response]", "default": "[]" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "method", "type": "method" },
+        { "name": "path", "type": "string", "description": "The full path to this operation, relative to the service's base url." },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "body", "type": "body", "required": false },
+        { "name": "parameters", "type": "[parameter]", "default": "[]" },
+        { "name": "responses", "type": "[response]", "default": "[]" },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "body": {
       "fields": [
-	{ "name": "type", "type": "string" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "parameter": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "type", "type": "string" },
-	{ "name": "location", "type": "parameter_location" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "required", "type": "boolean" },
-	{ "name": "default", "type": "string", "required": false },
-	{ "name": "minimum", "type": "long", "required": false },
-	{ "name": "maximum", "type": "long", "required": false },
-	{ "name": "example", "type": "string", "required": false }
+        { "name": "name", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "location", "type": "parameter_location" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "required", "type": "boolean" },
+        { "name": "default", "type": "string", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "example", "type": "string", "required": false }
       ]
     },
 
     "response": {
       "fields": [
-	{ "name": "code", "type": "response_code" },
-	{ "name": "type", "type": "string" },
-	{ "name": "headers", "type": "[header]", "required": false },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "required": false }
+        { "name": "code", "type": "response_code" },
+        { "name": "type", "type": "string" },
+        { "name": "headers", "type": "[header]", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false }
       ]
     },
 
     "info": {
       "description": "General metadata about this service",
       "fields": [
-	{ "name": "license", "type": "license", "required": false },
-	{ "name": "contact", "type": "contact", "required": false }
+        { "name": "license", "type": "license", "required": false },
+        { "name": "contact", "type": "contact", "required": false }
       ]
     },
 
     "license": {
       "description": "Describes the software license contact for this service",
       "fields": [
-	{ "name": "name", "type": "string", "example": "MIT" },
-	{ "name": "url", "type": "string", "required": false, "example": "http://opensource.org/licenses/MIT" }
+        { "name": "name", "type": "string", "example": "MIT" },
+        { "name": "url", "type": "string", "required": false, "example": "http://opensource.org/licenses/MIT" }
       ]
     },
 
     "contact": {
       "description": "Describes the primary contact for this service",
       "fields": [
-	{ "name": "name", "type": "string", "example": "Michael Bryzek", "required": false  },
-	{ "name": "url", "type": "string", "example": "https://www.apibuilder.io", "required": false  },
-	{ "name": "email", "type": "string", "example": "michael@test.apibuilder.io", "required": false  }
+        { "name": "name", "type": "string", "example": "Michael Bryzek", "required": false  },
+        { "name": "url", "type": "string", "example": "https://www.apibuilder.io", "required": false  },
+        { "name": "email", "type": "string", "example": "michael@test.apibuilder.io", "required": false  }
       ]
     },
 
     "header": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "type", "type": "string" },
-	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "required", "type": "boolean" },
-	{ "name": "default", "type": "string", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "name", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "required", "type": "boolean" },
+        { "name": "default", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
     "import": {
       "description": "An import is used to declare a dependency on another application. This allows you to reference the models and or enums from that application in your own app.",
       "fields": [
-	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "https://www.apibuilder.io/apicollective/apibuilder-spec/0.7.38/service.json"  },
-	{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "io.apibuilder" },
-	{ "name": "organization", "type": "organization" },
-	{ "name": "application", "type": "application" },
-	{ "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
-	{ "name": "enums", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
-	{ "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
-	{ "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" }
+        { "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "https://www.apibuilder.io/apicollective/apibuilder-spec/0.7.38/service.json"  },
+        { "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "io.apibuilder" },
+        { "name": "organization", "type": "organization" },
+        { "name": "application", "type": "application" },
+        { "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
+        { "name": "enums", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
+        { "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
+        { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" }
       ]
     },
 
     "deprecation": {
       "description": "Indicates that this particular element is considered deprecated in the API. See the description for details",
       "fields": [
-	{ "name": "description", "type": "string", "required": false }
+        { "name": "description", "type": "string", "required": false }
       ]
     },
 
     "attribute": {
       "description": "Represents an additional attribute that is attached to one of the objects in apibuilder. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
-	    "fields": [
-	      { "name": "name", "type": "string" },
-	      { "name": "value", "type": "object" },
-	      { "name": "description", "type": "string", "required": false },
-	      { "name": "deprecation", "type": "deprecation", "required": false }
-	    ]
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "value", "type": "object" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
     }
 
   }

@@ -20,8 +20,8 @@
       "description": "Represents a single diff in an application",
       "discriminator": "type",
       "types": [
-	{ "type": "diff_breaking" },
-	{ "type": "diff_non_breaking" }
+        { "type": "diff_breaking" },
+        { "type": "diff_non_breaking" }
       ]
     },
 
@@ -29,7 +29,7 @@
       "description": "Identifies the specific type of item that was indexed by search",
       "discriminator": "type",
       "types": [
-	{ "type": "application_summary", "description": "Represents that the item indexed was an application" }
+        { "type": "application_summary", "description": "Represents that the item indexed was an application" }
       ]
     }
 
@@ -45,28 +45,28 @@
     "visibility": {
       "description": "Controls who is able to view this version",
       "values": [
-	{ "name": "user", "description": "Only the creator can view this application" },
-	{ "name": "organization", "description": "Any member of the organization can view this application" },
-	{ "name": "public", "description": "Anybody, including non logged in users, can view this application" }
+        { "name": "user", "description": "Only the creator can view this application" },
+        { "name": "organization", "description": "Any member of the organization can view this application" },
+        { "name": "public", "description": "Anybody, including non logged in users, can view this application" }
       ]
     },
 
     "publication": {
       "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of an application is created.",
       "values": [
-	{ "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
-	{ "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user joins the org." },
-	{ "name": "applications.create", "description": "For organizations for which I am a member, email me whenever an application is created." },
-	{ "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
+        { "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
+        { "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user joins the org." },
+        { "name": "applications.create", "description": "For organizations for which I am a member, email me whenever an application is created." },
+        { "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
       ]
     },
 
     "original_type": {
       "values": [
-	{ "name": "api_json", "description": "The original is in the api.json format" },
-	{ "name": "avro_idl", "description": "The original is in Avro Idl format" },
-	{ "name": "service_json", "description": "This is the canonical service spec for apibuilder itself. See https://www.apibuilder.io/apicollective/apibuilder-spec/latest#model-service" },
-	{ "name": "swagger", "description": "The original in the Swagger JSON or YAML format" }
+        { "name": "api_json", "description": "The original is in the api.json format" },
+        { "name": "avro_idl", "description": "The original is in Avro Idl format" },
+        { "name": "service_json", "description": "This is the canonical service spec for apibuilder itself. See https://www.apibuilder.io/apicollective/apibuilder-spec/latest#model-service" },
+        { "name": "swagger", "description": "The original in the Swagger JSON or YAML format" }
       ]
     },
 
@@ -94,7 +94,7 @@
       "description": "Used only to validate json files - used as a resource where http status code defines success",
       "fields": [
         { "name": "valid", "type": "boolean", "description": "If true, the json schema is valid. If false, there is at least one validation error." },
-	{ "name": "errors", "type": "[string]", "default": "[]", "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
+        { "name": "errors", "type": "[string]", "default": "[]", "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
       ]
     },
 
@@ -204,7 +204,7 @@
     "cleartext_token": {
       "description": "Separate resource used only for the few actions that require the full token.",
       "fields": [
-	{ "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." }
+        { "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." }
       ]
     },
 
@@ -322,16 +322,16 @@
         { "name": "organization", "type": "io.apibuilder.common.v0.models.reference" },
         { "name": "application", "type": "io.apibuilder.common.v0.models.reference" },
         { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
-	{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-	{ "name": "service", "type": "io.apibuilder.spec.v0.models.service", "description": "spec/spec.json description of this API" },
+        { "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
+        { "name": "service", "type": "io.apibuilder.spec.v0.models.service", "description": "spec/spec.json description of this API" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
     "version_form": {
       "fields": [
-	{ "name": "original_form", "type": "original_form" },
-	{ "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this application" }
+        { "name": "original_form", "type": "original_form" },
+        { "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this application" }
       ]
     },
 
@@ -348,60 +348,60 @@
     "subscription": {
       "description": "Represents a user that is currently subscribed to a publication",
       "fields": [
-	{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this subscription record" },
-	{ "name": "organization", "type": "organization" },
-	{ "name": "user", "type": "user" },
-	{ "name": "publication", "type": "publication" },
+        { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this subscription record" },
+        { "name": "organization", "type": "organization" },
+        { "name": "user", "type": "user" },
+        { "name": "publication", "type": "publication" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
     "subscription_form": {
       "fields": [
-	{ "name": "organization_key", "type": "string" },
-	{ "name": "user_guid", "type": "uuid" },
-	{ "name": "publication", "type": "publication" }
+        { "name": "organization_key", "type": "string" },
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "publication", "type": "publication" }
       ]
     },
 
     "watch": {
       "description": "Users can watch individual applications which enables features like receiving an email notification when there is a new version of an application.",
       "fields": [
-	{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
-	{ "name": "user", "type": "user" },
-	{ "name": "organization", "type": "organization" },
-	{ "name": "application", "type": "application" },
+        { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
+        { "name": "user", "type": "user" },
+        { "name": "organization", "type": "organization" },
+        { "name": "application", "type": "application" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
     "watch_form": {
       "fields": [
-	{ "name": "user_guid", "type": "uuid" },
-	{ "name": "organization_key", "type": "string" },
-	{ "name": "application_key", "type": "string" }
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "organization_key", "type": "string" },
+        { "name": "application_key", "type": "string" }
       ]
     },
 
     "email_verification_confirmation_form": {
       "description": "Data used to confirm an email address. The token is an internal unique identifier used to lookup the specific email address and user account for which we sent an email verification email.",
       "fields": [
-	{ "name": "token", "type": "string" }
+        { "name": "token", "type": "string" }
       ]
     },
 
     "password_reset_request": {
       "description": "Create a password reset request - e.g. an email containing a one time URL to change a password",
       "fields": [
-	{ "name": "email", "type": "string", "description": "The email address for which we generate the password reset." }
+        { "name": "email", "type": "string", "description": "The email address for which we generate the password reset." }
       ]
     },
 
     "password_reset": {
       "description": "Allows a user to change their password with authentication from a token.",
       "fields": [
-	{ "name": "token", "type": "string", "description": "Unique one time use token to change a password" },
-	{ "name": "password", "type": "string" }
+        { "name": "token", "type": "string", "description": "Unique one time use token to change a password" },
+        { "name": "password", "type": "string" }
       ]
     },
 
@@ -446,7 +446,7 @@
         { "name": "to_version", "type": "change_version" },
         { "name": "diff", "type": "diff" },
         { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
-	{ "name": "changed_by", "type": "user_summary", "description": "Records who made the actual change" },
+        { "name": "changed_by", "type": "user_summary", "description": "Records who made the actual change" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
@@ -517,7 +517,7 @@
       "operations": [
         {
           "method": "GET",
-	  "path": "/healthcheck",
+          "path": "/healthcheck",
           "responses": {
             "200": { "type": "io.apibuilder.generator.v0.models.healthcheck" }
           }
@@ -525,7 +525,7 @@
 
         {
           "method": "GET",
-	  "path": "/migrate",
+          "path": "/migrate",
           "responses": {
             "200": { "type": "map[string]" }
           }
@@ -536,13 +536,13 @@
     "validation": {
       "description": "Public resource that can accept JSON input and returns a validation object describing any validation errors.",
       "operations": [
-	{
-	  "method": "POST",
-	  "body": { "type": "string" },
+        {
+          "method": "POST",
+          "body": { "type": "string" },
           "responses": {
             "200": { "type": "validation" }
           }
-	}
+        }   
       ]
     },
 
@@ -585,32 +585,32 @@
           }
         },
 
-	{
-	  "method": "POST",
-	  "path": "/authenticate",
-	  "description": "Used to authenticate a user with an email address and password. Successful authentication returns an instance of the user model. Failed authorizations of any kind are returned as a generic error with code user_authorization_failed.",
-	  "parameters": [
-	    { "name": "email", "type": "string" },
-	    { "name": "password", "type": "string" }
-	  ],
+        {
+          "method": "POST",
+          "path": "/authenticate",
+          "description": "Used to authenticate a user with an email address and password. Successful authentication returns an instance of the user model. Failed authorizations of any kind are returned as a generic error with code user_authorization_failed.",
+          "parameters": [
+            { "name": "email", "type": "string" },
+            { "name": "password", "type": "string" }
+          ],
           "responses": {
             "200": { "type": "authentication" },
             "409": { "type": "[error]" }
-	  }
-	},
+          }
+        },
 
-	{
-	  "method": "POST",
-	  "path": "/authenticate_github",
-	  "description": "Used to authenticate a user using a github access token. This is equivalent to running the following command to get the user info: curl -H 'Authorization: Bearer code' https://api.github.com/user",
-	  "parameters": [
-	    { "name": "token", "type": "string", "description": "The GitHub assigned oauth token" }
-	  ],
+        {
+          "method": "POST",
+          "path": "/authenticate_github",
+          "description": "Used to authenticate a user using a github access token. This is equivalent to running the following command to get the user info: curl -H 'Authorization: Bearer code' https://api.github.com/user",
+          "parameters": [
+            { "name": "token", "type": "string", "description": "The GitHub assigned oauth token" }
+          ],
           "responses": {
             "200": { "type": "authentication" },
             "409": { "type": "[error]" }
-	  }
-	},
+          }
+        },
 
         {
           "method": "POST",
@@ -626,7 +626,7 @@
           "method": "PUT",
           "path": "/:guid",
           "description": "Updates information about the user with the specified guid.",
-	  "body": { "type": "user_update_form" },
+          "body": { "type": "user_update_form" },
           "responses": {
             "200": { "type": "user" },
             "409": { "type": "[error]" }
@@ -637,49 +637,49 @@
 
     "token": {
       "operations": [
-	{
-	  "method": "GET",
-	  "path": "/users/:user_guid",
-	  "parameters": [
-	    { "name": "user_guid", "type": "uuid" },
-	    { "name": "guid", "type": "uuid", "required": false },
+        {
+          "method": "GET",
+          "path": "/users/:user_guid",
+          "parameters": [
+            { "name": "user_guid", "type": "uuid" },
+            { "name": "guid", "type": "uuid", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-	  ],
+          ],    
           "responses": {
             "200": { "type": "[token]" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "description": "Used to fetch the clear text token.",
-	  "path": "/:guid/cleartext",
+        {
+          "method": "GET",
+          "description": "Used to fetch the clear text token.",
+          "path": "/:guid/cleartext",
           "responses": {
             "200": { "type": "cleartext_token" },
             "404": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "POST",
-	  "description": "Create a new API token for this user",
-	  "body": { "type": "token_form" },
+        {
+          "method": "POST",
+          "description": "Create a new API token for this user",
+          "body": { "type": "token_form" },
           "responses": {
             "201": { "type": "token" },
             "409": { "type": "[error]" }
           }
-	},
+        },
 
-	{
-	  "method": "DELETE",
-	  "path": "/:guid",
-	  "responses": {
+        {
+          "method": "DELETE",
+          "path": "/:guid",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
-	}
+        }
       ]
     },
 
@@ -690,8 +690,7 @@
           "description": "Search all organizations. Results are always paginated.",
           "parameters": [
             { "name": "guid", "type": "uuid", "required": false, "description": "Finds the organization with this guid, if any" },
-	    { "name": "user_guid", "type": "uuid", "required": false, "description": "If specified, restricts to organizations that this user is specifically a member of (e.g. will exclude public organizations with which the user does not have a direct membership)." },
-
+            { "name": "user_guid", "type": "uuid", "required": false, "description": "If specified, restricts to organizations that this user is specifically a member of (e.g. will exclude public organizations with which the user does not have a direct membership)." },
             { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
             { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
             { "name": "namespace", "type": "string", "description": "Find organizations with this namespace. Case in-sensitive. Exact match", "required": false },
@@ -725,7 +724,7 @@
 
         {
           "method": "PUT",
-	  "path": "/:key",
+          "path": "/:key",
           "description": "Update an organization.",
           "body": { "type": "organization_form" },
           "responses": {
@@ -848,20 +847,20 @@
     "domain": {
       "path": "/domains/:orgKey",
       "operations": [
-	{
-	  "method": "POST",
-	  "description": "Add a domain to this organization",
-	  "body": { "type": "domain" },
+        {
+          "method": "POST",
+          "description": "Add a domain to this organization",
+          "body": { "type": "domain" },
           "responses": {
             "200": { "type": "domain" },
             "409": { "type": "[error]" }
           }
         },
 
-	{
-	  "method": "DELETE",
-	  "description": "Remove this domain from this organization",
-	  "path": "/:name",
+        {
+          "method": "DELETE",
+          "description": "Remove this domain from this organization",
+          "path": "/:name",
           "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
@@ -892,10 +891,10 @@
         {
           "method": "GET",
           "path": "/:guid",
-	  "responses": {
-	    "200": { "type": "membership" },
+          "responses": {
+            "200": { "type": "membership" },
             "404": { "type": "unit" }
-	  }
+          }
         },
 
         {
@@ -960,9 +959,7 @@
             "204": { "type": "unit" },
             "409": { "type": "[error]" }
           }
-
         }
-
       ]
     },
 
@@ -972,7 +969,7 @@
         {
           "method": "GET",
           "description": "Returns the versions assocoated with the specified application. The latest version is the first result returned.",
-	  "path": "/metadata/:applicationKey/versions",
+          "path": "/metadata/:applicationKey/versions",
           "parameters": [
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
@@ -986,7 +983,7 @@
         {
           "method": "GET",
           "description": "Returns the latest version number as a string",
-	  "path": "/metadata/:applicationKey/versions/latest.txt",
+          "path": "/metadata/:applicationKey/versions/latest.txt",
           "responses": {
             "200": { "type": "string" },
             "401": { "type": "unit" },
@@ -1002,7 +999,7 @@
             { "name": "name", "type": "string", "required": false, "description": "The name of an application. Case in-sensitive. Exact match", "required": false },
             { "name": "guid", "type": "uuid", "required": false, "description": "The guid of an application. Exact match", "required": false },
             { "name": "key", "type": "string", "required": false, "description": "The key of an application. Case in-sensitive. Exact match", "required": false },
-	    { "name": "has_version", "type": "boolean", "description": "If true, we return applications that have at least one version. If false, we return applications that have no versions in the system", "required": false },
+            { "name": "has_version", "type": "boolean", "description": "If true, we return applications that have at least one version. If false, we return applications that have no versions in the system", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort_by", "type": "app_sort_by", "required": false },
@@ -1016,10 +1013,10 @@
         {
           "method": "POST",
           "description": "Create an application.",
-	  "body": { "type": "application_form" },
+          "body": { "type": "application_form" },
           "responses": {
             "200": { "type": "application" },
-	    "409": { "type": "[error]" }
+            "409": { "type": "[error]" }
           }
         },
 
@@ -1027,10 +1024,10 @@
           "method": "PUT",
           "description": "Updates an application.",
           "path": "/:applicationKey",
-	  "body": { "type": "application_form" },
+          "body": { "type": "application_form" },
           "responses": {
             "200": { "type": "application" },
-	    "409": { "type": "[error]" }
+            "409": { "type": "[error]" }
           }
         },
 
@@ -1048,14 +1045,13 @@
         {
           "method": "POST",
           "description": "Moves application to a new organization.",
-	  "path": "/:applicationKey/move",
-	  "body": { "type": "move_form" },
+          "path": "/:applicationKey/move",
+          "body": { "type": "move_form" },
           "responses": {
             "200": { "type": "application" },
-	    "409": { "type": "[error]" }
+            "409": { "type": "[error]" }
           }
         }
-	
       ]
     },
 
@@ -1071,7 +1067,7 @@
             { "name": "applicationKey", "type": "string", "description": "The application key for which to generate code" },
             { "name": "version", "type": "string", "description": "The version of this application. Can be 'latest'" },
             { "name": "generatorKey", "type": "string", "description": "The key of the generator to invoke" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "code" },
             "404": { "type": "unit" },
@@ -1087,7 +1083,7 @@
       "operations": [
         {
           "method": "GET",
-	  "path": "/:applicationKey",
+          "path": "/:applicationKey",
           "description": "Search all versions of this application. Results are always paginated.",
           "parameters": [
             { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
@@ -1103,10 +1099,10 @@
         {
           "method": "GET",
           "description": "Retrieve a specific version of an application.",
-	  "path": "/:applicationKey/:version",
+          "path": "/:applicationKey/:version",
           "parameters": [
             { "name": "version", "type": "string", "description": "The version of tthis application to download, or the keyword latest to get the latest version", "example": "latest" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "version" },
             "404": { "type": "unit" }
@@ -1115,9 +1111,9 @@
 
         {
           "method": "POST",
-	  "path": "/:version",
+          "path": "/:version",
           "description": "Create a new version for an application",
-	  "body": { "type": "version_form" },
+          "body": { "type": "version_form" },
           "responses": {
             "200": { "type": "version" },
             "409": { "type": "[error]" }
@@ -1128,7 +1124,7 @@
           "method": "PUT",
           "description": "Upsert a version of an application",
           "path": "/:applicationKey/:version",
-	  "body": { "type": "version_form" },
+          "body": { "type": "version_form" },
           "responses": {
             "200": { "type": "version" },
             "409": { "type": "[error]" }
@@ -1149,13 +1145,13 @@
         {
           "method": "GET",
           "description": "Generates an example JSON document of the type with the specified name.",
-	  "path": "/:applicationKey/:version/example/:type_name",
+          "path": "/:applicationKey/:version/example/:type_name",
           "parameters": [
             { "name": "version", "type": "string", "description": "The version of this application to download, or the keyword latest to get the latest version", "example": "latest" },
             { "name": "type_name", "type": "string", "description": "The name of the type (e.g. model name) for which you would like to generate a sample json document" },
             { "name": "sub_type_name", "type": "string", "description": "The name of the sub-type for which you would like to generate a sample json document, e.g. a specific type of a union", "required": false },
             { "name": "optional_fields", "type": "boolean", "description": "If true, we generate sample data for all optional fields. Otherwise the generated sample will contain only required fields, where applicable", "required": false }
-	  ],
+          ],
           "responses": {
             "200": { "type": "object" },
             "404": { "type": "unit" }
@@ -1204,8 +1200,8 @@
         {
           "method": "DELETE",
           "path": "/:guid",
-	  "description": "Deletes a generator service.",
-	  "responses": {
+          "description": "Deletes a generator service.",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -1287,8 +1283,8 @@
 
         {
           "method": "DELETE",
-	  "path": "/:guid",
-	  "responses": {
+          "path": "/:guid",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -1329,11 +1325,11 @@
           "method": "GET",
           "description": "Quick check if a user is watching a specific application.",
           "path": "/check",
-	  "parameters": [
+          "parameters": [
             { "name": "user_guid", "type": "uuid", "description": "The user for which we are checking. API returns false if the user guid is not provided", "required": false },
             { "name": "organization_key", "type": "string" },
             { "name": "application_key", "type": "string" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "boolean" }
           }
@@ -1351,8 +1347,8 @@
 
         {
           "method": "DELETE",
-	  "path": "/:guid",
-	  "responses": {
+          "path": "/:guid",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -1381,7 +1377,7 @@
         {
           "method": "POST",
           "description": "Create a new password reset. This will send the user an email with a link to reset their password.",
-	  "body": { "type": "password_reset_request" },
+  "body": { "type": "password_reset_request" },
           "responses": {
             "204": { "type": "unit" },
             "409": { "type": "[error]" }
@@ -1395,7 +1391,7 @@
         {
           "method": "POST",
           "description": "Change the password for this token. If the token is invalid, has been used, or otherwise no longer can be applied, errors will be returned as 409s. A 204 represents that the user has successfully changed their password.",
-	  "body": { "type": "password_reset" },
+          "body": { "type": "password_reset" },
           "responses": {
             "200": { "type": "authentication" },
             "409": { "type": "[error]" }
@@ -1408,9 +1404,9 @@
     "change": {
 
       "operations": [
-	{
-	  "method": "GET",
-	  "parameters": [
+        {
+          "method": "GET",
+          "parameters": [
             { "name": "org_key", "type": "string", "description": "Filter changes to those made for the organization with this key.", "required": false },
             { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
             { "name": "from", "type": "string", "description": "Filter changes to those made from this version.", "required": false, "example": "0.1.3" },
@@ -1418,11 +1414,11 @@
             { "name": "type", "type": "string", "description": "The type of diff to return.", "required": false, "example": "breaking or non_breaking" },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[change]" }
           }
-	}
+        }
       ]
 
     },
@@ -1430,26 +1426,26 @@
     "item": {
 
       "operations": [
-	{
-	  "method": "GET",
-	  "parameters": [
-	    { "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
+        {
+          "method": "GET",
+          "parameters": [
+            { "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[item]" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "path": "/:guid",
+        {
+          "method": "GET",
+          "path": "/:guid",
           "responses": {
             "200": { "type": "item" },
-            "404": { "type": "unit" }			
+            "404": { "type": "unit" }
           }
-	}
+        }
 
       ]
     }

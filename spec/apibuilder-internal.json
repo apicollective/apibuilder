@@ -17,8 +17,8 @@
   "unions": {
     "task_data": {
       "types": [
-	{ "type": "task_data_index_application", "description": "Task to update the search index following a change in application" },
-	{ "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
+        { "type": "task_data_index_application", "description": "Task to update the search index following a change in application" },
+        { "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
       ]
     }
   },
