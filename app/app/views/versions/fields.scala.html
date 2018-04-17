@@ -13,6 +13,9 @@
       <th>Required?</th>
       <th>Default</th>
       <th>Description</th>
+      @if(!service.annotations.isEmpty) {
+        <th>Annotations</th>
+      }
     </tr>
   </thead>
   <tbody>
@@ -35,6 +38,13 @@
 
            </p>
        </td>
+       @if(!service.annotations.isEmpty) {
+         <td>
+           @field.annotations.map { annot =>
+            <p><a href="#annot-@lib.UrlKey.generate(annot)">@annot</a></p>
+           }
+         </td>
+       }
      </tr>
    }
   </tbody>

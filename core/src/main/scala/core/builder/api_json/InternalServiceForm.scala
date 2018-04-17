@@ -16,7 +16,6 @@ private[api_json] case class InternalServiceForm(
   json: JsValue,
   fetcher: ServiceFetcher
 ) {
-
   val internalDatatypeBuilder = InternalDatatypeBuilder()
 
   lazy val apidoc: Option[InternalApidocForm] = (json \ "apidoc").asOpt[JsValue].map { InternalApidocForm(_) }
@@ -79,6 +78,17 @@ private[api_json] case class InternalServiceForm(
           v match {
             case(k, value) => value.asOpt[JsObject].map(InternalEnumForm(k, _))
           }
+        }
+      }
+      case _ => Seq.empty
+    }
+  }
+
+  lazy val annotations: Seq[InternalAnnotationForm] = {
+    (json \ "annotations").asOpt[JsValue] match {
+      case Some(anno: JsObject) => {
+        anno.fields.flatMap {
+          case(k, value) => value.asOpt[JsObject].map(InternalAnnotationForm(k, _))
         }
       }
       case _ => Seq.empty
@@ -244,12 +254,20 @@ case class InternalFieldForm(
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
   attributes: Seq[InternalAttributeForm],
+  annotations: Seq[String],
   warnings: Seq[String] = Seq.empty
 )
 
 case class InternalAttributeForm(
   name: Option[String] = None,
   value: Option[JsObject] = None,
+  description: Option[String] = None,
+  deprecation: Option[InternalDeprecationForm],
+  warnings: Seq[String] = Seq.empty
+)
+
+case class InternalAnnotationForm(
+  name: String,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   warnings: Seq[String] = Seq.empty
@@ -735,6 +753,7 @@ object InternalFieldForm {
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
       attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
+      annotations = JsonUtil.asSeqOfString(json \ "annotations"),
       warnings = warnings ++ JsonUtil.validate(
         json,
         strings = Seq("name"),
@@ -744,7 +763,7 @@ object InternalFieldForm {
         optionalBooleans = Seq("required"),
         optionalNumbers = Seq("minimum", "maximum"),
         optionalArraysOfObjects = Seq("attributes"),
-        optionalAnys = Seq("default")
+        optionalAnys = Seq("default", "annotations")
       )
     )
   }
@@ -778,6 +797,21 @@ object InternalAttributeForm {
   }
 
 }
+
+object InternalAnnotationForm {
+
+  def apply(name: String, json: JsObject): InternalAnnotationForm = InternalAnnotationForm (
+    name = name,
+    description = JsonUtil.asOptString(json \ "description"),
+    deprecation = InternalDeprecationForm.fromJsValue(json),
+    warnings = JsonUtil.validate(
+      json,
+      optionalStrings = Seq("description"),
+      optionalObjects = Seq("deprecation")
+    )
+  )
+}
+
 
 object InternalParameterForm {
 

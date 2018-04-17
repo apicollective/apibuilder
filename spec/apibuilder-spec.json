@@ -35,7 +35,7 @@
         { "name": "Query" },
         { "name": "Form" },
         { "name": "Header" }
-     ]
+      ]
     },
 
     "response_code_option": {
@@ -78,7 +78,8 @@
         { "name": "unions", "type": "[union]", "default": "[]" },
         { "name": "models", "type": "[model]", "default": "[]" },
         { "name": "resources", "type": "[resource]", "default": "[]" },
-        { "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "attributes", "type": "[attribute]", "default": "[]" },
+        { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false}
       ]
     },
 
@@ -161,7 +162,8 @@
         { "name": "minimum", "type": "long", "required": false },
         { "name": "maximum", "type": "long", "required": false },
         { "name": "example", "type": "string", "required": false },
-        { "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "attributes", "type": "[attribute]", "default": "[]" },
+        { "name": "annotations", "type": "[string]", "default": "[]", "required": false}
       ]
     },
 
@@ -270,9 +272,10 @@
         { "name": "organization", "type": "organization" },
         { "name": "application", "type": "application" },
         { "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
-        { "name": "enums", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
+        { "name": "enums", "type": "[string]", "description": "Enums made available by this import", "default": "[]" },
         { "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
-        { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" }
+        { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
+        { "name": "annotations", "type": "[annotation]", "description": "Annotations made available by this import", "default": "[]", "required": false }
       ]
     },
 
@@ -291,8 +294,16 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
+    },
+                
+    "annotation": {
+      "description": "Used to indicate an API concern for a field that is specific to the field's usage but not necessarily its data type. For example, you might use annotations to mark that certain fields contain PII or PCI data and thus should not be stored once processing is complete. Annotations communicate meaning to consumers of an API and may also be used within an implementation or tooling; for example, using static analysis tools to detect logging of sensitive data.",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
     }
-
   }
 
 }

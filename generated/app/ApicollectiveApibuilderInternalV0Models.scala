@@ -17,7 +17,7 @@ package io.apibuilder.internal.v0.models {
   case class Task(
     guid: _root_.java.util.UUID,
     data: io.apibuilder.internal.v0.models.TaskData,
-    numberAttempts: Long = 0,
+    numberAttempts: Long = 0L,
     lastError: _root_.scala.Option[String] = None
   )
 

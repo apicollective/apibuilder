@@ -1,8 +1,7 @@
 package builder
 
 import core.{TypeValidator, TypesProvider, Util}
-import io.apibuilder.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
-import io.apibuilder.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
+import io.apibuilder.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, Header, Annotation, ParameterLocation, ResponseCode, ResponseCodeInt, Operation, Method}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 
 case class ServiceSpecValidator(
@@ -59,7 +58,8 @@ case class ServiceSpecValidator(
     validateParameterDefaults() ++
     validateParameterNames() ++
     validateParameters() ++
-    validateResponses()
+    validateResponses() ++
+    validateAnnotations()
   }
 
   private def validateApidoc(): Seq[String] = {
@@ -154,6 +154,21 @@ case class ServiceSpecValidator(
     }
 
     nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues ++ valuesWithInvalidNames ++ duplicateValues
+  }
+
+  private def validateAnnotations(): Seq[String] = {
+    val nameErrors = service.annotations.flatMap { anno =>
+      Text.validateName(anno.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Annotation[${anno.name}] name is invalid: ${errors.mkString(" and ")}")
+        }
+      }
+    }
+
+    val duplicates = dupsError("Annotation", service.annotations.map(_.name))
+
+    nameErrors ++ duplicates
   }
 
   private[this] def validateEnumValues(): Seq[String] = {
@@ -443,7 +458,25 @@ case class ServiceSpecValidator(
       }
     }
 
-    nameErrors ++ duplicateFieldErrors ++ typeErrors
+    val annotationFieldErrors = service.models.flatMap{ model =>
+      model.fields.flatMap{ field =>
+        field.annotations.flatMap{ anno =>
+          if (service.annotations.map(_.name).contains(anno)){
+            None
+          } else {
+            Some(s"${model.name}.${field.name}.annotation[$anno] is invalid. Annotations must be defined.")
+          }
+        }
+      }
+    }
+
+    val annotationDuplicateErrors = service.models.flatMap{ model =>
+      model.fields.flatMap{ field =>
+        dupsError(s"${model.name}.${field.name}.annotation", field.annotations)
+      }
+    }
+
+    nameErrors ++ duplicateFieldErrors ++ typeErrors ++ annotationFieldErrors ++ annotationDuplicateErrors
   }
 
   /**

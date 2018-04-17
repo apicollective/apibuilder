@@ -132,6 +132,21 @@
       }
     }
 
+    <h2>Annotations</h2>
+    @if(service.annotations.isEmpty) {
+      <em>No annotations</em>
+    } else {
+      @service.annotations.map { annot =>
+      <div id="annot-@lib.UrlKey.generate(annot.name)"></div>
+      <a name="annot-@lib.UrlKey.generate(annot.name)"></a>
+      <div class="version_model">
+        <h3>@annot.name</h3>
+        @annot.deprecation.map(deprecation(_))
+
+        @Html(lib.Markdown(annot.description))
+      </div>
+      }
+    }
     </div>
   }
 

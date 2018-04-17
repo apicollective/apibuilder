@@ -59,4 +59,15 @@ class JsonUtilSpec extends FunSpec with Matchers {
     }
   }
 
+  it("asSeqOfString") {
+    JsonUtil.asSeqOfString(Json.toJson("")) should be(Nil)
+    JsonUtil.asSeqOfString(Json.toJson("  ")) should be(Nil)
+    JsonUtil.asSeqOfString(JsUndefined("null")) should be(Nil)
+
+    JsonUtil.asSeqOfString(Json.toJson("foo")) should be(Seq("foo"))
+    JsonUtil.asSeqOfString(Json.toJson("  foo  ")) should be(Seq("foo"))
+
+    JsonUtil.asSeqOfString(Json.parse("""["foo"]""")) should be(Seq("foo"))
+    JsonUtil.asSeqOfString(Json.parse("""["foo","bar"]""")) should be(Seq("foo","bar"))
+  }
 }

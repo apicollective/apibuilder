@@ -94,6 +94,15 @@
               </ul>
             }
 
+            @if(!service.annotations.isEmpty) {
+            <b>Annotations</b>
+            <ul class="nav nav-sidebar">
+              @service.annotations.map { annot =>
+              <li><a href="#annot-@lib.UrlKey.generate(annot.name)">@annot.name</a></li>
+              }
+            </ul>
+            }
+
             <b>Clients</b>
             <ul class="nav nav-sidebar">
                 @metadata.service.map { service =>
