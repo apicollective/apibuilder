@@ -26,7 +26,7 @@ package io.apibuilder.generator.v0.models {
 
   /**
    * Represents a source file
-   *
+   * 
    * @param name The recommended name for the file.
    * @param dir The recommended directory path for the file where appropriate.
    * @param contents The actual source code.
@@ -40,7 +40,7 @@ package io.apibuilder.generator.v0.models {
 
   /**
    * The generator metadata.
-   *
+   * 
    * @param language A comma separate list of the programming language(s) that this generator
    *        produces
    * @param attributes The list of attributes that this code generator can use. You can find the full
@@ -61,7 +61,7 @@ package io.apibuilder.generator.v0.models {
 
   /**
    * The result of invoking a generator.
-   *
+   * 
    * @param source The actual source code.
    * @param files A collection of source files
    */
@@ -692,7 +692,7 @@ package io.apibuilder.generator.v0 {
   trait Generators {
     /**
      * Get all available generators
-     *
+     * 
      * @param key Filter generators with this key
      * @param limit The number of records to return
      * @param offset Used to paginate. First page of results is 0.

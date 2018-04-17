@@ -17,7 +17,7 @@ package io.apibuilder.internal.v0.models {
   case class Task(
     guid: _root_.java.util.UUID,
     data: io.apibuilder.internal.v0.models.TaskData,
-    numberAttempts: Long = 0,
+    numberAttempts: Long = 0L,
     lastError: _root_.scala.Option[String] = None
   )
 
@@ -34,7 +34,7 @@ package io.apibuilder.internal.v0.models {
    * Provides future compatibility in clients - in the future, when a type is added
    * to the union TaskData, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
-   *
+   * 
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
