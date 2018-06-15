@@ -9,4 +9,4 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.15")
 
 addSbtPlugin("com.gilt.sbt" % "sbt-newrelic" % "0.3.1")
 
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.0")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
