@@ -46,7 +46,7 @@ object Model {
               SwaggerData(
                 externalDocs = m.getExternalDocs,
                 example = m.getExample).toAttribute)
-              .flatten
+              .flatten ++ Util.vendorExtensionsToAttributes(m.getVendorExtensions)
         )), enums(m, name))
     }
   }

@@ -70,7 +70,7 @@ object Operation {
             operationId = op.getOperationId,
             tags = op.getTags
           ).toAttribute
-        ).flatten
+        ).flatten ++ Util.vendorExtensionsToAttributes(op.getVendorExtensions)
     )
   }
 

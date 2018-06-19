@@ -8,9 +8,10 @@ import java.io.File
 import java.util.UUID
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.apibuilder.spec.v0.models.Attribute
 import io.swagger.{models => swaggermodels}
 import io.swagger.models.{parameters => swaggerparams, properties => swaggerproperties}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json._
 
 object Util {
 
@@ -153,6 +154,20 @@ object Util {
     path.getOperationMap().find(_._2 == operation).map(_._1)
 
   /*
+   * Converts the AnyRef from a Swagger parsed document into a JsValue
+   */
+  def swaggerAnyToJsValue(value: Any): JsValue = value match {
+    case v: Boolean => JsBoolean(v)
+    case v: Double => JsNumber(BigDecimal(v))
+    case v: Float => JsNumber(BigDecimal(v))
+    case v: Int => JsNumber(BigDecimal(v))
+    case v: java.util.Map[String, _] => JsObject(v.asScala.map { case (k, v) => (k, swaggerAnyToJsValue(v)) })
+    case v: java.util.List[_] => JsArray(v.asScala.map(swaggerAnyToJsValue))
+    case v: String => JsString(v)
+    case _ => JsNull // Would be ideal to warn here
+  }
+
+  /*
    * Useful to serialize (with Jackson) Java objects from Swagger parser
    */
   val JacksonSerializer = new ObjectMapper() //it's thread-safe
@@ -162,4 +177,26 @@ object Util {
    * Transforms a Java JSON model into the corresponding PlayJson JsValue
    */
   def toJsValue(jsonJavaModel: java.lang.Object): JsValue = Json.parse(toJsonString(jsonJavaModel))
+
+  /*
+   * Transforms the result of getVendorExtensions into a list of Attributes
+   */
+  def vendorExtensionsToAttributes(extensions: java.util.Map[String, Object]): Seq[Attribute] = {
+    vendorExtensionsToAttributesOpt(extensions).getOrElse(Seq.empty)
+  }
+
+  /*
+   * Transforms the result of getVendorExtensions into an optional list of Attributes
+   */
+  def vendorExtensionsToAttributesOpt(extensions: java.util.Map[String, Object]): Option[Seq[Attribute]] = {
+    if (Option(extensions).isEmpty || extensions.isEmpty) None
+    else Some(
+      extensions.asScala.flatMap { case (key, value) =>
+        swaggerAnyToJsValue(value) match {
+          case v: JsObject => Some(Attribute(key.replaceFirst("^x-", ""), v))
+          case _ => None // Would be ideal to warn here
+        }
+      }.toSeq
+    )
+  }
 }

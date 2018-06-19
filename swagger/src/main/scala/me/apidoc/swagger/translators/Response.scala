@@ -2,6 +2,7 @@ package me.apidoc.swagger.translators
 
 import lib.Primitives
 import io.apibuilder.spec.v0.{ models => apidoc }
+import me.apidoc.swagger.Util
 import io.swagger.{ models => swagger }
 
 object Response {
@@ -27,7 +28,8 @@ object Response {
         case Some(schema) => resolver.schemaType(schema)
       },
       description = Option(response.getDescription),
-      deprecation = None
+      deprecation = None,
+      attributes = Util.vendorExtensionsToAttributesOpt(response.getVendorExtensions)
     )
   }
 

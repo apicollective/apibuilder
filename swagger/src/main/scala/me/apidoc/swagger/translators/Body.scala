@@ -3,6 +3,7 @@ package me.apidoc.swagger.translators
 import io.apibuilder.spec.v0.{ models => apidoc }
 import io.swagger.models.{ModelImpl, RefModel}
 import io.swagger.models.{ parameters => swaggerParams }
+import me.apidoc.swagger.Util
 
 object Body {
 
@@ -19,7 +20,8 @@ object Body {
     apidoc.Body(
       `type` = bodyType,
       description = Option(param.getDescription),
-      deprecation = None
+      deprecation = None,
+      attributes = Util.vendorExtensionsToAttributes(param.getVendorExtensions)
     )
   }
 

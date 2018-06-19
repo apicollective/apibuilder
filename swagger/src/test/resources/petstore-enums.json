@@ -110,6 +110,9 @@
               "x-expires": {
                 "type": "string"
               }
+            },
+            "x-foo-response": {
+              "bar": "response"
             }
           },
           "default": {
@@ -118,6 +121,9 @@
               "$ref": "#/definitions/Error"
             }
           }
+        },
+        "x-foo-operation": {
+          "bar": "operation"
         }
       }
     }
@@ -138,12 +144,18 @@
           "type": "string"
         },
         "tag": {
-          "type": "string"
+          "type": "string",
+          "x-foo-field": {
+            "bar": "field"
+          }
         },
         "status": {
           "type": "string",
           "enum": ["available", "pending", "sold"]
         }
+      },
+      "x-foo-model": {
+        "bar": "model"
       }
     },
     "Error": {
@@ -161,5 +173,8 @@
         }
       }
     }
+  },
+  "x-foo-service": {
+    "bar": "service"
   }
 }

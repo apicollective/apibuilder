@@ -119,6 +119,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/newPet"
+            },
+            "x-foo-body": {
+              "bar": "body"
             }
           }
         ],

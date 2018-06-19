@@ -23,7 +23,8 @@ object Field {
       `type` = resolver.schemaType(prop),
       description = Option(prop.getDescription),
       required = prop.getRequired(),
-      example = Option(prop.getExample()).map(_.toString)
+      example = Option(prop.getExample()).map(_.toString),
+      attributes = Util.vendorExtensionsToAttributes(prop.getVendorExtensions)
     )
     specialize(base, prop, modelName)
   }
