@@ -44,6 +44,8 @@ object OriginalUtil {
         case Success(ot) => ot
         case Failure(_) => None
       }
+    } else if (trimmed.contains("swagger:")) {
+      Some(OriginalType.Swagger)
     } else {
       None
     }

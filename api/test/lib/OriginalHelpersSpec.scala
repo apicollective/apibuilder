@@ -30,6 +30,10 @@ class OriginalHelpersSpec extends PlaySpec with OneAppPerSuite with TestHelper {
       OriginalUtil.guessType(readFile("../swagger/src/test/resources/petstore-external-docs-example-security.json")) must be(Some(OriginalType.Swagger))
     }
 
+    "swaggerYaml" in {
+      OriginalUtil.guessType("swagger: '2.0'\ninfo:\n  version: 0.0.1") must be(Some(OriginalType.Swagger))
+    }
+
     "avroIdl" in {
       OriginalUtil.guessType("  @namespace  ") must be(Some(OriginalType.AvroIdl))
       OriginalUtil.guessType("  protocol bar {}  ") must be(Some(OriginalType.AvroIdl))
