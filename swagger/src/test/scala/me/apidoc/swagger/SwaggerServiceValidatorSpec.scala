@@ -68,7 +68,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     ("schemes", JsArray(Seq(JsString("http")))),
                     ("host", JsString("petstore.swagger.wordnik.com")),
                     ("basePath", JsString("/api"))
-                  )))))
+                  ))),
+                  Attribute(
+                    name = "foo-service",
+                    value = JsObject(Seq(("bar", JsString("service"))))
+                  )))
 
               service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
               checkModel(
@@ -91,14 +95,22 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Field(
                       name = "tag",
                       `type` = "string",
-                      required = false
+                      required = false,
+                      attributes = Seq(Attribute(
+                        name = "foo-field",
+                        value = JsObject(Seq(("bar", JsString("field"))))
+                      ))
                     ),
                     Field(
                       name = "status",
                       `type` = "PetStatus",
                       required = false
                     )
-                  )
+                  ),
+                  attributes = Seq(Attribute(
+                    name = "foo-model",
+                    value = JsObject(Seq(("bar", JsString("model"))))
+                  ))
                 )
               )
 
@@ -132,6 +144,62 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                   description = None,
                   deprecation = None,
                   operations = Seq(
+                    Operation(
+                      method = Get,
+                      path = "/pets/",
+                      description = Some("find pets by name and status - as query params"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(
+                        Parameter(
+                          name = "name",
+                          `type` = "string",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None),
+                        Parameter(
+                          name = "status",
+                          `type` = "PetStatusGetQuery",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None,
+                          attributes = Some(Seq(Attribute(
+                            name = "foo-response",
+                            value = JsObject(Seq(("bar", JsString("response"))))
+                          )))),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes =  Seq(Attribute(
+                        name = SwaggerData.AttributeName,
+                        description = Some(SwaggerData.AttributeDescription),
+                        value = JsObject(Seq(
+                          ("summary", JsString("find pets by name and status - as query params"))
+                        ))),
+                        Attribute(
+                          name = "foo-operation",
+                          value = JsObject(Seq(("bar", JsString("operation"))))
+                        ))),
                     Operation(
                       method = Get,
                       path = "/pets/:status",
@@ -202,57 +270,9 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                         name = SwaggerData.AttributeName,
                         description = Some(SwaggerData.AttributeDescription),
                         value = JsObject(Seq(
+                          ("tags", JsArray(Seq(JsString("tag1"), JsString("tag2")))),
                           ("summary", JsString("delete pets by status - as a path param")),
-                          ("operationId", JsString("deletePet")),
-                          ("tags", JsArray(Seq(JsString("tag1"), JsString("tag2"))))
-                        ))))),
-                    Operation(
-                      method = Get,
-                      path = "/pets/",
-                      description = Some("find pets by name and status - as query params"),
-                      deprecation = None,
-                      body = None,
-                      parameters = Seq(
-                        Parameter(
-                          name = "name",
-                          `type` = "string",
-                          location = Query,
-                          description = None,
-                          deprecation = None,
-                          required = true,
-                          default = None,
-                          minimum = None,
-                          maximum = None,
-                          example = None),
-                        Parameter(
-                          name = "status",
-                          `type` = "PetStatusGetQuery",
-                          location = Query,
-                          description = None,
-                          deprecation = None,
-                          required = true,
-                          default = None,
-                          minimum = None,
-                          maximum = None,
-                          example = None)
-                      ),
-                      responses = Seq(
-                        Response(
-                          code = ResponseCodeInt(200),
-                          `type` = "[Pet]",
-                          description = Some("find pet response"),
-                          deprecation = None),
-                        Response(
-                          code = ResponseCodeOption.Default,
-                          `type` = "Error",
-                          description = Some("unexpected error"),
-                          deprecation = None)
-                      ),
-                      attributes =  Seq(Attribute(
-                        name = SwaggerData.AttributeName,
-                        description = Some(SwaggerData.AttributeDescription),
-                        value = JsObject(Seq(
-                          ("summary", JsString("find pets by name and status - as query params"))
+                          ("operationId", JsString("deletePet"))
                         )))))
                   ),
                   attributes = Seq())

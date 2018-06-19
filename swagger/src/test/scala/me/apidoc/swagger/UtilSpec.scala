@@ -1,6 +1,7 @@
 package me.apidoc.swagger
 
 import org.scalatest.{FunSpec, Matchers}
+import play.api.libs.json._
 
 class UtilSpec extends FunSpec with Matchers {
 
@@ -38,6 +39,20 @@ class UtilSpec extends FunSpec with Matchers {
     Util.choose(Some("a"), None) should be(Some("a"))
     Util.choose(Some("a"), Some("b")) should be(Some("a"))
     Util.choose(None, Some("b")) should be(Some("b"))
+  }
+
+  it("swaggerAnyToJsValue") {
+    import collection.JavaConverters._
+    case class Unsupported(foo: String)
+    Util.swaggerAnyToJsValue("foo") should be(JsString("foo"))
+    Util.swaggerAnyToJsValue(false) should be(JsFalse)
+    Util.swaggerAnyToJsValue(true) should be(JsTrue)
+    Util.swaggerAnyToJsValue(1.3) should be(JsNumber(BigDecimal(1.3)))
+    Util.swaggerAnyToJsValue(1) should be(JsNumber(BigDecimal(1)))
+    Util.swaggerAnyToJsValue(1.3f) should be(JsNumber(BigDecimal(1.3f)))
+    Util.swaggerAnyToJsValue(Seq("foo", 1, Seq("bar").asJava).asJava) should be(JsArray(Seq(JsString("foo"), JsNumber(BigDecimal(1)), JsArray(Seq(JsString("bar"))))))
+    Util.swaggerAnyToJsValue(Map("foo" -> 1, "bar" -> Seq("baz", 1.3).asJava).asJava) should be(JsObject(Seq("foo" -> JsNumber(BigDecimal(1)), "bar" -> JsArray(Seq(JsString("baz"), JsNumber(BigDecimal(1.3)))))))
+    Util.swaggerAnyToJsValue(Unsupported("bar")) should be(JsNull)
   }
 
   it("toOption") {

@@ -64,7 +64,7 @@ case class Parser(config: ServiceConfiguration) {
             host = swagger.getHost,
             basePath = swagger.getBasePath
           ).toAttribute
-        ).flatten
+        ).flatten ++ Util.vendorExtensionsToAttributes(swagger.getVendorExtensions)
     )
   }
 
