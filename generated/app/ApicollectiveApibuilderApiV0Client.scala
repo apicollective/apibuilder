@@ -20,7 +20,7 @@ package io.apibuilder.api.v0.models {
     case object DiffBreaking extends DiffType { override def toString = "diff_breaking" }
     case object DiffNonBreaking extends DiffType { override def toString = "diff_non_breaking" }
 
-    case class UNDEFINED(override val toString: String) extends DiffType
+    final case class UNDEFINED(override val toString: String) extends DiffType
 
     val all: scala.List[DiffType] = scala.List(DiffBreaking, DiffNonBreaking)
 
@@ -49,7 +49,7 @@ package io.apibuilder.api.v0.models {
      */
     case object ApplicationSummary extends ItemDetailType { override def toString = "application_summary" }
 
-    case class UNDEFINED(override val toString: String) extends ItemDetailType
+    final case class UNDEFINED(override val toString: String) extends ItemDetailType
 
     val all: scala.List[ItemDetailType] = scala.List(ApplicationSummary)
 
@@ -71,7 +71,7 @@ package io.apibuilder.api.v0.models {
    * @param visibility Controls who is able to view this application
    * @param lastUpdatedAt The updated_at of this application or created_at of it's latest version
    */
-  case class Application(
+  final case class Application(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
     name: String,
@@ -85,7 +85,7 @@ package io.apibuilder.api.v0.models {
   /**
    * @param key Defaults to a key generated from the application name
    */
-  case class ApplicationForm(
+  final case class ApplicationForm(
     name: String,
     key: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
@@ -97,7 +97,7 @@ package io.apibuilder.api.v0.models {
    * @param key Used as a unique key in the URL path. Key is automatically derived from the
    *        application name.
    */
-  case class ApplicationMetadata(
+  final case class ApplicationMetadata(
     guid: _root_.java.util.UUID,
     key: String
   )
@@ -105,14 +105,14 @@ package io.apibuilder.api.v0.models {
   /**
    * Describes the versions associated with a given application
    */
-  case class ApplicationMetadataVersion(
+  final case class ApplicationMetadataVersion(
     version: String
   )
 
   /**
    * Summary of an application sufficient for display and links
    */
-  case class ApplicationSummary(
+  final case class ApplicationSummary(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
     key: String
@@ -128,14 +128,14 @@ package io.apibuilder.api.v0.models {
    * @param description Optional description - a good description here will indicate which code
    *        generators it applies to and what effect it will have on those code generators.
    */
-  case class Attribute(
+  final case class Attribute(
     guid: _root_.java.util.UUID,
     name: String,
     description: _root_.scala.Option[String] = None,
     audit: io.apibuilder.common.v0.models.Audit
   )
 
-  case class AttributeForm(
+  final case class AttributeForm(
     name: String,
     description: _root_.scala.Option[String] = None
   )
@@ -145,7 +145,7 @@ package io.apibuilder.api.v0.models {
    * @param name The name of the attribute. Globally unique and an 'identifier' (lower case, url
    *        safe, etc.)
    */
-  case class AttributeSummary(
+  final case class AttributeSummary(
     guid: _root_.java.util.UUID,
     name: String
   )
@@ -157,21 +157,21 @@ package io.apibuilder.api.v0.models {
    * 
    * @param guid Internal unique identifier for this attribute value.
    */
-  case class AttributeValue(
+  final case class AttributeValue(
     guid: _root_.java.util.UUID,
     attribute: io.apibuilder.api.v0.models.AttributeSummary,
     value: String,
     audit: io.apibuilder.common.v0.models.Audit
   )
 
-  case class AttributeValueForm(
+  final case class AttributeValueForm(
     value: String
   )
 
   /**
    * Represents the result of a successful authorization
    */
-  case class Authentication(
+  final case class Authentication(
     user: io.apibuilder.api.v0.models.User,
     session: io.apibuilder.api.v0.models.Session
   )
@@ -183,7 +183,7 @@ package io.apibuilder.api.v0.models {
    *        the changed record)
    * @param changedBy Records who made the actual change
    */
-  case class Change(
+  final case class Change(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
     application: io.apibuilder.common.v0.models.Reference,
@@ -199,7 +199,7 @@ package io.apibuilder.api.v0.models {
    * Represents a simpler model of a version specifically for the use case of
    * displaying changes
    */
-  case class ChangeVersion(
+  final case class ChangeVersion(
     guid: _root_.java.util.UUID,
     version: String
   )
@@ -209,7 +209,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param token The actual token. Guaranteed to be globally unique.
    */
-  case class CleartextToken(
+  final case class CleartextToken(
     token: String
   )
 
@@ -219,7 +219,7 @@ package io.apibuilder.api.v0.models {
    * @param source The actual source code.
    * @param files A collection of source files
    */
-  case class Code(
+  final case class Code(
     generator: io.apibuilder.api.v0.models.GeneratorWithService,
     @deprecated("Use files instead") source: String,
     files: Seq[io.apibuilder.generator.v0.models.File] = Nil
@@ -230,14 +230,14 @@ package io.apibuilder.api.v0.models {
    * indicates that it is possible for an existing client to now experience an error
    * or invalid data due to the diff.
    */
-  case class DiffBreaking(
+  final case class DiffBreaking(
     description: String
   ) extends Diff
 
   /**
    * Represents a single NON breaking diff of an application version.
    */
-  case class DiffNonBreaking(
+  final case class DiffNonBreaking(
     description: String
   ) extends Diff
 
@@ -251,7 +251,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param name The domain name
    */
-  case class Domain(
+  final case class Domain(
     name: String
   )
 
@@ -260,7 +260,7 @@ package io.apibuilder.api.v0.models {
    * identifier used to lookup the specific email address and user account for which
    * we sent an email verification email.
    */
-  case class EmailVerificationConfirmationForm(
+  final case class EmailVerificationConfirmationForm(
     token: String
   )
 
@@ -268,12 +268,12 @@ package io.apibuilder.api.v0.models {
    * @param code Machine readable code for this specific error message
    * @param message Description of the error
    */
-  case class Error(
+  final case class Error(
     code: String,
     message: String
   )
 
-  case class GeneratorForm(
+  final case class GeneratorForm(
     serviceGuid: _root_.java.util.UUID,
     generator: io.apibuilder.generator.v0.models.Generator
   )
@@ -281,20 +281,20 @@ package io.apibuilder.api.v0.models {
   /**
    * Defines a service that provides one or more code generators
    */
-  case class GeneratorService(
+  final case class GeneratorService(
     guid: _root_.java.util.UUID,
     uri: String,
     audit: io.apibuilder.common.v0.models.Audit
   )
 
-  case class GeneratorServiceForm(
+  final case class GeneratorServiceForm(
     uri: String
   )
 
   /**
    * Wraps a service and a generator providing easier access for applications.
    */
-  case class GeneratorWithService(
+  final case class GeneratorWithService(
     service: io.apibuilder.api.v0.models.GeneratorService,
     generator: io.apibuilder.generator.v0.models.Generator
   )
@@ -307,7 +307,7 @@ package io.apibuilder.api.v0.models {
    * @param guid Unique identifer for this item. By using a UUID, you can combine with the type
    *        to figure out the URI for the resource
    */
-  case class Item(
+  final case class Item(
     guid: _root_.java.util.UUID,
     detail: io.apibuilder.api.v0.models.ItemDetail,
     label: String,
@@ -322,7 +322,7 @@ package io.apibuilder.api.v0.models {
    * @param guid Internal unique identifier for this membership.
    * @param role The role this user plays for this organization. Typically member or admin.
    */
-  case class Membership(
+  final case class Membership(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
     organization: io.apibuilder.api.v0.models.Organization,
@@ -340,7 +340,7 @@ package io.apibuilder.api.v0.models {
    * @param role The requested role for membership to this organization. Typically member or
    *        admin.
    */
-  case class MembershipRequest(
+  final case class MembershipRequest(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
     organization: io.apibuilder.api.v0.models.Organization,
@@ -351,7 +351,7 @@ package io.apibuilder.api.v0.models {
   /**
    * @param orgKey The key of the organization to which we are moving this item
    */
-  case class MoveForm(
+  final case class MoveForm(
     orgKey: String
   )
 
@@ -364,7 +364,7 @@ package io.apibuilder.api.v0.models {
    * @param name The name of this organization.
    * @param namespace Global namespace for this organization.
    */
-  case class Organization(
+  final case class Organization(
     guid: _root_.java.util.UUID,
     key: String,
     name: String,
@@ -380,7 +380,7 @@ package io.apibuilder.api.v0.models {
    * @param visibility Public organizations will be listed in apibuilder directory. Organizations with
    *        visibility organization will only be visible to members of that org.
    */
-  case class OrganizationForm(
+  final case class OrganizationForm(
     name: String,
     key: _root_.scala.Option[String] = None,
     namespace: String,
@@ -391,7 +391,7 @@ package io.apibuilder.api.v0.models {
   /**
    * Represents the original input used to create an application version
    */
-  case class Original(
+  final case class Original(
     `type`: io.apibuilder.api.v0.models.OriginalType,
     data: String
   )
@@ -399,7 +399,7 @@ package io.apibuilder.api.v0.models {
   /**
    * @param `type` If not specified, we set the type by inspecting the data
    */
-  case class OriginalForm(
+  final case class OriginalForm(
     `type`: _root_.scala.Option[io.apibuilder.api.v0.models.OriginalType] = None,
     data: String
   )
@@ -409,7 +409,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param token Unique one time use token to change a password
    */
-  case class PasswordReset(
+  final case class PasswordReset(
     token: String,
     password: String
   )
@@ -420,7 +420,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param email The email address for which we generate the password reset.
    */
-  case class PasswordResetRequest(
+  final case class PasswordResetRequest(
     email: String
   )
 
@@ -429,7 +429,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param id Cryptographically secure session id
    */
-  case class Session(
+  final case class Session(
     id: String,
     expiresAt: _root_.org.joda.time.DateTime
   )
@@ -439,7 +439,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param guid Internal unique identifier for this subscription record
    */
-  case class Subscription(
+  final case class Subscription(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.api.v0.models.Organization,
     user: io.apibuilder.api.v0.models.User,
@@ -447,7 +447,7 @@ package io.apibuilder.api.v0.models {
     audit: io.apibuilder.common.v0.models.Audit
   )
 
-  case class SubscriptionForm(
+  final case class SubscriptionForm(
     organizationKey: String,
     userGuid: _root_.java.util.UUID,
     publication: io.apibuilder.api.v0.models.Publication
@@ -461,7 +461,7 @@ package io.apibuilder.api.v0.models {
    * @param maskedToken The masked from of the token.
    * @param description optional description to help the user manage the token.
    */
-  case class Token(
+  final case class Token(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
     maskedToken: String,
@@ -472,7 +472,7 @@ package io.apibuilder.api.v0.models {
   /**
    * @param userGuid The user for which we are creating the token.
    */
-  case class TokenForm(
+  final case class TokenForm(
     userGuid: _root_.java.util.UUID,
     description: _root_.scala.Option[String] = None
   )
@@ -483,7 +483,7 @@ package io.apibuilder.api.v0.models {
    * @param guid Internal unique identifier for this user.
    * @param nickname Public unique identifier for this user.
    */
-  case class User(
+  final case class User(
     guid: _root_.java.util.UUID,
     email: String,
     nickname: String,
@@ -494,7 +494,7 @@ package io.apibuilder.api.v0.models {
   /**
    * @param nickname Defaults to a unique identifier based on email address
    */
-  case class UserForm(
+  final case class UserForm(
     email: String,
     password: String,
     nickname: _root_.scala.Option[String] = None,
@@ -504,12 +504,12 @@ package io.apibuilder.api.v0.models {
   /**
    * Summary of a user sufficient for display
    */
-  case class UserSummary(
+  final case class UserSummary(
     guid: _root_.java.util.UUID,
     nickname: String
   )
 
-  case class UserUpdateForm(
+  final case class UserUpdateForm(
     email: String,
     nickname: String,
     name: _root_.scala.Option[String] = None
@@ -524,7 +524,7 @@ package io.apibuilder.api.v0.models {
    * @param errors Contains any validation errors that result from parsing the json document. If
    *        empty, the document is valid.
    */
-  case class Validation(
+  final case class Validation(
     valid: Boolean,
     errors: Seq[String] = Nil
   )
@@ -539,7 +539,7 @@ package io.apibuilder.api.v0.models {
    * @param original The original uploaded file describing this version, if available
    * @param service spec/spec.json description of this API
    */
-  case class Version(
+  final case class Version(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
     application: io.apibuilder.common.v0.models.Reference,
@@ -552,7 +552,7 @@ package io.apibuilder.api.v0.models {
   /**
    * @param visibility If provided, updates the visibility for all versions of this application
    */
-  case class VersionForm(
+  final case class VersionForm(
     originalForm: io.apibuilder.api.v0.models.OriginalForm,
     visibility: _root_.scala.Option[io.apibuilder.api.v0.models.Visibility] = None
   )
@@ -563,7 +563,7 @@ package io.apibuilder.api.v0.models {
    * 
    * @param guid Internal unique identifier for this watch
    */
-  case class Watch(
+  final case class Watch(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
     organization: io.apibuilder.api.v0.models.Organization,
@@ -571,7 +571,7 @@ package io.apibuilder.api.v0.models {
     audit: io.apibuilder.common.v0.models.Audit
   )
 
-  case class WatchForm(
+  final case class WatchForm(
     userGuid: _root_.java.util.UUID,
     organizationKey: String,
     applicationKey: String
@@ -585,7 +585,7 @@ package io.apibuilder.api.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class DiffUndefinedType(
+  final case class DiffUndefinedType(
     description: String
   ) extends Diff
 
@@ -597,7 +597,7 @@ package io.apibuilder.api.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class ItemDetailUndefinedType(
+  final case class ItemDetailUndefinedType(
     description: String
   ) extends ItemDetail
 
@@ -619,7 +619,7 @@ package io.apibuilder.api.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends AppSortBy
+    final case class UNDEFINED(override val toString: String) extends AppSortBy
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -668,7 +668,7 @@ package io.apibuilder.api.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends OriginalType
+    final case class UNDEFINED(override val toString: String) extends OriginalType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -724,7 +724,7 @@ package io.apibuilder.api.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Publication
+    final case class UNDEFINED(override val toString: String) extends Publication
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -758,7 +758,7 @@ package io.apibuilder.api.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends SortOrder
+    final case class UNDEFINED(override val toString: String) extends SortOrder
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -805,7 +805,7 @@ package io.apibuilder.api.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Visibility
+    final case class UNDEFINED(override val toString: String) extends Visibility
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -1020,16 +1020,16 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiApplication: play.api.libs.json.Reads[Application] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "organization").read[io.apibuilder.common.v0.models.Reference] and
-        (__ \ "name").read[String] and
-        (__ \ "key").read[String] and
-        (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "last_updated_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Application.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        organization <- (__ \ "organization").read[io.apibuilder.common.v0.models.Reference]
+        name <- (__ \ "name").read[String]
+        key <- (__ \ "key").read[String]
+        visibility <- (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility]
+        description <- (__ \ "description").readNullable[String]
+        lastUpdatedAt <- (__ \ "last_updated_at").read[_root_.org.joda.time.DateTime]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Application(guid, organization, name, key, visibility, description, lastUpdatedAt, audit)
     }
 
     def jsObjectApplication(obj: io.apibuilder.api.v0.models.Application): play.api.libs.json.JsObject = {
@@ -1056,12 +1056,12 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiApplicationForm: play.api.libs.json.Reads[ApplicationForm] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "key").readNullable[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility]
-      )(ApplicationForm.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        key <- (__ \ "key").readNullable[String]
+        description <- (__ \ "description").readNullable[String]
+        visibility <- (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility]
+      } yield ApplicationForm(name, key, description, visibility)
     }
 
     def jsObjectApplicationForm(obj: io.apibuilder.api.v0.models.ApplicationForm): play.api.libs.json.JsObject = {
@@ -1087,10 +1087,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiApplicationMetadata: play.api.libs.json.Reads[ApplicationMetadata] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "key").read[String]
-      )(ApplicationMetadata.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        key <- (__ \ "key").read[String]
+      } yield ApplicationMetadata(guid, key)
     }
 
     def jsObjectApplicationMetadata(obj: io.apibuilder.api.v0.models.ApplicationMetadata): play.api.libs.json.JsObject = {
@@ -1127,11 +1127,11 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiApplicationSummary: play.api.libs.json.Reads[ApplicationSummary] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "organization").read[io.apibuilder.common.v0.models.Reference] and
-        (__ \ "key").read[String]
-      )(ApplicationSummary.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        organization <- (__ \ "organization").read[io.apibuilder.common.v0.models.Reference]
+        key <- (__ \ "key").read[String]
+      } yield ApplicationSummary(guid, organization, key)
     }
 
     def jsObjectApplicationSummary(obj: io.apibuilder.api.v0.models.ApplicationSummary): play.api.libs.json.JsObject = {
@@ -1143,12 +1143,12 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiAttribute: play.api.libs.json.Reads[Attribute] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Attribute.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        name <- (__ \ "name").read[String]
+        description <- (__ \ "description").readNullable[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Attribute(guid, name, description, audit)
     }
 
     def jsObjectAttribute(obj: io.apibuilder.api.v0.models.Attribute): play.api.libs.json.JsObject = {
@@ -1171,10 +1171,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiAttributeForm: play.api.libs.json.Reads[AttributeForm] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String]
-      )(AttributeForm.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        description <- (__ \ "description").readNullable[String]
+      } yield AttributeForm(name, description)
     }
 
     def jsObjectAttributeForm(obj: io.apibuilder.api.v0.models.AttributeForm): play.api.libs.json.JsObject = {
@@ -1195,10 +1195,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiAttributeSummary: play.api.libs.json.Reads[AttributeSummary] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "name").read[String]
-      )(AttributeSummary.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        name <- (__ \ "name").read[String]
+      } yield AttributeSummary(guid, name)
     }
 
     def jsObjectAttributeSummary(obj: io.apibuilder.api.v0.models.AttributeSummary): play.api.libs.json.JsObject = {
@@ -1217,12 +1217,12 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiAttributeValue: play.api.libs.json.Reads[AttributeValue] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "attribute").read[io.apibuilder.api.v0.models.AttributeSummary] and
-        (__ \ "value").read[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(AttributeValue.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        attribute <- (__ \ "attribute").read[io.apibuilder.api.v0.models.AttributeSummary]
+        value <- (__ \ "value").read[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield AttributeValue(guid, attribute, value, audit)
     }
 
     def jsObjectAttributeValue(obj: io.apibuilder.api.v0.models.AttributeValue): play.api.libs.json.JsObject = {
@@ -1261,10 +1261,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiAuthentication: play.api.libs.json.Reads[Authentication] = {
-      (
-        (__ \ "user").read[io.apibuilder.api.v0.models.User] and
-        (__ \ "session").read[io.apibuilder.api.v0.models.Session]
-      )(Authentication.apply _)
+      for {
+        user <- (__ \ "user").read[io.apibuilder.api.v0.models.User]
+        session <- (__ \ "session").read[io.apibuilder.api.v0.models.Session]
+      } yield Authentication(user, session)
     }
 
     def jsObjectAuthentication(obj: io.apibuilder.api.v0.models.Authentication): play.api.libs.json.JsObject = {
@@ -1283,17 +1283,17 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiChange: play.api.libs.json.Reads[Change] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "organization").read[io.apibuilder.common.v0.models.Reference] and
-        (__ \ "application").read[io.apibuilder.common.v0.models.Reference] and
-        (__ \ "from_version").read[io.apibuilder.api.v0.models.ChangeVersion] and
-        (__ \ "to_version").read[io.apibuilder.api.v0.models.ChangeVersion] and
-        (__ \ "diff").read[io.apibuilder.api.v0.models.Diff] and
-        (__ \ "changed_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "changed_by").read[io.apibuilder.api.v0.models.UserSummary] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Change.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        organization <- (__ \ "organization").read[io.apibuilder.common.v0.models.Reference]
+        application <- (__ \ "application").read[io.apibuilder.common.v0.models.Reference]
+        fromVersion <- (__ \ "from_version").read[io.apibuilder.api.v0.models.ChangeVersion]
+        toVersion <- (__ \ "to_version").read[io.apibuilder.api.v0.models.ChangeVersion]
+        diff <- (__ \ "diff").read[io.apibuilder.api.v0.models.Diff]
+        changedAt <- (__ \ "changed_at").read[_root_.org.joda.time.DateTime]
+        changedBy <- (__ \ "changed_by").read[io.apibuilder.api.v0.models.UserSummary]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Change(guid, organization, application, fromVersion, toVersion, diff, changedAt, changedBy, audit)
     }
 
     def jsObjectChange(obj: io.apibuilder.api.v0.models.Change): play.api.libs.json.JsObject = {
@@ -1319,10 +1319,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiChangeVersion: play.api.libs.json.Reads[ChangeVersion] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "version").read[String]
-      )(ChangeVersion.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        version <- (__ \ "version").read[String]
+      } yield ChangeVersion(guid, version)
     }
 
     def jsObjectChangeVersion(obj: io.apibuilder.api.v0.models.ChangeVersion): play.api.libs.json.JsObject = {
@@ -1359,11 +1359,11 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiCode: play.api.libs.json.Reads[Code] = {
-      (
-        (__ \ "generator").read[io.apibuilder.api.v0.models.GeneratorWithService] and
-        (__ \ "source").read[String] and
-        (__ \ "files").read[Seq[io.apibuilder.generator.v0.models.File]]
-      )(Code.apply _)
+      for {
+        generator <- (__ \ "generator").read[io.apibuilder.api.v0.models.GeneratorWithService]
+        source <- (__ \ "source").read[String]
+        files <- (__ \ "files").read[Seq[io.apibuilder.generator.v0.models.File]]
+      } yield Code(generator, source, files)
     }
 
     def jsObjectCode(obj: io.apibuilder.api.v0.models.Code): play.api.libs.json.JsObject = {
@@ -1439,10 +1439,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiError: play.api.libs.json.Reads[Error] = {
-      (
-        (__ \ "code").read[String] and
-        (__ \ "message").read[String]
-      )(Error.apply _)
+      for {
+        code <- (__ \ "code").read[String]
+        message <- (__ \ "message").read[String]
+      } yield Error(code, message)
     }
 
     def jsObjectError(obj: io.apibuilder.api.v0.models.Error): play.api.libs.json.JsObject = {
@@ -1461,10 +1461,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiGeneratorForm: play.api.libs.json.Reads[GeneratorForm] = {
-      (
-        (__ \ "service_guid").read[_root_.java.util.UUID] and
-        (__ \ "generator").read[io.apibuilder.generator.v0.models.Generator]
-      )(GeneratorForm.apply _)
+      for {
+        serviceGuid <- (__ \ "service_guid").read[_root_.java.util.UUID]
+        generator <- (__ \ "generator").read[io.apibuilder.generator.v0.models.Generator]
+      } yield GeneratorForm(serviceGuid, generator)
     }
 
     def jsObjectGeneratorForm(obj: io.apibuilder.api.v0.models.GeneratorForm): play.api.libs.json.JsObject = {
@@ -1483,11 +1483,11 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiGeneratorService: play.api.libs.json.Reads[GeneratorService] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "uri").read[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(GeneratorService.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        uri <- (__ \ "uri").read[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield GeneratorService(guid, uri, audit)
     }
 
     def jsObjectGeneratorService(obj: io.apibuilder.api.v0.models.GeneratorService): play.api.libs.json.JsObject = {
@@ -1525,10 +1525,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiGeneratorWithService: play.api.libs.json.Reads[GeneratorWithService] = {
-      (
-        (__ \ "service").read[io.apibuilder.api.v0.models.GeneratorService] and
-        (__ \ "generator").read[io.apibuilder.generator.v0.models.Generator]
-      )(GeneratorWithService.apply _)
+      for {
+        service <- (__ \ "service").read[io.apibuilder.api.v0.models.GeneratorService]
+        generator <- (__ \ "generator").read[io.apibuilder.generator.v0.models.Generator]
+      } yield GeneratorWithService(service, generator)
     }
 
     def jsObjectGeneratorWithService(obj: io.apibuilder.api.v0.models.GeneratorWithService): play.api.libs.json.JsObject = {
@@ -1547,12 +1547,12 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiItem: play.api.libs.json.Reads[Item] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "detail").read[io.apibuilder.api.v0.models.ItemDetail] and
-        (__ \ "label").read[String] and
-        (__ \ "description").readNullable[String]
-      )(Item.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        detail <- (__ \ "detail").read[io.apibuilder.api.v0.models.ItemDetail]
+        label <- (__ \ "label").read[String]
+        description <- (__ \ "description").readNullable[String]
+      } yield Item(guid, detail, label, description)
     }
 
     def jsObjectItem(obj: io.apibuilder.api.v0.models.Item): play.api.libs.json.JsObject = {
@@ -1575,13 +1575,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiMembership: play.api.libs.json.Reads[Membership] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[io.apibuilder.api.v0.models.User] and
-        (__ \ "organization").read[io.apibuilder.api.v0.models.Organization] and
-        (__ \ "role").read[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Membership.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        user <- (__ \ "user").read[io.apibuilder.api.v0.models.User]
+        organization <- (__ \ "organization").read[io.apibuilder.api.v0.models.Organization]
+        role <- (__ \ "role").read[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Membership(guid, user, organization, role, audit)
     }
 
     def jsObjectMembership(obj: io.apibuilder.api.v0.models.Membership): play.api.libs.json.JsObject = {
@@ -1603,13 +1603,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[io.apibuilder.api.v0.models.User] and
-        (__ \ "organization").read[io.apibuilder.api.v0.models.Organization] and
-        (__ \ "role").read[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(MembershipRequest.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        user <- (__ \ "user").read[io.apibuilder.api.v0.models.User]
+        organization <- (__ \ "organization").read[io.apibuilder.api.v0.models.Organization]
+        role <- (__ \ "role").read[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield MembershipRequest(guid, user, organization, role, audit)
     }
 
     def jsObjectMembershipRequest(obj: io.apibuilder.api.v0.models.MembershipRequest): play.api.libs.json.JsObject = {
@@ -1649,15 +1649,15 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiOrganization: play.api.libs.json.Reads[Organization] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "key").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "namespace").read[String] and
-        (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility] and
-        (__ \ "domains").read[Seq[io.apibuilder.api.v0.models.Domain]] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Organization.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        key <- (__ \ "key").read[String]
+        name <- (__ \ "name").read[String]
+        namespace <- (__ \ "namespace").read[String]
+        visibility <- (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility]
+        domains <- (__ \ "domains").read[Seq[io.apibuilder.api.v0.models.Domain]]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Organization(guid, key, name, namespace, visibility, domains, audit)
     }
 
     def jsObjectOrganization(obj: io.apibuilder.api.v0.models.Organization): play.api.libs.json.JsObject = {
@@ -1681,13 +1681,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiOrganizationForm: play.api.libs.json.Reads[OrganizationForm] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "key").readNullable[String] and
-        (__ \ "namespace").read[String] and
-        (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility] and
-        (__ \ "domains").readNullable[Seq[String]]
-      )(OrganizationForm.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        key <- (__ \ "key").readNullable[String]
+        namespace <- (__ \ "namespace").read[String]
+        visibility <- (__ \ "visibility").read[io.apibuilder.api.v0.models.Visibility]
+        domains <- (__ \ "domains").readNullable[Seq[String]]
+      } yield OrganizationForm(name, key, namespace, visibility, domains)
     }
 
     def jsObjectOrganizationForm(obj: io.apibuilder.api.v0.models.OrganizationForm): play.api.libs.json.JsObject = {
@@ -1714,10 +1714,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiOriginal: play.api.libs.json.Reads[Original] = {
-      (
-        (__ \ "type").read[io.apibuilder.api.v0.models.OriginalType] and
-        (__ \ "data").read[String]
-      )(Original.apply _)
+      for {
+        `type` <- (__ \ "type").read[io.apibuilder.api.v0.models.OriginalType]
+        data <- (__ \ "data").read[String]
+      } yield Original(`type`, data)
     }
 
     def jsObjectOriginal(obj: io.apibuilder.api.v0.models.Original): play.api.libs.json.JsObject = {
@@ -1736,10 +1736,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiOriginalForm: play.api.libs.json.Reads[OriginalForm] = {
-      (
-        (__ \ "type").readNullable[io.apibuilder.api.v0.models.OriginalType] and
-        (__ \ "data").read[String]
-      )(OriginalForm.apply _)
+      for {
+        `type` <- (__ \ "type").readNullable[io.apibuilder.api.v0.models.OriginalType]
+        data <- (__ \ "data").read[String]
+      } yield OriginalForm(`type`, data)
     }
 
     def jsObjectOriginalForm(obj: io.apibuilder.api.v0.models.OriginalForm): play.api.libs.json.JsObject = {
@@ -1760,10 +1760,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiPasswordReset: play.api.libs.json.Reads[PasswordReset] = {
-      (
-        (__ \ "token").read[String] and
-        (__ \ "password").read[String]
-      )(PasswordReset.apply _)
+      for {
+        token <- (__ \ "token").read[String]
+        password <- (__ \ "password").read[String]
+      } yield PasswordReset(token, password)
     }
 
     def jsObjectPasswordReset(obj: io.apibuilder.api.v0.models.PasswordReset): play.api.libs.json.JsObject = {
@@ -1800,10 +1800,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiSession: play.api.libs.json.Reads[Session] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "expires_at").read[_root_.org.joda.time.DateTime]
-      )(Session.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        expiresAt <- (__ \ "expires_at").read[_root_.org.joda.time.DateTime]
+      } yield Session(id, expiresAt)
     }
 
     def jsObjectSession(obj: io.apibuilder.api.v0.models.Session): play.api.libs.json.JsObject = {
@@ -1822,13 +1822,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiSubscription: play.api.libs.json.Reads[Subscription] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "organization").read[io.apibuilder.api.v0.models.Organization] and
-        (__ \ "user").read[io.apibuilder.api.v0.models.User] and
-        (__ \ "publication").read[io.apibuilder.api.v0.models.Publication] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Subscription.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        organization <- (__ \ "organization").read[io.apibuilder.api.v0.models.Organization]
+        user <- (__ \ "user").read[io.apibuilder.api.v0.models.User]
+        publication <- (__ \ "publication").read[io.apibuilder.api.v0.models.Publication]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Subscription(guid, organization, user, publication, audit)
     }
 
     def jsObjectSubscription(obj: io.apibuilder.api.v0.models.Subscription): play.api.libs.json.JsObject = {
@@ -1850,11 +1850,11 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiSubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
-      (
-        (__ \ "organization_key").read[String] and
-        (__ \ "user_guid").read[_root_.java.util.UUID] and
-        (__ \ "publication").read[io.apibuilder.api.v0.models.Publication]
-      )(SubscriptionForm.apply _)
+      for {
+        organizationKey <- (__ \ "organization_key").read[String]
+        userGuid <- (__ \ "user_guid").read[_root_.java.util.UUID]
+        publication <- (__ \ "publication").read[io.apibuilder.api.v0.models.Publication]
+      } yield SubscriptionForm(organizationKey, userGuid, publication)
     }
 
     def jsObjectSubscriptionForm(obj: io.apibuilder.api.v0.models.SubscriptionForm): play.api.libs.json.JsObject = {
@@ -1874,13 +1874,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiToken: play.api.libs.json.Reads[Token] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[io.apibuilder.api.v0.models.User] and
-        (__ \ "masked_token").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Token.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        user <- (__ \ "user").read[io.apibuilder.api.v0.models.User]
+        maskedToken <- (__ \ "masked_token").read[String]
+        description <- (__ \ "description").readNullable[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Token(guid, user, maskedToken, description, audit)
     }
 
     def jsObjectToken(obj: io.apibuilder.api.v0.models.Token): play.api.libs.json.JsObject = {
@@ -1904,10 +1904,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiTokenForm: play.api.libs.json.Reads[TokenForm] = {
-      (
-        (__ \ "user_guid").read[_root_.java.util.UUID] and
-        (__ \ "description").readNullable[String]
-      )(TokenForm.apply _)
+      for {
+        userGuid <- (__ \ "user_guid").read[_root_.java.util.UUID]
+        description <- (__ \ "description").readNullable[String]
+      } yield TokenForm(userGuid, description)
     }
 
     def jsObjectTokenForm(obj: io.apibuilder.api.v0.models.TokenForm): play.api.libs.json.JsObject = {
@@ -1928,13 +1928,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiUser: play.api.libs.json.Reads[User] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "email").read[String] and
-        (__ \ "nickname").read[String] and
-        (__ \ "name").readNullable[String] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(User.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        email <- (__ \ "email").read[String]
+        nickname <- (__ \ "nickname").read[String]
+        name <- (__ \ "name").readNullable[String]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield User(guid, email, nickname, name, audit)
     }
 
     def jsObjectUser(obj: io.apibuilder.api.v0.models.User): play.api.libs.json.JsObject = {
@@ -1958,12 +1958,12 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiUserForm: play.api.libs.json.Reads[UserForm] = {
-      (
-        (__ \ "email").read[String] and
-        (__ \ "password").read[String] and
-        (__ \ "nickname").readNullable[String] and
-        (__ \ "name").readNullable[String]
-      )(UserForm.apply _)
+      for {
+        email <- (__ \ "email").read[String]
+        password <- (__ \ "password").read[String]
+        nickname <- (__ \ "nickname").readNullable[String]
+        name <- (__ \ "name").readNullable[String]
+      } yield UserForm(email, password, nickname, name)
     }
 
     def jsObjectUserForm(obj: io.apibuilder.api.v0.models.UserForm): play.api.libs.json.JsObject = {
@@ -1989,10 +1989,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiUserSummary: play.api.libs.json.Reads[UserSummary] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "nickname").read[String]
-      )(UserSummary.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        nickname <- (__ \ "nickname").read[String]
+      } yield UserSummary(guid, nickname)
     }
 
     def jsObjectUserSummary(obj: io.apibuilder.api.v0.models.UserSummary): play.api.libs.json.JsObject = {
@@ -2011,11 +2011,11 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiUserUpdateForm: play.api.libs.json.Reads[UserUpdateForm] = {
-      (
-        (__ \ "email").read[String] and
-        (__ \ "nickname").read[String] and
-        (__ \ "name").readNullable[String]
-      )(UserUpdateForm.apply _)
+      for {
+        email <- (__ \ "email").read[String]
+        nickname <- (__ \ "nickname").read[String]
+        name <- (__ \ "name").readNullable[String]
+      } yield UserUpdateForm(email, nickname, name)
     }
 
     def jsObjectUserUpdateForm(obj: io.apibuilder.api.v0.models.UserUpdateForm): play.api.libs.json.JsObject = {
@@ -2037,10 +2037,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiValidation: play.api.libs.json.Reads[Validation] = {
-      (
-        (__ \ "valid").read[Boolean] and
-        (__ \ "errors").read[Seq[String]]
-      )(Validation.apply _)
+      for {
+        valid <- (__ \ "valid").read[Boolean]
+        errors <- (__ \ "errors").read[Seq[String]]
+      } yield Validation(valid, errors)
     }
 
     def jsObjectValidation(obj: io.apibuilder.api.v0.models.Validation): play.api.libs.json.JsObject = {
@@ -2059,15 +2059,15 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiVersion: play.api.libs.json.Reads[Version] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "organization").read[io.apibuilder.common.v0.models.Reference] and
-        (__ \ "application").read[io.apibuilder.common.v0.models.Reference] and
-        (__ \ "version").read[String] and
-        (__ \ "original").readNullable[io.apibuilder.api.v0.models.Original] and
-        (__ \ "service").read[io.apibuilder.spec.v0.models.Service] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Version.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        organization <- (__ \ "organization").read[io.apibuilder.common.v0.models.Reference]
+        application <- (__ \ "application").read[io.apibuilder.common.v0.models.Reference]
+        version <- (__ \ "version").read[String]
+        original <- (__ \ "original").readNullable[io.apibuilder.api.v0.models.Original]
+        service <- (__ \ "service").read[io.apibuilder.spec.v0.models.Service]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Version(guid, organization, application, version, original, service, audit)
     }
 
     def jsObjectVersion(obj: io.apibuilder.api.v0.models.Version): play.api.libs.json.JsObject = {
@@ -2093,10 +2093,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiVersionForm: play.api.libs.json.Reads[VersionForm] = {
-      (
-        (__ \ "original_form").read[io.apibuilder.api.v0.models.OriginalForm] and
-        (__ \ "visibility").readNullable[io.apibuilder.api.v0.models.Visibility]
-      )(VersionForm.apply _)
+      for {
+        originalForm <- (__ \ "original_form").read[io.apibuilder.api.v0.models.OriginalForm]
+        visibility <- (__ \ "visibility").readNullable[io.apibuilder.api.v0.models.Visibility]
+      } yield VersionForm(originalForm, visibility)
     }
 
     def jsObjectVersionForm(obj: io.apibuilder.api.v0.models.VersionForm): play.api.libs.json.JsObject = {
@@ -2117,13 +2117,13 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiWatch: play.api.libs.json.Reads[Watch] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[io.apibuilder.api.v0.models.User] and
-        (__ \ "organization").read[io.apibuilder.api.v0.models.Organization] and
-        (__ \ "application").read[io.apibuilder.api.v0.models.Application] and
-        (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
-      )(Watch.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        user <- (__ \ "user").read[io.apibuilder.api.v0.models.User]
+        organization <- (__ \ "organization").read[io.apibuilder.api.v0.models.Organization]
+        application <- (__ \ "application").read[io.apibuilder.api.v0.models.Application]
+        audit <- (__ \ "audit").read[io.apibuilder.common.v0.models.Audit]
+      } yield Watch(guid, user, organization, application, audit)
     }
 
     def jsObjectWatch(obj: io.apibuilder.api.v0.models.Watch): play.api.libs.json.JsObject = {
@@ -2145,11 +2145,11 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiWatchForm: play.api.libs.json.Reads[WatchForm] = {
-      (
-        (__ \ "user_guid").read[_root_.java.util.UUID] and
-        (__ \ "organization_key").read[String] and
-        (__ \ "application_key").read[String]
-      )(WatchForm.apply _)
+      for {
+        userGuid <- (__ \ "user_guid").read[_root_.java.util.UUID]
+        organizationKey <- (__ \ "organization_key").read[String]
+        applicationKey <- (__ \ "application_key").read[String]
+      } yield WatchForm(userGuid, organizationKey, applicationKey)
     }
 
     def jsObjectWatchForm(obj: io.apibuilder.api.v0.models.WatchForm): play.api.libs.json.JsObject = {
@@ -2327,7 +2327,7 @@ package io.apibuilder.api.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -2350,7 +2350,7 @@ package io.apibuilder.api.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -3663,7 +3663,7 @@ package io.apibuilder.api.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -4499,16 +4499,16 @@ package io.apibuilder.api.v0 {
     import io.apibuilder.generator.v0.models.json._
     import io.apibuilder.spec.v0.models.json._
 
-    case class ErrorsResponse(
+    final case class ErrorsResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val errors = _root_.io.apibuilder.api.v0.Client.parseJson("Seq[io.apibuilder.api.v0.models.Error]", response, _.validate[Seq[io.apibuilder.api.v0.models.Error]])
     }
 
-    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
+    final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 

@@ -14,19 +14,19 @@ package io.apibuilder.internal.v0.models {
    *        twice; after which we no longer process the task (can notify an admin of the
    *        error).
    */
-  case class Task(
+  final case class Task(
     guid: _root_.java.util.UUID,
     data: io.apibuilder.internal.v0.models.TaskData,
     numberAttempts: Long = 0L,
     lastError: _root_.scala.Option[String] = None
   )
 
-  case class TaskDataDiffVersion(
+  final case class TaskDataDiffVersion(
     oldVersionGuid: _root_.java.util.UUID,
     newVersionGuid: _root_.java.util.UUID
   ) extends TaskData
 
-  case class TaskDataIndexApplication(
+  final case class TaskDataIndexApplication(
     applicationGuid: _root_.java.util.UUID
   ) extends TaskData
 
@@ -38,7 +38,7 @@ package io.apibuilder.internal.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class TaskDataUndefinedType(
+  final case class TaskDataUndefinedType(
     description: String
   ) extends TaskData
 
@@ -86,12 +86,12 @@ package io.apibuilder.internal.v0.models {
     }
 
     implicit def jsonReadsApibuilderInternalTask: play.api.libs.json.Reads[Task] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "data").read[io.apibuilder.internal.v0.models.TaskData] and
-        (__ \ "number_attempts").read[Long] and
-        (__ \ "last_error").readNullable[String]
-      )(Task.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        data <- (__ \ "data").read[io.apibuilder.internal.v0.models.TaskData]
+        numberAttempts <- (__ \ "number_attempts").read[Long]
+        lastError <- (__ \ "last_error").readNullable[String]
+      } yield Task(guid, data, numberAttempts, lastError)
     }
 
     def jsObjectTask(obj: io.apibuilder.internal.v0.models.Task): play.api.libs.json.JsObject = {
@@ -114,10 +114,10 @@ package io.apibuilder.internal.v0.models {
     }
 
     implicit def jsonReadsApibuilderInternalTaskDataDiffVersion: play.api.libs.json.Reads[TaskDataDiffVersion] = {
-      (
-        (__ \ "old_version_guid").read[_root_.java.util.UUID] and
-        (__ \ "new_version_guid").read[_root_.java.util.UUID]
-      )(TaskDataDiffVersion.apply _)
+      for {
+        oldVersionGuid <- (__ \ "old_version_guid").read[_root_.java.util.UUID]
+        newVersionGuid <- (__ \ "new_version_guid").read[_root_.java.util.UUID]
+      } yield TaskDataDiffVersion(oldVersionGuid, newVersionGuid)
     }
 
     def jsObjectTaskDataDiffVersion(obj: io.apibuilder.internal.v0.models.TaskDataDiffVersion): play.api.libs.json.JsObject = {
@@ -218,7 +218,7 @@ package io.apibuilder.internal.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -241,7 +241,7 @@ package io.apibuilder.internal.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
