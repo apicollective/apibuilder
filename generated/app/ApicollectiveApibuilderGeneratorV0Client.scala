@@ -10,7 +10,7 @@ package io.apibuilder.generator.v0.models {
    * additional instructions / data to the code generator. An example could be an
    * attribute to specify the root import path for a go client..
    */
-  case class Attribute(
+  final case class Attribute(
     name: String,
     value: String
   )
@@ -19,7 +19,7 @@ package io.apibuilder.generator.v0.models {
    * @param code Machine readable code for this specific error message
    * @param message Description of the error
    */
-  case class Error(
+  final case class Error(
     code: String,
     message: String
   )
@@ -31,7 +31,7 @@ package io.apibuilder.generator.v0.models {
    * @param dir The recommended directory path for the file where appropriate.
    * @param contents The actual source code.
    */
-  case class File(
+  final case class File(
     name: String,
     dir: _root_.scala.Option[String] = None,
     contents: String,
@@ -47,7 +47,7 @@ package io.apibuilder.generator.v0.models {
    *        list of available attributes and their descriptions at
    *        http://apibuilder.io/doc/attributes
    */
-  case class Generator(
+  final case class Generator(
     key: String,
     name: String,
     language: _root_.scala.Option[String] = None,
@@ -55,7 +55,7 @@ package io.apibuilder.generator.v0.models {
     attributes: Seq[String] = Nil
   )
 
-  case class Healthcheck(
+  final case class Healthcheck(
     status: String
   )
 
@@ -65,7 +65,7 @@ package io.apibuilder.generator.v0.models {
    * @param source The actual source code.
    * @param files A collection of source files
    */
-  case class Invocation(
+  final case class Invocation(
     @deprecated("Use files instead") source: String,
     files: Seq[io.apibuilder.generator.v0.models.File]
   )
@@ -74,7 +74,7 @@ package io.apibuilder.generator.v0.models {
    * The invocation form is the payload send to the code generators when requesting
    * generation of client code.
    */
-  case class InvocationForm(
+  final case class InvocationForm(
     service: io.apibuilder.spec.v0.models.Service,
     attributes: Seq[io.apibuilder.generator.v0.models.Attribute] = Nil,
     userAgent: _root_.scala.Option[String] = None
@@ -105,7 +105,7 @@ package io.apibuilder.generator.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends FileFlag
+    final case class UNDEFINED(override val toString: String) extends FileFlag
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -199,10 +199,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonReadsApibuilderGeneratorAttribute: play.api.libs.json.Reads[Attribute] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "value").read[String]
-      )(Attribute.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        value <- (__ \ "value").read[String]
+      } yield Attribute(name, value)
     }
 
     def jsObjectAttribute(obj: io.apibuilder.generator.v0.models.Attribute): play.api.libs.json.JsObject = {
@@ -221,10 +221,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonReadsApibuilderGeneratorError: play.api.libs.json.Reads[Error] = {
-      (
-        (__ \ "code").read[String] and
-        (__ \ "message").read[String]
-      )(Error.apply _)
+      for {
+        code <- (__ \ "code").read[String]
+        message <- (__ \ "message").read[String]
+      } yield Error(code, message)
     }
 
     def jsObjectError(obj: io.apibuilder.generator.v0.models.Error): play.api.libs.json.JsObject = {
@@ -243,12 +243,12 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonReadsApibuilderGeneratorFile: play.api.libs.json.Reads[File] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "dir").readNullable[String] and
-        (__ \ "contents").read[String] and
-        (__ \ "flags").readNullable[Seq[io.apibuilder.generator.v0.models.FileFlag]]
-      )(File.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        dir <- (__ \ "dir").readNullable[String]
+        contents <- (__ \ "contents").read[String]
+        flags <- (__ \ "flags").readNullable[Seq[io.apibuilder.generator.v0.models.FileFlag]]
+      } yield File(name, dir, contents, flags)
     }
 
     def jsObjectFile(obj: io.apibuilder.generator.v0.models.File): play.api.libs.json.JsObject = {
@@ -274,13 +274,13 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonReadsApibuilderGeneratorGenerator: play.api.libs.json.Reads[Generator] = {
-      (
-        (__ \ "key").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "language").readNullable[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "attributes").read[Seq[String]]
-      )(Generator.apply _)
+      for {
+        key <- (__ \ "key").read[String]
+        name <- (__ \ "name").read[String]
+        language <- (__ \ "language").readNullable[String]
+        description <- (__ \ "description").readNullable[String]
+        attributes <- (__ \ "attributes").read[Seq[String]]
+      } yield Generator(key, name, language, description, attributes)
     }
 
     def jsObjectGenerator(obj: io.apibuilder.generator.v0.models.Generator): play.api.libs.json.JsObject = {
@@ -325,10 +325,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonReadsApibuilderGeneratorInvocation: play.api.libs.json.Reads[Invocation] = {
-      (
-        (__ \ "source").read[String] and
-        (__ \ "files").read[Seq[io.apibuilder.generator.v0.models.File]]
-      )(Invocation.apply _)
+      for {
+        source <- (__ \ "source").read[String]
+        files <- (__ \ "files").read[Seq[io.apibuilder.generator.v0.models.File]]
+      } yield Invocation(source, files)
     }
 
     def jsObjectInvocation(obj: io.apibuilder.generator.v0.models.Invocation): play.api.libs.json.JsObject = {
@@ -347,11 +347,11 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonReadsApibuilderGeneratorInvocationForm: play.api.libs.json.Reads[InvocationForm] = {
-      (
-        (__ \ "service").read[io.apibuilder.spec.v0.models.Service] and
-        (__ \ "attributes").read[Seq[io.apibuilder.generator.v0.models.Attribute]] and
-        (__ \ "user_agent").readNullable[String]
-      )(InvocationForm.apply _)
+      for {
+        service <- (__ \ "service").read[io.apibuilder.spec.v0.models.Service]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.generator.v0.models.Attribute]]
+        userAgent <- (__ \ "user_agent").readNullable[String]
+      } yield InvocationForm(service, attributes, userAgent)
     }
 
     def jsObjectInvocationForm(obj: io.apibuilder.generator.v0.models.InvocationForm): play.api.libs.json.JsObject = {
@@ -441,7 +441,7 @@ package io.apibuilder.generator.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -464,7 +464,7 @@ package io.apibuilder.generator.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -675,7 +675,7 @@ package io.apibuilder.generator.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -736,16 +736,16 @@ package io.apibuilder.generator.v0 {
     import io.apibuilder.generator.v0.models.json._
     import io.apibuilder.spec.v0.models.json._
 
-    case class ErrorsResponse(
+    final case class ErrorsResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val errors = _root_.io.apibuilder.generator.v0.Client.parseJson("Seq[io.apibuilder.generator.v0.models.Error]", response, _.validate[Seq[io.apibuilder.generator.v0.models.Error]])
     }
 
-    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
+    final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 

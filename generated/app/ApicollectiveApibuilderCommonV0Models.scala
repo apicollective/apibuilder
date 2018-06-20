@@ -5,26 +5,26 @@
  */
 package io.apibuilder.common.v0.models {
 
-  case class Audit(
+  final case class Audit(
     createdAt: _root_.org.joda.time.DateTime,
     createdBy: io.apibuilder.common.v0.models.ReferenceGuid,
     updatedAt: _root_.org.joda.time.DateTime,
     updatedBy: io.apibuilder.common.v0.models.ReferenceGuid
   )
 
-  case class Healthcheck(
+  final case class Healthcheck(
     status: String
   )
 
   /**
    * Represents a reference to another model.
    */
-  case class Reference(
+  final case class Reference(
     guid: _root_.java.util.UUID,
     key: String
   )
 
-  case class ReferenceGuid(
+  final case class ReferenceGuid(
     guid: _root_.java.util.UUID
   )
 
@@ -72,12 +72,12 @@ package io.apibuilder.common.v0.models {
     }
 
     implicit def jsonReadsApibuilderCommonAudit: play.api.libs.json.Reads[Audit] = {
-      (
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "created_by").read[io.apibuilder.common.v0.models.ReferenceGuid] and
-        (__ \ "updated_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "updated_by").read[io.apibuilder.common.v0.models.ReferenceGuid]
-      )(Audit.apply _)
+      for {
+        createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
+        createdBy <- (__ \ "created_by").read[io.apibuilder.common.v0.models.ReferenceGuid]
+        updatedAt <- (__ \ "updated_at").read[_root_.org.joda.time.DateTime]
+        updatedBy <- (__ \ "updated_by").read[io.apibuilder.common.v0.models.ReferenceGuid]
+      } yield Audit(createdAt, createdBy, updatedAt, updatedBy)
     }
 
     def jsObjectAudit(obj: io.apibuilder.common.v0.models.Audit): play.api.libs.json.JsObject = {
@@ -116,10 +116,10 @@ package io.apibuilder.common.v0.models {
     }
 
     implicit def jsonReadsApibuilderCommonReference: play.api.libs.json.Reads[Reference] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "key").read[String]
-      )(Reference.apply _)
+      for {
+        guid <- (__ \ "guid").read[_root_.java.util.UUID]
+        key <- (__ \ "key").read[String]
+      } yield Reference(guid, key)
     }
 
     def jsObjectReference(obj: io.apibuilder.common.v0.models.Reference): play.api.libs.json.JsObject = {
@@ -210,7 +210,7 @@ package io.apibuilder.common.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -233,7 +233,7 @@ package io.apibuilder.common.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 

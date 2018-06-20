@@ -15,20 +15,20 @@ package io.apibuilder.spec.v0.models {
    * of an API and may also be used within an implementation or tooling; for example,
    * using static analysis tools to detect logging of sensitive data.
    */
-  case class Annotation(
+  final case class Annotation(
     name: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None
   )
 
-  case class Apidoc(
+  final case class Apidoc(
     version: String
   )
 
   /**
    * @param key Unique key identifying this application
    */
-  case class Application(
+  final case class Application(
     key: String
   )
 
@@ -41,14 +41,14 @@ package io.apibuilder.spec.v0.models {
    * attributes will be applicable only in the context of the specific code
    * generators usings them.
    */
-  case class Attribute(
+  final case class Attribute(
     name: String,
     value: _root_.play.api.libs.json.JsObject,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None
   )
 
-  case class Body(
+  final case class Body(
     `type`: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
@@ -58,7 +58,7 @@ package io.apibuilder.spec.v0.models {
   /**
    * Describes the primary contact for this service
    */
-  case class Contact(
+  final case class Contact(
     name: _root_.scala.Option[String] = None,
     url: _root_.scala.Option[String] = None,
     email: _root_.scala.Option[String] = None
@@ -68,11 +68,11 @@ package io.apibuilder.spec.v0.models {
    * Indicates that this particular element is considered deprecated in the API. See
    * the description for details
    */
-  case class Deprecation(
+  final case class Deprecation(
     description: _root_.scala.Option[String] = None
   )
 
-  case class Enum(
+  final case class Enum(
     name: String,
     plural: String,
     description: _root_.scala.Option[String] = None,
@@ -85,7 +85,7 @@ package io.apibuilder.spec.v0.models {
    * @param value The actual string representation of this value. If not specified, defaults to
    *        'name'
    */
-  case class EnumValue(
+  final case class EnumValue(
     name: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
@@ -93,7 +93,7 @@ package io.apibuilder.spec.v0.models {
     value: _root_.scala.Option[String] = None
   )
 
-  case class Field(
+  final case class Field(
     name: String,
     `type`: String,
     description: _root_.scala.Option[String] = None,
@@ -107,7 +107,7 @@ package io.apibuilder.spec.v0.models {
     annotations: Seq[String] = Nil
   )
 
-  case class Header(
+  final case class Header(
     name: String,
     `type`: String,
     description: _root_.scala.Option[String] = None,
@@ -129,7 +129,7 @@ package io.apibuilder.spec.v0.models {
    * @param models Models made available by this import
    * @param annotations Annotations made available by this import
    */
-  case class Import(
+  final case class Import(
     uri: String,
     namespace: String,
     organization: io.apibuilder.spec.v0.models.Organization,
@@ -144,7 +144,7 @@ package io.apibuilder.spec.v0.models {
   /**
    * General metadata about this service
    */
-  case class Info(
+  final case class Info(
     license: _root_.scala.Option[io.apibuilder.spec.v0.models.License] = None,
     contact: _root_.scala.Option[io.apibuilder.spec.v0.models.Contact] = None
   )
@@ -152,12 +152,12 @@ package io.apibuilder.spec.v0.models {
   /**
    * Describes the software license contact for this service
    */
-  case class License(
+  final case class License(
     name: String,
     url: _root_.scala.Option[String] = None
   )
 
-  case class Model(
+  final case class Model(
     name: String,
     plural: String,
     description: _root_.scala.Option[String] = None,
@@ -169,7 +169,7 @@ package io.apibuilder.spec.v0.models {
   /**
    * @param path The full path to this operation, relative to the service's base url.
    */
-  case class Operation(
+  final case class Operation(
     method: io.apibuilder.spec.v0.models.Method,
     path: String,
     description: _root_.scala.Option[String] = None,
@@ -183,11 +183,11 @@ package io.apibuilder.spec.v0.models {
   /**
    * @param key Unique key identifying the organization that owns this service
    */
-  case class Organization(
+  final case class Organization(
     key: String
   )
 
-  case class Parameter(
+  final case class Parameter(
     name: String,
     `type`: String,
     location: io.apibuilder.spec.v0.models.ParameterLocation,
@@ -208,7 +208,7 @@ package io.apibuilder.spec.v0.models {
    *        optional as some of our input formats (e.g. swagger) do not explicitly
    *        differentiate resoure paths.
    */
-  case class Resource(
+  final case class Resource(
     `type`: String,
     plural: String,
     path: _root_.scala.Option[String] = None,
@@ -218,7 +218,7 @@ package io.apibuilder.spec.v0.models {
     attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil
   )
 
-  case class Response(
+  final case class Response(
     code: io.apibuilder.spec.v0.models.ResponseCode,
     `type`: String,
     headers: _root_.scala.Option[Seq[io.apibuilder.spec.v0.models.Header]] = None,
@@ -235,7 +235,7 @@ package io.apibuilder.spec.v0.models {
    *        preexisting services.
    * @param namespace Fully qualified namespace for this service
    */
-  case class Service(
+  final case class Service(
     apidoc: io.apibuilder.spec.v0.models.Apidoc,
     name: String,
     organization: io.apibuilder.spec.v0.models.Organization,
@@ -264,7 +264,7 @@ package io.apibuilder.spec.v0.models {
    *        same name as the discriminator
    * @param types The names of the types that make up this union type
    */
-  case class Union(
+  final case class Union(
     name: String,
     plural: String,
     discriminator: _root_.scala.Option[String] = None,
@@ -287,7 +287,7 @@ package io.apibuilder.spec.v0.models {
    *        identify this type. If not specified, the discriminator value will default to
    *        the name of the type itself.
    */
-  case class UnionType(
+  final case class UnionType(
     `type`: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
@@ -304,7 +304,7 @@ package io.apibuilder.spec.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class ResponseCodeUndefinedType(
+  final case class ResponseCodeUndefinedType(
     description: String
   ) extends ResponseCode
 
@@ -312,7 +312,7 @@ package io.apibuilder.spec.v0.models {
   /**
    * Wrapper class to support the union types containing the datatype[integer]
    */
-  case class ResponseCodeInt(
+  final case class ResponseCodeInt(
     value: Int
   ) extends ResponseCode
 
@@ -339,7 +339,7 @@ package io.apibuilder.spec.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Method
+    final case class UNDEFINED(override val toString: String) extends Method
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -375,7 +375,7 @@ package io.apibuilder.spec.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends ParameterLocation
+    final case class UNDEFINED(override val toString: String) extends ParameterLocation
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -408,7 +408,7 @@ package io.apibuilder.spec.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends ResponseCodeOption
+    final case class UNDEFINED(override val toString: String) extends ResponseCodeOption
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -560,11 +560,11 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecAnnotation: play.api.libs.json.Reads[Annotation] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
-      )(Annotation.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+      } yield Annotation(name, description, deprecation)
     }
 
     def jsObjectAnnotation(obj: io.apibuilder.spec.v0.models.Annotation): play.api.libs.json.JsObject = {
@@ -625,12 +625,12 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecAttribute: play.api.libs.json.Reads[Attribute] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "value").read[_root_.play.api.libs.json.JsObject] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
-      )(Attribute.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        value <- (__ \ "value").read[_root_.play.api.libs.json.JsObject]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+      } yield Attribute(name, value, description, deprecation)
     }
 
     def jsObjectAttribute(obj: io.apibuilder.spec.v0.models.Attribute): play.api.libs.json.JsObject = {
@@ -656,12 +656,12 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecBody: play.api.libs.json.Reads[Body] = {
-      (
-        (__ \ "type").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Body.apply _)
+      for {
+        `type` <- (__ \ "type").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Body(`type`, description, deprecation, attributes)
     }
 
     def jsObjectBody(obj: io.apibuilder.spec.v0.models.Body): play.api.libs.json.JsObject = {
@@ -687,11 +687,11 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecContact: play.api.libs.json.Reads[Contact] = {
-      (
-        (__ \ "name").readNullable[String] and
-        (__ \ "url").readNullable[String] and
-        (__ \ "email").readNullable[String]
-      )(Contact.apply _)
+      for {
+        name <- (__ \ "name").readNullable[String]
+        url <- (__ \ "url").readNullable[String]
+        email <- (__ \ "email").readNullable[String]
+      } yield Contact(name, url, email)
     }
 
     def jsObjectContact(obj: io.apibuilder.spec.v0.models.Contact): play.api.libs.json.JsObject = {
@@ -737,14 +737,14 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecEnum: play.api.libs.json.Reads[Enum] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "plural").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "values").read[Seq[io.apibuilder.spec.v0.models.EnumValue]] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Enum.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        plural <- (__ \ "plural").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        values <- (__ \ "values").read[Seq[io.apibuilder.spec.v0.models.EnumValue]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Enum(name, plural, description, deprecation, values, attributes)
     }
 
     def jsObjectEnum(obj: io.apibuilder.spec.v0.models.Enum): play.api.libs.json.JsObject = {
@@ -772,13 +772,13 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecEnumValue: play.api.libs.json.Reads[EnumValue] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "value").readNullable[String]
-      )(EnumValue.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+        value <- (__ \ "value").readNullable[String]
+      } yield EnumValue(name, description, deprecation, attributes, value)
     }
 
     def jsObjectEnumValue(obj: io.apibuilder.spec.v0.models.EnumValue): play.api.libs.json.JsObject = {
@@ -808,19 +808,19 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecField: play.api.libs.json.Reads[Field] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "default").readNullable[String] and
-        (__ \ "required").read[Boolean] and
-        (__ \ "minimum").readNullable[Long] and
-        (__ \ "maximum").readNullable[Long] and
-        (__ \ "example").readNullable[String] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "annotations").readWithDefault[Seq[String]](Nil)
-      )(Field.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        `type` <- (__ \ "type").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        default <- (__ \ "default").readNullable[String]
+        required <- (__ \ "required").read[Boolean]
+        minimum <- (__ \ "minimum").readNullable[Long]
+        maximum <- (__ \ "maximum").readNullable[Long]
+        example <- (__ \ "example").readNullable[String]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+        annotations <- (__ \ "annotations").readWithDefault[Seq[String]](Nil)
+      } yield Field(name, `type`, description, deprecation, default, required, minimum, maximum, example, attributes, annotations)
     }
 
     def jsObjectField(obj: io.apibuilder.spec.v0.models.Field): play.api.libs.json.JsObject = {
@@ -865,15 +865,15 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecHeader: play.api.libs.json.Reads[Header] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "required").read[Boolean] and
-        (__ \ "default").readNullable[String] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Header.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        `type` <- (__ \ "type").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        required <- (__ \ "required").read[Boolean]
+        default <- (__ \ "default").readNullable[String]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Header(name, `type`, description, deprecation, required, default, attributes)
     }
 
     def jsObjectHeader(obj: io.apibuilder.spec.v0.models.Header): play.api.libs.json.JsObject = {
@@ -905,17 +905,17 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecImport: play.api.libs.json.Reads[Import] = {
-      (
-        (__ \ "uri").read[String] and
-        (__ \ "namespace").read[String] and
-        (__ \ "organization").read[io.apibuilder.spec.v0.models.Organization] and
-        (__ \ "application").read[io.apibuilder.spec.v0.models.Application] and
-        (__ \ "version").read[String] and
-        (__ \ "enums").read[Seq[String]] and
-        (__ \ "unions").read[Seq[String]] and
-        (__ \ "models").read[Seq[String]] and
-        (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
-      )(Import.apply _)
+      for {
+        uri <- (__ \ "uri").read[String]
+        namespace <- (__ \ "namespace").read[String]
+        organization <- (__ \ "organization").read[io.apibuilder.spec.v0.models.Organization]
+        application <- (__ \ "application").read[io.apibuilder.spec.v0.models.Application]
+        version <- (__ \ "version").read[String]
+        enums <- (__ \ "enums").read[Seq[String]]
+        unions <- (__ \ "unions").read[Seq[String]]
+        models <- (__ \ "models").read[Seq[String]]
+        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
+      } yield Import(uri, namespace, organization, application, version, enums, unions, models, annotations)
     }
 
     def jsObjectImport(obj: io.apibuilder.spec.v0.models.Import): play.api.libs.json.JsObject = {
@@ -941,10 +941,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecInfo: play.api.libs.json.Reads[Info] = {
-      (
-        (__ \ "license").readNullable[io.apibuilder.spec.v0.models.License] and
-        (__ \ "contact").readNullable[io.apibuilder.spec.v0.models.Contact]
-      )(Info.apply _)
+      for {
+        license <- (__ \ "license").readNullable[io.apibuilder.spec.v0.models.License]
+        contact <- (__ \ "contact").readNullable[io.apibuilder.spec.v0.models.Contact]
+      } yield Info(license, contact)
     }
 
     def jsObjectInfo(obj: io.apibuilder.spec.v0.models.Info): play.api.libs.json.JsObject = {
@@ -967,10 +967,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecLicense: play.api.libs.json.Reads[License] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "url").readNullable[String]
-      )(License.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        url <- (__ \ "url").readNullable[String]
+      } yield License(name, url)
     }
 
     def jsObjectLicense(obj: io.apibuilder.spec.v0.models.License): play.api.libs.json.JsObject = {
@@ -991,14 +991,14 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecModel: play.api.libs.json.Reads[Model] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "plural").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "fields").read[Seq[io.apibuilder.spec.v0.models.Field]] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Model.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        plural <- (__ \ "plural").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        fields <- (__ \ "fields").read[Seq[io.apibuilder.spec.v0.models.Field]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Model(name, plural, description, deprecation, fields, attributes)
     }
 
     def jsObjectModel(obj: io.apibuilder.spec.v0.models.Model): play.api.libs.json.JsObject = {
@@ -1026,16 +1026,16 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecOperation: play.api.libs.json.Reads[Operation] = {
-      (
-        (__ \ "method").read[io.apibuilder.spec.v0.models.Method] and
-        (__ \ "path").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "body").readNullable[io.apibuilder.spec.v0.models.Body] and
-        (__ \ "parameters").read[Seq[io.apibuilder.spec.v0.models.Parameter]] and
-        (__ \ "responses").read[Seq[io.apibuilder.spec.v0.models.Response]] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Operation.apply _)
+      for {
+        method <- (__ \ "method").read[io.apibuilder.spec.v0.models.Method]
+        path <- (__ \ "path").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        body <- (__ \ "body").readNullable[io.apibuilder.spec.v0.models.Body]
+        parameters <- (__ \ "parameters").read[Seq[io.apibuilder.spec.v0.models.Parameter]]
+        responses <- (__ \ "responses").read[Seq[io.apibuilder.spec.v0.models.Response]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Operation(method, path, description, deprecation, body, parameters, responses, attributes)
     }
 
     def jsObjectOperation(obj: io.apibuilder.spec.v0.models.Operation): play.api.libs.json.JsObject = {
@@ -1086,18 +1086,18 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecParameter: play.api.libs.json.Reads[Parameter] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "location").read[io.apibuilder.spec.v0.models.ParameterLocation] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "required").read[Boolean] and
-        (__ \ "default").readNullable[String] and
-        (__ \ "minimum").readNullable[Long] and
-        (__ \ "maximum").readNullable[Long] and
-        (__ \ "example").readNullable[String]
-      )(Parameter.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        `type` <- (__ \ "type").read[String]
+        location <- (__ \ "location").read[io.apibuilder.spec.v0.models.ParameterLocation]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        required <- (__ \ "required").read[Boolean]
+        default <- (__ \ "default").readNullable[String]
+        minimum <- (__ \ "minimum").readNullable[Long]
+        maximum <- (__ \ "maximum").readNullable[Long]
+        example <- (__ \ "example").readNullable[String]
+      } yield Parameter(name, `type`, location, description, deprecation, required, default, minimum, maximum, example)
     }
 
     def jsObjectParameter(obj: io.apibuilder.spec.v0.models.Parameter): play.api.libs.json.JsObject = {
@@ -1141,15 +1141,15 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecResource: play.api.libs.json.Reads[Resource] = {
-      (
-        (__ \ "type").read[String] and
-        (__ \ "plural").read[String] and
-        (__ \ "path").readNullable[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "operations").read[Seq[io.apibuilder.spec.v0.models.Operation]] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Resource.apply _)
+      for {
+        `type` <- (__ \ "type").read[String]
+        plural <- (__ \ "plural").read[String]
+        path <- (__ \ "path").readNullable[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        operations <- (__ \ "operations").read[Seq[io.apibuilder.spec.v0.models.Operation]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Resource(`type`, plural, path, description, deprecation, operations, attributes)
     }
 
     def jsObjectResource(obj: io.apibuilder.spec.v0.models.Resource): play.api.libs.json.JsObject = {
@@ -1181,14 +1181,14 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecResponse: play.api.libs.json.Reads[Response] = {
-      (
-        (__ \ "code").read[io.apibuilder.spec.v0.models.ResponseCode] and
-        (__ \ "type").read[String] and
-        (__ \ "headers").readNullable[Seq[io.apibuilder.spec.v0.models.Header]] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "attributes").readNullable[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Response.apply _)
+      for {
+        code <- (__ \ "code").read[io.apibuilder.spec.v0.models.ResponseCode]
+        `type` <- (__ \ "type").read[String]
+        headers <- (__ \ "headers").readNullable[Seq[io.apibuilder.spec.v0.models.Header]]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Response(code, `type`, headers, description, deprecation, attributes)
     }
 
     def jsObjectResponse(obj: io.apibuilder.spec.v0.models.Response): play.api.libs.json.JsObject = {
@@ -1222,25 +1222,25 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecService: play.api.libs.json.Reads[Service] = {
-      (
-        (__ \ "apidoc").read[io.apibuilder.spec.v0.models.Apidoc] and
-        (__ \ "name").read[String] and
-        (__ \ "organization").read[io.apibuilder.spec.v0.models.Organization] and
-        (__ \ "application").read[io.apibuilder.spec.v0.models.Application] and
-        (__ \ "namespace").read[String] and
-        (__ \ "version").read[String] and
-        (__ \ "base_url").readNullable[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "info").read[io.apibuilder.spec.v0.models.Info] and
-        (__ \ "headers").read[Seq[io.apibuilder.spec.v0.models.Header]] and
-        (__ \ "imports").read[Seq[io.apibuilder.spec.v0.models.Import]] and
-        (__ \ "enums").read[Seq[io.apibuilder.spec.v0.models.Enum]] and
-        (__ \ "unions").read[Seq[io.apibuilder.spec.v0.models.Union]] and
-        (__ \ "models").read[Seq[io.apibuilder.spec.v0.models.Model]] and
-        (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
-      )(Service.apply _)
+      for {
+        apidoc <- (__ \ "apidoc").read[io.apibuilder.spec.v0.models.Apidoc]
+        name <- (__ \ "name").read[String]
+        organization <- (__ \ "organization").read[io.apibuilder.spec.v0.models.Organization]
+        application <- (__ \ "application").read[io.apibuilder.spec.v0.models.Application]
+        namespace <- (__ \ "namespace").read[String]
+        version <- (__ \ "version").read[String]
+        baseUrl <- (__ \ "base_url").readNullable[String]
+        description <- (__ \ "description").readNullable[String]
+        info <- (__ \ "info").read[io.apibuilder.spec.v0.models.Info]
+        headers <- (__ \ "headers").read[Seq[io.apibuilder.spec.v0.models.Header]]
+        imports <- (__ \ "imports").read[Seq[io.apibuilder.spec.v0.models.Import]]
+        enums <- (__ \ "enums").read[Seq[io.apibuilder.spec.v0.models.Enum]]
+        unions <- (__ \ "unions").read[Seq[io.apibuilder.spec.v0.models.Union]]
+        models <- (__ \ "models").read[Seq[io.apibuilder.spec.v0.models.Model]]
+        resources <- (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
+      } yield Service(apidoc, name, organization, application, namespace, version, baseUrl, description, info, headers, imports, enums, unions, models, resources, attributes, annotations)
     }
 
     def jsObjectService(obj: io.apibuilder.spec.v0.models.Service): play.api.libs.json.JsObject = {
@@ -1279,15 +1279,15 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecUnion: play.api.libs.json.Reads[Union] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "plural").read[String] and
-        (__ \ "discriminator").readNullable[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "types").read[Seq[io.apibuilder.spec.v0.models.UnionType]] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-      )(Union.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        plural <- (__ \ "plural").read[String]
+        discriminator <- (__ \ "discriminator").readNullable[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        types <- (__ \ "types").read[Seq[io.apibuilder.spec.v0.models.UnionType]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Union(name, plural, discriminator, description, deprecation, types, attributes)
     }
 
     def jsObjectUnion(obj: io.apibuilder.spec.v0.models.Union): play.api.libs.json.JsObject = {
@@ -1319,14 +1319,14 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecUnionType: play.api.libs.json.Reads[UnionType] = {
-      (
-        (__ \ "type").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation] and
-        (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]] and
-        (__ \ "default").readNullable[Boolean] and
-        (__ \ "discriminator_value").readNullable[String]
-      )(UnionType.apply _)
+      for {
+        `type` <- (__ \ "type").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+        default <- (__ \ "default").readNullable[Boolean]
+        discriminatorValue <- (__ \ "discriminator_value").readNullable[String]
+      } yield UnionType(`type`, description, deprecation, attributes, default, discriminatorValue)
     }
 
     def jsObjectUnionType(obj: io.apibuilder.spec.v0.models.UnionType): play.api.libs.json.JsObject = {
@@ -1476,7 +1476,7 @@ package io.apibuilder.spec.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -1499,7 +1499,7 @@ package io.apibuilder.spec.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -1647,7 +1647,7 @@ package io.apibuilder.spec.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -1663,7 +1663,7 @@ package io.apibuilder.spec.v0 {
 
   package errors {
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 
