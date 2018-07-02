@@ -60,6 +60,7 @@ You'll need to run the postgresql database (version 9.5 or greater). Two options
   1. docker run -d -p 5432:5432 flowcommerce/apibuilder-postgresql:latest
 
   2. run locally - see the project https://github.com/apicollective/apibuilder-postgresql
+     - You need to run `psql -U api apibuilderdb ./setup-test-data.sql` to get the `dev` user
 
 The application consists of a service on port 9001, and a web app on port 9000.
 
