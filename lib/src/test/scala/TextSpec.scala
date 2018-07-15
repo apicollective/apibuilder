@@ -186,6 +186,7 @@ class TextSpec extends FunSpec with Matchers {
         "datum" -> "data",
         "person" -> "people",
         "species" -> "species",
+        "memo" -> "memos",
 
         // Camelcare, snake case
         "error_message" -> "error_messages",

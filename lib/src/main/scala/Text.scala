@@ -91,7 +91,8 @@ object Text {
     "datum" -> "data",
     "person" -> "people",
     "species" -> "species",
-    "epoch" -> "epochs"
+    "epoch" -> "epochs",
+    "memo" -> "memos"
   )
   private[lib] val KnownPlurals = (Plurals.values ++ Seq(
     "bison",
