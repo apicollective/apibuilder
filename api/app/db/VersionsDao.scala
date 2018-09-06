@@ -31,6 +31,7 @@ class VersionsDao @Inject() (
 ) {
 
   private[this] val LatestVersion = "latest"
+  private[this] val LatestVersionFilter = "~"
 
   private[this] val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
 
@@ -193,6 +194,16 @@ class VersionsDao @Inject() (
     applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
         findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
+      } else if (version.startsWith(LatestVersionFilter)) {
+        /*
+         ~ specifies a minimum version, but allows the last digit specified to go up
+         */
+        val versionFilter = version.replace(LatestVersionFilter, "")
+        findAllByVersionFilter(authorization, applicationGuid = Some(application.guid), limit = 1
+          , versionConstraint = versionFilter.split("\\.").dropRight(1).mkString(".") //allows the last digit specified to go up
+        )
+          .headOption
+          .filter(_.version >= versionFilter) //must meet minimum version
       } else {
         findByApplicationAndVersion(authorization, application, version)
       }
@@ -238,6 +249,30 @@ class VersionsDao @Inject() (
         offset(offset).
         as(parser().*
       )
+    }
+  }
+
+  def findAllByVersionFilter(
+    authorization: Authorization,
+    applicationGuid: Option[UUID] = None,
+    guid: Option[UUID] = None,
+    versionConstraint: String,
+    isDeleted: Option[Boolean] = Some(false),
+    limit: Long = 25,
+    offset: Long = 0
+  ): Seq[Version] = {
+    db.withConnection { implicit c =>
+      authorization.applicationFilter(BaseQuery).
+        and(HasServiceJsonClause).
+        equals("versions.guid", guid).
+        equals("versions.application_guid", applicationGuid).
+        and(s"versions.version like '${versionConstraint}%'").
+        and(isDeleted.map(Filters.isDeleted("versions", _))).
+        orderBy("versions.version_sort_key desc, versions.created_at desc").
+        limit(limit).
+        offset(offset).
+        as(parser().*
+        )
     }
   }
 
