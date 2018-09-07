@@ -112,4 +112,72 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       applicationGuid = Some(app.guid)
     ).map(_.version) must be(Seq("1.0.2", "1.0.1"))
   }
+
+  "findVersion" in {
+    val app = createApplicationByKey()
+    val service = createService(app)
+
+    //create 1.0.0 to 3.9.9
+    for (p <- 1 to 3) { for (q <- 0 to 9) { for (r <- 0 to 9) { versionsDao.create(testUser, app, s"${p}.${q}.${r}", Original, service) } } }
+
+    //Latest
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "latest"
+    ).map(_.version) must be(Some("3.9.9"))
+
+    // Sem Ver ~ operator. Should specifies minimum, and lets least significant digit go up
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~1.0"
+    ).map(_.version) must be(Some("1.9.9"))
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~1.2"
+    ).map(_.version) must be(Some("1.9.9"))
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~1.2.3"
+    ).map(_.version) must be(Some("1.2.9"))
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~2.0"
+    ).map(_.version) must be(Some("2.9.9"))
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~1"
+    ).map(_.version) must be(Some("3.9.9")) //collapses to 'latest'
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~4.2"
+    ).map(_.version) must be(None)
+
+    versionsDao.findVersion(
+      Authorization.All,
+      orgKey = app.organization.key,
+      applicationKey = app.key,
+      version = "~4.1.3"
+    ).map(_.version) must be(None)
+
+  }
 }
