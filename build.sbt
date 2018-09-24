@@ -12,7 +12,7 @@ lazy val lib = project
 
 val avroVersion = "1.8.2"
 
-val playJsonVersion = "2.6.9"
+val playJsonVersion = "2.6.10"
 
 lazy val avro = project
   .in(file("avro"))
