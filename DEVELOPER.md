@@ -91,7 +91,7 @@ To configure generators in local api builder instance:
   3. Enter 'http://localhost:9002' for service URI
 
 Now both should be running and able to talk to each other, and should recompile
-in situ for a nice development experience.
+in site for a nice development experience.
 
 Updating generated code
 =======================
