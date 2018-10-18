@@ -48,7 +48,7 @@ GET     /generators/                                              controllers.Ge
 GET     /generators/show/:key                                     controllers.Generators.show(key: String)
 GET     /generators/create                                        controllers.Generators.create()
 POST    /generators/createPost                                    controllers.Generators.createPost()
-GET     /generators/servies/:guid/show                            controllers.GeneratorServices.show(guid: java.util.UUID, page: Int ?= 0)
+GET     /generators/services/:guid/show                           controllers.GeneratorServices.show(guid: java.util.UUID, page: Int ?= 0)
 POST    /generator/services/:guid/delete                          controllers.GeneratorServices.deletePost(guid: java.util.UUID)
 
 GET     /attributes                                               controllers.ApplicationController.redirect()
