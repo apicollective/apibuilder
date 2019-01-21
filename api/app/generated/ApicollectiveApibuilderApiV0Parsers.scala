@@ -458,6 +458,25 @@ package io.apibuilder.api.v0.anorm.parsers {
 
   }
 
+  object CodeForm {
+
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.CodeForm] = parser(prefixOpt = Some(s"$prefix$sep"))
+
+    def parser(
+      attributes: String = "attributes",
+      prefixOpt: Option[String] = None
+    ): RowParser[io.apibuilder.api.v0.models.CodeForm] = {
+      SqlParser.get[Seq[io.apibuilder.generator.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) map {
+        case attributes => {
+          io.apibuilder.api.v0.models.CodeForm(
+            attributes = attributes
+          )
+        }
+      }
+    }
+
+  }
+
   object DiffBreaking {
 
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.DiffBreaking] = parser(prefixOpt = Some(s"$prefix$sep"))

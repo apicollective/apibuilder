@@ -4,13 +4,13 @@ import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.CodeForm
 import io.apibuilder.generator.v0.Client
 import io.apibuilder.generator.v0.models.{Attribute, InvocationForm}
 import db.generators.{GeneratorsDao, ServicesDao}
 import db.{OrganizationAttributeValuesDao, VersionsDao}
 import lib.{Pager, Validation}
 import play.api.libs.json._
-import play.api.mvc._
 import _root_.util.UserAgent
 import play.api.libs.ws.WSClient
 
@@ -35,6 +35,32 @@ class Code @Inject() (
     versionName: String,
     generatorKey: String
   ) = Anonymous.async { request =>
+    _invoke(orgKey, applicationKey, versionName, generatorKey, Nil, request)
+  }
+
+  def post(
+    orgKey: String,
+    applicationKey: String,
+    versionName: String,
+    generatorKey: String
+  ) = Anonymous.async(parse.json) { request =>
+    request.body.validate[CodeForm] match {
+      case e: JsError =>
+        Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
+
+      case s: JsSuccess[CodeForm] =>
+        _invoke(orgKey, applicationKey, versionName, generatorKey, s.get.attributes, request)
+    }
+  }
+
+  private def _invoke(
+    orgKey: String,
+    applicationKey: String,
+    versionName: String,
+    generatorKey: String,
+    invocationAttributes: Seq[Attribute],
+    request: AnonymousRequest[_]
+  ) = {
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
       case None => {
         Future.successful(NotFound)
@@ -59,14 +85,14 @@ class Code @Inject() (
                   generatorKey = generatorKey
                 )
 
-                val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
+                val orgAttributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
 
                 new Client(wSClient, service.uri).invocations.postByKey(
                   key = gws.generator.key,
                   invocationForm = InvocationForm(
                     service = version.service,
                     userAgent = Some(userAgentString),
-                    attributes = attributes
+                    attributes = invocationAttributes ++ orgAttributes
                   )
                 ).map { invocation =>
                   Ok(Json.toJson(io.apibuilder.api.v0.models.Code(

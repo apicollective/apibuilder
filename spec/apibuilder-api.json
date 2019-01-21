@@ -345,6 +345,12 @@
       ]
     },
 
+    "code_form": {
+      "fields": [
+        { "name": "attributes", "type": "[io.apibuilder.generator.v0.models.attribute]" }
+      ]
+    },
+
     "subscription": {
       "description": "Represents a user that is currently subscribed to a publication",
       "fields": [
@@ -1068,6 +1074,22 @@
             { "name": "version", "type": "string", "description": "The version of this application. Can be 'latest'" },
             { "name": "generatorKey", "type": "string", "description": "The key of the generator to invoke" }
           ],
+          "responses": {
+            "200": { "type": "code" },
+            "404": { "type": "unit" },
+            "409": { "type": "[error]", "description": "If the target, version, and/or generator are invalid." }
+          }
+        },
+        {
+          "method": "POST",
+          "description": "Generate code for a specific version of an application.",
+          "parameters": [
+            { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
+            { "name": "applicationKey", "type": "string", "description": "The application key for which to generate code" },
+            { "name": "version", "type": "string", "description": "The version of this application. Can be 'latest'" },
+            { "name": "generatorKey", "type": "string", "description": "The key of the generator to invoke" }
+          ],
+          "body": { "type": "code_form" },
           "responses": {
             "200": { "type": "code" },
             "404": { "type": "unit" },
