@@ -67,6 +67,7 @@ PUT        /:orgKey/:applicationKey                                  controllers
 DELETE     /:orgKey/:applicationKey                                  controllers.Applications.deleteByApplicationKey(orgKey: String, applicationKey: String)
 POST       /:orgKey/:applicationKey/move                             controllers.Applications.postMoveByApplicationKey(orgKey: String, applicationKey: String)
 GET        /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.get(orgKey: String, applicationKey: String, version: String, generatorKey: String)
+POST       /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.post(orgKey: String, applicationKey: String, version: String, generatorKey: String)
 GET        /:orgKey/:applicationKey                                  controllers.Versions.getByApplicationKey(orgKey: String, applicationKey: String, limit: Long ?= 25L, offset: Long ?= 0L)
 GET        /:orgKey/:applicationKey/:version                         controllers.Versions.getByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String)
 POST       /:orgKey/:version                                         controllers.Versions.postByVersion(orgKey: String, version: String)

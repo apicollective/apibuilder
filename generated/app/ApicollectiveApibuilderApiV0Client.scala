@@ -225,6 +225,10 @@ package io.apibuilder.api.v0.models {
     files: Seq[io.apibuilder.generator.v0.models.File] = Nil
   )
 
+  final case class CodeForm(
+    attributes: Seq[io.apibuilder.generator.v0.models.Attribute]
+  )
+
   /**
    * Represents a single breaking diff of an application version. A breaking diff
    * indicates that it is possible for an existing client to now experience an error
@@ -1378,6 +1382,24 @@ package io.apibuilder.api.v0.models {
       new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Code] {
         def writes(obj: io.apibuilder.api.v0.models.Code) = {
           jsObjectCode(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsApibuilderApiCodeForm: play.api.libs.json.Reads[CodeForm] = {
+      (__ \ "attributes").read[Seq[io.apibuilder.generator.v0.models.Attribute]].map { x => new CodeForm(attributes = x) }
+    }
+
+    def jsObjectCodeForm(obj: io.apibuilder.api.v0.models.CodeForm): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
+      )
+    }
+
+    implicit def jsonWritesApibuilderApiCodeForm: play.api.libs.json.Writes[CodeForm] = {
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.CodeForm] {
+        def writes(obj: io.apibuilder.api.v0.models.CodeForm) = {
+          jsObjectCodeForm(obj)
         }
       }
     }
@@ -2683,6 +2705,24 @@ package io.apibuilder.api.v0 {
           case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404, 409")
         }
       }
+
+      override def post(
+        orgKey: String,
+        applicationKey: String,
+        version: String,
+        generatorKey: String,
+        codeForm: io.apibuilder.api.v0.models.CodeForm,
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.api.v0.models.Code] = {
+        val payload = play.api.libs.json.Json.toJson(codeForm)
+
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(generatorKey, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
+          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("io.apibuilder.api.v0.models.Code", r, _.validate[io.apibuilder.api.v0.models.Code])
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 409 => throw io.apibuilder.api.v0.errors.ErrorsResponse(r)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404, 409")
+        }
+      }
     }
 
     object Domains extends Domains {
@@ -3589,8 +3629,8 @@ package io.apibuilder.api.v0 {
         value <- values
       } yield s"$name=$value"
       val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      auth.fold(logger.info(s"curl -X $method $url")) { _ =>
-        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      auth.fold(logger.info(s"curl -X $method '$url'")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' '$url'")
       }
       req
     }
@@ -3871,6 +3911,23 @@ package io.apibuilder.api.v0 {
       applicationKey: String,
       version: String,
       generatorKey: String,
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.api.v0.models.Code]
+
+    /**
+     * Generate code for a specific version of an application.
+     * 
+     * @param orgKey The organization key for which to generate code
+     * @param applicationKey The application key for which to generate code
+     * @param version The version of this application. Can be 'latest'
+     * @param generatorKey The key of the generator to invoke
+     */
+    def post(
+      orgKey: String,
+      applicationKey: String,
+      version: String,
+      generatorKey: String,
+      codeForm: io.apibuilder.api.v0.models.CodeForm,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.api.v0.models.Code]
   }

@@ -93,6 +93,8 @@ package io.apibuilder.api.v0.anorm.conversions {
     implicit val columnToMapApibuilderApiCleartextToken: Column[Map[String, _root_.io.apibuilder.api.v0.models.CleartextToken]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.CleartextToken]] }
     implicit val columnToSeqApibuilderApiCode: Column[Seq[_root_.io.apibuilder.api.v0.models.Code]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Code]] }
     implicit val columnToMapApibuilderApiCode: Column[Map[String, _root_.io.apibuilder.api.v0.models.Code]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.Code]] }
+    implicit val columnToSeqApibuilderApiCodeForm: Column[Seq[_root_.io.apibuilder.api.v0.models.CodeForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.CodeForm]] }
+    implicit val columnToMapApibuilderApiCodeForm: Column[Map[String, _root_.io.apibuilder.api.v0.models.CodeForm]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.CodeForm]] }
     implicit val columnToSeqApibuilderApiDiffBreaking: Column[Seq[_root_.io.apibuilder.api.v0.models.DiffBreaking]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.DiffBreaking]] }
     implicit val columnToMapApibuilderApiDiffBreaking: Column[Map[String, _root_.io.apibuilder.api.v0.models.DiffBreaking]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.DiffBreaking]] }
     implicit val columnToSeqApibuilderApiDiffNonBreaking: Column[Seq[_root_.io.apibuilder.api.v0.models.DiffNonBreaking]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.DiffNonBreaking]] }
