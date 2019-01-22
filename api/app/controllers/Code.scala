@@ -63,7 +63,7 @@ class Code @Inject() (
   ) = {
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
       case None => {
-        Future.successful(NotFound)
+        Future.successful(Conflict(Json.toJson(Validation.error(s"Version [$versionName] for application [$applicationKey] not found"))))
       }
 
       case Some(version) => {

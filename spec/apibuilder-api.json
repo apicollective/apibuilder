@@ -1076,7 +1076,6 @@
           ],
           "responses": {
             "200": { "type": "code" },
-            "404": { "type": "unit" },
             "409": { "type": "[error]", "description": "If the target, version, and/or generator are invalid." }
           }
         },
@@ -1092,7 +1091,6 @@
           "body": { "type": "code_form" },
           "responses": {
             "200": { "type": "code" },
-            "404": { "type": "unit" },
             "409": { "type": "[error]", "description": "If the target, version, and/or generator are invalid." }
           }
         }
