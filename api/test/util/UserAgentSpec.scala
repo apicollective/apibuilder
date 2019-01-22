@@ -12,14 +12,14 @@ class UserAgentSpec extends PlaySpec with OneAppPerSuite {
       applicationKey = "apibuilder",
       versionName = "1.2.3",
       generatorKey = "play_client"
-    ) must equal("apibuilder 0.14.3 localhost 9000/apicollective/apibuilder/1.2.3/play_client")
+    ) must fullyMatch regex("apibuilder 0\\.[0-9]+\\.[0-9]+ localhost 9000/apicollective/apibuilder/1\\.2\\.3/play_client")
 
     userAgent.generate(
       orgKey = "apicollective",
       applicationKey = "apibuilder",
       versionName = "1:0",
       generatorKey = "play_client"
-    ) must equal("apibuilder 0.14.3 localhost 9000/apicollective/apibuilder/1 0/play_client")
+    ) must fullyMatch regex("apibuilder 0\\.[0-9]+\\.[0-9]+ localhost 9000/apicollective/apibuilder/1 0/play_client")
   }
 
 }
