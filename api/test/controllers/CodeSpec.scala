@@ -1,5 +1,10 @@
 package controllers
 
+import java.io.IOException
+import java.net.{InetSocketAddress, ServerSocket, Socket}
+import java.util.UUID
+import java.util.concurrent.ThreadLocalRandom
+
 import com.github.tomakehurst.wiremock.WireMockServer
 import io.apibuilder.spec.v0.models.Import
 import org.scalatestplus.play.PlaySpec
@@ -11,7 +16,7 @@ import io.apibuilder.generator.v0.models.{Invocation, InvocationForm}
 import io.apibuilder.generator.v0.models.json.{jsonReadsApibuilderGeneratorInvocationForm, jsonWritesApibuilderGeneratorInvocation}
 import play.api.libs.json.Json
 
-import scala.util.Try
+import scala.util.{Random, Try}
 
 class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with db.generators.Helpers {
 
@@ -21,14 +26,12 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
 
     "post payload containing imported services to generator" in {
 
-      val generatorWithService = generatorsDao.findAll(db.Authorization.All)
-        .headOption.getOrElse(throw new IllegalArgumentException("At least one code generator expected in database"))
+      val randomPort = getRandomPort
+      val generatorWithService = createGenerator(createGeneratorService(createGeneratorServiceForm(s"http://localhost:$randomPort")))
 
-      println(generatorWithService.service.uri)
-      val generatorPort = Try(generatorWithService.service.uri.dropWhile(_ != ':').drop(1).toInt).getOrElse(80)
       val generatorKey = generatorWithService.generator.key
 
-      val wireMockServer = new WireMockServer(generatorPort)
+      val wireMockServer = new WireMockServer(randomPort)
 
       try {
         wireMockServer.start()
@@ -89,6 +92,29 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
       }
     }
 
+  }
+
+  def getRandomPort: Int = {
+    Stream
+      .continually(randomPort)
+      .dropWhile(port => !checkIfPortIsFree("localhost", port))
+      .head
+  }
+
+  private def randomPort: Int = {
+    10000 + Random.nextInt(55000)
+  }
+
+  private def checkIfPortIsFree(host: String, port: Int): Boolean = {
+    val s = new Socket()
+    try {
+      s.connect(new InetSocketAddress(host, port), 1000)
+      false
+    } catch {
+      case _: IOException => true
+    } finally {
+      s.close()
+    }
   }
 
 }
