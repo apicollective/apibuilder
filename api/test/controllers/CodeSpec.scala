@@ -24,7 +24,8 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
       val generatorWithService = generatorsDao.findAll(db.Authorization.All)
         .headOption.getOrElse(throw new IllegalArgumentException("At least one code generator expected in database"))
 
-      val generatorPort = generatorWithService.service.uri.dropWhile(_ != ':').drop(1).toInt
+      println(generatorWithService.service.uri)
+      val generatorPort = Try(generatorWithService.service.uri.dropWhile(_ != ':').drop(1).toInt).getOrElse(80)
       val generatorKey = generatorWithService.generator.key
 
       val wireMockServer = new WireMockServer(generatorPort)
