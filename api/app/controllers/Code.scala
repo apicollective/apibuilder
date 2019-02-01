@@ -1,8 +1,8 @@
 package controllers
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
 
+import javax.inject.{Inject, Singleton}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.CodeForm
 import io.apibuilder.generator.v0.Client
@@ -12,6 +12,7 @@ import db.{OrganizationAttributeValuesDao, VersionsDao}
 import lib.{Pager, Validation}
 import play.api.libs.json._
 import _root_.util.UserAgent
+import _root_.util.ApibuilderServiceImportResolver
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
@@ -78,6 +79,10 @@ class Code @Inject() (
                 Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
               }
               case Some(gws) => {
+                val apibuilderService = version.service
+                val importedApibuilderServices = ApibuilderServiceImportResolver
+                  .resolveChildren(apibuilderService, versionsDao, request.authorization).values.toSeq
+
                 val userAgentString = userAgent.generate(
                   orgKey = orgKey,
                   applicationKey = applicationKey,
@@ -90,9 +95,10 @@ class Code @Inject() (
                 new Client(wSClient, service.uri).invocations.postByKey(
                   key = gws.generator.key,
                   invocationForm = InvocationForm(
-                    service = version.service,
+                    service = apibuilderService,
                     userAgent = Some(userAgentString),
-                    attributes = invocationAttributes ++ orgAttributes
+                    attributes = invocationAttributes ++ orgAttributes,
+                    importedServices = Some(importedApibuilderServices)
                   )
                 ).map { invocation =>
                   Ok(Json.toJson(io.apibuilder.api.v0.models.Code(

@@ -7,9 +7,9 @@ import lib._
 import builder.OriginalValidator
 import db._
 import javax.inject.{Inject, Singleton}
-
 import play.api.mvc._
 import play.api.libs.json._
+import _root_.util.ApibuilderServiceImportResolver
 
 @Singleton
 class Versions @Inject() (
@@ -48,20 +48,9 @@ class Versions @Inject() (
       case None => NotFound
       case Some(v: Version) => {
 
-        def resolveChildren(service: Service, acc: Map[String, Service] = Map.empty): Map[String, Service] = {
-          service.imports.foldLeft(acc) { case (acc, imp) =>
-            if (acc.contains(imp.namespace)) {
-              acc
-            } else {
-              versionsDao.findVersion(request.authorization, imp.organization.key, imp.application.key, imp.version) match {
-                case None => acc
-                case Some(v: Version) => resolveChildren(v.service, acc + (imp.namespace -> v.service))
-              }
-            }
-          }
-        }
-
-        val service = resolveChildren(v.service).foldLeft(v.service) { case (service, (namespace, child)) =>
+        val service = ApibuilderServiceImportResolver
+          .resolveChildren(v.service, versionsDao, request.authorization)
+          .foldLeft(v.service) { case (service, (namespace, child)) =>
 
           def fixType[T](origTyp: String, update: String => T): T = {
             val ArrayRx = """(\[?)(.*?)(\]?)""".r

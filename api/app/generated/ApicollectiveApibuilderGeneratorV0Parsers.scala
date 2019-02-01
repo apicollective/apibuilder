@@ -176,16 +176,19 @@ package io.apibuilder.generator.v0.anorm.parsers {
       servicePrefix: String = "service",
       attributes: String = "attributes",
       userAgent: String = "user_agent",
+      importedServices: String = "imported_services",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.generator.v0.models.InvocationForm] = {
       io.apibuilder.spec.v0.anorm.parsers.Service.parserWithPrefix(prefixOpt.getOrElse("") + servicePrefix) ~
       SqlParser.get[Seq[io.apibuilder.generator.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) ~
-      SqlParser.str(prefixOpt.getOrElse("") + userAgent).? map {
-        case service ~ attributes ~ userAgent => {
+      SqlParser.str(prefixOpt.getOrElse("") + userAgent).? ~
+      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Service]](prefixOpt.getOrElse("") + importedServices).? map {
+        case service ~ attributes ~ userAgent ~ importedServices => {
           io.apibuilder.generator.v0.models.InvocationForm(
             service = service,
             attributes = attributes,
-            userAgent = userAgent
+            userAgent = userAgent,
+            importedServices = importedServices
           )
         }
       }

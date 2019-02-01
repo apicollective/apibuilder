@@ -77,7 +77,8 @@ package io.apibuilder.generator.v0.models {
   final case class InvocationForm(
     service: io.apibuilder.spec.v0.models.Service,
     attributes: Seq[io.apibuilder.generator.v0.models.Attribute] = Nil,
-    userAgent: _root_.scala.Option[String] = None
+    userAgent: _root_.scala.Option[String] = None,
+    importedServices: _root_.scala.Option[Seq[io.apibuilder.spec.v0.models.Service]] = None
   )
 
   /**
@@ -351,7 +352,8 @@ package io.apibuilder.generator.v0.models {
         service <- (__ \ "service").read[io.apibuilder.spec.v0.models.Service]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.generator.v0.models.Attribute]]
         userAgent <- (__ \ "user_agent").readNullable[String]
-      } yield InvocationForm(service, attributes, userAgent)
+        importedServices <- (__ \ "imported_services").readNullable[Seq[io.apibuilder.spec.v0.models.Service]]
+      } yield InvocationForm(service, attributes, userAgent, importedServices)
     }
 
     def jsObjectInvocationForm(obj: io.apibuilder.generator.v0.models.InvocationForm): play.api.libs.json.JsObject = {
@@ -361,6 +363,10 @@ package io.apibuilder.generator.v0.models {
       ) ++ (obj.userAgent match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("user_agent" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.importedServices match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("imported_services" -> play.api.libs.json.Json.toJson(x))
       })
     }
 

@@ -65,7 +65,8 @@
       "fields": [
         { "name": "service", "type": "io.apibuilder.spec.v0.models.service" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "user_agent", "type": "string", "required": false }
+        { "name": "user_agent", "type": "string", "required": false },
+        { "name": "imported_services", "type": "[io.apibuilder.spec.v0.models.service]", "required": false }
       ]
     },
 
