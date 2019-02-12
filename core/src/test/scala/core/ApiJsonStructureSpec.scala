@@ -244,4 +244,19 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     validator.errors().mkString(" ") should be("Resource[user] GET /users Unrecognized element[response]")
   }
 
+  it("supports top level attributes") {
+    val json = """
+    {
+      "name": "test",
+      "attributes": [
+        { "name": "foo", "value": { "bar": "baz" } }
+      ]
+    }
+    """
+
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.service().attributes.map(_.name) should equal(Seq("foo"))
+  }
+
+
 }
