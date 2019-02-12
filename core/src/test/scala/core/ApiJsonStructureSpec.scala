@@ -249,13 +249,13 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "attributes": [
-        { "name": "foo", "value": "bar" }
+        { "name": "foo", "value": { "bar": "baz" } }
       ]
     }
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.service.attributes.map(_.name) should equal(Seq("foo"))
+    validator.service().attributes.map(_.name) should equal(Seq("foo"))
   }
 
 
