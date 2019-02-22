@@ -1,7 +1,7 @@
 package me.apidoc.swagger.translators
 
 import io.apibuilder.spec.v0.{ models => apidoc }
-import io.swagger.models.{ModelImpl, RefModel}
+import io.swagger.models.{ArrayModel, ModelImpl, RefModel}
 import io.swagger.models.{ parameters => swaggerParams }
 import me.apidoc.swagger.Util
 
@@ -12,6 +12,7 @@ object Body {
     param: swaggerParams.BodyParameter
   ): apidoc.Body = {
     val bodyType = param.getSchema match {
+      case a: ArrayModel => s"[${Field(resolver, param.getName, "", a.getItems).`type`}]"
       case m: ModelImpl => m.getType
       case m: RefModel => resolver.resolveWithError(m).name
       case _ => sys.error("Unsupported body type: " + param.getSchema.getClass)
