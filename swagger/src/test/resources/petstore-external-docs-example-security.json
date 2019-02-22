@@ -115,10 +115,13 @@
           {
             "name": "pet",
             "in": "body",
-            "description": "Pet to add to the store",
+            "description": "Pets to add to the store",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/newPet"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/newPet"
+              }
             },
             "x-foo-body": {
               "bar": "body"
