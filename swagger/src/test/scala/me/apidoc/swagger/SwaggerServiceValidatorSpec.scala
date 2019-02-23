@@ -732,6 +732,12 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                 )
               )
 
+              service.resources.size shouldBe 1
+              val resource = service.resources.head
+              resource.`type` shouldBe ("pet")
+              resource.operations.size shouldBe 4
+              resource.operations.map(_.path).toSet shouldBe Set("/pets", "/pets/:id")
+
               service.resources.foreach {
                 r =>
                   println(s" Resource ${r.`type`}")
