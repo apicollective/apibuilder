@@ -1,0 +1,540 @@
+{
+  "name": "ApiBuilder Postman Collection v2.1",
+  "base_url": "https://www.getpostman.com",
+  "description": "Specification of Postman Collection Format v2.1 using the ApiBuilder schema. Further information about Postman Collection Format v2.1 can be found at https://schema.getpostman.com/json/collection/v2.1.0/docs/index.html",
+
+  "enums": {
+    "method": {
+      "values": [
+        { "name": "GET" },
+        { "name": "PUT" },
+        { "name": "POST" },
+        { "name": "PATCH" },
+        { "name": "DELETE" },
+        { "name": "COPY" },
+        { "name": "HEAD" },
+        { "name": "OPTIONS" },
+        { "name": "LINK" },
+        { "name": "UNLINK" },
+        { "name": "PURGE" },
+        { "name": "LOCK" },
+        { "name": "UNLOCK" },
+        { "name": "PROPFIND" },
+        { "name": "VIEW" }
+      ]
+    },
+    "auth_enum": {
+      "values": [
+        { "name": "awsv4" },
+        { "name": "basic" },
+        { "name": "bearer" },
+        { "name": "digest" },
+        { "name": "hawk" },
+        { "name": "noauth" },
+        { "name": "oauth1" },
+        { "name": "oauth2" },
+        { "name": "ntlm" }
+      ]
+    },
+    "event_type": {
+      "values": [
+        { "name": "test" },
+        { "name": "prerequest" }
+      ]
+    },
+    "body_mode": {
+      "values": [
+        { "name": "raw" },
+        { "name": "urlencoded" },
+        { "name": "formdata" },
+        { "name": "file" }
+      ]
+    }
+  },
+
+  "unions": {
+    "items": {
+      "discriminator": "type",
+      "types": [
+        { "type": "item" },
+        { "type": "folder" }
+      ]
+    }
+  },
+
+  "models": {
+    "description": {
+      "fields": [
+        {
+          "name": "content",
+          "type": "string",
+          "required": false,
+          "description": "The content of the description goes here, as a raw string."
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "Holds the mime type of the raw description content. E.g: 'text/markdown' or 'text/html'. The type is used to correctly render the description when generating documentation, or in the Postman app."
+        }
+      ]
+    },
+
+    "info": {
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "A collection's friendly name is defined by this field. You would want to set this field to a value that would allow you to easily identify this collection among a bunch of other collections, as such outlining its usage or content."
+        },
+        {
+          "name": "postman_id",
+          "type": "string",
+          "required": false,
+          "description": "Every collection is identified by the unique value of this field. The value of this field is usually easiest to generate using a UID generator function. If you already have a collection, it is recommended that you maintain the same id since changing the id usually implies that is a different collection than it was originally.Note: This field exists for compatibility reasons with Collection Format V1."
+        },
+        {
+          "name": "description",
+          "type": "description",
+          "required": false,
+          "description": "A Description can be a raw text, or be an object, which holds the description along with its format."
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "required": false,
+          "description": "Postman allows you to version your collections as they grow, and this field holds the version number. While optional, it is recommended that you use this field to its fullest extent!"
+        },
+        {
+          "name": "schema",
+          "type": "string",
+          "description": "This should ideally hold a link to the Postman schema that is used to validate this collection. E.g: https://schema.getpostman.com/collection/v1"
+        }
+      ]
+    },
+
+    "variable" : {
+      "description": "Using variables in your Postman requests eliminates the need to duplicate requests, which can save a lot of time. Variables can be defined, and referenced to from any part of a request.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "A variable ID is a unique user-defined value that identifies the variable within a collection. In traditional terms, this would be a variable name."
+        },{
+          "name": "key",
+          "type": "string",
+          "required": false,
+          "description": "A variable key is a human friendly value that identifies the variable within a collection. In traditional terms, this would be a variable name."
+        },{
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The value that a variable holds in this collection. Ultimately, the variables will be replaced by this value, when say running a set of requests from a collection"
+        },{
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "A variable may have multiple types. This field specifies the type of the variable."
+        },{
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Variable name"
+        },{
+          "name": "description",
+          "type": "description",
+          "required": false
+        },{
+          "name": "system",
+          "type": "boolean",
+          "required": false,
+          "description": "When set to true, indicates that this variable has been set by Postman"
+        },{
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+
+    "script": {
+      "fields": [
+        {
+          "name": "exec",
+          "type": "[string]",
+          "description": "Body of the script in lines"
+        },{
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "Type of the script. E.g: 'text/javascript'",
+          "default": "text/javascript"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "A unique, user defined identifier that can be used to refer to this script from requests."
+        },{
+          "name": "src",
+          "type": "string",
+          "required": false,
+          "description": "If object, contains the complete broken-down URL for this request. If string, contains the literal request URL."
+        },{
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Script name"
+        }
+      ]
+    },
+    "query_param": {
+      "fields": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "description",
+          "required": false
+        }
+      ]
+    },
+
+    "url": {
+      "fields": [
+        {
+          "name": "raw",
+          "type": "string",
+          "required": false,
+          "description": "The string representation of the request URL, including the protocol, host, path, hash, query parameter(s) and path variable(s)."
+        },{
+          "name": "protocol",
+          "type": "string",
+          "required": false,
+          "description": "The protocol_ associated with the request, E.g: 'http'"
+        },{
+          "name": "host",
+          "type": "[string]",
+          "required": false,
+          "description": "The host for the URL, E.g: api.yourdomain.com. Can be stored as a string or as an array of strings."
+        },{
+          "name": "path",
+          "type": "[string]",
+          "required": false
+        },{
+          "name": "port",
+          "type": "string",
+          "required": false,
+          "description": "The port number present in this URL. An empty value implies 80/443 depending on whether the protocol_ field contains http/https."
+        },{
+          "name": "query",
+          "type": "[query_param]",
+          "required": false
+        },{
+          "name": "hash",
+          "type": "string",
+          "required": false,
+          "description": "Contains the URL fragment (if any). Usually this is not transmitted over the network, but it could be useful to store this in some cases."
+        },{
+          "name": "variable",
+          "type": "[variable]",
+          "required": false,
+          "description": "Postman supports path variables with the syntax /path/:variableName/to/somewhere. These variables are stored in this field."
+        }
+      ]
+    },
+    "event": {
+      "fields": [
+        {
+          "name": "listen",
+          "type": "event_type",
+          "description": "Can be set to test or prerequest for test scripts or pre-request scripts respectively."
+        },
+        {
+          "name": "script",
+          "type": "script",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "A unique identifier for the enclosing event."
+        },{
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "description": "Indicates whether the event is disabled. If absent, the event is assumed to be enabled"
+        }
+      ]
+    },
+
+    "basic_auth": {
+      "fields": [
+        { "name": "key", "type": "string" },
+        { "name": "value", "type": "string" },
+        { "name": "type", "type": "string", "required": false }
+      ]
+    },
+
+    "header": {
+      "fields": [
+        { "name": "key", "type": "string" },
+        { "name": "value", "type": "string" },
+        { "name": "disabled", "type": "boolean", "required": false },
+        { "name": "description", "type": "description", "required": false }
+      ]
+    },
+
+    "auth": {
+      "fields": [
+        {
+          "name": "type",
+          "type": "auth_enum"
+        }, {
+          "name": "basic",
+          "type": "[basic_auth]",
+          "required": false
+        }
+      ]
+    },
+
+    "file": {
+      "fields": [
+        { "name": "src", "type": "string", "required": false },
+        { "name": "content", "type": "string", "required": false }
+      ]
+    },
+
+    "url_encoded": {
+      "fields": [
+        { "name": "key", "type": "string" },
+        { "name": "value", "type": "string", "required": false },
+        { "name": "disabled", "type": "boolean", "required": false },
+        { "name": "description", "type": "description", "required": false }
+      ]
+    },
+
+    "form_parameter": {
+      "fields": [
+        { "name": "key", "type": "string" },
+        { "name": "value", "type": "string", "required": false },
+        { "name": "disabled", "type": "boolean", "required": false },
+        { "name": "description", "type": "description", "required": false },
+        { "name": "contentType", "type": "string", "required": false },
+        { "name": "type", "type": "string", "required": false }
+      ]
+    },
+
+    "body": {
+      "fields": [
+        {
+          "name": "raw",
+          "type": "string",
+          "required": false
+        },{
+          "name": "mode",
+          "type": "body_mode",
+          "required": false
+        },{
+          "name": "urlencoded",
+          "type": "[url_encoded]",
+          "required": false
+        },{
+          "name": "file",
+          "type": "file",
+          "required": false
+        },{
+          "name": "formdata",
+          "type": "[form_parameter]",
+          "required": false
+        }
+      ]
+    },
+
+    "request": {
+      "fields": [
+        {
+          "name": "url",
+          "type": "url",
+          "required": false
+        },{
+          "name": "auth",
+          "type": "auth",
+          "required": false
+        },{
+          "name": "method",
+          "type": "method",
+          "required": false
+        },{
+          "name": "description",
+          "type": "description",
+          "required": false
+        },{
+          "name": "header",
+          "type": "[header]",
+          "required": false
+        },{
+          "name": "body",
+          "type": "body",
+          "required": false
+        }
+      ]
+    },
+
+    "response": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },{
+          "name": "name",
+          "type": "string",
+          "required": false
+        },{
+          "name": "originalRequest",
+          "type": "request",
+          "required": false
+        },{
+          "name": "responseTime",
+          "type": "string",
+          "required": false
+        },{
+          "name": "header",
+          "type": "[header]",
+          "required": false
+        },{
+          "name": "body",
+          "type": "string",
+          "required": false
+        },{
+          "name": "status",
+          "type": "string",
+          "required": false
+        },{
+          "name": "code",
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+
+    "item": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "A unique ID that is used to identify collections internally"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "A human readable identifier for the current item."
+        },
+        {
+          "name": "description",
+          "type": "description",
+          "required": false,
+          "description": "A Description can be a raw text, or be an object, which holds the description along with its format."
+        },
+        {
+          "name": "variable",
+          "type": "[variable]",
+          "required": false,
+          "description": "Collection variables allow you to define a set of variables, that are a part of the collection, as opposed to environments, which are separate entities."
+        },
+        {
+          "name": "event",
+          "type": "[event]",
+          "required": false,
+          "description": "Postman allows you to configure scripts to run when specific events occur. These scripts are stored here, and can be referenced in the collection by their ID."
+        },
+        {
+          "name": "request",
+          "type": "request"
+        },{
+          "name": "response",
+          "type": "[response]",
+          "required": false
+        }
+      ]
+    },
+
+    "folder": {
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "A folder's friendly name is defined by this field. You would want to set this field to a value that would allow you to easily identify this folder."
+        },{
+          "name": "description",
+          "type": "description",
+          "required": false
+        },
+        {
+          "name": "variable",
+          "type": "[variable]",
+          "required": false
+        },
+        {
+          "name": "item",
+          "type": "[item]"
+        },
+        {
+          "name": "event",
+          "type": "[event]",
+          "required": false
+        },
+        {
+          "name": "auth",
+          "type": "auth",
+          "required": false
+        }
+      ]
+    },
+
+    "collection": {
+      "fields": [
+        {
+          "name": "info",
+          "type": "info",
+          "description": "Detailed description of the info block"
+        },{
+          "name": "item",
+          "type": "[items]",
+          "description": "Items are the basic unit for a Postman collection. You can think of them as corresponding to a single API endpoint. Each Item has one request and may have multiple API responses associated with it."
+        },{
+          "name": "event",
+          "type": "[event]",
+          "description": "Postman allows you to configure scripts to run when specific events occur. These scripts are stored here, and can be referenced in the collection by their ID."
+        },{
+          "name": "variable",
+          "type": "[variable]",
+          "description": "Collection variables allow you to define a set of variables, that are a part of the collection, as opposed to environments, which are separate entities.Note: Collection variables must not contain any sensitive information."
+        },{
+          "name": "auth",
+          "type": "auth",
+          "description": "Represents authentication helpers provided by Postman",
+          "required": false
+        }
+      ]
+    }
+  }
+}
