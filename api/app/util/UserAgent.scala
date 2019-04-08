@@ -22,7 +22,7 @@ class UserAgent @Inject() (
       "apibuilder",
       appConfig.apibuilderVersion,
       Seq(
-        appConfig.apibuilderWwwHost,
+        "https://" + appConfig.apibuilderWwwHost,
         orgKey,
         applicationKey,
         versionName,
