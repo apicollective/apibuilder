@@ -253,7 +253,7 @@ case class InternalFieldForm(
   example: Option[String] = None,
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
-  attributes: Seq[InternalAttributeForm],
+  attributes: Seq[InternalAttributeForm] = Nil,
   annotations: Seq[String],
   warnings: Seq[String] = Seq.empty
 )
