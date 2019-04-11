@@ -284,7 +284,7 @@ case class InternalParameterForm(
   example: Option[String] = None,
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
-  attributes: Seq[InternalAttributeForm],
+  attributes: Seq[InternalAttributeForm] = Nil,
   warnings: Seq[String] = Seq.empty
 )
 
