@@ -569,7 +569,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
       SqlParser.long(prefixOpt.getOrElse("") + minimum).? ~
       SqlParser.long(prefixOpt.getOrElse("") + maximum).? ~
       SqlParser.str(prefixOpt.getOrElse("") + example).? ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) map {
+      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes).? map {
         case name ~ typeInstance ~ location ~ description ~ deprecation ~ required ~ default ~ minimum ~ maximum ~ example ~ attributes => {
           io.apibuilder.spec.v0.models.Parameter(
             name = name,

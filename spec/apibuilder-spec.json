@@ -213,7 +213,7 @@
         { "name": "minimum", "type": "long", "required": false },
         { "name": "maximum", "type": "long", "required": false },
         { "name": "example", "type": "string", "required": false },
-        { "name": "attributes", "type": "[attribute]", "default": "[]" }
+        { "name": "attributes", "type": "[attribute]", "required": false }
       ]
     },
 

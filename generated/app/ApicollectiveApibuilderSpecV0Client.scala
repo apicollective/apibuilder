@@ -198,7 +198,7 @@ package io.apibuilder.spec.v0.models {
     minimum: _root_.scala.Option[Long] = None,
     maximum: _root_.scala.Option[Long] = None,
     example: _root_.scala.Option[String] = None,
-    attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil
+    attributes: _root_.scala.Option[Seq[io.apibuilder.spec.v0.models.Attribute]] = None
   )
 
   /**
@@ -1098,7 +1098,7 @@ package io.apibuilder.spec.v0.models {
         minimum <- (__ \ "minimum").readNullable[Long]
         maximum <- (__ \ "maximum").readNullable[Long]
         example <- (__ \ "example").readNullable[String]
-        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+        attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.spec.v0.models.Attribute]]
       } yield Parameter(name, `type`, location, description, deprecation, required, default, minimum, maximum, example, attributes)
     }
 
@@ -1107,8 +1107,7 @@ package io.apibuilder.spec.v0.models {
         "name" -> play.api.libs.json.JsString(obj.name),
         "type" -> play.api.libs.json.JsString(obj.`type`),
         "location" -> play.api.libs.json.JsString(obj.location.toString),
-        "required" -> play.api.libs.json.JsBoolean(obj.required),
-        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
+        "required" -> play.api.libs.json.JsBoolean(obj.required)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -1132,6 +1131,10 @@ package io.apibuilder.spec.v0.models {
       (obj.example match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("example" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.attributes match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("attributes" -> play.api.libs.json.Json.toJson(x))
       })
     }
 
