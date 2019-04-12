@@ -396,6 +396,7 @@ case class ServiceDiff(
     Helpers.diffStringBreaking(s"$thisPrefix location", a.location.toString, b.location.toString) ++
     Helpers.diffOptionalStringNonBreaking(s"$thisPrefix description", a.description, b.description) ++
     Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation) ++
+    Helpers.diffOptionAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDefault(thisPrefix, a.default, b.default) ++
     Helpers.diffRequired(thisPrefix, a.required, b.required) ++
     Helpers.diffMinimum(thisPrefix, a.minimum, b.minimum) ++
@@ -433,7 +434,8 @@ case class ServiceDiff(
     val thisPrefix = s"$prefix response ${responseCode(a)}"
     Helpers.diffStringBreaking(s"$thisPrefix type", a.`type`, b.`type`) ++
     Helpers.diffOptionalStringNonBreaking(s"$thisPrefix description", a.description, b.description) ++
-    Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation)
+    Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation) ++
+    Helpers.diffOptionAttributes(prefix, a.attributes, b.attributes)
   }
 
   private object Helpers {
@@ -611,6 +613,10 @@ case class ServiceDiff(
           }
         }
       }
+    }
+
+    def diffOptionAttributes(prefix: String, a: Option[Seq[Attribute]], b: Option[Seq[Attribute]]): Seq[Diff] = {
+      diffAttributes(prefix, a.getOrElse(Nil), b.getOrElse(Nil))
     }
 
     def diffAttributes(prefix: String, a: Seq[Attribute], b: Seq[Attribute]): Seq[Diff] = {

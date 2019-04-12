@@ -286,12 +286,13 @@
       "type": <em>string</em>,
       "location": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
-      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
       "default": <em>value (optional)</em>,
       "example": <em>string (optional)</em>,
       "minimum": <em>long (optional)</em>,
-      "maximum": <em>long (optional)</em>
+      "maximum": <em>long (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -306,6 +307,7 @@
       <li><em>example</em> @exampleInfo("parameter")</li>
       <li><em>minimum</em> @minimumInfo("parameter")</li>
       <li><em>maximum</em> @maximumInfo("parameter")</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this parameter for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
@@ -404,10 +406,10 @@
     {
       "type": <em>string</em>,
       "description": <em>string (optional)</em>,
+      "default": <em>boolean (optional)</em>,
+      "discriminator_value": <em>string (optional)</em>,
       "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
-      "default": <em>boolean (optional)</em>,
-      "discriminator_value": <em>string (optional)</em>
     }
     </pre>
 
@@ -417,10 +419,10 @@
       type. Acceptable values include the name of either an enum, a model,
       or a (<a href="@routes.DocController.types">primitive type</a>).</li>
       @description("type")
-      <li><em>attributes</em> JSON array defining additional meta data about this union type for use by generators. See <a href="#attribute">Attribute</a></li>
-      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
       <li><em>default</em> If true, indicates that this type should be used as the default when deserializing union types. This field is only used by union types that require a discriminator and sets the default value for that disciminator during deserialization.</li>
       <li><em>discriminator_value</em> The discriminator value defines the string to use in the discriminator field to identify this type. If not specified, the discriminator value will default to the name of the type itself.</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this union type for use by generators. See <a href="#attribute">Attribute</a></li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
   <a name="import"></a>

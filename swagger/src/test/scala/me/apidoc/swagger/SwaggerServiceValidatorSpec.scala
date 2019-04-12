@@ -452,6 +452,42 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                   operations = Seq(
                     Operation(
                       method = Get,
+                      path = "/pets/:status",
+                      description = Some("find pets by status - as a path param"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(Parameter(
+                        name = "status",
+                        `type` = "PetStatusGetPath",
+                        location = Path,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes =  Seq(Attribute(
+                        name = SwaggerData.AttributeName,
+                        description = Some(SwaggerData.AttributeDescription),
+                        value = JsObject(Seq(
+                          ("summary", JsString("find pets by status - as a path param"))
+                        ))))),
+                    Operation(
+                      method = Get,
                       path = "/pets/",
                       description = Some("find pets by name and status - as query params"),
                       deprecation = None,
@@ -498,42 +534,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                         value = JsObject(Seq(
                           ("summary", JsString("find pets by name and status - as query params"))
                         ))))),
-                    Operation(
-                      method = Get,
-                      path = "/pets/:status",
-                      description = Some("find pets by status - as a path param"),
-                      deprecation = None,
-                      body = None,
-                      parameters = Seq(Parameter(
-                        name = "status",
-                        `type` = "PetStatusGetPath",
-                        location = Path,
-                        description = None,
-                        deprecation = None,
-                        required = true,
-                        default = None,
-                        minimum = None,
-                        maximum = None,
-                        example = None)
-                      ),
-                      responses = Seq(
-                        Response(
-                          code = ResponseCodeInt(200),
-                          `type` = "[Pet]",
-                          description = Some("find pet response"),
-                          deprecation = None),
-                        Response(
-                          code = ResponseCodeOption.Default,
-                          `type` = "Error",
-                          description = Some("unexpected error"),
-                          deprecation = None)
-                      ),
-                      attributes =  Seq(Attribute(
-                        name = SwaggerData.AttributeName,
-                        description = Some(SwaggerData.AttributeDescription),
-                        value = JsObject(Seq(
-                          ("summary", JsString("find pets by status - as a path param"))
-                        )))))
                   ),
                   attributes = Seq())
               )

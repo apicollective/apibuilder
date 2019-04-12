@@ -1148,8 +1148,8 @@ class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with
 
       }
 
-      "change operation parameters" in {
-        val id = Parameter(
+      "operation parameters" must {
+        val parameter = Parameter(
           name = "id",
           `type` = "long",
           location = ParameterLocation.Query,
@@ -1162,71 +1162,131 @@ class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with
           example = None
         )
 
-        ServiceDiff(serviceWithOperation, withOp(operation.copy(parameters = Seq(id)))).differences must be(
-          Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid optional parameter added: id")
-          )
-        )
+        def withParam(param: Parameter): Service = {
+          service.copy(resources = Seq(resource.copy(operations = Seq(operation.copy(parameters = Seq(param))))))
+        }
 
-        ServiceDiff(serviceWithOperation, withOp(operation.copy(parameters = Seq(id.copy(required = true))))).differences must be(
-          Seq(
-            DiffBreaking("resource user operation GET /users/:guid required parameter added: id")
-          )
-        )
+        val base = service.copy(resources = Seq(resource.copy(operations = Seq(operation))))
+        val serviceWithOpParam = withParam(parameter)
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), serviceWithOperation).differences must be(
-          Seq(
-            DiffBreaking("resource user operation GET /users/:guid parameter removed: id")
-          )
-        )
+        "no change" in {
+          ServiceDiff(serviceWithOpParam, serviceWithOpParam).differences must be(Nil)
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(`type` = "string"))))).differences must be(
-          Seq(
-            DiffBreaking("resource user operation GET /users/:guid parameter id type changed from long to string")
+        "add optional parameter" in {
+          ServiceDiff(serviceWithOperation, serviceWithOpParam).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid optional parameter added: id")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(location = ParameterLocation.Form))))).differences must be(
-          Seq(
-            DiffBreaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
+        "add required parameter" in {
+          ServiceDiff(serviceWithOperation, withParam(parameter.copy(required = true))).differences must be(
+            Seq(
+              DiffBreaking("resource user operation GET /users/:guid required parameter added: id")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(description = Some("test")))))).differences must be(
-          Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid parameter id description added: test")
+        "remove parameter" in {
+          ServiceDiff(serviceWithOpParam, serviceWithOperation).differences must be(
+            Seq(
+              DiffBreaking("resource user operation GET /users/:guid parameter removed: id")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(deprecation = Some(Deprecation())))))).differences must be(
-          Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid parameter id deprecated")
+        "change type" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(`type` = "string"))).differences must be(
+            Seq(
+              DiffBreaking("resource user operation GET /users/:guid parameter id type changed from long to string")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(default = Some("5")))))).differences must be(
-          Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
+        "change location" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(location = ParameterLocation.Form))).differences must be(
+            Seq(
+              DiffBreaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(minimum = Some(1)))))).differences must be(
-          Seq(
-            DiffBreaking("resource user operation GET /users/:guid parameter id minimum added: 1")
+        "add description" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(description = Some("test")))).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid parameter id description added: test")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(maximum = Some(1)))))).differences must be(
-          Seq(
-            DiffBreaking("resource user operation GET /users/:guid parameter id maximum added: 1")
+        "add deprecation" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(deprecation = Some(Deprecation())))).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid parameter id deprecated")
+            )
           )
-        )
+        }
 
-        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(example = Some("1")))))).differences must be(
-          Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
+        "add default" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(default = Some("5")))).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
+            )
           )
-        )
+        }
+
+        "add minimum" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(minimum = Some(1)))).differences must be(
+            Seq(
+              DiffBreaking("resource user operation GET /users/:guid parameter id minimum added: 1")
+            )
+          )
+        }
+
+        "add maximum" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(maximum = Some(1)))).differences must be(
+            Seq(
+              DiffBreaking("resource user operation GET /users/:guid parameter id maximum added: 1")
+            )
+          )
+        }
+
+        "add example" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(example = Some("1")))).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
+            )
+          )
+        }
+
+        val attribute1 = Attribute("attribute1", Json.parse(""" {"name": "value1"}""").as[JsObject], Some("Description 1"))
+        val attribute1ValueUpdated = Attribute("attribute1", Json.parse(""" {"name": "value updated"}""").as[JsObject], Some("Description 1"))
+
+        "add attribute" in {
+          ServiceDiff(serviceWithOpParam, withParam(parameter.copy(attributes = Some(Seq(attribute1))))).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid attribute added: attribute1")
+            )
+          )
+        }
+
+        "update attribute" in {
+          ServiceDiff(withParam(parameter.copy(attributes = Some(Seq(attribute1)))), withParam(parameter.copy(attributes = Some(Seq(attribute1ValueUpdated))))).differences must be(
+            Seq(
+              DiffNonBreaking("""resource user operation GET /users/:guid attribute 'attribute1' value changed from {"name":"value1"} to {"name":"value updated"}""")
+            )
+          )
+        }
+
+        "remove attribute" in {
+          ServiceDiff(withParam(parameter.copy(attributes = Some(Seq(attribute1)))), serviceWithOpParam).differences must be(
+            Seq(
+              DiffNonBreaking("resource user operation GET /users/:guid attribute removed: attribute1")
+            )
+          )
+        }
 
       }
 
