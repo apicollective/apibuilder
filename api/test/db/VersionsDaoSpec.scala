@@ -90,7 +90,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       case Left(errors) => fail(errors.mkString("\n"))
       case Right(svc) => {
         svc.name must be(service.name)
-        // TODO svc.namespace must be(service.namespace)
+        svc.namespace must be(serviceConfig.applicationNamespace(svc.name))
       }
     }
   }
