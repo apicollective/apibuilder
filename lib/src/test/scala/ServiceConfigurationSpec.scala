@@ -37,4 +37,5 @@ class ServiceConfigurationSpec extends FunSpec with Matchers {
     val config = createServiceConfiguration("io.apibuilder")
     config.applicationNamespace("mercury-3pl") should be("io.apibuilder.mercury3pl.v1")
   }
+
 }
