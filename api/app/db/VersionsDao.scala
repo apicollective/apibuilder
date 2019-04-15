@@ -325,9 +325,6 @@ class VersionsDao @Inject() (
     finalStats
   }
 
-  // TODO #792 - https://github.com/apicollective/apibuilder/issues/792
-  //   - run this locally
-  //   - reproduce this locally
   @tailrec
   private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
     var good = 0l
@@ -359,21 +356,16 @@ class VersionsDao @Inject() (
         val versionName = version.version
         val versionGuid = version.guid
 
-        // TODO this adds yet another sql call *but* saves us from modifying Version
-        //   alternatively use some local VersionWithOrgNamespace model...
         val organizationNamespace = {
           SQL("select namespace from organizations where guid = {orgGuid}::uuid")
             .on("orgGuid" -> version.organization.guid)
             .executeQuery()
             .as(SqlParser.scalar[String].single)
         }
-        Logger.error(s"DEV: Migrating for version.service.namespace=${version.service.namespace}, orgKey=${version.organization.key}, orgGuid=${version.organization.guid}")
-
         Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
-//          orgNamespace = version.service.namespace, // TODO why service.namespace -> orgNamespace ???
           orgNamespace = organizationNamespace,
           version = versionName
         )
