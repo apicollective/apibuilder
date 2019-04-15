@@ -38,4 +38,10 @@ class ServiceConfigurationSpec extends FunSpec with Matchers {
     config.applicationNamespace("mercury-3pl") should be("io.apibuilder.mercury3pl.v1")
   }
 
+  it("dev - reproduce apibuilder/issues/792") {
+    // TODO #792 - the below example demonstrates that orgNamespace is assumed to be appFullNamespace 😱😱😱 => hence the bug
+    val appFullNamespace = "me.apidoc.my.api.v1"
+    createServiceConfiguration(orgNamespace = appFullNamespace).applicationNamespace("my-api") should be("me.apidoc.my.api.v1.my.api.v1") // 💥
+  }
+
 }
