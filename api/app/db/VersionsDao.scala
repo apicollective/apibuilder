@@ -362,7 +362,7 @@ class VersionsDao @Inject() (
         // TODO this adds yet another sql call *but* saves us from modifying Version
         //   alternatively use some local VersionWithOrgNamespace model...
         val organizationNamespace = {
-          SQL("select namespace from organizations where guid = {orgGuid}")
+          SQL("select namespace from organizations where guid = {orgGuid}::uuid")
             .on("orgGuid" -> version.organization.guid)
             .executeQuery()
             .as(SqlParser.scalar[String].single)
