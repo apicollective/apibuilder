@@ -369,7 +369,7 @@ class VersionsDao @Inject() (
         }
         Logger.error(s"DEV: Migrating for version.service.namespace=${version.service.namespace}, orgKey=${version.organization.key}, orgGuid=${version.organization.guid}")
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
