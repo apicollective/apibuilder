@@ -36,12 +36,16 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
     "create" in {
       versionsDao.create(testUser, application, "1.0.0", Original, service)
-      createVersion().version must be("1.0.0")
+      val version = createVersion()
+      version.version must be("1.0.0")
+      version.service.namespace must be(service.namespace)
     }
 
     "findByApplicationAndVersion" in {
       versionsDao.create(testUser, application, "1.0.1", Original, service)
-      versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) must be(Some(service))
+      val versionOpt = versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1")
+      versionOpt.map(_.service) must be(Some(service))
+      versionOpt.map(_.service.namespace) must be(service.namespace)
     }
 
     "soft delete" in {
@@ -90,7 +94,10 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     )
     validator.validate() match {
       case Left(errors) => fail(errors.mkString("\n"))
-      case Right(_) => {}
+      case Right(svc) => {
+        svc.name must be(service.name)
+        svc.namespace must be(service.namespace)
+      }
     }
   }
 
