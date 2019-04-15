@@ -22,13 +22,16 @@ case class ServiceBuilder(
   }
 
   def apply(
-    config: ServiceConfiguration,
+    config: ServiceConfiguration, // TODO understand orgNamespace = version.service.namespace,
     internal: InternalServiceForm
   ): Service = {
 
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
-    val namespace = internal.namespace.getOrElse { config.applicationNamespace(key) }
+    val namespace = {
+      println(s"Inside ServiceBuilder: internal.namespace=${internal.namespace}, and config.applicationNamespace(key)=${config.applicationNamespace(key)} ")
+      internal.namespace.getOrElse { config.applicationNamespace(key) } // TODO NOTE: internal namespace or application namespace (on top of org namespace)
+    }
 
     val resolver = TypeResolver(
       defaultNamespace = Some(namespace),

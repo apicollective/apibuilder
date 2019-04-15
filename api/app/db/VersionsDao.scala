@@ -356,13 +356,15 @@ class VersionsDao @Inject() (
         val versionName = version.version
         val versionGuid = version.guid
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
           orgNamespace = version.service.namespace,
           version = versionName
         )
+
+        Logger.warn(s"Using: config=$config, version.service.namespace=${version.service.namespace}")
 
         try {
           val validator = OriginalValidator(
