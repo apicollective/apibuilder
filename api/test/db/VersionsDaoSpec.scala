@@ -9,15 +9,7 @@ import play.api.libs.json.Json
 
 class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
-  private[this] val Original = io.apibuilder.api.v0.models.Original(
-    `type` = OriginalType.ApiJson,
-    data = Json.obj(
-      "apidoc" -> Json.obj(
-        "version" -> io.apibuilder.spec.v0.Constants.Version
-      ),
-      "name" -> s"test-${UUID.randomUUID}"
-    ).toString
-  )
+  private[this] val Original = createOriginal()
 
   private[this] def createApplicationByKey(
     key: String = "test-" + UUID.randomUUID.toString
@@ -35,13 +27,18 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     lazy val service = createService(application)
 
     "create" in {
-      versionsDao.create(testUser, application, "1.0.0", Original, service)
+      val v = versionsDao.create(testUser, application, "1.0.0", Original, service)
+      v.version must be("1.0.0")
+      v.service.namespace must be(service.namespace)
       createVersion().version must be("1.0.0")
     }
 
     "findByApplicationAndVersion" in {
       versionsDao.create(testUser, application, "1.0.1", Original, service)
-      versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service) must be(Some(service))
+      val versionOpt = versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1")
+      val Some(svc) = versionOpt.map(_.service)
+      svc.namespace must be(service.namespace)
+      svc must be(service)
     }
 
     "soft delete" in {
@@ -73,11 +70,12 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
   "can parse original" in {
     val app = createApplicationByKey()
     val service = createService(app)
-    val version = versionsDao.create(testUser, app, "1.0.2", Original, service)
+    val original = createOriginal(service)
+    val version = versionsDao.create(testUser, app, "1.0.2", original, service)
 
     val serviceConfig = ServiceConfiguration(
-      orgKey = "test",
-      orgNamespace = "test.apibuilder",
+      orgKey = app.organization.key,
+      orgNamespace = testOrg.namespace,
       version = "0.0.2"
     )
 
@@ -90,7 +88,10 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     )
     validator.validate() match {
       case Left(errors) => fail(errors.mkString("\n"))
-      case Right(_) => {}
+      case Right(svc) => {
+        svc.name must be(service.name)
+        // TODO svc.namespace must be(service.namespace)
+      }
     }
   }
 
