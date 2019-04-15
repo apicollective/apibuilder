@@ -362,17 +362,18 @@ class VersionsDao @Inject() (
             .executeQuery()
             .as(SqlParser.scalar[String].single)
         }
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
 
-        val config = ServiceConfiguration(
+        val serviceConfig = ServiceConfiguration(
           orgKey = orgKey,
           orgNamespace = organizationNamespace,
           version = versionName
         )
 
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
+
         try {
           val validator = OriginalValidator(
-            config = config,
+            config = serviceConfig,
             original = version.original.getOrElse {
               sys.error("Missing version")
             },
