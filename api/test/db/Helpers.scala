@@ -114,18 +114,6 @@ trait Helpers extends util.Daos {
     )
   }
 
-  def createOriginal(): Original = {
-    io.apibuilder.api.v0.models.Original(
-      `type` = OriginalType.ApiJson,
-      data = Json.obj(
-        "apidoc" -> Json.obj(
-          "version" -> io.apibuilder.spec.v0.Constants.Version
-        ),
-        "name" -> s"test-${UUID.randomUUID}"
-      ).toString
-    )
-  }
-
   def createMembership(
     org: Organization,
     user: User = createRandomUser(),
@@ -176,6 +164,22 @@ trait Helpers extends util.Daos {
     unions = Nil,
     resources = Nil
   )
+
+  def createOriginal(svc: spec.Service): io.apibuilder.api.v0.models.Original = {
+    createOriginal(name = svc.name)
+  }
+
+  def createOriginal(name: String = s"test-${UUID.randomUUID}"): io.apibuilder.api.v0.models.Original = {
+    io.apibuilder.api.v0.models.Original(
+      `type` = OriginalType.ApiJson,
+      data = Json.obj(
+        "apidoc" -> Json.obj(
+          "version" -> io.apibuilder.spec.v0.Constants.Version
+        ),
+        "name" -> name
+      ).toString
+    )
+  }
 
   def createUser(
     form: UserForm = createUserForm()
