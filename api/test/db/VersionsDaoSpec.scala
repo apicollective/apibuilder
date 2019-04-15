@@ -45,7 +45,7 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
       versionsDao.create(testUser, application, "1.0.1", Original, service)
       val versionOpt = versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1")
       versionOpt.map(_.service) must be(Some(service))
-      versionOpt.map(_.service.namespace) must be(service.namespace)
+      versionOpt.map(_.service.namespace) must be(Some(service.namespace))
     }
 
     "soft delete" in {
