@@ -35,17 +35,18 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     lazy val service = createService(application)
 
     "create" in {
-      versionsDao.create(testUser, application, "1.0.0", Original, service)
-      val version = createVersion()
-      version.version must be("1.0.0")
-      version.service.namespace must be(service.namespace)
+      val v = versionsDao.create(testUser, application, "1.0.0", Original, service)
+      v.version must be("1.0.0")
+      v.service.namespace must be(service.namespace)
+      createVersion().version must be("1.0.0")
     }
 
     "findByApplicationAndVersion" in {
       versionsDao.create(testUser, application, "1.0.1", Original, service)
       val versionOpt = versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1")
-      versionOpt.map(_.service) must be(Some(service))
-      versionOpt.map(_.service.namespace) must be(Some(service.namespace))
+      val Some(svc) = versionOpt.map(_.service)
+      svc.namespace must be(service.namespace)
+      svc must be(service)
     }
 
     "soft delete" in {
