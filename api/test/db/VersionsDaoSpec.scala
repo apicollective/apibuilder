@@ -81,8 +81,8 @@ class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
     val version = versionsDao.create(testUser, app, "1.0.2", Original, service)
 
     val serviceConfig = ServiceConfiguration(
-      orgKey = "test",
-      orgNamespace = "test.apibuilder",
+      orgKey = app.organization.key,
+      orgNamespace = testOrg.namespace,
       version = "0.0.2"
     )
 
