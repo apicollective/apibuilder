@@ -816,7 +816,7 @@ package io.apibuilder.spec.v0.models {
         maximum <- (__ \ "maximum").readNullable[Long]
         example <- (__ \ "example").readNullable[String]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        annotations <- (__ \ "annotations").readWithDefault[Seq[String]](Nil)
+        annotations <- (__ \ "annotations").read[Seq[String]]
       } yield Field(name, `type`, description, deprecation, default, required, minimum, maximum, example, attributes, annotations)
     }
 
@@ -911,7 +911,7 @@ package io.apibuilder.spec.v0.models {
         enums <- (__ \ "enums").read[Seq[String]]
         unions <- (__ \ "unions").read[Seq[String]]
         models <- (__ \ "models").read[Seq[String]]
-        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
+        annotations <- (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
       } yield Import(uri, namespace, organization, application, version, enums, unions, models, annotations)
     }
 
@@ -1241,7 +1241,7 @@ package io.apibuilder.spec.v0.models {
         models <- (__ \ "models").read[Seq[io.apibuilder.spec.v0.models.Model]]
         resources <- (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
+        annotations <- (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
       } yield Service(apidoc, name, organization, application, namespace, version, baseUrl, description, info, headers, imports, enums, unions, models, resources, attributes, annotations)
     }
 
