@@ -8,7 +8,7 @@ import io.apibuilder.spec.v0.models.json._
 import io.flow.postgresql.Query
 import builder.OriginalValidator
 import core.{ServiceFetcher, VersionMigration}
-import lib.{DatabaseServiceFetcher, ServiceConfiguration, ServiceUri, VersionTag}
+import lib.{ServiceConfiguration, ServiceUri, VersionTag}
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.db._
@@ -27,7 +27,8 @@ class VersionsDao @Inject() (
   applicationsDao: ApplicationsDao,
   originalsDao: OriginalsDao,
   tasksDao: TasksDao,
-  usersDao: UsersDao
+  usersDao: UsersDao,
+  organizationsDao: OrganizationsDao
 ) {
 
   private[this] val LatestVersion = "latest"
@@ -356,17 +357,19 @@ class VersionsDao @Inject() (
         val versionName = version.version
         val versionGuid = version.guid
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
-
-        val config = ServiceConfiguration(
-          orgKey = orgKey,
-          orgNamespace = version.service.namespace,
-          version = versionName
-        )
-
         try {
+          val org = organizationsDao.findByGuid(Authorization.All, version.organization.guid).getOrElse {
+            sys.error(s"failed to retrieve organization by guid ${version.organization.guid}")
+          }
+          val serviceConfig = ServiceConfiguration(
+            orgKey = orgKey,
+            orgNamespace = org.namespace,
+            version = versionName
+          )
+          Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
+
           val validator = OriginalValidator(
-            config = config,
+            config = serviceConfig,
             original = version.original.getOrElse {
               sys.error("Missing version")
             },
@@ -375,7 +378,7 @@ class VersionsDao @Inject() (
           )
           validator.validate() match {
             case Left(errors) => {
-              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
+              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
