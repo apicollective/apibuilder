@@ -42,6 +42,11 @@ class UrlKeySpec extends FunSpec with Matchers {
       UrlKey.generate("ning_1_8_client") should be("ning_1_8_client")
     }
 
+    it("converts period to dash") {
+      UrlKey.generate("aaa.bbb.ccc.ddd") should be("aaa-bbb-ccc-ddd")
+      UrlKey.generate("a...b") should be("a-b")
+    }
+
   }
 
   describe("validate") {
