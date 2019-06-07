@@ -20,27 +20,6 @@ import play.api.mvc.Result
 
 import scala.concurrent.Future
 
-case class InvocationFormData(
-  params: CodeParams,
-  version: Version,
-  importedServices: Seq[Service]
-) {
-  val invocationForm: InvocationForm = {
-    InvocationForm(
-      service = version.service,
-      attributes = params.form.attributes,
-      importedServices = Some(importedServices)
-    )
-  }
-}
-
-case class CodeParams(
-  orgKey: String,
-  applicationKey: String,
-  versionName: String,
-  form: CodeForm
-)
-
 @Singleton
 class Code @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
@@ -49,18 +28,42 @@ class Code @Inject() (
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
-  userAgent: UserAgent
+  userAgentGenerator: UserAgent
 ) extends ApibuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
-  private[this] def userAgent(params: CodeParams, versionName: String, generatorKey: String): String = {
-    userAgent.generate(
-      orgKey = params.orgKey,
-      applicationKey = params.applicationKey,
+  case class CodeParams(
+    orgKey: String,
+    applicationKey: String,
+    versionName: String,
+    form: CodeForm,
+    generatorKey: Option[String]
+  ) {
+    val userAgent: String = userAgentGenerator.generate(
+      orgKey = orgKey,
+      applicationKey = applicationKey,
       versionName = versionName,
       generatorKey = generatorKey
     )
   }
+
+
+  case class InvocationFormData(
+    params: CodeParams,
+    userAgent: String,
+    version: Version,
+    importedServices: Seq[Service]
+  ) {
+    val invocationForm: InvocationForm = {
+      InvocationForm(
+        service = version.service,
+        attributes = params.form.attributes,
+        userAgent = Some(userAgent),
+        importedServices = Some(importedServices)
+      )
+    }
+  }
+
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def getByGeneratorKey(
     orgKey: String,
@@ -72,7 +75,8 @@ class Code @Inject() (
       orgKey = orgKey,
       applicationKey = applicationKey,
       versionName = versionName,
-      form = CodeForm(attributes = Nil)
+      form = CodeForm(attributes = Nil),
+      generatorKey = Some(generatorKey)
     )
     invocationForm(request, params) match {
       case Left(errors) => Future.successful(conflict(errors))
@@ -91,7 +95,8 @@ class Code @Inject() (
         orgKey = orgKey,
         applicationKey = applicationKey,
         versionName = versionName,
-        form = form
+        form = form,
+        generatorKey = Some(generatorKey)
       )
       invocationForm(request, params) match {
         case Left(errors) => Future.successful(conflict(errors))
@@ -106,13 +111,13 @@ class Code @Inject() (
     versionName: String
   ) = Anonymous.async(parse.json) { request =>
     withCodeForm(request.body) { form =>
-      println(s"CODE FORM: $form")
       invocationForm(
         request,
         CodeParams(
           orgKey = orgKey,
           applicationKey = applicationKey,
           versionName = versionName,
+          generatorKey = None,
           form = form
         )
       ) match {
@@ -143,12 +148,7 @@ class Code @Inject() (
 
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
-              invocationForm = InvocationForm(
-                service = data.version.service,
-                userAgent = Some(userAgent(params, data.version.version, generatorKey)),
-                attributes = data.params.form.attributes ++ orgAttributes,
-                importedServices = Some(data.importedServices)
-              )
+              invocationForm = data.invocationForm,
             ).map { invocation =>
               Ok(Json.toJson(io.apibuilder.api.v0.models.Code(
                 generator = gws,
@@ -211,6 +211,7 @@ class Code @Inject() (
           InvocationFormData(
             params = params,
             version = version,
+            userAgent = params.userAgent,
             importedServices = importedApibuilderServices
           )
         )

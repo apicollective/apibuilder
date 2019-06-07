@@ -16,18 +16,18 @@ class UserAgent @Inject() (
     orgKey: String,
     applicationKey: String,
     versionName: String,
-    generatorKey: String
+    generatorKey: Option[String]
   ): String = {
     Seq(
       "apibuilder",
       appConfig.apibuilderVersion,
       Seq(
-        "https://" + appConfig.apibuilderWwwHost,
-        orgKey,
-        applicationKey,
-        versionName,
+        Some("https://" + appConfig.apibuilderWwwHost),
+        Some(orgKey),
+        Some(applicationKey),
+        Some(versionName),
         generatorKey
-      ).map(format).mkString("/")
+      ).flatten.map(format).mkString("/")
     ).map(format).mkString(" ")
   }
 
