@@ -106,6 +106,7 @@ class Code @Inject() (
     versionName: String
   ) = Anonymous.async(parse.json) { request =>
     withCodeForm(request.body) { form =>
+      println(s"CODE FORM: $form")
       invocationForm(
         request,
         CodeParams(
@@ -204,7 +205,6 @@ class Code @Inject() (
       }
 
       case Some(version) => {
-
         val importedApibuilderServices = ApibuilderServiceImportResolver
           .resolveChildren(version.service, versionsDao, request.authorization).values.toSeq
         Right(

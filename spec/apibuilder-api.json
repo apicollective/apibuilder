@@ -1066,6 +1066,16 @@
 
       "operations": [
         {
+          "method": "POST",
+          "path": "/form",
+          "description": "Create an invocation form. This is useful primarily for debugging when you want to see exactly what content is being forwarded to the generator",
+          "body": { "type": "code_form" },
+          "responses": {
+            "200": { "type": "io.apibuilder.generator.v0.models.invocation_form" },
+            "409": { "type": "[error]" }
+          }
+        },
+        {
           "method": "GET",
           "path": "/:generatorKey",
           "description": "Generate code for a specific version of an application.",
@@ -1094,16 +1104,6 @@
           "responses": {
             "200": { "type": "code" },
             "409": { "type": "[error]", "description": "If the target, version, and/or generator are invalid." }
-          }
-        },
-        {
-          "method": "POST",
-          "path": "/form",
-          "description": "Create an invocation form. This is useful primarily for debugging when you want to see exactly what content is being forwarded to the generator",
-          "body": { "type": "code_form" },
-          "responses": {
-            "200": { "type": "io.apibuilder.generator.v0.models.invocation_form" },
-            "409": { "type": "[error]" }
           }
         }
       ]
