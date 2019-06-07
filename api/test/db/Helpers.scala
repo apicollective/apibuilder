@@ -8,6 +8,10 @@ import java.util.UUID
 
 trait Helpers extends util.Daos {
 
+  def randomString(): String = {
+    "z-test-" + UUID.randomUUID.toString
+  }
+
   def createRandomName(suffix: String): String = {
     s"z-test-$suffix-" + UUID.randomUUID.toString
   }

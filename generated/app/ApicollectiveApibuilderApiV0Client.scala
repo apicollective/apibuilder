@@ -2684,7 +2684,7 @@ package io.apibuilder.api.v0 {
     }
 
     object Code extends Code {
-      override def get(
+      override def getByGeneratorKey(
         orgKey: String,
         applicationKey: String,
         version: String,
@@ -2698,7 +2698,7 @@ package io.apibuilder.api.v0 {
         }
       }
 
-      override def post(
+      override def postByGeneratorKey(
         orgKey: String,
         applicationKey: String,
         version: String,
@@ -2715,18 +2715,16 @@ package io.apibuilder.api.v0 {
         }
       }
 
-      override def postFormByKey(
+      override def postForm(
         orgKey: String,
         applicationKey: String,
         version: String,
-        generatorKey: String,
-        key: String,
         codeForm: io.apibuilder.api.v0.models.CodeForm,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.generator.v0.models.InvocationForm] = {
         val payload = play.api.libs.json.Json.toJson(codeForm)
 
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(generatorKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/form", body = Some(payload), requestHeaders = requestHeaders).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/form", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("io.apibuilder.generator.v0.models.InvocationForm", r, _.validate[io.apibuilder.generator.v0.models.InvocationForm])
           case r if r.status == 409 => throw io.apibuilder.api.v0.errors.ErrorsResponse(r)
           case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -3915,7 +3913,7 @@ package io.apibuilder.api.v0 {
      * @param version The version of this application. Can be 'latest'
      * @param generatorKey The key of the generator to invoke
      */
-    def get(
+    def getByGeneratorKey(
       orgKey: String,
       applicationKey: String,
       version: String,
@@ -3931,7 +3929,7 @@ package io.apibuilder.api.v0 {
      * @param version The version of this application. Can be 'latest'
      * @param generatorKey The key of the generator to invoke
      */
-    def post(
+    def postByGeneratorKey(
       orgKey: String,
       applicationKey: String,
       version: String,
@@ -3944,12 +3942,10 @@ package io.apibuilder.api.v0 {
      * Create an invocation form. This is useful primarily for debugging when you want
      * to see exactly what content is being forwarded to the generator
      */
-    def postFormByKey(
+    def postForm(
       orgKey: String,
       applicationKey: String,
       version: String,
-      generatorKey: String,
-      key: String,
       codeForm: io.apibuilder.api.v0.models.CodeForm,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.generator.v0.models.InvocationForm]

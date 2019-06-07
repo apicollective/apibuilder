@@ -4,7 +4,7 @@ import java.util.UUID
 
 import javax.inject.{Inject, Singleton}
 import io.apibuilder.api.v0.models.json._
-import io.apibuilder.api.v0.models.{CodeForm, GeneratorService, GeneratorWithService, Version}
+import io.apibuilder.api.v0.models.{CodeForm, Version}
 import io.apibuilder.generator.v0.Client
 import io.apibuilder.generator.v0.models.{Attribute, InvocationForm}
 import io.apibuilder.generator.v0.models.json._
@@ -23,8 +23,6 @@ import scala.concurrent.Future
 case class InvocationFormData(
   params: CodeParams,
   version: Version,
-  service: GeneratorService,
-  gws: GeneratorWithService,
   importedServices: Seq[Service]
 ) {
   val invocationForm: InvocationForm = {
@@ -40,7 +38,6 @@ case class CodeParams(
   orgKey: String,
   applicationKey: String,
   versionName: String,
-  generatorKey: String,
   form: CodeForm
 )
 
@@ -56,16 +53,16 @@ class Code @Inject() (
 ) extends ApibuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
-  private[this] def userAgent(params: CodeParams, versionName: String): String = {
+  private[this] def userAgent(params: CodeParams, versionName: String, generatorKey: String): String = {
     userAgent.generate(
       orgKey = params.orgKey,
       applicationKey = params.applicationKey,
       versionName = versionName,
-      generatorKey = params.generatorKey
+      generatorKey = generatorKey
     )
   }
 
-  def get(
+  def getByGeneratorKey(
     orgKey: String,
     applicationKey: String,
     versionName: String,
@@ -75,16 +72,15 @@ class Code @Inject() (
       orgKey = orgKey,
       applicationKey = applicationKey,
       versionName = versionName,
-      generatorKey = generatorKey,
       form = CodeForm(attributes = Nil)
     )
     invocationForm(request, params) match {
-      case Left(errors) => Future.successful(Conflict(Json.toJson(Validation.errors(errors))))
-      case Right(data) => _invoke(request, params, data)
+      case Left(errors) => Future.successful(conflict(errors))
+      case Right(data) => _invoke(request, params, data, generatorKey)
     }
   }
 
-  def post(
+  def postByGeneratorKey(
     orgKey: String,
     applicationKey: String,
     versionName: String,
@@ -95,12 +91,11 @@ class Code @Inject() (
         orgKey = orgKey,
         applicationKey = applicationKey,
         versionName = versionName,
-        generatorKey = generatorKey,
         form = form
       )
       invocationForm(request, params) match {
-        case Left(errors) => Future.successful(Conflict(Json.toJson(Validation.errors(errors))))
-        case Right(data) => _invoke(request, params, data)
+        case Left(errors) => Future.successful(conflict(errors))
+        case Right(data) => _invoke(request, params, data, generatorKey)
       }
     }
   }
@@ -108,8 +103,7 @@ class Code @Inject() (
   def postForm(
     orgKey: String,
     applicationKey: String,
-    versionName: String,
-    generatorKey: String
+    versionName: String
   ) = Anonymous.async(parse.json) { request =>
     withCodeForm(request.body) { form =>
       invocationForm(
@@ -118,7 +112,6 @@ class Code @Inject() (
           orgKey = orgKey,
           applicationKey = applicationKey,
           versionName = versionName,
-          generatorKey = generatorKey,
           form = form
         )
       ) match {
@@ -131,30 +124,46 @@ class Code @Inject() (
   private def _invoke(
     request: AnonymousRequest[_],
     params: CodeParams,
-    data: InvocationFormData
-  ) = {
-    val orgAttributes = getAllAttributes(data.version.organization.guid, data.gws.generator.attributes)
-
-    new Client(wSClient, data.service.uri).invocations.postByKey(
-      key = data.gws.generator.key,
-      invocationForm = InvocationForm(
-        service = data.version.service,
-        userAgent = Some(userAgent(params, data.version.version)),
-        attributes = data.params.form.attributes ++ orgAttributes,
-        importedServices = Some(data.importedServices)
-      )
-    ).map { invocation =>
-      Ok(Json.toJson(io.apibuilder.api.v0.models.Code(
-        generator = data.gws,
-        files = invocation.files,
-        source = invocation.source
-      )))
-    }.recover {
-      case r: io.apibuilder.generator.v0.errors.ErrorsResponse => {
-        Conflict(Json.toJson(Validation.errors(r.errors.map(_.message))))
+    data: InvocationFormData,
+    generatorKey: String
+  ): Future[Result] = {
+    servicesDao.findAll(request.authorization, generatorKey = Some(generatorKey)).headOption match {
+      case None => {
+        Future.successful(conflict(s"Service with generator key[$generatorKey] not found"))
       }
-      case r: io.apibuilder.generator.v0.errors.FailedRequest => {
-        Conflict(Json.toJson(Validation.errors(Seq(s"Generator failed with ${r.getMessage}"))))
+
+      case Some(service) => {
+        generatorsDao.findAll(request.authorization, key = Some(generatorKey)).headOption match {
+          case None => {
+            Future.successful(conflict(s"Generator with key[$generatorKey] not found"))
+          }
+          case Some(gws) => {
+            val orgAttributes = getAllAttributes(data.version.organization.guid, gws.generator.attributes)
+
+            new Client(wSClient, service.uri).invocations.postByKey(
+              key = gws.generator.key,
+              invocationForm = InvocationForm(
+                service = data.version.service,
+                userAgent = Some(userAgent(params, data.version.version, generatorKey)),
+                attributes = data.params.form.attributes ++ orgAttributes,
+                importedServices = Some(data.importedServices)
+              )
+            ).map { invocation =>
+              Ok(Json.toJson(io.apibuilder.api.v0.models.Code(
+                generator = gws,
+                files = invocation.files,
+                source = invocation.source
+              )))
+            }.recover {
+              case r: io.apibuilder.generator.v0.errors.ErrorsResponse => {
+                conflict(r.errors.map(_.message))
+              }
+              case r: io.apibuilder.generator.v0.errors.FailedRequest => {
+                conflict(s"Generator failed with ${r.getMessage}")
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -195,32 +204,16 @@ class Code @Inject() (
       }
 
       case Some(version) => {
-        servicesDao.findAll(request.authorization, generatorKey = Some(params.generatorKey)).headOption match {
-          case None => {
-            Left(Seq(s"Service with generator key[${params.generatorKey}] not found"))
-          }
 
-          case Some(service) => {
-            generatorsDao.findAll(request.authorization, key = Some(params.generatorKey)).headOption match {
-              case None => {
-                Left(Seq(s"Generator with key[${params.generatorKey}] not found"))
-              }
-              case Some(gws) => {
-                val importedApibuilderServices = ApibuilderServiceImportResolver
-                  .resolveChildren(version.service, versionsDao, request.authorization).values.toSeq
-                Right(
-                  InvocationFormData(
-                    params = params,
-                    version = version,
-                    service = service,
-                    gws = gws,
-                    importedServices = importedApibuilderServices
-                  )
-                )
-              }
-            }
-          }
-        }
+        val importedApibuilderServices = ApibuilderServiceImportResolver
+          .resolveChildren(version.service, versionsDao, request.authorization).values.toSeq
+        Right(
+          InvocationFormData(
+            params = params,
+            version = version,
+            importedServices = importedApibuilderServices
+          )
+        )
       }
     }
   }
@@ -230,5 +223,13 @@ class Code @Inject() (
       case e: JsError => Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
       case s: JsSuccess[CodeForm] => f(s.get)
     }
+  }
+
+  private[this] def conflict(message: String): Result = {
+    conflict(Seq(message))
+  }
+
+  private[this] def conflict(messages: Seq[String]): Result = {
+    Conflict(Json.toJson(Validation.errors(messages)))
   }
 }

@@ -3,8 +3,9 @@ package controllers
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPattern
+import io.apibuilder.api.v0.models.CodeForm
 import io.apibuilder.generator.v0.models.json.{jsonReadsApibuilderGeneratorInvocationForm, jsonWritesApibuilderGeneratorInvocation}
-import io.apibuilder.generator.v0.models.{Invocation, InvocationForm}
+import io.apibuilder.generator.v0.models.{Attribute, Invocation, InvocationForm}
 import io.apibuilder.spec.v0.models.Import
 import io.apibuilder.spec.v0.{models => spec}
 import org.scalatestplus.play.PlaySpec
@@ -18,13 +19,36 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  private[this] def makeCodeForm(attributes: Seq[Attribute] = Nil) = CodeForm(
+    attributes = attributes
+  )
+
+  private[this] def makeAttribute(): Attribute = {
+    Attribute(
+      name = randomString(),
+      value = randomString()
+    )
+  }
+
   "Code controller" should {
 
     "postForm returns invocation form" in {
-      await {
-        client.code.postForm
-      }
+      val org = createOrganization()
+      val app = createApplication(org)
+      val version = createVersion(app)
+      val attributes = Seq(makeAttribute())
 
+      val form = await {
+        client.code.postForm(
+          orgKey = org.key,
+          applicationKey = app.key,
+          version = version.version,
+          codeForm = makeCodeForm(attributes = attributes)
+        )
+      }
+      form.service.name must equal(version.service.name)
+      form.userAgent.isDefined must be(true)
+      form.attributes must equal(attributes)
     }
 
     "post payload containing imported services to generator" in {
@@ -72,7 +96,7 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
         )
         val mainVersion = createVersion(application = mainApp, service = Some(mainService))
 
-        val resultF = client.code.get(testOrg.key, mainApp.key, mainVersion.version, generatorKey)
+        val resultF = client.code.getByGeneratorKey(testOrg.key, mainApp.key, mainVersion.version, generatorKey)
 
         expectStatus(200) {
           resultF.map(_ => ())
@@ -88,7 +112,9 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
           .getBodyAsString
         val sentInvocationForm = Json.parse(postRequestBodyString).as[InvocationForm]
 
-        sentInvocationForm.importedServices mustEqual Some(Seq(intermediateService, childService))
+        sentInvocationForm.importedServices mustEqual Some(
+          Seq(intermediateService, childService)
+        )
 
       } finally {
         wireMockServer.stop()
