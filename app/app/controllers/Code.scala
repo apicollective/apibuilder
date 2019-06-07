@@ -7,7 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 
 import lib.ApiClientProvider
-import play.api.mvc.{BaseController, ControllerComponents, Result}
+import play.api.mvc.Result
 
 class Code @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
@@ -16,7 +16,7 @@ class Code @Inject() (
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     apiClientProvider.callWith404(
-      request.api.Code.get(orgKey, applicationKey, version, generatorKey)
+      request.api.Code.getByGeneratorKey(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(code) => {
@@ -70,7 +70,7 @@ class Code @Inject() (
     f: Seq[File] => Result
   ) = {
     apiClientProvider.callWith404(
-      api.Code.get(orgKey, applicationKey, version, generatorKey)
+      api.Code.getByGeneratorKey(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => {
         Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
