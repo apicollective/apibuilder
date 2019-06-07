@@ -20,6 +20,13 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
 
   "Code controller" should {
 
+    "postForm returns invocation form" in {
+      await {
+        client.code.postForm
+      }
+
+    }
+
     "post payload containing imported services to generator" in {
 
       val randomPort = RandomPortFinder.getRandomPort
