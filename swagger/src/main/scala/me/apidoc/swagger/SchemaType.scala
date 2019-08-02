@@ -23,7 +23,8 @@ object SchemaType {
     SchemaType("boolean", None, "boolean"),
     SchemaType("string", Some("date"), "date-iso8601"),
     SchemaType("string", Some("date-time"), "date-time-iso8601"),
-    SchemaType("string", Some("uuid"), "uuid")
+    SchemaType("string", Some("uuid"), "uuid"),
+    SchemaType("object", None, "object")
   )
 
   def fromSwagger(
