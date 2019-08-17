@@ -152,6 +152,9 @@
         "status": {
           "type": "string",
           "enum": ["available", "pending", "sold"]
+        },
+        "additional_info": {
+          "type": "object"
         }
       },
       "x-foo-model": {

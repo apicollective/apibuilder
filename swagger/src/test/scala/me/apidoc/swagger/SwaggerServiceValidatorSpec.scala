@@ -83,11 +83,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                   description = Some("Definition of a pet"),
                   fields = Seq(
                     Field(
-                      name = "id",
-                      `type` = "long",
-                      required = true
-                    ),
-                    Field(
                       name = "name",
                       `type` = "string",
                       required = true
@@ -100,6 +95,16 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                         name = "foo-field",
                         value = JsObject(Seq(("bar", JsString("field"))))
                       ))
+                    ),
+                    Field(
+                      name = "additional_info",
+                      `type` = "object",
+                      required = false
+                    ),
+                    Field(
+                      name = "id",
+                      `type` = "long",
+                      required = true
                     ),
                     Field(
                       name = "status",
