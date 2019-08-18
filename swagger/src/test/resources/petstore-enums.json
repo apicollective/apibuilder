@@ -136,12 +136,12 @@
         "name"
       ],
       "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
         "name": {
           "type": "string"
+        },
+        "email_address": {
+          "type": "string",
+          "format": "email"
         },
         "tag": {
           "type": "string",
@@ -149,12 +149,20 @@
             "bar": "field"
           }
         },
+        "additional_info": {
+          "type": "object"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
         "status": {
           "type": "string",
           "enum": ["available", "pending", "sold"]
         },
-        "additional_info": {
-          "type": "object"
+        "html_description": {
+          "type": "string",
+          "format": "html"
         }
       },
       "x-foo-model": {
