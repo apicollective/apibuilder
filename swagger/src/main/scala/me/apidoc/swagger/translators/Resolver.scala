@@ -53,7 +53,7 @@ case class Resolver(
       case p: RefProperty => {
         models.find(_.name == p.getSimpleRef()).map(_.name)
           .getOrElse(enums.find(_.name == p.getSimpleRef()).map(_.name)
-            .getOrElse(sys.error("Cannot find model for reference: " + p.get$ref())))
+            .getOrElse(p.getSimpleRef)) //we don't error out here to support recursive model defs: the error will be thrown down the line if the ref does not exist
       }
       case _ => {
         if (prop.getType == null) {
