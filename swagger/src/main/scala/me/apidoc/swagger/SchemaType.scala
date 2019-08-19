@@ -31,7 +31,19 @@ object SchemaType {
     swaggerType: String,
     format: Option[String]
   ): Option[String] = {
-    all.find(schemaType => schemaType.swaggerFormat == format && schemaType.swaggerType == swaggerType).map(_.apidoc)
+    all
+      .find(schemaType => schemaType.swaggerFormat == format && schemaType.swaggerType == swaggerType)
+      .map(_.apidoc)
+      .orElse {
+        swaggerType match {
+          /*
+           Format is an open-valued property (can have any value, such as "email", "html", etc). In the case of type string
+           and we want to always map it to an ApiBuilder string for all the case not explicitly mapped (e.g. date-time, uuid).
+           */
+          case "string" => Some("string")
+          case _ => None
+        }
+      }
   }
 
   def fromSwaggerWithError(

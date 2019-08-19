@@ -88,6 +88,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       required = true
                     ),
                     Field(
+                      name = "email_address",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
                       name = "tag",
                       `type` = "string",
                       required = false,
@@ -109,6 +114,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Field(
                       name = "status",
                       `type` = "PetStatus",
+                      required = false
+                    ),
+                    Field(
+                      name = "html_description",
+                      `type` = "string",
                       required = false
                     )
                   ),
