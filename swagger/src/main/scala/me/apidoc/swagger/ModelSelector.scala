@@ -74,10 +74,7 @@ private[swagger] case class ModelSelector(
 
   def next(): Option[MyDefinition] = {
     remaining().find { m =>
-      m.dependencies.find( depName => !completed.contains(depName) ) match {
-        case None => true
-        case Some(_) => false
-      }
+      m.dependencies.forall(depName => m.name == depName || completed.contains(depName))
     }.map { md =>
       completed += md.name
       md
