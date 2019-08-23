@@ -1,0 +1,74 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Swagger spec with recursive and circular model dependencies.",
+    "contact": {
+      "name": "wordnik api team",
+      "url": "http://developer.wordnik.com"
+    },
+    "license": {
+      "name": "Creative Commons 4.0 International",
+      "url": "http://creativecommons.org/licenses/by/4.0/"
+    }
+  },
+  "host": "localhost",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/modelAs/": {
+      "get": {
+        "summary": "Get all modelA",
+        "parameters":[],
+        "responses": {
+          "200": {
+            "description": "gel all ModelA response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ModelA"
+              }
+            },
+            "headers": {
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ModelA": {
+      "description": "Definition of a Model A",
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "children": {
+          "description": "Example of a recursive model dependency",
+          "items": {
+            "$ref": "#/definitions/ModelA"
+          },
+          "type": "array"
+        },
+        "modelB": {
+          "description": "Example of a circular model dependency",
+          "$ref": "#/definitions/ModelB"
+        }
+      }
+    },
+    "ModelB": {
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "modelA": {
+          "$ref": "#/definitions/ModelA"
+        }
+      }
+    }
+  }
+}

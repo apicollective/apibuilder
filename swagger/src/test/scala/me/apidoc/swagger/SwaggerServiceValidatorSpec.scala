@@ -352,6 +352,71 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
 
+    it("should support recursive and circular model dependencies") {
+      val files = Seq("recursive-and-circular-dependencies.json")
+      files.foreach {
+        filename =>
+          val path = resourcesDir + filename
+          println(s"Reading file[$path]")
+          SwaggerServiceValidator(config, readFile(path)).validate match {
+            case Left(errors) => {
+              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            }
+            case Right(service) => {
+              service.models.map(_.name).sorted should be(Seq("ModelA", "ModelB"))
+              checkModel(
+                service.models.find(_.name == "ModelA").get,
+                Model(
+                  name = "ModelA",
+                  plural = "ModelAs",
+                  description = Some("Definition of a Model A"),
+                  fields = Seq(
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
+                      name = "children",
+                      description = Some("Example of a recursive model dependency"),
+                      `type` = "[ModelA]",
+                      required = false
+                    ),
+                    Field(
+                      name = "modelB",
+                      description = Some("Example of a circular model dependency"),
+                      `type` = "ModelB",
+                      required = false
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "ModelB").get,
+                Model(
+                  name = "ModelB",
+                  plural = "ModelBs",
+                  description = None,
+                  fields = Seq(
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
+                      name = "modelA",
+                      `type` = "ModelA",
+                      required = false
+                    )
+                  )
+                )
+              )
+            }
+          }
+      }
+    }
+
     it("should parse petstore-enums-ref.json") {
       val files = Seq("petstore-enums-ref.json")
       files.foreach {
