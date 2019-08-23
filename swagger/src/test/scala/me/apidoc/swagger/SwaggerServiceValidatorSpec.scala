@@ -120,11 +120,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       name = "html_description",
                       `type` = "string",
                       required = false
-                    ),
-                    Field(
-                      name = "siblings",
-                      `type` = "[Pet]",
-                      required = false
                     )
                   ),
                   attributes = Seq(Attribute(
