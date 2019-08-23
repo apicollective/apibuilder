@@ -33,7 +33,7 @@ lazy val swagger = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.42",
+      "io.swagger" % "swagger-parser" % "1.0.46",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
    )
