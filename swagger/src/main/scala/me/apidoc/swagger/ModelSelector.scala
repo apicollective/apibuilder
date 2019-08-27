@@ -73,8 +73,13 @@ private[swagger] case class ModelSelector(
   }
 
   def next(): Option[MyDefinition] = {
-    remaining().find { m =>
-      m.dependencies.forall(depName => m.name == depName || completed.contains(depName))
+    val remainingDefs = remaining()
+    remainingDefs.find { m =>
+      m.dependencies.forall( depName =>
+          m.name == depName
+          || completed.contains(depName)
+          || remainingDefs.exists(_.dependencies.contains(depName)) //circular dependencies
+      )
     }.map { md =>
       completed += md.name
       md

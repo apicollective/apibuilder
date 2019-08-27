@@ -163,12 +163,6 @@
         "html_description": {
           "type": "string",
           "format": "html"
-        },
-        "siblings": {
-          "items": {
-            "$ref": "#/definitions/Pet"
-          },
-          "type": "array"
         }
       },
       "x-foo-model": {
