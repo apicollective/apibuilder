@@ -45,7 +45,7 @@ lazy val core = project
   .aggregate(generated, lib)
   .settings(commonSettings: _*)
   .settings(
-    resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
+    resolvers += "Typesafe Maven Repository" at "https://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion
     )
