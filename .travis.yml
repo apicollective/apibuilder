@@ -15,8 +15,8 @@ before_script:
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
   # Tricks to avoid unnecessary cache updates
-  - find $HOME/.sbt -name "*.lock" | xargs rm
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+  - find $HOME/.sbt -name "*.lock" | xargs | rm -f
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs | rm -f
 branches:
   only:
     - master
