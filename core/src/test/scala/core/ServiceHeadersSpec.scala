@@ -25,19 +25,18 @@ class ServiceHeadersSpec extends FunSpec with Matchers
       ],
 
       "headers": [
-        { "name": "Content-Type", "type": "string" }
+        { "name": "Content-Type", "type": "${enumsService.namespace}.enums.content_type" }
       ]
     }
     """
-    // ${enumsService.namespace}.enums.content_type
+
     val fetcher = MockServiceFetcher()
     fetcher.add(makeImportUri(enumsService), enumsService)
 
     val validator = TestHelper.serviceValidatorFromApiJson(service, fetcher = fetcher)
     validator.errors().mkString("") should be("")
     val ct = validator.service().headers.find(_.name == "Content-Type").get
-    ct.name should be("Content-Type")
-    ct.`type` should be("content_type")
+    ct.`type` should be(s"${enumsService.namespace}.enums.content_type")
   }
 
 }

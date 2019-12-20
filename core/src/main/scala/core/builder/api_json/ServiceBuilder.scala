@@ -172,7 +172,7 @@ case class ServiceBuilder(
                   Resource(
                     `type` = internal.datatype.label,
                     plural = Text.pluralize(internal.datatype.name),
-                    path = Some(resourcePath),                    
+                    path = Some(resourcePath),
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
                     operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver)),
@@ -382,12 +382,12 @@ case class ServiceBuilder(
     def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
       Header(
         name = ih.name.get,
-        `type` = resolver.parseWithError(rightOrError(ih.datatype)).toString,
+        `type` = rightOrError(ih.datatype).name,
         required = ih.required,
         description = ih.description,
         deprecation = ih.deprecation.map(DeprecationBuilder(_)),
         default = ih.default,
-        attributes = ih.attributes.map { AttributeBuilder(_) }
+        attributes = ih.attributes.map(AttributeBuilder(_)),
       )
     }
 

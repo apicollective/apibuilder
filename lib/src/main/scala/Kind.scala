@@ -24,14 +24,14 @@ case class DatatypeResolver(
     * Takes the name of a singleton type - a primitive, model or enum. If
     * valid - returns an instance of a Type. Types are resolved in the
     * following order:
-    * 
+    *
     *   1. Primitive
     *   2. Enum
     *   3. Model
     *   4. Union
-    * 
+    *
     * If the type is not found, returns none.
-    * 
+    *
     * Examples:
     *   toSingletonType("string") => Some(Primitives.String)
     *   toSingletonType("long") => Some(Primitives.Long)
@@ -63,7 +63,7 @@ case class DatatypeResolver(
 
   /**
     * Parses a type string into an instance of a Datatype.
-    * 
+    *
     * @param value: Examples: "string", "uuid", "map[string]", "map[map[string]]"
     */
   def parse(value: String): Option[Kind] = {
@@ -81,7 +81,7 @@ case class DatatypeResolver(
                   // Type must end in a concrete type, not a container
                   None
                 } else {
-                  rest.find { isSingleton(_) } match {
+                  rest.find { isSingleton } match {
                     case None => Some(parse(t, rest))
                     case Some(_) => None
                   }
@@ -115,19 +115,19 @@ case class DatatypeResolver(
       }
     }
   }
-  
+
   private[this] def isSingleton(kind: Kind): Boolean = {
     kind match {
       case Kind.Enum(_) | Kind.Model(_) | Kind.Primitive(_) | Kind.Union(_) => true
       case Kind.List(_) | Kind.Map(_) => false
     }
   }
-  
+
   private[this] def isSingleton(td: TextDatatype): Boolean = {
     td match {
       case TextDatatype.Singleton(_) => true
       case TextDatatype.List | TextDatatype.Map => false
     }
   }
-  
+
 }
