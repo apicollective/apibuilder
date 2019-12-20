@@ -50,13 +50,13 @@ object TestHelper {
 
   private lazy val specService: Service = {
     val contents = readFile("spec/apibuilder-spec.json")
-    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), MockServiceFetcher())
     TestServiceValidator(validator).service
   }
 
   private lazy val commonService: Service = {
     val contents = readFile("spec/apibuilder-common.json")
-    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), MockServiceFetcher())
     TestServiceValidator(validator).service
   }
 
@@ -87,7 +87,7 @@ object TestHelper {
   def serviceValidatorFromApiJson(
     contents: String,
     migration: VersionMigration = VersionMigration(internal = false),
-    fetcher: MockServiceFetcher = new MockServiceFetcher()
+    fetcher: MockServiceFetcher = MockServiceFetcher()
   ): ServiceValidatorForSpecs = {
     TestServiceValidator(
       OriginalValidator(
