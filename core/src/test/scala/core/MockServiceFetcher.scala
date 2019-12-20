@@ -2,6 +2,8 @@ package core
 
 import io.apibuilder.spec.v0.models.Service
 
+import scala.collection.mutable
+
 trait ServiceFetcher {
 
   def fetch(uri: String): Service
@@ -10,16 +12,14 @@ trait ServiceFetcher {
 
 case class MockServiceFetcher() extends ServiceFetcher {
 
-  val services = scala.collection.mutable.Map[String, Service]()
+  val services: mutable.Map[String, Service] = scala.collection.mutable.Map[String, Service]()
 
   def add(uri: String, service: Service) {
     services += (uri -> service)
   }
 
   override def fetch(uri: String): Service = {
-    services.get(uri).getOrElse {
-      sys.error(s"No mock found for imported service w/ uri[$uri]")
-    }
+    services.getOrElse(uri, sys.error(s"No mock found for imported service w/ uri[$uri]"))
   }
 
 }
