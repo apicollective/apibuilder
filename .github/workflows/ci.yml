@@ -24,4 +24,6 @@ jobs:
     - name: print Java version
       run: java -version
     - name: Build
-      run: sbt ++${{ matrix.scala }} clean coverage test coverageReport
+      run: |
+        docker run -d -p 127.0.0.1:7659:5432 flowcommerce/apibuilder-postgresql:latest
+        sbt ++${{ matrix.scala }} clean coverage test coverageReport
