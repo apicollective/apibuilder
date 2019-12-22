@@ -87,6 +87,7 @@ lazy val api = project
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play26" % "0.1.68",
       "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
+      "org.testcontainers"     % "testcontainers"      % "1.12.4" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.20.0" % Test
     )
   )
