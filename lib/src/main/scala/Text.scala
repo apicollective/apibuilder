@@ -18,7 +18,7 @@ object Text {
                               Seq("Name can only contain a-z, A-Z, 0-9, - and _ characters")
                             }
 
-    val startsWithLetterError = if (startsWithLetter(name)) {
+    val startsWithLetterError = if (startsWithLetter(name) || (startsWithUnderscore(name) && name.length > 1)) {
                                   Seq.empty
                                 } else if (name.isEmpty) {
                                   Seq("Name cannot be blank")
@@ -46,6 +46,15 @@ object Text {
       case _ => false
     }
     result
+  }
+
+  private[this] val StartsWithUnderscoreRx = "^_.*".r
+
+  def startsWithUnderscore(value: String): Boolean = {
+    value match {
+      case StartsWithUnderscoreRx() => true
+      case _ => false
+    }
   }
 
   private[this] val Ellipsis = "..."

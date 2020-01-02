@@ -31,7 +31,7 @@ class TextSpec extends FunSpec with Matchers {
 
   it("isValidName") {
     Text.isValidName("") should be(false)
-    Text.isValidName("_vendor") should be(false)
+    Text.isValidName("_vendor") should be(true)
     Text.isValidName("1vendor") should be(false)
     Text.isValidName("1") should be(false)
     Text.isValidName("_") should be(false)
@@ -43,7 +43,7 @@ class TextSpec extends FunSpec with Matchers {
 
   it("validateName") {
     Text.validateName("") should be(Seq("Name cannot be blank"))
-    Text.validateName("_vendor") should be(Seq("Name must start with a letter"))
+    Text.validateName("_vendor") should be(Seq.empty)
     Text.validateName("1vendor") should be(Seq("Name must start with a letter"))
     Text.validateName("1") should be(Seq("Name must start with a letter"))
     Text.validateName("_") should be(Seq("Name must start with a letter"))
