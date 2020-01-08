@@ -128,4 +128,87 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
   }
 
+  it("union type can have the same models") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "types": [
+          |    { "type": "registered_user" },
+          |    { "type": "guest_user" }
+          |  ]
+          |},
+          |
+          |"other_user_union": {
+          |  "types": [
+          |    { "type": "registered_user" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors shouldBe empty
+
+    val sortedUnions = validator.service().unions.sortBy(_.name)
+    validator.service().unions should have size 2
+    sortedUnions(0).name shouldBe "other_user_union"
+    sortedUnions(0).types.flatMap(_.discriminatorValue) shouldBe Seq("registered_user")
+    sortedUnions(1).name shouldBe "user"
+    sortedUnions(1).types.flatMap(_.discriminatorValue) shouldBe Seq("registered_user", "guest_user")
+  }
+
+  it("union type can have the same models if their discriminator is unique") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" },
+          |    { "type": "guest_user" }
+          |  ]
+          |},
+          |
+          |"other_user_union": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors shouldBe empty
+
+    val sortedUnions = validator.service().unions.sortBy(_.name)
+    validator.service().unions should have size 2
+    sortedUnions(0).name shouldBe "other_user_union"
+    sortedUnions(0).types.flatMap(_.discriminatorValue) shouldBe Seq("registered")
+    sortedUnions(1).name shouldBe "user"
+    sortedUnions(1).types.flatMap(_.discriminatorValue) shouldBe Seq("registered", "guest_user")
+  }
+
+  it("union type cannot have the same models if their discriminator is NOT unique") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" },
+          |    { "type": "guest_user" }
+          |  ]
+          |},
+          |
+          |"other_user_union": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "other_registered" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors should be (Seq(
+      "Model[registered_user] used in unions[other_user_union, user] cannot use more than one discriminator value. " +
+        "Found distinct discriminators[other_registered, registered]"
+    ))
+  }
+
 }
