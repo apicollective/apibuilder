@@ -337,10 +337,10 @@ case class ServiceSpecValidator(
     }
   }
 
-  private[this] def  getDiscriminatorValue(unionType: UnionType): String =
+  private[this] def getDiscriminatorValue(unionType: UnionType): String =
     unionType.discriminatorValue.getOrElse(unionType.`type`)
 
-  private[this] def  getDiscriminatorKey(union: Union): String =
+  private[this] def getDiscriminatorKey(union: Union): String =
     union.discriminator.getOrElse("discriminator")
 
   private[this] def validateUnionTypeDiscriminatorKeyValuesAreUniquePerModel(): Seq[String] =
