@@ -340,9 +340,6 @@ case class ServiceSpecValidator(
   private[this] def getDiscriminatorValue(unionType: UnionType): String =
     unionType.discriminatorValue.getOrElse(unionType.`type`)
 
-  private[this] def getDiscriminatorKey(union: Union): String =
-    union.discriminator.getOrElse("discriminator")
-
   private[this] def validateUnionTypeDiscriminatorKeyValuesAreUniquePerModel(): Seq[String] =
     service
       .unions
@@ -356,15 +353,21 @@ case class ServiceSpecValidator(
   private def validateUniqueDiscriminatorKeyValues(modelName: String, unions: Seq[(Union, UnionType)]): Seq[String] = {
     lazy val unionNames = unions.map { case (union, _) => union.name }.mkString(", ")
 
+    def getMessageError(elementKey: String) =
+      s"Model[$modelName] used in unions[$unionNames] cannot use more than one discriminator $elementKey."
+
     def getMessage(elementKey: String, elements: String) =
-      s"Model[$modelName] used in unions[$unionNames] cannot use more than one discriminator $elementKey. " +
-        s"Found distinct discriminator ${elementKey}s[$elements]"
+      getMessageError(elementKey) + s" Found distinct discriminator ${elementKey}s[$elements]."
 
     // keys
-    val distinctKeys = unions.map { case (union, _) => getDiscriminatorKey(union) }.distinct
-    val keyError =
+    val distinctKeys = unions.map { case (union, _) => union.discriminator }.distinct
+    val nameError =
       if (distinctKeys.size > 1)
-        Some(getMessage(elementKey = "key", distinctKeys.mkString(", ")))
+        if (distinctKeys.contains(None))
+          Some(getMessageError(elementKey = "name") +
+            s" All unions should define the same discriminator name, or not define one at all.")
+        else
+          Some(getMessage(elementKey = "name", distinctKeys.flatten.mkString(", ")))
       else
         None
 
@@ -376,7 +379,7 @@ case class ServiceSpecValidator(
       else
         None
 
-    keyError.toSeq ++ valueError
+    nameError.toSeq ++ valueError
   }
 
   /**
