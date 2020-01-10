@@ -272,7 +272,7 @@ case class ServiceSpecValidator(
   private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
     validateUnionTypeDiscriminatorValuesValidNames() ++
       validateUnionTypeDiscriminatorValuesAreDistinct() ++
-      validateUnionTypeDiscriminatorValuesAreUniquePerModel()
+      validateUnionTypeDiscriminatorKeyValuesAreUniquePerModel()
   }
 
   private[this] def validateUnionTypeDiscriminatorValuesValidNames(): Seq[String] = {
@@ -340,22 +340,44 @@ case class ServiceSpecValidator(
   private[this] def  getDiscriminatorValue(unionType: UnionType): String =
     unionType.discriminatorValue.getOrElse(unionType.`type`)
 
-  private[this] def validateUnionTypeDiscriminatorValuesAreUniquePerModel(): Seq[String] =
+  private[this] def  getDiscriminatorKey(union: Union): String =
+    union.discriminator.getOrElse("discriminator")
+
+  private[this] def validateUnionTypeDiscriminatorKeyValuesAreUniquePerModel(): Seq[String] =
     service
       .unions
-      .flatMap(u => u.types.map(t => (u.name, t)))
+      .flatMap(u => u.types.map(t => (u, t)))
       // model -> unions
       .groupBy { case (_, unionType) => unionType.`type` }
-      .flatMap { case (modelName, unions) =>
-        val distinctDiscriminators = unions.map { case (_, unionType) => getDiscriminatorValue(unionType) }.distinct
-        if (distinctDiscriminators.size > 1) {
-          val unionNames = unions.map { case (unionName, _) => unionName }.mkString(", ")
-          val discriminatorNames = distinctDiscriminators.mkString(", ")
-          Some(s"Model[$modelName] used in unions[$unionNames] cannot use more than one discriminator value. " +
-            s"Found distinct discriminators[$discriminatorNames]")
-        } else
-          None
-      }.toSeq
+      .flatMap { case (modelName, unions) => validateUniqueDiscriminatorKeyValues(modelName, unions) }
+      .toSeq
+
+
+  private def validateUniqueDiscriminatorKeyValues(modelName: String, unions: Seq[(Union, UnionType)]): Seq[String] = {
+    lazy val unionNames = unions.map { case (union, _) => union.name }.mkString(", ")
+
+    def getMessage(elementKey: String, elements: String) =
+      s"Model[$modelName] used in unions[$unionNames] cannot use more than one discriminator $elementKey. " +
+        s"Found distinct discriminator ${elementKey}s[$elements]"
+
+    // keys
+    val distinctKeys = unions.map { case (union, _) => getDiscriminatorKey(union) }.distinct
+    val keyError =
+      if (distinctKeys.size > 1)
+        Some(getMessage(elementKey = "key", distinctKeys.mkString(", ")))
+      else
+        None
+
+    // values
+    val distinctValues = unions.map { case (_, unionType) => getDiscriminatorValue(unionType) }.distinct
+    val valueError =
+      if (distinctValues.size > 1)
+        Some(getMessage(elementKey = "value", distinctValues.mkString(", ")))
+      else
+        None
+
+    keyError.toSeq ++ valueError
+  }
 
   /**
     * Given a union, returns the list of types that contain the

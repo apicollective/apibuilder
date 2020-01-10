@@ -128,7 +128,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
   }
 
-  it("union type can have the same models") {
+  it("union type can share the same models") {
     val validator = TestHelper.serviceValidatorFromApiJson(
       baseJson.format(
         """
@@ -157,7 +157,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     sortedUnions(1).types.flatMap(_.discriminatorValue) shouldBe Seq("registered_user", "guest_user")
   }
 
-  it("union type can have the same models if their discriminator is unique") {
+  it("union type can share the same models if their discriminator value is unique") {
     val validator = TestHelper.serviceValidatorFromApiJson(
       baseJson.format(
         """
@@ -186,7 +186,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     sortedUnions(1).types.flatMap(_.discriminatorValue) shouldBe Seq("registered", "guest_user")
   }
 
-  it("union type cannot have the same models if their discriminator is NOT unique") {
+  it("union type cannot share the same models if their discriminator value is NOT unique") {
     val validator = TestHelper.serviceValidatorFromApiJson(
       baseJson.format(
         """
@@ -207,7 +207,64 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
     validator.errors should be (Seq(
       "Model[registered_user] used in unions[other_user_union, user] cannot use more than one discriminator value. " +
-        "Found distinct discriminators[other_registered, registered]"
+        "Found distinct discriminator values[other_registered, registered]"
+    ))
+  }
+
+  it("union type can share the same models if their discriminator key is unique") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "discriminator": "key",
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" },
+          |    { "type": "guest_user" }
+          |  ]
+          |},
+          |
+          |"other_user_union": {
+          |  "discriminator": "key",
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors shouldBe empty
+
+    val sortedUnions = validator.service().unions.sortBy(_.name)
+    validator.service().unions should have size 2
+    sortedUnions(0).name shouldBe "other_user_union"
+    sortedUnions(0).types.flatMap(_.discriminatorValue) shouldBe Seq("registered")
+    sortedUnions(1).name shouldBe "user"
+    sortedUnions(1).types.flatMap(_.discriminatorValue) shouldBe Seq("registered", "guest_user")
+  }
+
+  it("union type cannot share the same models if their discriminator key is NOT unique") {
+    val validator = TestHelper.serviceValidatorFromApiJson(
+      baseJson.format(
+        """
+          |"user": {
+          |  "discriminator": "key",
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" },
+          |    { "type": "guest_user" }
+          |  ]
+          |},
+          |
+          |"other_user_union": {
+          |  "types": [
+          |    { "type": "registered_user", "discriminator_value": "registered" }
+          |  ]
+          |}
+        """.stripMargin
+      )
+    )
+    validator.errors should be (Seq(
+      "Model[registered_user] used in unions[other_user_union, user] cannot use more than one discriminator key. " +
+        "Found distinct discriminator keys[discriminator, key]"
     ))
   }
 
