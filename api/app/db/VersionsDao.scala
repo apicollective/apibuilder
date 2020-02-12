@@ -150,7 +150,7 @@ class VersionsDao @Inject() (
     guid
   }
 
-  def softDelete(deletedBy: User, version: Version) {
+  def softDelete(deletedBy: User, version: Version): Unit =  {
     db.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
@@ -412,7 +412,7 @@ class VersionsDao @Inject() (
     implicit c: java.sql.Connection,
     user: User,
     versionGuid: UUID
-  ) {
+  ): Unit =  {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
       Symbol("version_guid") -> versionGuid,
       Symbol("version") -> ServiceVersionNumber,
@@ -425,7 +425,7 @@ class VersionsDao @Inject() (
     user: User,
     versionGuid: UUID,
     service: Service
-  ) {
+  ): Unit =  {
     SQL(InsertServiceQuery).on(
       Symbol("guid") -> UUID.randomUUID,
       Symbol("version_guid") -> versionGuid,

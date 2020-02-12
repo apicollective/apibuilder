@@ -1,7 +1,8 @@
 package lib
 
-import scala.util.Random
 import java.security.SecureRandom
+
+import scala.util.Random
 
 object TokenGenerator {
 
@@ -9,7 +10,7 @@ object TokenGenerator {
   private[this] val Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
   def generate(n: Int = 80): String = {
-    Stream.continually(random.nextInt(Alphabet.size)).map(Alphabet).take(n).mkString
+    LazyList.continually(random.nextInt(Alphabet.size)).map(Alphabet).take(n).mkString
   }
 
 }

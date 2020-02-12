@@ -43,7 +43,7 @@ class OriginalsDao @Inject() () {
     implicit c: java.sql.Connection,
     user: User,
     guid: UUID
-  ) {
+  ): Unit = {
     SQL(SoftDeleteByVersionGuidQuery).on(
       Symbol("version_guid") -> guid,
       Symbol("deleted_by_guid") -> user.guid

@@ -22,7 +22,7 @@ class GeneratorServiceUtil @Inject() (
 
   private[this] val logger: Logger = Logger(this.getClass())
 
-  def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext) {
+  def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync }
   }
 
@@ -30,7 +30,7 @@ class GeneratorServiceUtil @Inject() (
     service: GeneratorService
   ) (
     implicit ec: scala.concurrent.ExecutionContext
-  ) {
+  ): Unit = {
     val client = new Client(wSClient, service.uri)
 
     var iteration = 0

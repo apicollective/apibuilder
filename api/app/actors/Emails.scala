@@ -3,9 +3,8 @@ package actors
 import io.apibuilder.api.v0.models._
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import javax.inject.{Inject, Singleton}
-
 import lib._
-import play.api.Logger
+import play.api.{Logger, Logging}
 
 object Emails {
 
@@ -35,7 +34,7 @@ class Emails @Inject() (
   applicationsDao: ApplicationsDao,
   membershipsDao: MembershipsDao,
   subscriptionsDao: SubscriptionsDao
-) {
+) extends Logging {
 
   def deliver(
     context: Emails.Context,
@@ -71,10 +70,10 @@ class Emails @Inject() (
       )
     } { subscription =>
       if (isAuthorized(context, organization, subscription.user)) {
-        Logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
+        logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
         f(subscription)
       } else {
-        Logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
+        logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
       }
     }
   }
@@ -95,7 +94,7 @@ class Emails @Inject() (
             }
           }
           case Visibility.UNDEFINED(name) => {
-            Logger.warn(s"Undefined visibility[$name] -- default behaviour assumes NOT AUTHORIZED")
+            logger.warn(s"Undefined visibility[$name] -- default behaviour assumes NOT AUTHORIZED")
             false
           }
         }

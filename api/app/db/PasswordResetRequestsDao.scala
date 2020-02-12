@@ -85,7 +85,7 @@ class PasswordResetRequestsDao @Inject() (
     softDelete(updatingUser, pr)
   }
 
-  def softDelete(deletedBy: User, pr: PasswordReset) {
+  def softDelete(deletedBy: User, pr: PasswordReset): Unit =  {
     dbHelpers.delete(deletedBy, pr.guid)
   }
 

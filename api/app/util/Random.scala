@@ -24,7 +24,7 @@ case class Random() {
     */
   def string(alphabet: String)(n: Int): String = {
     assert(n > 0, "n must be > 0")
-    Stream.continually(random.nextInt(alphabet.length)).map(alphabet).take(n).mkString
+    LazyList.continually(random.nextInt(alphabet.length)).map(alphabet).take(n).mkString
   }
 
   /**

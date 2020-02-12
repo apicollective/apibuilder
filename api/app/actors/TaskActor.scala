@@ -43,9 +43,9 @@ class TaskActor @javax.inject.Inject() (
   private[this] val NumberDaysBeforePurge = 30
   private[this] case class Process(guid: UUID)
 
-  system.scheduler.schedule(1.hour, 1.hour, self, TaskActor.Messages.RestartDroppedTasks)
-  system.scheduler.schedule(1.day, 1.day, self, TaskActor.Messages.NotifyFailed)
-  system.scheduler.schedule(1.day, 1.day, self, TaskActor.Messages.PurgeOldTasks)
+  system.scheduler.scheduleAtFixedRate(1.hour, 1.hour, self, TaskActor.Messages.RestartDroppedTasks)
+  system.scheduler.scheduleAtFixedRate(1.day, 1.day, self, TaskActor.Messages.NotifyFailed)
+  system.scheduler.scheduleAtFixedRate(1.day, 1.day, self, TaskActor.Messages.PurgeOldTasks)
   
   def receive = {
 

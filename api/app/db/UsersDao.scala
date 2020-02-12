@@ -230,7 +230,7 @@ class UsersDao @Inject() (
     guid
   }
 
-  def processUserCreated(guid: UUID) {
+  def processUserCreated(guid: UUID): Unit =  {
     findByGuid(guid).foreach { user =>
       organizationsDao.findAllByEmailDomain(user.email).foreach { org =>
         membershipRequestsDao.upsert(user, org, user, Role.Member)
