@@ -11,7 +11,7 @@ import lib.{ServiceConfiguration, Text, UrlKey}
 import me.apidoc.swagger.translators.Resolver
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -95,7 +95,7 @@ case class Parser(config: ServiceConfiguration) {
           case m: ComposedModel => {
             var composedModel: Option[Model] = None
 
-            m.getAllOf.foreach { swaggerModel =>
+            m.getAllOf.asScala.foreach { swaggerModel =>
               val thisModelOpt = swaggerModel match {
                 case m: RefModel =>
                   Some(resolver.resolveWithError(m))
@@ -160,7 +160,7 @@ case class Parser(config: ServiceConfiguration) {
     resolver: Resolver
   ): (Seq[Resource], Seq[Enum]) = {
     val resourceAndParamEnums = (for {
-      (url, p)  <- swagger.getPaths
+      (url, p)  <- swagger.getPaths.asScala
       operation <- p.getOperations
       response  <- operation.getResponses.toMap.get("200")
       model     <- retrieveModel(response.getSchema)

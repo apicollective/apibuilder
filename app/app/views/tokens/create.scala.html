@@ -14,9 +14,9 @@
         <fieldset>
             @helper.inputText(
                 form("description"),
-                '_label -> "Description",
-                '_help -> "Optional description to help you remember where this token is used",
-                '_error -> form.error("description")
+                Symbol("_label") -> "Description",
+                Symbol("_help") -> "Optional description to help you remember where this token is used",
+                Symbol("_error") -> form.error("description")
             )
         </fieldset>
 

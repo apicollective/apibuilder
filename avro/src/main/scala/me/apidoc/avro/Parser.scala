@@ -1,17 +1,16 @@
 package me.apidoc.avro
 
-import lib.{ServiceConfiguration, UrlKey}
 import java.io.File
-import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
-import org.apache.avro.{Protocol, Schema}
-import org.apache.avro.compiler.idl.Idl
-import scala.collection.JavaConversions._
-import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
+import java.nio.file.{Files, Paths}
 import java.util.UUID
 
-import lib.Text
-import io.apibuilder.spec.v0.models._
+import io.apibuilder.spec.v0.models.{Application, Enum, EnumValue, Field, Info, Model, Organization, Service, Union, UnionType}
+import lib.{ServiceConfiguration, Text, UrlKey}
+import org.apache.avro.compiler.idl.Idl
+import org.apache.avro.{Protocol, Schema}
+
+import scala.jdk.CollectionConverters._
 
 private[avro] case class Builder() {
 
@@ -35,9 +34,9 @@ private[avro] case class Builder() {
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
       version = config.version,
-      enums = enumsBuilder,
-      unions = unionsBuilder,
-      models = modelsBuilder,
+      enums = enumsBuilder.toSeq,
+      unions = unionsBuilder.toSeq,
+      models = modelsBuilder.toSeq,
       imports = Nil,
       headers = Nil,
       resources = Nil
@@ -133,7 +132,7 @@ case class Parser(config: ServiceConfiguration) {
   ): Service = {
     println(s"protocol name[${protocol.getName}] namespace[${protocol.getNamespace}]")
 
-    protocol.getTypes.foreach { schema =>
+    protocol.getTypes.asScala.foreach { schema =>
       parseSchema(schema)
     }
 
@@ -178,7 +177,7 @@ case class Parser(config: ServiceConfiguration) {
     builder.addEnum(
       name = schema.getName,
       description = Util.toOption(schema.getDoc),
-      values = schema.getEnumSymbols
+      values = schema.getEnumSymbols.asScala.toSeq
     )
   }
 
@@ -186,10 +185,10 @@ case class Parser(config: ServiceConfiguration) {
     builder.addModel(
       name = Util.formatName(schema.getName),
       description = Util.toOption(schema.getDoc),
-      fields = schema.getFields.map(Apidoc.Field.apply(_))
+      fields = schema.getFields.asScala.map(Apidoc.Field.apply).toSeq
     )
 
-    schema.getFields.foreach { f =>
+    schema.getFields.asScala.foreach { f =>
       Apidoc.getType(f.schema()) match {
         case Apidoc.SimpleType(_, _) => {}
         case u: Apidoc.UnionType => {

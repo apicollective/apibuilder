@@ -1,7 +1,7 @@
 package me.apidoc.avro
 
 import org.apache.avro.Schema
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import io.apibuilder.spec.v0.models._
 
 object Apidoc {
@@ -62,7 +62,7 @@ object Apidoc {
       case SchemaType.Null => SimpleType("unit")
       case SchemaType.String => SimpleType("string")
       case SchemaType.Record => SimpleType(Util.formatName(schema.getName))
-      case SchemaType.Union => unionType(schema.getTypes)
+      case SchemaType.Union => unionType(schema.getTypes.asScala.toSeq)
     }
   }
 

@@ -23,7 +23,7 @@ lazy val avro = project
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json"        % playJsonVersion,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
     )
   )
 
@@ -35,7 +35,7 @@ lazy val swagger = project
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.48",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
    )
   )
 
@@ -86,7 +86,7 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.20.0" % Test
     )
   )
@@ -107,12 +107,12 @@ lazy val app = project
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.apache.commons" % "commons-compress" % "1.16.1",
-      "com.github.tototoshi" %% "scala-csv" % "1.3.5",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.6",
       "org.pegdown" % "pegdown" % "1.6.0",
-      "org.webjars" %% "webjars-play" % "2.6.3",
+      "org.webjars" %% "webjars-play" % "2.8.0",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars" % "bootstrap-social" % "5.0.0",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
     )
   )
 
@@ -123,7 +123,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
     )
   )
 
@@ -133,7 +133,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
-    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
   ),
   scalacOptions += "-feature",
   sources in (Compile,doc) := Seq.empty,

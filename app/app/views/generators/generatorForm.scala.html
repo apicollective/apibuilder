@@ -5,9 +5,9 @@
 <fieldset>
     @helper.inputText(
         form("uri"),
-        '_label -> "Service URI",
-        '_help -> "The full URI to the service providing the code generator.",
-        '_error -> form.error("uri")
+        Symbol("_label") -> "Service URI",
+        Symbol("_help") -> "The full URI to the service providing the code generator.",
+        Symbol("_error") -> form.error("uri")
     )
 </fieldset>
 
