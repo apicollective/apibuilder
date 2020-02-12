@@ -4,7 +4,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.12.10"
+scalaVersion in ThisBuild := "2.13.1"
 
 lazy val lib = project
   .in(file("lib"))
@@ -12,7 +12,7 @@ lazy val lib = project
 
 val avroVersion = "1.8.2"
 
-val playJsonVersion = "2.6.14"
+val playJsonVersion = "2.8.1"
 
 lazy val avro = project
   .in(file("avro"))
@@ -85,7 +85,7 @@ lazy val api = project
       "org.postgresql"    %  "postgresql"     % "42.2.1",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
-      "io.flow"           %% "lib-postgresql-play-play26" % "0.1.68",
+      "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
       "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.20.0" % Test
     )
