@@ -28,7 +28,7 @@ trait ErrorHandler {
     description: Any
   ) (
     f: => T
-  ) {
+  ): Unit = {
     try {
       f
     } catch {
@@ -60,14 +60,14 @@ trait ErrorHandler {
     description: Any
   ) (
     f: => T
-  ) {
+  ): Unit = {
     Logger.info(msg(description.toString))
     withErrorHandler(description)(f)
   }
 
   def logUnhandledMessage[T](
     description: Any
-  ) {
+  ): Unit = {
     Logger.error(msg(s"got an unhandled message: $description"))
   }
 

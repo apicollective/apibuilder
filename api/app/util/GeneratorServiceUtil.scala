@@ -20,6 +20,8 @@ class GeneratorServiceUtil @Inject() (
   usersDao: UsersDao
 ) {
 
+  private[this] val logger: Logger = Logger(this.getClass())
+
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext) {
     servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync }
   }
@@ -56,7 +58,7 @@ class GeneratorServiceUtil @Inject() (
             generator = gen
           )
         ) match {
-          case Left(errors) => Logger.error(s"Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
+          case Left(errors) => logger.error(s"Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
           case Right(_) => {}
         }
       }

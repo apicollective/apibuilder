@@ -108,11 +108,11 @@ class SubscriptionsDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> guid,
-        'organization_guid -> org.guid,
-        'publication -> form.publication.toString,
-        'user_guid -> form.userGuid,
-        'created_by_guid -> createdBy.guid
+        Symbol("guid") -> guid,
+        Symbol("organization_guid") -> org.guid,
+        Symbol("publication") -> form.publication.toString,
+        Symbol("user_guid") -> form.userGuid,
+        Symbol("created_by_guid") -> createdBy.guid
       ).execute()
     }
 
@@ -121,11 +121,11 @@ class SubscriptionsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, subscription: Subscription) {
+  def softDelete(deletedBy: User, subscription: Subscription): Unit = {
     dbHelpers.delete(deletedBy, subscription.guid)
   }
 
-  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
+  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User): Unit = {
     SubscriptionsDao.PublicationsRequiredAdmin.foreach { publication =>
       subscriptionsDao.findAll(
         Authorization.All,

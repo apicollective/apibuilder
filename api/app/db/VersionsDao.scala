@@ -31,6 +31,8 @@ class VersionsDao @Inject() (
   organizationsDao: OrganizationsDao
 ) {
 
+  private[this] val logger: Logger = Logger(this.getClass())
+
   private[this] val LatestVersion = "latest"
   private[this] val LatestVersionFilter = "~"
 
@@ -134,11 +136,11 @@ class VersionsDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'application_guid -> application.guid,
-      'version -> version.trim,
-      'version_sort_key -> VersionTag(version.trim).sortKey,
-      'created_by_guid -> user.guid
+      Symbol("guid") -> guid,
+      Symbol("application_guid") -> application.guid,
+      Symbol("version") -> version.trim,
+      Symbol("version_sort_key") -> VersionTag(version.trim).sortKey,
+      Symbol("created_by_guid") -> user.guid
     ).execute()
 
     originalsDao.create(c, user, guid, original)
@@ -154,8 +156,8 @@ class VersionsDao @Inject() (
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
 
       SQL(DeleteQuery).on(
-        'guid -> version.guid,
-        'deleted_by_guid -> deletedBy.guid
+        Symbol("guid") -> version.guid,
+        Symbol("deleted_by_guid") -> deletedBy.guid
       ).execute()
     }
   }
@@ -316,20 +318,20 @@ class VersionsDao @Inject() (
     val totalRecords = stats.good + stats.bad
 
     while (stats.good > 0) {
-      Logger.info(s"migrate() interim statistics: ${stats}")
+      logger.info(s"migrate() interim statistics: ${stats}")
       stats = migrateSingleRun()
       totalGood += stats.good
     }
 
     val finalStats = MigrationStats(good = totalGood, bad = totalRecords - totalGood)
-    Logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
+    logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
     finalStats
   }
 
   @tailrec
   private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
-    var good = 0l
-    var bad = 0l
+    var good = 0L
+    var bad = 0L
 
     val processed = db.withConnection { implicit c =>
       val records = BaseQuery.
@@ -366,7 +368,7 @@ class VersionsDao @Inject() (
             orgNamespace = org.namespace,
             version = versionName
           )
-          Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
+          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
 
           val validator = OriginalValidator(
             config = serviceConfig,
@@ -378,7 +380,7 @@ class VersionsDao @Inject() (
           )
           validator.validate() match {
             case Left(errors) => {
-              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + errors.distinct.mkString(", "))
+              logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
@@ -389,7 +391,7 @@ class VersionsDao @Inject() (
         } catch {
           case e: Throwable => {
             e.printStackTrace(System.err)
-            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
+            logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
             bad += 1
           }
         }
@@ -412,9 +414,9 @@ class VersionsDao @Inject() (
     versionGuid: UUID
   ) {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
-      'version_guid -> versionGuid,
-      'version -> ServiceVersionNumber,
-      'user_guid -> user.guid
+      Symbol("version_guid") -> versionGuid,
+      Symbol("version") -> ServiceVersionNumber,
+      Symbol("user_guid") -> user.guid
     )
   }
 
@@ -425,11 +427,11 @@ class VersionsDao @Inject() (
     service: Service
   ) {
     SQL(InsertServiceQuery).on(
-      'guid -> UUID.randomUUID,
-      'version_guid -> versionGuid,
-      'version -> ServiceVersionNumber,
-      'json -> Json.toJson(service).as[JsObject].toString.trim,
-      'user_guid -> user.guid
+      Symbol("guid") -> UUID.randomUUID,
+      Symbol("version_guid") -> versionGuid,
+      Symbol("version") -> ServiceVersionNumber,
+      Symbol("json") -> Json.toJson(service).as[JsObject].toString.trim,
+      Symbol("user_guid") -> user.guid
     ).execute()
   }
 

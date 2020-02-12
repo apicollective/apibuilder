@@ -15,8 +15,6 @@ class GithubController @javax.inject.Inject() (
   github: Github
 ) extends ApibuilderController with Logging {
 
-  override val logger: Logger = Logger(this.getClass())
-
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect(returnUrl: Option[String]) = Action {

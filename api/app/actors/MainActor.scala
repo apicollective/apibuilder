@@ -103,7 +103,7 @@ class MainActor @javax.inject.Inject() (
     case m: Any => logUnhandledMessage(m)
   }
 
-  private[this] def ensureServices() {
+  private[this] def ensureServices(): Unit = {
     Logger.info("[MainActor] Starting ensureServices()")
 
     Try {

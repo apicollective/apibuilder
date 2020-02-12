@@ -45,7 +45,7 @@ class Emails @Inject() (
     body: String
   ) (
     implicit filter: Subscription => Boolean = { _ => true }
-  ) {
+  ): Unit = {
     eachSubscription(context, org, publication, { subscription =>
       email.sendHtml(
         to = Person(subscription.user),
@@ -60,7 +60,7 @@ class Emails @Inject() (
     organization: Organization,
     publication: Publication,
     f: Subscription => Unit
-  ) {
+  ): Unit = {
     Pager.eachPage[Subscription] { offset =>
       subscriptionsDao.findAll(
         Authorization.All,
@@ -112,7 +112,7 @@ class Emails @Inject() (
   def sendErrors(
     subject: String,
     errors: Seq[String]
-  ) {
+  ): Unit = {
     errors match {
       case Nil => {}
       case _ => {

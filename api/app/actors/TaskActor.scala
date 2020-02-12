@@ -139,7 +139,7 @@ class TaskActor @javax.inject.Inject() (
   private[this] def versionUpdated(
     version: Version,
     diffs: Seq[Diff]
-  ) {
+  ): Unit = {
     // Only send email if something has actually changed
     if (diffs.nonEmpty) {
       val breakingDiffs = diffs.flatMap { d =>
@@ -186,7 +186,7 @@ class TaskActor @javax.inject.Inject() (
     }
   }
 
-  def processTask[T](task: Task, attempt: Try[T]) {
+  def processTask[T](task: Task, attempt: Try[T]): Unit = {
     attempt match {
       case Success(_) => {
         tasksDao.softDelete(usersDao.AdminUser, task)
