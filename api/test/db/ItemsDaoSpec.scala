@@ -1,10 +1,11 @@
 package db
 
+import java.util.UUID
+
 import io.apibuilder.api.v0.models.{ApplicationSummary, Item, Organization}
 import io.apibuilder.common.v0.models.Reference
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import org.postgresql.util.PSQLException
-import java.util.UUID
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class ItemsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
