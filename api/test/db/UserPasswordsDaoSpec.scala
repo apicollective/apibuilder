@@ -2,7 +2,7 @@ package db
 
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class UserPasswordsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class UserPasswordsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] lazy val user = upsertUser("michael@mailinator.com")
 

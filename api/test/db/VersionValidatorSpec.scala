@@ -3,7 +3,7 @@ package db
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class VersionValidatorSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class VersionValidatorSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   def versionValidator = injector.instanceOf[VersionValidator]
   

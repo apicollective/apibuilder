@@ -10,15 +10,15 @@ import io.apibuilder.api.v0.models.User
 import org.joda.time.DateTime
 import play.api.db._
 
-class TasksDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class TasksDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] def setDeletedAt(task: Task, days: Int) {
+  private[this] def setDeletedAt(task: Task, days: Int): Unit = {
     val query = s"""
       update tasks set deleted_at = timezone('utc', now()) - interval '$days days' where guid = {guid}::uuid
     """
 
     injector.instanceOf[DBApi].database("default").withConnection { implicit c =>
-      SQL(query).on('guid -> task.guid).execute()
+      SQL(query).on(Symbol("guid") -> task.guid).execute()
     }
   }
 

@@ -3,7 +3,7 @@ package db
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class OrganizationDomainsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class OrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   "create" in {
     val domainName = UUID.randomUUID.toString + ".org"

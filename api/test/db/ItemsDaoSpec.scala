@@ -6,7 +6,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import org.postgresql.util.PSQLException
 import java.util.UUID
 
-class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class ItemsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] def upsertItem(
     org: Organization = createOrganization(),

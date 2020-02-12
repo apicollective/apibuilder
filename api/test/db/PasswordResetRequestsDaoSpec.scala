@@ -1,9 +1,11 @@
 package db
 
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class PasswordResetRequestsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+class PasswordResetRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   "create" in {
     val user = createRandomUser()

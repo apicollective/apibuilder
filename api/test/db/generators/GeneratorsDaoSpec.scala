@@ -4,7 +4,7 @@ import db.Authorization
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class GeneratorsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
+class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
 
   "upsert" must {
 

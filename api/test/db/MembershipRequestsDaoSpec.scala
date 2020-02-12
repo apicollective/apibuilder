@@ -1,12 +1,13 @@
 package db
 
-import lib.Role
 import java.util.UUID
 
 import io.apibuilder.api.v0.models.{Organization, User}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import lib.Role
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class MembershipRequestsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] lazy val org: Organization = createOrganization()
   private[this] lazy val member: User = upsertUser("gilt-member@bryzek.com")

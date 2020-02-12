@@ -5,7 +5,7 @@ import lib.Role
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class SubsriptionDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class SubsriptionDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   lazy val org = createOrganization()
 

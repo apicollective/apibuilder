@@ -4,7 +4,7 @@ import io.apibuilder.api.v0.models.{Application, Change, DiffBreaking, DiffNonBr
 import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] def getApplication(version: Version): Application = {
     applicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {

@@ -6,7 +6,7 @@ import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 import play.api.libs.json.Json
 
-class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
