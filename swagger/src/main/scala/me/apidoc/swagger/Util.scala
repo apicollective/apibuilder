@@ -12,6 +12,8 @@ import io.swagger.{models => swaggermodels}
 import io.swagger.models.{parameters => swaggerparams, properties => swaggerproperties}
 import play.api.libs.json._
 
+import scala.collection.immutable.ListMap
+
 object Util {
 
   def writeToTempFile(contents: String): File = {
@@ -87,7 +89,7 @@ object Util {
     if (values == null) {
       Map()
     } else {
-      values.asScala.toMap
+      values.asScala.to(ListMap)
     }
   }
 

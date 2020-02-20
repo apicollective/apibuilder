@@ -83,6 +83,16 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                   description = Some("Definition of a pet"),
                   fields = Seq(
                     Field(
+                      name = "name",
+                      `type` = "string",
+                      required = true
+                    ),
+                    Field(
+                      name = "email_address",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
                       name = "tag",
                       `type` = "string",
                       required = false,
@@ -100,16 +110,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       name = "id",
                       `type` = "long",
                       required = true
-                    ),
-                    Field(
-                      name = "name",
-                      `type` = "string",
-                      required = true
-                    ),
-                    Field(
-                      name = "email_address",
-                      `type` = "string",
-                      required = false
                     ),
                     Field(
                       name = "status",
