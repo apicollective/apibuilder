@@ -86,11 +86,11 @@ class OrganizationAttributeValuesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> guid,
-        'organization_guid -> organization.guid,
-        'attribute_guid -> attribute.guid,
-        'value -> form.value.trim,
-        'user_guid -> user.guid
+        Symbol("guid") -> guid,
+        Symbol("organization_guid") -> organization.guid,
+        Symbol("attribute_guid") -> attribute.guid,
+        Symbol("value") -> form.value.trim,
+        Symbol("user_guid") -> user.guid
       ).execute()
     }
 
@@ -105,9 +105,9 @@ class OrganizationAttributeValuesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
-        'guid -> existing.guid,
-        'value -> form.value.trim,
-        'user_guid -> user.guid
+        Symbol("guid") -> existing.guid,
+        Symbol("value") -> form.value.trim,
+        Symbol("user_guid") -> user.guid
       ).execute()
     }
 
@@ -116,7 +116,7 @@ class OrganizationAttributeValuesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, org: AttributeValue) {
+  def softDelete(deletedBy: User, org: AttributeValue): Unit = {
     dbHelpers.delete(deletedBy, org.guid)
   }
 

@@ -1,9 +1,10 @@
 package util
 
 import org.apache.commons.codec.binary.Base64
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class BasicAuthorizationSpec extends PlaySpec with OneAppPerSuite {
+class BasicAuthorizationSpec extends PlaySpec with GuiceOneAppPerSuite {
 
   def encode(v: String):String = {
     new String(Base64.encodeBase64(v.getBytes))
@@ -30,7 +31,7 @@ class BasicAuthorizationSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "Ignores invalid auth" in {
-    BasicAuthorization.get("Basic " + encode("user:pass:other")) must be(None)
+    BasicAuthorization.get("Bøasic " + encode("user:pass:other")) must be(None)
   }
 
   "Ignores empty string" in {

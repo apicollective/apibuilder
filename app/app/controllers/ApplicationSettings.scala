@@ -1,14 +1,12 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{ApplicationForm, MoveForm, Visibility}
-import models._
 import javax.inject.Inject
-
 import lib.ApiClientProvider
-import org.webjars.play.routes
-import play.api.mvc.{BaseController, ControllerComponents, Result}
-import play.api.data._
+import models._
 import play.api.data.Forms._
+import play.api.data._
+import play.api.mvc.Result
 
 import scala.concurrent.Future
 

@@ -116,10 +116,10 @@ class WatchesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> guid,
-        'user_guid -> fullForm.form.userGuid,
-        'application_guid -> application.guid,
-        'created_by_guid -> createdBy.guid
+        Symbol("guid") -> guid,
+        Symbol("user_guid") -> fullForm.form.userGuid,
+        Symbol("application_guid") -> application.guid,
+        Symbol("created_by_guid") -> createdBy.guid
       ).execute()
     }
 
@@ -128,7 +128,7 @@ class WatchesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, watch: Watch) {
+  def softDelete(deletedBy: User, watch: Watch): Unit =  {
     dbHelpers.delete(deletedBy, watch.guid)
   }
 

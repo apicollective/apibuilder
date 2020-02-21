@@ -161,13 +161,13 @@ class Members @Inject() (
         val date = DateHelper.mediumDateTime(UserTimeZone(request.user), DateTime.now())
         Ok.sendFile(
           content = path,
-          fileName = _ => s"apibuilder-$orgKey-members-$date.csv"
+          fileName = _ => Some(s"apibuilder-$orgKey-members-$date.csv")
         )
       }
     }
   }
 
-  private[this] def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: Role) {
+  private[this] def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: Role): Unit = {
     val membershipRequest = Await.result(
       api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.key),
       1500.millis

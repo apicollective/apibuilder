@@ -5,7 +5,7 @@ import me.apidoc.swagger.Util
 import io.apibuilder.spec.v0.{ models => apidoc }
 import io.swagger.{ models => swagger }
 import io.swagger.models.properties._
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 object Field {
 

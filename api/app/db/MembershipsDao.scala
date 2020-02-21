@@ -87,11 +87,11 @@ class MembershipsDao @Inject() (
     )
 
     SQL(InsertQuery).on(
-      'guid -> membership.guid,
-      'organization_guid -> membership.organization.guid,
-      'user_guid -> membership.user.guid,
-      'role -> membership.role,
-      'created_by_guid -> createdBy
+      Symbol("guid") -> membership.guid,
+      Symbol("organization_guid") -> membership.organization.guid,
+      Symbol("user_guid") -> membership.user.guid,
+      Symbol("role") -> membership.role,
+      Symbol("created_by_guid") -> createdBy
     ).execute()
 
     mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
@@ -104,7 +104,7 @@ class MembershipsDao @Inject() (
     * publication subscriptions that require the administrative role
     * for this org.
     */
-  def softDelete(user: User, membership: Membership) {
+  def softDelete(user: User, membership: Membership): Unit = {
     subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     dbHelpers.delete(user, membership.guid)
   }

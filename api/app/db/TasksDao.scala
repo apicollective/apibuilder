@@ -84,46 +84,46 @@ class TasksDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'data -> Json.toJson(data).toString,
-      'created_by_guid -> createdBy.guid,
-      'updated_by_guid -> createdBy.guid
+      Symbol("guid") -> guid,
+      Symbol("data") -> Json.toJson(data).toString,
+      Symbol("created_by_guid") -> createdBy.guid,
+      Symbol("updated_by_guid") -> createdBy.guid
     ).execute()
 
     guid
   }
 
-  def softDelete(deletedBy: User, task: Task) {
+  def softDelete(deletedBy: User, task: Task): Unit = {
     dbHelpers.delete(deletedBy, task.guid)
   }
 
-  def purge(deletedBy: User, task: Task) {
+  def purge(deletedBy: User, task: Task): Unit = {
     db.withConnection { implicit c =>
-      SQL(PurgeQuery).on('guid -> task.guid).execute()
+      SQL(PurgeQuery).on(Symbol("guid") -> task.guid).execute()
     }
   }
 
-  def incrementNumberAttempts(user: User, task: Task) {
+  def incrementNumberAttempts(user: User, task: Task): Unit = {
     db.withConnection { implicit c =>
       SQL(IncrementNumberAttemptsQuery).on(
-        'guid -> task.guid,
-        'updated_by_guid -> user.guid
+        Symbol("guid") -> task.guid,
+        Symbol("updated_by_guid") -> user.guid
       ).execute()
     }
   }
 
-  def recordError(user: User, task: Task, error: Throwable) {
+  def recordError(user: User, task: Task, error: Throwable): Unit = {
     val sw = new java.io.StringWriter
     error.printStackTrace(new java.io.PrintWriter(sw))
     recordError(user, task, sw.toString)
   }
 
-  def recordError(user: User, task: Task, error: String) {
+  def recordError(user: User, task: Task, error: String): Unit = {
     db.withConnection { implicit c =>
       SQL(RecordErrorQuery).on(
-        'guid -> task.guid,
-        'last_error -> error,
-        'updated_by_guid -> user.guid
+        Symbol("guid") -> task.guid,
+        Symbol("last_error") -> error,
+        Symbol("updated_by_guid") -> user.guid
       ).execute()
     }
   }

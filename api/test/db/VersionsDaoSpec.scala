@@ -1,13 +1,13 @@
 package db
 
-import lib.{DatabaseServiceFetcher, ServiceConfiguration}
-import builder.OriginalValidator
-import io.apibuilder.api.v0.models.OriginalType
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
-import play.api.libs.json.Json
 
-class VersionsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+import builder.OriginalValidator
+import lib.ServiceConfiguration
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] val Original = createOriginal()
 

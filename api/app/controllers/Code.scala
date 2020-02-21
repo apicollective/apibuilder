@@ -189,7 +189,7 @@ class Code @Inject() (
           all += Attribute(av.attribute.name, av.value)
         }
 
-        all
+        all.toSeq
       }
     }
   }

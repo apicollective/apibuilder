@@ -1,7 +1,7 @@
 package io.apicollective.play
 
 import akka.stream.Materializer
-import play.api.Logger
+import play.api.{Logger, Logging}
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,7 +18,7 @@ class LoggingFilter @javax.inject.Inject() (loggingFilter: ApibuilderLoggingFilt
 class ApibuilderLoggingFilter @javax.inject.Inject() (
   implicit ec: ExecutionContext,
   m: Materializer
-) extends Filter {
+) extends Filter with Logging {
 
   def apply(f: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
     val startTime = System.currentTimeMillis
@@ -34,7 +34,7 @@ class ApibuilderLoggingFilter @javax.inject.Inject() (
         headerMap.getOrElse("User-Agent", Nil).mkString(",")
       ).mkString(" ")
 
-      Logger.info(line)
+      logger.info(line)
       result
     }
   }

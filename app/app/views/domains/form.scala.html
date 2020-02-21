@@ -17,8 +17,8 @@
 
           @helper.inputText(
               form("name"),
-              '_label -> "Domain name",
-              '_error -> form.error("name")
+              Symbol("_label") -> "Domain name",
+              Symbol("_error") -> form.error("name")
           )
 
       </fieldset>

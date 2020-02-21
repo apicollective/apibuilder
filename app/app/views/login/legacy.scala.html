@@ -42,14 +42,14 @@
                     <fieldset>
                         @helper.inputText(
                             loginForm("email"),
-                            '_label -> "Email address",
-                            '_error -> loginForm.error("email")
+                            Symbol("_label") -> "Email address",
+                            Symbol("_error") -> loginForm.error("email")
                         )
 
                         @helper.inputPassword(
                             loginForm("password"),
-                            '_label -> "Password",
-                            '_error -> loginForm.error("password")
+                            Symbol("_label") -> "Password",
+                            Symbol("_error") -> loginForm.error("password")
                         )
 
                     </fieldset>
