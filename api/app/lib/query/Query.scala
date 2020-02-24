@@ -47,7 +47,7 @@ object Part {
   }
 
   private[this] def toText(value: String): Seq[Part.Text] = {
-    value.trim.split("\\s+").toSeq.map(_.trim).filter(!_.isEmpty).map(Part.Text(_))
+    value.trim.split("\\s+").map(_.trim).filter(!_.isEmpty).map(Part.Text(_))
   }
 
 }

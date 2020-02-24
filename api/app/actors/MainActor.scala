@@ -1,14 +1,14 @@
 package actors
 
+import lib.Role
+import akka.actor._
 import java.util.UUID
 
-import akka.actor._
 import db.VersionsDao
-import lib.Role
-import play.api.Mode
+import play.api.{Logger, Mode}
 
-import scala.concurrent.duration.{FiniteDuration, SECONDS}
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 object MainActor {
 
@@ -103,14 +103,14 @@ class MainActor @javax.inject.Inject() (
     case m: Any => logUnhandledMessage(m)
   }
 
-  private[this] def ensureServices(): Unit = {
-    log.info("[MainActor] Starting ensureServices()")
+  private[this] def ensureServices() {
+    Logger.info("[MainActor] Starting ensureServices()")
 
     Try {
       versionsDao.migrate()
     } match {
-      case Success(result) => log.info("ensureServices() completed: " + result)
-      case Failure(ex) => log.error(s"Error migrating versions: ${ex.getMessage}")
+      case Success(result) => Logger.info("ensureServices() completed: " + result)
+      case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")
     }
   }
 }

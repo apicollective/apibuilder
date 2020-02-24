@@ -47,7 +47,7 @@ class Email @Inject() (
     to: Person,
     subject: String,
     body: String
-  ): Unit = {
+  ) {
     val prefixedSubject = appConfig.subjectPrefix + " " + subject
 
     val from = fromPerson.name match {

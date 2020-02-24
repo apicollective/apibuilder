@@ -6,7 +6,7 @@ import java.util.UUID
 import lib.Validation
 import play.api.http.HttpErrorHandler
 import play.api.libs.json.Json
-import play.api.{Logger, Logging}
+import play.api.Logger
 import play.api.mvc.{RequestHeader, Result}
 import play.api.mvc.Results.{InternalServerError, Status}
 
@@ -19,7 +19,7 @@ import scala.concurrent.Future
   * in the message back to the client. This allows us to quickly cross
   * reference an error to a specific point in the log.
   */
-class ErrorHandler extends HttpErrorHandler with Logging {
+class ErrorHandler extends HttpErrorHandler {
 
   def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     message.trim match {
@@ -32,7 +32,7 @@ class ErrorHandler extends HttpErrorHandler with Logging {
     val errorId = UUID.randomUUID().toString.replaceAll("-", "")
     val msg = s"Error [$errorId] ${request.method} ${request.path}: ${exception.getMessage}"
 
-    logger.error(msg, exception)
+    Logger.error(msg, exception)
     Future.successful(InternalServerError(Json.toJson(Validation.error(msg))))
   }
 

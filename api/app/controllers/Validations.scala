@@ -21,7 +21,7 @@ class Validations @Inject() (
   )
 
   def post() = Anonymous(parse.temporaryFile) { request =>
-    val contents = scala.io.Source.fromFile(request.body.path.toFile, "UTF-8").getLines.mkString("\n")
+    val contents = scala.io.Source.fromFile(request.body.file, "UTF-8").getLines.mkString("\n")
     OriginalUtil.guessType(contents) match {
       case None => {
         UnprocessableEntity(Json.toJson(Validation(

@@ -1,9 +1,8 @@
 package lib
 
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class MiscSpec extends PlaySpec with GuiceOneAppPerSuite {
+class MiscSpec extends PlaySpec with OneAppPerSuite {
 
   "isValidEmail" in {
     Misc.isValidEmail("") must be(false)

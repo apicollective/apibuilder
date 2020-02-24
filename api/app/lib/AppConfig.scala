@@ -18,7 +18,7 @@ class AppConfig @Inject() (
 
   val mailLocalDeliveryDir: Option[String] = config.optionalString("mail.localDeliveryDir")
 
-  val sendErrorsTo: Seq[String] = config.requiredString("apibuilder.sendErrorsTo").split("\\s+").toSeq.distinct
+  val sendErrorsTo: Seq[String] = config.requiredString("apibuilder.sendErrorsTo").split("\\s+").distinct
 
   /**
     * optional as only used in production environment

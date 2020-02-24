@@ -64,9 +64,9 @@ class ServicesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("uri") -> form.uri.trim,
-        Symbol("created_by_guid") -> user.guid
+        'guid -> guid,
+        'uri -> form.uri.trim,
+        'created_by_guid -> user.guid
       ).execute()
     }
 
@@ -80,7 +80,7 @@ class ServicesDao @Inject() (
   /**
     * Also will soft delete all generators for this service
     */
-  def softDelete(deletedBy: User, service: GeneratorService): Unit = {
+  def softDelete(deletedBy: User, service: GeneratorService) {
     Pager.eachPage { offset =>
       // Note we do not include offset in the query as each iteration
       // deletes records which will then NOT show up in the next loop

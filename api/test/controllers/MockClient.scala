@@ -72,7 +72,7 @@ trait MockClient extends db.Helpers
   def expectNotFound[T](
     f: => Future[T],
     duration: Duration = DefaultDuration
-  ): Unit = {
+  ) {
     expectStatus(404) {
       Await.result(f, duration)
     }
@@ -81,13 +81,13 @@ trait MockClient extends db.Helpers
   def expectNotAuthorized[T](
     f: => Future[T],
     duration: Duration = DefaultDuration
-  ): Unit =  {
+  ) {
     expectStatus(401) {
       Await.result(f, duration)
     }
   }
 
-  def expectStatus(code: Int)(f: => Unit): Unit = {
+  def expectStatus(code: Int)(f: => Unit) {
     Try(
       f
     ) match {
@@ -148,7 +148,7 @@ trait MockClient extends db.Helpers
     )
   }
 
-  def createPasswordRequest(email: String): Unit = {
+  def createPasswordRequest(email: String) {
     await(client.passwordResetRequests.post(PasswordResetRequest(email = email)))
   }
 

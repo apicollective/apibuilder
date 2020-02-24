@@ -16,7 +16,7 @@
       </p>
     }
 
-    @helper.form(action = routes.Versions.createPost(tpl.org.get.key, applicationKey), Symbol("enctype") -> "multipart/form-data") {
+    @helper.form(action = routes.Versions.createPost(tpl.org.get.key, applicationKey), 'enctype -> "multipart/form-data") {
 
       <fieldset>
           <legend>Service Information</legend>
@@ -29,23 +29,23 @@
 
           @helper.inputText(
             form("version"),
-            Symbol("_label") -> "Version",
-            Symbol("_error") -> form.error("version"),
-            Symbol("_help") -> tpl.version.map { v => s"Latest uploaded version is $v" }.getOrElse("")
+            '_label -> "Version",
+            '_error -> form.error("version"),
+            '_help -> tpl.version.map { v => s"Latest uploaded version is $v" }.getOrElse("")
           )
 
           @helper.select(
             form("visibility"),
             io.apibuilder.api.v0.models.Visibility.all.map { v => (v.toString -> v.toString) },
-            Symbol("_label") -> "Visibility",
-            Symbol("_error") -> form.error("visibility"),
-            Symbol("_help") -> "Set to public if anybody can view this service, or organization to limit to other members of your org."
+            '_label -> "Visibility",
+            '_error -> form.error("visibility"),
+            '_help -> "Set to public if anybody can view this service, or organization to limit to other members of your org."
           )
 
           @helper.inputFile(
               form("file"),
-              Symbol("_label") -> "File",
-              Symbol("_error") -> form.error("file")
+              '_label -> "File",
+              '_error -> form.error("file")
           )
 
           @helper.select(
@@ -59,7 +59,7 @@
                       case io.apibuilder.api.v0.models.OriginalType.UNDEFINED(name) => (t.toString, name)
               }
             },
-            Symbol("_label") -> "Type"
+            '_label -> "Type"
           )
 
       </fieldset>

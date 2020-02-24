@@ -11,7 +11,7 @@ import lib.{ServiceConfiguration, Text, UrlKey}
 import me.apidoc.swagger.translators.Resolver
 
 import scala.annotation.tailrec
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConversions._
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -95,7 +95,7 @@ case class Parser(config: ServiceConfiguration) {
           case m: ComposedModel => {
             var composedModel: Option[Model] = None
 
-            m.getAllOf.asScala.foreach { swaggerModel =>
+            m.getAllOf.foreach { swaggerModel =>
               val thisModelOpt = swaggerModel match {
                 case m: RefModel =>
                   Some(resolver.resolveWithError(m))
@@ -160,9 +160,9 @@ case class Parser(config: ServiceConfiguration) {
     resolver: Resolver
   ): (Seq[Resource], Seq[Enum]) = {
     val resourceAndParamEnums = (for {
-      (url, p)  <- swagger.getPaths.asScala
-      operation <- p.getOperations.asScala
-      response  <- operation.getResponses.asScala.toMap.get("200")
+      (url, p)  <- swagger.getPaths
+      operation <- p.getOperations
+      response  <- operation.getResponses.toMap.get("200")
       model     <- retrieveModel(response.getSchema)
       if Option(model).isDefined
     } yield {
@@ -171,8 +171,8 @@ case class Parser(config: ServiceConfiguration) {
           case ref: RefProperty =>
             //Search for param enums among all operations (even the ones with no 200 response) of this resource
             for{
-              resourceOp  <- p.getOperations.asScala
-              param       <- resourceOp.getParameters.asScala
+              resourceOp  <- p.getOperations
+              param       <- resourceOp.getParameters
               if Util.hasStringEnum(param)
             } yield {
               val httpMethod = Util.retrieveMethod(resourceOp, p).get
@@ -182,9 +182,9 @@ case class Parser(config: ServiceConfiguration) {
                 plural = Text.pluralize(enumTypeName),
                 description = None,
                 deprecation = None,
-                values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.asScala.map { value =>
+                values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
                   EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
-                }.toSeq,
+                },
                 attributes = Seq())
             }
           case _ => Seq()
@@ -200,7 +200,7 @@ case class Parser(config: ServiceConfiguration) {
       }
 
       (resource, paramStringEnums)
-    }).toSeq
+    }) toSeq
 
     val allResources = resourceAndParamEnums.map(_._1)
     val allParamEnums =

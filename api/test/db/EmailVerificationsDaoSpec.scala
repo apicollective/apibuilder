@@ -1,12 +1,10 @@
 package db
 
+import io.apibuilder.api.v0.models.UserForm
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-import io.apibuilder.api.v0.models.UserForm
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-
-class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class EmailVerificationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   def emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
 

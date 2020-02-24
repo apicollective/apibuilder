@@ -31,7 +31,7 @@ class GeneratorServiceActor @javax.inject.Inject() (
 
   private[this] implicit val ec = system.dispatchers.lookup("generator-service-actor-context")
 
-  system.scheduler.scheduleAtFixedRate(1.hour, 1.hour, self, GeneratorServiceActor.Messages.SyncAll)
+  system.scheduler.schedule(1.hour, 1.hour, self, GeneratorServiceActor.Messages.SyncAll)
 
   def receive = {
 
@@ -51,10 +51,10 @@ class GeneratorServiceActor @javax.inject.Inject() (
           util.sync(service)
         } match {
           case Success(_) => {
-            log.info(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] synced")
+            Logger.info(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] synced")
           }
           case Failure(ex) => {
-            log.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
+            Logger.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
           }
         }
       }

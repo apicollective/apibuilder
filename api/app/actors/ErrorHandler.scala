@@ -7,8 +7,6 @@ import play.api.Logger
   */
 trait ErrorHandler {
 
-  val logger: Logger = Logger(this.getClass())
-
   /**
     * Wraps a block with error handling that will catch any throwable and log it.
     *
@@ -30,12 +28,12 @@ trait ErrorHandler {
     description: Any
   ) (
     f: => T
-  ): Unit = {
+  ) {
     try {
       f
     } catch {
       case t: Throwable => {
-        logger.error(msg(s"$description: ${t}") , t)
+        Logger.error(msg(s"$description: ${t}") , t)
       }
     }
   }
@@ -62,15 +60,15 @@ trait ErrorHandler {
     description: Any
   ) (
     f: => T
-  ): Unit = {
-    logger.info(msg(description.toString))
+  ) {
+    Logger.info(msg(description.toString))
     withErrorHandler(description)(f)
   }
 
   def logUnhandledMessage[T](
     description: Any
-  ): Unit = {
-    logger.error(msg(s"got an unhandled message: $description"))
+  ) {
+    Logger.error(msg(s"got an unhandled message: $description"))
   }
 
   private[this] def msg(value: String) = {

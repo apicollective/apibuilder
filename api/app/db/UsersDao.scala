@@ -128,17 +128,17 @@ class UsersDao @Inject() (
     Validation.errors(emailErrors ++ nicknameErrors) ++ passwordErrors
   }
 
-  def update(updatingUser: User, user: User, form: UserUpdateForm): Unit = {
+  def update(updatingUser: User, user: User, form: UserUpdateForm) {
     val errors = validate(form, existingUser = Some(user))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
     db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
-        Symbol("guid") -> user.guid,
-        Symbol("email") -> form.email.trim.toLowerCase,
-        Symbol("name") -> form.name.map(_.trim),
-        Symbol("nickname") -> form.nickname.trim.toLowerCase,
-        Symbol("updated_by_guid") -> updatingUser.guid
+        'guid -> user.guid,
+        'email -> form.email.trim.toLowerCase,
+        'name -> form.name.map(_.trim),
+        'nickname -> form.nickname.trim.toLowerCase,
+        'updated_by_guid -> updatingUser.guid
       ).execute()
     }
 
@@ -217,20 +217,20 @@ class UsersDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> guid,
-      Symbol("email") -> email.trim.toLowerCase,
-      Symbol("nickname") -> nickname.trim.toLowerCase,
-      Symbol("name") -> toOptionString(name),
-      Symbol("avatar_url") -> toOptionString(avatarUrl),
-      Symbol("gravatar_id") -> toOptionString(gravatarId),
-      Symbol("created_by_guid") -> Constants.DefaultUserGuid.toString,
-      Symbol("updated_by_guid") -> Constants.DefaultUserGuid.toString
+      'guid -> guid,
+      'email -> email.trim.toLowerCase,
+      'nickname -> nickname.trim.toLowerCase,
+      'name -> toOptionString(name),
+      'avatar_url -> toOptionString(avatarUrl),
+      'gravatar_id -> toOptionString(gravatarId),
+      'created_by_guid -> Constants.DefaultUserGuid.toString,
+      'updated_by_guid -> Constants.DefaultUserGuid.toString
     ).execute()
 
     guid
   }
 
-  def processUserCreated(guid: UUID): Unit =  {
+  def processUserCreated(guid: UUID) {
     findByGuid(guid).foreach { user =>
       organizationsDao.findAllByEmailDomain(user.email).foreach { org =>
         membershipRequestsDao.upsert(user, org, user, Role.Member)

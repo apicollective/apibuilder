@@ -1,7 +1,7 @@
 package controllers
 
 import lib.Github
-import play.api.{Logger, Logging}
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.mvc._
@@ -13,7 +13,7 @@ class GithubController @javax.inject.Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   ws: WSClient,
   github: Github
-) extends ApibuilderController with Logging {
+) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -31,7 +31,7 @@ class GithubController @javax.inject.Inject() (
   ) = Anonymous.async { request =>
     getAccessToken(code).flatMap {
       case Left(ex) => Future.successful {
-        logger.error(s"Unable to process git hub login: ${ex.getMessage}", ex)
+        Logger.error(s"Unable to process git hub login: ${ex.getMessage}", ex)
         Redirect(
           routes.LoginController.index(return_url = Some(returnUrl))
         ).flashing("warning" -> s"GitHub login failed - please try again")
@@ -41,7 +41,7 @@ class GithubController @javax.inject.Inject() (
           Redirect(returnUrl).withSession { "session_id" -> auth.session.id }
         }.recover {
           case ex: Throwable => {
-            logger.error(s"Api failed to authenticate user with valid github token: ${ex.getMessage}", ex)
+            Logger.error(s"Api failed to authenticate user with valid github token: ${ex.getMessage}", ex)
             Redirect(
               routes.LoginController.index(return_url = Some(returnUrl))
             ).flashing("warning" -> s"GitHub login failed - please try again")

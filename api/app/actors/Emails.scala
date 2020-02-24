@@ -3,8 +3,9 @@ package actors
 import io.apibuilder.api.v0.models._
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import javax.inject.{Inject, Singleton}
+
 import lib._
-import play.api.{Logger, Logging}
+import play.api.Logger
 
 object Emails {
 
@@ -34,7 +35,7 @@ class Emails @Inject() (
   applicationsDao: ApplicationsDao,
   membershipsDao: MembershipsDao,
   subscriptionsDao: SubscriptionsDao
-) extends Logging {
+) {
 
   def deliver(
     context: Emails.Context,
@@ -44,7 +45,7 @@ class Emails @Inject() (
     body: String
   ) (
     implicit filter: Subscription => Boolean = { _ => true }
-  ): Unit = {
+  ) {
     eachSubscription(context, org, publication, { subscription =>
       email.sendHtml(
         to = Person(subscription.user),
@@ -59,7 +60,7 @@ class Emails @Inject() (
     organization: Organization,
     publication: Publication,
     f: Subscription => Unit
-  ): Unit = {
+  ) {
     Pager.eachPage[Subscription] { offset =>
       subscriptionsDao.findAll(
         Authorization.All,
@@ -70,10 +71,10 @@ class Emails @Inject() (
       )
     } { subscription =>
       if (isAuthorized(context, organization, subscription.user)) {
-        logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
+        Logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
         f(subscription)
       } else {
-        logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
+        Logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
       }
     }
   }
@@ -94,7 +95,7 @@ class Emails @Inject() (
             }
           }
           case Visibility.UNDEFINED(name) => {
-            logger.warn(s"Undefined visibility[$name] -- default behaviour assumes NOT AUTHORIZED")
+            Logger.warn(s"Undefined visibility[$name] -- default behaviour assumes NOT AUTHORIZED")
             false
           }
         }
@@ -111,7 +112,7 @@ class Emails @Inject() (
   def sendErrors(
     subject: String,
     errors: Seq[String]
-  ): Unit = {
+  ) {
     errors match {
       case Nil => {}
       case _ => {

@@ -1,9 +1,8 @@
 package lib
 
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class TokenGeneratorSpec extends PlaySpec with GuiceOneAppPerSuite {
+class TokenGeneratorSpec extends PlaySpec with OneAppPerSuite {
 
   "generates unique tokens" in {
     val tokens = (1 to 100).map { _ => TokenGenerator.generate() }

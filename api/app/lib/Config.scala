@@ -13,12 +13,10 @@ class Config @Inject() (
   configuration: Configuration
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass())
-
   def requiredString(name: String): String = {
     optionalString(name).getOrElse {
       val msg = s"configuration parameter[$name] is required"
-      logger.error(msg)
+      Logger.error(msg)
       sys.error(msg)
     }
   }
@@ -28,7 +26,7 @@ class Config @Inject() (
       value.trim match {
         case "" => {
           val msg = s"Value for configuration parameter[$name], if specified, cannot be blank"
-          logger.error(msg)
+          Logger.error(msg)
           sys.error(msg)
         }
         case v => v
