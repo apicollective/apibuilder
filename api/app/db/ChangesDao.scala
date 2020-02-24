@@ -60,7 +60,7 @@ class ChangesDao @Inject() (
     fromVersion: Version,
     toVersion: Version,
     differences: Seq[Diff]
-  ): Unit = {
+  ) {
     assert(
       fromVersion.guid != toVersion.guid,
       "Versions must be different"
@@ -83,15 +83,15 @@ class ChangesDao @Inject() (
         case (differenceType, description) => {
           Try(
             SQL(InsertQuery).on(
-              Symbol("guid") -> UUID.randomUUID,
-              Symbol("application_guid") -> fromVersion.application.guid,
-              Symbol("from_version_guid") -> fromVersion.guid,
-              Symbol("to_version_guid") -> toVersion.guid,
-              Symbol("type") -> differenceType,
-              Symbol("description") -> description,
-              Symbol("changed_at") -> toVersion.audit.createdAt,
-              Symbol("changed_by_guid") -> toVersion.audit.createdBy.guid,
-              Symbol("created_by_guid") -> createdBy.guid
+              'guid -> UUID.randomUUID,
+              'application_guid -> fromVersion.application.guid,
+              'from_version_guid -> fromVersion.guid,
+              'to_version_guid -> toVersion.guid,
+              'type -> differenceType,
+              'description -> description,
+              'changed_at -> toVersion.audit.createdAt,
+              'changed_by_guid -> toVersion.audit.createdBy.guid,
+              'created_by_guid -> createdBy.guid
             ).execute()
           ) match {
             case Success(_) => {}

@@ -1,12 +1,10 @@
 package db
 
+import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-
-class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class UsersDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   def createUserForm(
     email: String = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",

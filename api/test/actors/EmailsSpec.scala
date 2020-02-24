@@ -1,11 +1,10 @@
 package actors
 
-import io.apibuilder.api.v0.models.Visibility
 import lib.Role
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import io.apibuilder.api.v0.models.Visibility
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class EmailsSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class EmailsSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "isAuthorized" must {
 

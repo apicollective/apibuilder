@@ -1,9 +1,8 @@
 package lib
 
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class ServiceUriSpec extends PlaySpec with GuiceOneAppPerSuite {
+class ServiceUriSpec extends PlaySpec with OneAppPerSuite {
 
   "parse" must {
 

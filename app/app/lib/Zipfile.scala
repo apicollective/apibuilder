@@ -18,7 +18,7 @@ object Zipfile {
     zip: java.io.File,
     files: Seq[File],
     prefix: String
-  ): Unit = {
+  ) {
     val zipOutputStream = new ZipOutputStream(new FileOutputStream(zip))
     files.foreach { f =>
       val path = prefix + f.dir.fold("")(_ + "/")

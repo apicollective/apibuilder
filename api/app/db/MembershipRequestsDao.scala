@@ -61,11 +61,11 @@ class MembershipRequestsDao @Inject() (
     val guid = UUID.randomUUID
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("organization_guid") -> organization.guid,
-        Symbol("user_guid") -> user.guid,
-        Symbol("role") -> role.key,
-        Symbol("created_by_guid") -> createdBy.guid
+        'guid -> guid,
+        'organization_guid -> organization.guid,
+        'user_guid -> user.guid,
+        'role -> role.key,
+        'created_by_guid -> createdBy.guid
       ).execute()
     }
 
@@ -81,7 +81,7 @@ class MembershipRequestsDao @Inject() (
    * action logged, and the user added to the organization
    * in this role if not already in this role for this org.
    */
-  def accept(createdBy: User, request: MembershipRequest): Unit = {
+  def accept(createdBy: User, request: MembershipRequest) {
     assertUserCanReview(createdBy, request)
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
@@ -89,14 +89,14 @@ class MembershipRequestsDao @Inject() (
     doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
   }
 
-  private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String): Unit = {
+  private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
     doAccept(createdBy, request, s"$email joined as ${r.name} by verifying their email address")
   }
 
-  private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
+  private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
@@ -114,7 +114,7 @@ class MembershipRequestsDao @Inject() (
    * Declines this request. The request will be deleted and the
    * action logged.
    */
-  def decline(createdBy: User, request: MembershipRequest): Unit = {
+  def decline(createdBy: User, request: MembershipRequest) {
     assertUserCanReview(createdBy, request)
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
@@ -129,7 +129,7 @@ class MembershipRequestsDao @Inject() (
     mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
   }
 
-  private[this] def assertUserCanReview(user: User, request: MembershipRequest): Unit = {
+  private[this] def assertUserCanReview(user: User, request: MembershipRequest) {
     require(
       membershipsDao.isUserAdmin(user, request.organization),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"

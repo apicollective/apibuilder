@@ -1,9 +1,8 @@
 package util
 
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class SessionIdGeneratorSpec extends PlaySpec with GuiceOneAppPerSuite {
+class SessionIdGeneratorSpec extends PlaySpec with OneAppPerSuite {
 
   "starts with prefix" in {
     SessionIdGenerator.generate().startsWith("A51") must be (true)

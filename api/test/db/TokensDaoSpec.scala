@@ -1,10 +1,9 @@
 package db
 
 import io.apibuilder.api.v0.models.TokenForm
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class TokensDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class TokensDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
 
   "obfuscates token by default" in {
     val user = upsertUser()

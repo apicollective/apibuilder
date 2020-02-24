@@ -1,11 +1,10 @@
 package lib.query
 
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 
-class QuerySpec extends PlaySpec with GuiceOneAppPerSuite {
+class QuerySpec extends PlaySpec with OneAppPerSuite {
 
-  def validateQuery(q: String, words: Seq[String], orgKeys: Seq[String]): Unit = {
+  def validateQuery(q: String, words: Seq[String], orgKeys: Seq[String]) {
     QueryParser(q) match {
       case None => fail(s"Query[$q] failed to parse")
       case Some(query) => {

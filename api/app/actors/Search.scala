@@ -13,7 +13,7 @@ class Search @Inject() (
   organizationsDao: OrganizationsDao
 ) {
 
-  def indexApplication(applicationGuid: UUID): Unit = {
+  def indexApplication(applicationGuid: UUID) {
     getInfo(applicationGuid) match {
       case Some((org, app)) => {
         val content = s"""${app.name} ${app.key} ${app.description.getOrElse("")}""".trim.toLowerCase

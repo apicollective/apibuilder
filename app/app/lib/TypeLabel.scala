@@ -12,8 +12,6 @@ case class TypeLabel(
   typeName: String
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass())
-
   private[this] val localResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
     modelNames = service.models.map(_.name),
@@ -33,7 +31,7 @@ case class TypeLabel(
     case Some(t) => {
       t match {
         case TextDatatype.List | TextDatatype.Map => {
-          logger.error(s"Unexpected list or map type when resolving typeName[$typeName]")
+          Logger.error(s"Unexpected list or map type when resolving typeName[$typeName]")
           typeName
         }
         case TextDatatype.Singleton(name) => {

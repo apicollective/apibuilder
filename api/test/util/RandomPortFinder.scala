@@ -6,7 +6,7 @@ import java.net.{InetSocketAddress, Socket}
 object RandomPortFinder {
 
   def getRandomPort: Int = {
-    LazyList
+    Stream
       .continually(randomPort)
       .dropWhile(port => !checkIfPortIsFree("localhost", port))
       .head

@@ -18,9 +18,9 @@
           @helper.select(
               form("visibility"),
               Seq( ("" -> "-- select --") ) ++ io.apibuilder.api.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
-              Symbol("_label") -> "Visibility",
-              Symbol("_error") -> form.error("visibility"),
-              Symbol("_help") -> "Controls who is able to view this application."
+              '_label -> "Visibility",
+              '_error -> form.error("visibility"),
+              '_help -> "Controls who is able to view this application."
           )
 
       </fieldset>
