@@ -1,9 +1,10 @@
 package lib
 
 import io.apibuilder.api.v0.models.{Original, OriginalForm, OriginalType}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class OriginalHelpersSpec extends PlaySpec with OneAppPerSuite with TestHelper {
+class OriginalHelpersSpec extends PlaySpec with GuiceOneAppPerSuite with TestHelper {
 
   "original" in {
     val data = readFile("../spec/apibuilder-api.json")

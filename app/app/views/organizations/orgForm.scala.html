@@ -9,31 +9,31 @@
     <fieldset>
         @helper.inputText(
             form("name"),
-            '_label -> "Organization Name",
-            '_help -> "Your organization's name will be used to group your services together.",
-            '_error -> form.error("name")
+            Symbol("_label") -> "Organization Name",
+            Symbol("_help") -> "Your organization's name will be used to group your services together.",
+            Symbol("_error") -> form.error("name")
         )
 
         @helper.inputText(
             form("key"),
-            '_label -> "Key",
-            '_help -> "This is the unique URL key that will be used to idenfity your organization. By default, we will generate a unique key based on your organization's name. If you want a specific key to identify your org, enter one here.",
-            '_error -> form.error("key")
+            Symbol("_label") -> "Key",
+            Symbol("_help") -> "This is the unique URL key that will be used to idenfity your organization. By default, we will generate a unique key based on your organization's name. If you want a specific key to identify your org, enter one here.",
+            Symbol("_error") -> form.error("key")
         )
 
         @helper.select(
             form("visibility"),
             Seq( ("" -> "-- select --") ) ++ io.apibuilder.api.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
-            '_label -> "Visibility",
-            '_error -> form.error("visibility"),
-            '_help -> "Determines whether or not this organization shows up in the public directory."
+            Symbol("_label") -> "Visibility",
+            Symbol("_error") -> form.error("visibility"),
+            Symbol("_help") -> "Determines whether or not this organization shows up in the public directory."
         )
 
         @helper.inputText(
             form("namespace"),
-            '_label -> "Namespace",
-            '_error -> form.error("namespace"),
-            '_help -> "The namespace must be globally unique. It is used to identify your services. JVM based clients use the namespace as a prefix for the package name. For example, a namepsace of 'io.apicollective' would result in a class named 'io.collective.v1.models.User'. Namespaces are also required when importing service definitions."
+            Symbol("_label") -> "Namespace",
+            Symbol("_error") -> form.error("namespace"),
+            Symbol("_help") -> "The namespace must be globally unique. It is used to identify your services. JVM based clients use the namespace as a prefix for the package name. For example, a namepsace of 'io.apicollective' would result in a class named 'io.collective.v1.models.User'. Namespaces are also required when importing service definitions."
         )
 
     </fieldset>

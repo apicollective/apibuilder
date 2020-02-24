@@ -1,12 +1,12 @@
 package lib
 
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
-import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
+import io.apibuilder.api.v0.models.{DiffBreaking, DiffNonBreaking}
 import io.apibuilder.spec.v0.models._
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.libs.json.{JsObject, Json}
 
-class ServiceDiffSpec  extends PlaySpec with OneAppPerSuite with db.Helpers with TestHelper {
+class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with TestHelper {
 
   private lazy val service = readService("../spec/apibuilder-spec.json")
 

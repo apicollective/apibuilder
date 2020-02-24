@@ -1,8 +1,9 @@
 package util
 
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class UserAgentSpec extends PlaySpec with OneAppPerSuite {
+class UserAgentSpec extends PlaySpec with GuiceOneAppPerSuite {
 
   private[this] val userAgent = app.injector.instanceOf[UserAgent]
 

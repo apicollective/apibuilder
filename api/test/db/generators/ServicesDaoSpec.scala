@@ -1,10 +1,12 @@
 package db.generators
 
-import db.Authorization
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class ServicesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
+import db.Authorization
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
 
   "validate" in {
     val form = createGeneratorServiceForm()

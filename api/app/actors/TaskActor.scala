@@ -43,9 +43,9 @@ class TaskActor @javax.inject.Inject() (
   private[this] val NumberDaysBeforePurge = 30
   private[this] case class Process(guid: UUID)
 
-  system.scheduler.schedule(1.hour, 1.hour, self, TaskActor.Messages.RestartDroppedTasks)
-  system.scheduler.schedule(1.day, 1.day, self, TaskActor.Messages.NotifyFailed)
-  system.scheduler.schedule(1.day, 1.day, self, TaskActor.Messages.PurgeOldTasks)
+  system.scheduler.scheduleAtFixedRate(1.hour, 1.hour, self, TaskActor.Messages.RestartDroppedTasks)
+  system.scheduler.scheduleAtFixedRate(1.day, 1.day, self, TaskActor.Messages.NotifyFailed)
+  system.scheduler.scheduleAtFixedRate(1.day, 1.day, self, TaskActor.Messages.PurgeOldTasks)
   
   def receive = {
 
@@ -139,7 +139,7 @@ class TaskActor @javax.inject.Inject() (
   private[this] def versionUpdated(
     version: Version,
     diffs: Seq[Diff]
-  ) {
+  ): Unit = {
     // Only send email if something has actually changed
     if (diffs.nonEmpty) {
       val breakingDiffs = diffs.flatMap { d =>
@@ -186,7 +186,7 @@ class TaskActor @javax.inject.Inject() (
     }
   }
 
-  def processTask[T](task: Task, attempt: Try[T]) {
+  def processTask[T](task: Task, attempt: Try[T]): Unit = {
     attempt match {
       case Success(_) => {
         tasksDao.softDelete(usersDao.AdminUser, task)

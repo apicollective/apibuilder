@@ -1,7 +1,6 @@
 package me.apidoc.swagger
 
-import scala.collection.JavaConversions._
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.io.File
@@ -12,6 +11,8 @@ import io.apibuilder.spec.v0.models.Attribute
 import io.swagger.{models => swaggermodels}
 import io.swagger.models.{parameters => swaggerparams, properties => swaggerproperties}
 import play.api.libs.json._
+
+import scala.collection.immutable.ListMap
 
 object Util {
 
@@ -88,7 +89,7 @@ object Util {
     if (values == null) {
       Map()
     } else {
-      values.asScala.toMap
+      values.asScala.to(ListMap)
     }
   }
 
@@ -99,7 +100,7 @@ object Util {
     if (values == null) {
       Nil
     } else {
-      values.asScala
+      values.asScala.toSeq
     }
   }
 
@@ -151,7 +152,7 @@ object Util {
   }
 
   def retrieveMethod(operation: swaggermodels.Operation, path: swaggermodels.Path): Option[swaggermodels.HttpMethod] =
-    path.getOperationMap().find(_._2 == operation).map(_._1)
+    path.getOperationMap.asScala.find(_._2 == operation).map(_._1)
 
   /*
    * Converts the AnyRef from a Swagger parsed document into a JsValue

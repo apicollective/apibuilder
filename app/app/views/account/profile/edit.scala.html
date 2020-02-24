@@ -15,20 +15,20 @@
       <fieldset>
           @helper.inputText(
               form("email"),
-              '_label -> "Email address",
-              '_error -> form.error("email")
+              Symbol("_label") -> "Email address",
+              Symbol("_error") -> form.error("email")
           )
 
           @helper.inputText(
               form("nickname"),
-              '_label -> "Nickname",
-              '_error -> form.error("nickname")
+              Symbol("_label") -> "Nickname",
+              Symbol("_error") -> form.error("nickname")
           )
 
           @helper.inputText(
               form("name"),
-              '_label -> "Name",
-              '_error -> form.error("name")
+              Symbol("_label") -> "Name",
+              Symbol("_error") -> form.error("name")
           )
 
       </fieldset>

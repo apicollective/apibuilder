@@ -18,6 +18,8 @@ class LoginController @Inject() (
   util: Util
 ) extends ApibuilderController {
 
+  private[this] val logger: Logger = Logger(this.getClass())
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] val DevSessionId = "dev"
@@ -69,7 +71,7 @@ class LoginController @Inject() (
           case Some(u) => {
             util.validateReturnUrl(u) match {
               case Left(errors) => {
-                Logger.warn(s"[LoginController] Invalid redirect url[$u] Ignoring and redirecting to '/': $errors")
+                logger.warn(s"[LoginController] Invalid redirect url[$u] Ignoring and redirecting to '/': $errors")
                 "/"
               }
               case Right(validUrl) => {

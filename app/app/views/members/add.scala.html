@@ -17,21 +17,21 @@
 
           @helper.inputText(
               addForm("email"),
-              '_label -> "Email address",
-              '_error -> addForm.error("email")
+              Symbol("_label") -> "Email address",
+              Symbol("_error") -> addForm.error("email")
           )
 
           @helper.inputText(
               addForm("nickname"),
-              '_label -> "Or nickname",
-              '_error -> addForm.error("nickname")
+              Symbol("_label") -> "Or nickname",
+              Symbol("_error") -> addForm.error("nickname")
           )
 
           @select(
               addForm("role"),
               options = lib.Role.All.map( r => (r.key, r.name) ),
-              '_label -> "Role",
-              '_error -> addForm("role")
+              Symbol("_label") -> "Role",
+              Symbol("_error") -> addForm("role")
           )
 
       </fieldset>

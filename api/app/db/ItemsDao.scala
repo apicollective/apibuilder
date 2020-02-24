@@ -55,7 +55,7 @@ class ItemsDao @Inject() (
     label: String,
     description: Option[String],
     content: String
-  ) {
+  ): Unit = {
     val organizationGuid = detail match {
       case ApplicationSummary(_, org, _) => Some(org.guid)
       case ItemDetailUndefinedType(_) => sys.error(s"Could not determine organization guid from detail: $detail")
@@ -70,25 +70,25 @@ class ItemsDao @Inject() (
       delete(c, guid)
 
       SQL(UpsertQuery).on(
-        'guid -> guid,
-        'organization_guid -> organizationGuid,
-        'application_guid -> applicationGuid,
-        'detail -> Json.toJson(detail).toString,
-        'label -> label.trim,
-        'description -> description.map(_.trim).map(Text.truncate(_)),
-	'content -> content.trim.toLowerCase
+        Symbol("guid") -> guid,
+        Symbol("organization_guid") -> organizationGuid,
+        Symbol("application_guid") -> applicationGuid,
+        Symbol("detail") -> Json.toJson(detail).toString,
+        Symbol("label") -> label.trim,
+        Symbol("description") -> description.map(_.trim).map(Text.truncate(_)),
+	Symbol("content") -> content.trim.toLowerCase
       ).execute()
     }
   }
 
-  def delete(guid: UUID) {
+  def delete(guid: UUID): Unit = {
     db.withConnection { implicit c =>
       delete(c, guid)
     }
   }
   
-  private[this] def delete(implicit c: java.sql.Connection, guid: UUID) {
-    SQL(DeleteQuery).on('guid -> guid).execute()
+  private[this] def delete(implicit c: java.sql.Connection, guid: UUID): Unit = {
+    SQL(DeleteQuery).on(Symbol("guid") -> guid).execute()
   }
 
   def findByGuid(

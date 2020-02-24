@@ -1,8 +1,9 @@
 package lib
 
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class UtilSpec extends PlaySpec with OneAppPerSuite {
+class UtilSpec extends PlaySpec with GuiceOneAppPerSuite {
 
   private[this] lazy val util = app.injector.instanceOf[Util]
   

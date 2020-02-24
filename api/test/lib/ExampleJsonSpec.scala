@@ -2,11 +2,12 @@ package lib
 
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsNull, JsNumber, JsString, Json}
 
 class ExampleJsonSpec  extends PlaySpec
-  with OneAppPerSuite
+  with GuiceOneAppPerSuite
   with db.Helpers
   with TestHelper
 {
