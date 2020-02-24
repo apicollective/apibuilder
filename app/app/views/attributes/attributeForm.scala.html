@@ -5,17 +5,17 @@
 <fieldset>
     @helper.inputText(
         form("name"),
-        '_label -> "Attribute Name",
-        '_help -> "URL friendly, globally unique attribute name.",
-        '_error -> form.error("name")
+        Symbol("_label") -> "Attribute Name",
+        Symbol("_help") -> "URL friendly, globally unique attribute name.",
+        Symbol("_error") -> form.error("name")
     )
 
     @helper.textarea(
         form("description"),
-        'cols -> 50,
-        'rows -> 5,
-        '_label -> "Description",
-        '_error -> form.error("description")
+        Symbol("cols") -> 50,
+        Symbol("rows") -> 5,
+        Symbol("_label") -> "Description",
+        Symbol("_error") -> form.error("description")
     )
 </fieldset>
 

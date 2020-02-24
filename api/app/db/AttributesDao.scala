@@ -63,10 +63,10 @@ class AttributesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> guid,
-        'name -> form.name.trim,
-        'description -> form.description.map(_.trim),
-        'user_guid -> user.guid
+        Symbol("guid") -> guid,
+        Symbol("name") -> form.name.trim,
+        Symbol("description") -> form.description.map(_.trim),
+        Symbol("user_guid") -> user.guid
       ).execute()
     }
 
@@ -75,7 +75,7 @@ class AttributesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, attributes: Attribute) {
+  def softDelete(deletedBy: User, attributes: Attribute): Unit = {
     dbHelpers.delete(deletedBy.guid, attributes.guid)
   }
 

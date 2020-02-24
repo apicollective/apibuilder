@@ -1,10 +1,12 @@
 package actors
 
-import db.Authorization
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class SearchSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+import db.Authorization
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   "indexApplication" must {
 

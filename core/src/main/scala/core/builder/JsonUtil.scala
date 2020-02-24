@@ -91,14 +91,14 @@ object JsonUtil {
     } ++
     arrayOfObjects.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
+        case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value.toSeq)
         case Some(_) => Some(withPrefix(prefix, s"$field must be an array"))
         case None => Some(withPrefix(prefix, s"Missing $field"))
       }
     } ++
     optionalArraysOfObjects.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
+        case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value.toSeq)
         case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be an array"))
         case None => None
       }
@@ -174,7 +174,7 @@ object JsonUtil {
   def asSeqOfString(value: JsValue): Seq[String] = {
     value match {
       case JsNull => Nil
-      case a: JsArray => a.value.flatMap(v=> asOptString(v))
+      case a: JsArray => a.value.flatMap(v=> asOptString(v)).toSeq
       case JsString(text) => parseString(text).toSeq
       case v => parseString(v.toString()).toSeq
     }

@@ -27,11 +27,11 @@ case class DbHelpers(
          and deleted_at is null
   """)
 
-  def delete(user: User, guid: UUID) {
+  def delete(user: User, guid: UUID): Unit = {
     delete(user.guid, guid)
   }
 
-  def delete(deletedBy: UUID, guid: UUID) {
+  def delete(deletedBy: UUID, guid: UUID): Unit = {
     db.withConnection { implicit c =>
       delete(c, deletedBy, guid)
     }
@@ -41,18 +41,18 @@ case class DbHelpers(
     implicit c: java.sql.Connection,
     deletedBy: UUID,
     guid: UUID
-  ) {
+  ): Unit = {
     softDeleteQueryByGuid.
       bind("deleted_by_guid", deletedBy).
       bind("guid", guid).
       anormSql().execute()
   }
 
-  def delete(user: User, id: String) {
+  def delete(user: User, id: String): Unit = {
     delete(user.guid, id)
   }
 
-  def delete(deletedBy: UUID, id: String) {
+  def delete(deletedBy: UUID, id: String): Unit = {
     db.withConnection { implicit c =>
       delete(c, deletedBy, id)
     }
@@ -62,7 +62,7 @@ case class DbHelpers(
     implicit c: java.sql.Connection,
     deletedBy: UUID,
     id: String
-  ) {
+  ): Unit = {
     softDeleteQueryById.
       bind("deleted_by_guid", deletedBy).
       bind("id", id).

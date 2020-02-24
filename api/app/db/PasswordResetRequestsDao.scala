@@ -50,11 +50,11 @@ class PasswordResetRequestsDao @Inject() (
     val guid = UUID.randomUUID
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> guid,
-        'user_guid -> user.guid,
-        'token -> TokenGenerator.generate(TokenLength),
-        'expires_at -> DateTime.now.plusHours(HoursUntilTokenExpires),
-        'created_by_guid -> createdBy.getOrElse(user).guid
+        Symbol("guid") -> guid,
+        Symbol("user_guid") -> user.guid,
+        Symbol("token") -> TokenGenerator.generate(TokenLength),
+        Symbol("expires_at") -> DateTime.now.plusHours(HoursUntilTokenExpires),
+        Symbol("created_by_guid") -> createdBy.getOrElse(user).guid
       ).execute()
     }
 
@@ -85,7 +85,7 @@ class PasswordResetRequestsDao @Inject() (
     softDelete(updatingUser, pr)
   }
 
-  def softDelete(deletedBy: User, pr: PasswordReset) {
+  def softDelete(deletedBy: User, pr: PasswordReset): Unit =  {
     dbHelpers.delete(deletedBy, pr.guid)
   }
 

@@ -120,17 +120,17 @@ class GeneratorsDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'service_guid -> form.serviceGuid,
-      'key -> form.generator.key.trim,
-      'name -> form.generator.name.trim,
-      'description -> form.generator.description.map(_.trim),
-      'language -> form.generator.language.map(_.trim),
-      'attributes -> Json.toJson(
+      Symbol("guid") -> guid,
+      Symbol("service_guid") -> form.serviceGuid,
+      Symbol("key") -> form.generator.key.trim,
+      Symbol("name") -> form.generator.name.trim,
+      Symbol("description") -> form.generator.description.map(_.trim),
+      Symbol("language") -> form.generator.language.map(_.trim),
+      Symbol("attributes") -> Json.toJson(
         form.generator.attributes.map(_.trim).flatMap(optionIfEmpty)
       ).toString,
-      'created_by_guid -> user.guid,
-      'updated_by_guid -> user.guid
+      Symbol("created_by_guid") -> user.guid,
+      Symbol("updated_by_guid") -> user.guid
     ).execute()
 
     guid
@@ -143,17 +143,17 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, gws: GeneratorWithService) {
+  def softDelete(deletedBy: User, gws: GeneratorWithService): Unit = {
     db.withConnection { implicit c =>
       softDelete(c, deletedBy, gws.service.guid, gws.generator.key)
     }
   }
 
-  private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String) {
+  private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String): Unit = {
     SQL(SoftDeleteByKeyQuery).on(
-      'deleted_by_guid -> deletedBy.guid,
-      'service_guid -> serviceGuid,
-      'key -> generatorKey
+      Symbol("deleted_by_guid") -> deletedBy.guid,
+      Symbol("service_guid") -> serviceGuid,
+      Symbol("key") -> generatorKey
     ).execute()
   }
 

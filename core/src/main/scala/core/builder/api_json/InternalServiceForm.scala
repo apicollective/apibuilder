@@ -33,7 +33,7 @@ private[api_json] case class InternalServiceForm(
       case None => Seq.empty
       case Some(values) => {
         values.value.flatMap { _.asOpt[JsObject].map { InternalImportForm(_) } }
-      }
+      }.toSeq
     }
   }
 
@@ -45,7 +45,7 @@ private[api_json] case class InternalServiceForm(
             case(k, value) => value.asOpt[JsObject].map(InternalUnionForm(internalDatatypeBuilder, k, _))
           }
         }
-      }
+      }.toSeq
       case _ => Seq.empty
     }
   }
@@ -62,7 +62,7 @@ private[api_json] case class InternalServiceForm(
             case(k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
           }
         }
-      }
+      }.toSeq
       case _ => Seq.empty
     }
   }
@@ -79,7 +79,7 @@ private[api_json] case class InternalServiceForm(
             case(k, value) => value.asOpt[JsObject].map(InternalEnumForm(k, _))
           }
         }
-      }
+      }.toSeq
       case _ => Seq.empty
     }
   }
@@ -90,7 +90,7 @@ private[api_json] case class InternalServiceForm(
         anno.fields.flatMap {
           case(k, value) => value.asOpt[JsObject].map(InternalAnnotationForm(k, _))
         }
-      }
+      }.toSeq
       case _ => Seq.empty
     }
   }
@@ -111,7 +111,7 @@ private[api_json] case class InternalServiceForm(
             }
           }
         }
-      }
+      }.toSeq
 
       case _ => Seq.empty
     }
@@ -409,7 +409,7 @@ object InternalUnionForm {
       discriminator = JsonUtil.asOptString(value \ "discriminator"),
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
-      types = types,
+      types = types.toSeq,
       attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
@@ -462,7 +462,7 @@ object InternalModelForm {
       plural = plural,
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
-      fields = fields,
+      fields = fields.toSeq,
       attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
@@ -512,7 +512,7 @@ object InternalEnumForm {
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
-      values = values,
+      values = values.toSeq,
       attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
@@ -564,7 +564,7 @@ object InternalHeaderForm {
         case _ => None
       }
     }
-  }
+  }.toSeq
 }
 
 object InternalResourceForm {
@@ -613,7 +613,7 @@ object InternalResourceForm {
       description = JsonUtil.asOptString(value \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(value),
       path = path,
-      operations = operations,
+      operations = operations.toSeq,
       attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
@@ -665,7 +665,7 @@ object InternalOperationForm {
               }
             }
           }
-        }
+        }.toSeq
       }
     }
 
@@ -693,7 +693,7 @@ object InternalOperationForm {
       deprecation = InternalDeprecationForm.fromJsValue(json),
       responses = responses,
       namedPathParameters = namedPathParameters,
-      parameters = parameters,
+      parameters = parameters.toSeq,
       attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         json,
@@ -794,7 +794,7 @@ object InternalAttributeForm {
     case None => Seq.empty
     case Some(a: JsArray) => {
       a.value.flatMap { _.asOpt[JsObject].map(InternalAttributeForm(_)) }
-    }
+    }.toSeq
   }
 
 }

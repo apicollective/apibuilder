@@ -1,12 +1,14 @@
 package db
 
-import lib.Role
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OriginalType, Visibility}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
+
+import io.apibuilder.api.v0.models._
+import lib.Role
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 
-class ApplicationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,

@@ -11,8 +11,8 @@
       <fieldset>
         @helper.inputText(
             form("org_key"),
-            '_label -> "New Organization Key",
-            '_error -> form.error("org_key")
+            Symbol("_label") -> "New Organization Key",
+            Symbol("_error") -> form.error("org_key")
         )
       </fieldset>
 

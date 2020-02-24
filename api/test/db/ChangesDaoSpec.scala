@@ -1,10 +1,12 @@
 package db
 
-import io.apibuilder.api.v0.models.{Application, Change, DiffBreaking, DiffNonBreaking, Organization, Version}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class ChangesDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+import io.apibuilder.api.v0.models._
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private[this] def getApplication(version: Version): Application = {
     applicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {

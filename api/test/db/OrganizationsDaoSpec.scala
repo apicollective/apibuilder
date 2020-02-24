@@ -1,10 +1,12 @@
 package db
 
-import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
 import java.util.UUID
 
-class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   "create" in {
     gilt.name must be("Gilt Test Org")
