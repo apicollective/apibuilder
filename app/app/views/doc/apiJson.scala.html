@@ -23,7 +23,7 @@
       "unions": <em>JSON Object of <a href="#union">Union</a> (optional)</em>,
       "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>,
       "attributes": <em>JSON Array of <a href="#attribute">Attribute</a></em> (optional),
-      "annotations": <em>JSON Array of <a href="#annotation">Annotation</a></em> (optional)
+      "annotations": <em>JSON Object of <a href="#annotation">Annotation</a></em> (optional)
     }
     </pre>
 
@@ -586,10 +586,11 @@
   </p>
 
   <pre>
-  {
-    "name": <em>string</em>,
-    "description": <em>string (optional)</em>,
-    "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+  "annotations": {
+    "personal_data": {
+      "description": "Identifies a field that contains Personal Data, as defined by GDPR.",
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+    }
   }
   </pre>
 
