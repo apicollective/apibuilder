@@ -74,7 +74,7 @@ lazy val api = project
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
-    resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release",
+    resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release",
     libraryDependencies ++= Seq(
       filters,
       guice,
