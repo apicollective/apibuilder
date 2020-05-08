@@ -1,6 +1,7 @@
 package core
 
-import io.apibuilder.api.json.v0.models.{Interface, Model, ApiJson}
+import io.apibuilder.api.json.v0.models.{ApiJson, Interface, Model}
+import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
 
 class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
@@ -22,12 +23,9 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     interfaces = Some(Seq(person)),
   )
 
-  private[this] val apiJson = makeApiJson(
-    interfaces = Map("person" -> person),
-    models = Map("user" -> user, "guest" -> guest),
-  )
-
-  private[this] lazy val service = expectValid(apiJson)
+  private[this] def model(service: spec.Service, name: String): spec.Model = service.models.find(_.name == name).getOrElse {
+    sys.error(s"Cannot find model: $name")
+  }
 
   private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
     TestHelper.serviceValidator(apiJson).errors()
@@ -60,27 +58,31 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   it("models inherit fields") {
-    def model(name: String) = service.models.find(_.name == name).getOrElse {
-      sys.error(s"Cannot find model: $name")
-    }
-    model("user").fields.map(_.name) should equal(
+    val service = expectValid(
+      makeApiJson(
+        interfaces = Map("person" -> person),
+        models = Map("user" -> user, "guest" -> guest),
+      )
+    )
+
+    model(service, "user").fields.map(_.name) should equal(
       Seq("id", "name")
     )
-    model("guest").fields.map(_.name) should equal(
+    model(service, "guest").fields.map(_.name) should equal(
       Seq("name")
     )
   }
 
   it("model can override description") {
-    def model(name: String) = service.models.find(_.name == name).getOrElse {
-      sys.error(s"Cannot find model: $name")
-    }
-    model("user").fields.map(_.name) should equal(
-      Seq("id", "name")
+    val service = expectValid(
+      makeApiJson(
+        interfaces = Map("person" -> person.copy(description = Some("foo"))),
+        models = Map("user" -> user.copy(description = Some("bar")), "guest" -> guest),
+      )
     )
-    model("guest").fields.map(_.name) should equal(
-      Seq("name")
-    )
+
+    model(service, "user").description should equal(Some("bar"))
+    model(service, "guest").description should equal(Some("foo"))
   }
 
 }
