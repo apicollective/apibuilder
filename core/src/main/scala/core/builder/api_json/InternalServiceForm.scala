@@ -14,9 +14,9 @@ import play.api.libs.json._
  */
 private[api_json] case class InternalServiceForm(
   json: JsValue,
-  fetcher: ServiceFetcher
+  fetcher: ServiceFetcher,
 ) {
-  val internalDatatypeBuilder = InternalDatatypeBuilder()
+  val internalDatatypeBuilder: InternalDatatypeBuilder = InternalDatatypeBuilder()
 
   lazy val apidoc: Option[InternalApidocForm] = (json \ "apidoc").asOpt[JsValue].map { InternalApidocForm(_) }
   lazy val name: Option[String] = JsonUtil.asOptString(json \ "name")

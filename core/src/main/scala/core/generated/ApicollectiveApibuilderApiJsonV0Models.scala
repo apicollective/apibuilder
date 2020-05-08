@@ -81,7 +81,7 @@ package io.apibuilder.api.json.v0.models {
     minimum: _root_.scala.Option[Long] = None,
     maximum: _root_.scala.Option[Long] = None,
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
-    annotations: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Annotation]] = None,
+    annotations: _root_.scala.Option[Seq[String]] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
   )
 
@@ -601,7 +601,7 @@ package io.apibuilder.api.json.v0.models {
         minimum <- (__ \ "minimum").readNullable[Long]
         maximum <- (__ \ "maximum").readNullable[Long]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
-        annotations <- (__ \ "annotations").readNullable[Seq[io.apibuilder.api.json.v0.models.Annotation]]
+        annotations <- (__ \ "annotations").readNullable[Seq[String]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
       } yield Field(name, `type`, description, required, default, example, minimum, maximum, attributes, annotations, deprecation)
     }
