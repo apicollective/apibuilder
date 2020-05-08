@@ -40,8 +40,8 @@
         { "name": "unions", "type": "map[union]", "default": "{}", "required": false },
         { "name": "models", "type": "map[model]", "default": "{}", "required": false },
         { "name": "resources", "type": "map[resource]", "default": "{}", "required": false },
-        { "name": "attributes", "type": "[attribute]", "default": "[]", "required": false },
-        { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false}
+        { "name": "annotations", "type": "map[annotation]", "default": "{}", "required": false},
+        { "name": "attributes", "type": "[attribute]", "default": "[]", "required": false }
       ]
     },
 
@@ -82,7 +82,7 @@
         { "name": "fields", "type": "[field]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "interfaces", "type": "[interface]", "required": false },
-        { "name": "deprecation", "type": "deprecation", "required": false }        
+        { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
 
@@ -109,7 +109,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "operations", "type": "[operation]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "deprecation", "type": "deprecation", "required": false }        
+        { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
 
@@ -131,7 +131,7 @@
         { "name": "type", "type": "string" },
         { "name": "description", "type": "string", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "deprecation", "type": "deprecation", "required": false }        
+        { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
 
@@ -158,7 +158,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "values", "type": "[enum_value]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "deprecation", "type": "deprecation", "required": false }        
+        { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
 
@@ -201,7 +201,7 @@
         { "name": "default", "type": "boolean", "default": false },
         { "name": "discriminator_value", "type": "string", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "deprecation", "type": "deprecation", "required": false }        
+        { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
 
@@ -241,7 +241,6 @@
 
     "annotation": {
       "fields": [
-        { "name": "name", "type": "string" },
         { "name": "description", "type": "string", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]

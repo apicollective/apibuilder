@@ -134,7 +134,7 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace"),
       optionalArraysOfObjects = Seq("imports", "headers", "attributes"),
-      optionalObjects = Seq("apidoc", "info", "enums", "models", "unions", "resources", "annotations")
+      optionalObjects = Seq("apidoc", "info", "enums", "interfaces", "models", "unions", "resources", "annotations")
     )
   }
 

@@ -6,7 +6,6 @@
 package io.apibuilder.api.json.v0.models {
 
   final case class Annotation(
-    name: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
   )
@@ -25,8 +24,8 @@ package io.apibuilder.api.json.v0.models {
     unions: Map[String, io.apibuilder.api.json.v0.models.Union] = Map.empty,
     models: Map[String, io.apibuilder.api.json.v0.models.Model] = Map.empty,
     resources: Map[String, io.apibuilder.api.json.v0.models.Resource] = Map.empty,
-    attributes: Seq[io.apibuilder.api.json.v0.models.Attribute] = Nil,
-    annotations: Seq[io.apibuilder.api.json.v0.models.Annotation] = Nil
+    annotations: Map[String, io.apibuilder.api.json.v0.models.Annotation] = Map.empty,
+    attributes: Seq[io.apibuilder.api.json.v0.models.Attribute] = Nil
   )
 
   final case class Apidoc(
@@ -299,16 +298,13 @@ package io.apibuilder.api.json.v0.models {
 
     implicit def jsonReadsApibuilderApiJsonAnnotation: play.api.libs.json.Reads[Annotation] = {
       for {
-        name <- (__ \ "name").read[String]
         description <- (__ \ "description").readNullable[String]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
-      } yield Annotation(name, description, deprecation)
+      } yield Annotation(description, deprecation)
     }
 
     def jsObjectAnnotation(obj: io.apibuilder.api.json.v0.models.Annotation): play.api.libs.json.JsObject = {
-      play.api.libs.json.Json.obj(
-        "name" -> play.api.libs.json.JsString(obj.name)
-      ) ++ (obj.description match {
+      (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
       }) ++
@@ -341,9 +337,9 @@ package io.apibuilder.api.json.v0.models {
         unions <- (__ \ "unions").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Union]](Map.empty)
         models <- (__ \ "models").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Model]](Map.empty)
         resources <- (__ \ "resources").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Resource]](Map.empty)
+        annotations <- (__ \ "annotations").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Annotation]](Map.empty)
         attributes <- (__ \ "attributes").readWithDefault[Seq[io.apibuilder.api.json.v0.models.Attribute]](Nil)
-        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.api.json.v0.models.Annotation]](Nil)
-      } yield ApiJson(name, apidoc, info, namespace, baseUrl, description, imports, headers, enums, interfaces, unions, models, resources, attributes, annotations)
+      } yield ApiJson(name, apidoc, info, namespace, baseUrl, description, imports, headers, enums, interfaces, unions, models, resources, annotations, attributes)
     }
 
     def jsObjectApiJson(obj: io.apibuilder.api.json.v0.models.ApiJson): play.api.libs.json.JsObject = {
@@ -356,8 +352,8 @@ package io.apibuilder.api.json.v0.models {
         "unions" -> play.api.libs.json.Json.toJson(obj.unions),
         "models" -> play.api.libs.json.Json.toJson(obj.models),
         "resources" -> play.api.libs.json.Json.toJson(obj.resources),
-        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes),
-        "annotations" -> play.api.libs.json.Json.toJson(obj.annotations)
+        "annotations" -> play.api.libs.json.Json.toJson(obj.annotations),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.apidoc match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("apidoc" -> jsObjectApidoc(x))

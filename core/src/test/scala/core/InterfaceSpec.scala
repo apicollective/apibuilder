@@ -1,8 +1,10 @@
 package core
 
 import io.apibuilder.api.json.v0.models.{ApiJson, Interface, Model}
+import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
+import play.api.libs.json.Json
 
 class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
@@ -40,6 +42,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   it("validates that interfaces specified refer to a known interface") {
+    println(Json.toJson(makeApiJson(models = Map("user" -> user))))
     expectErrors(
       makeApiJson(models = Map("user" -> user))
     ) should be(
