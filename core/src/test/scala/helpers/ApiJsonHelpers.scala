@@ -5,8 +5,9 @@ import io.apibuilder.api.json.v0.models._
 
 trait ApiJsonHelpers {
 
-  def randomString(): String = {
-    UUID.randomUUID.toString
+  // random string that will start with a letter as we expect valid identifiers
+  private[this] def randomString(): String = {
+    "a" + UUID.randomUUID.toString
   }
 
   def makeInterface(
@@ -31,7 +32,7 @@ trait ApiJsonHelpers {
 
   def makeModel(
     fields: Seq[Field] = Nil,
-    interfaces: Option[Seq[Interface]] = None,
+    interfaces: Option[Seq[String]] = None,
   ): Model = {
     Model(
       fields = fields,

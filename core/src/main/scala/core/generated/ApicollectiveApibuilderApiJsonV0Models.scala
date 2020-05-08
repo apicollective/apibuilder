@@ -123,7 +123,7 @@ package io.apibuilder.api.json.v0.models {
     plural: _root_.scala.Option[String] = None,
     fields: Seq[io.apibuilder.api.json.v0.models.Field],
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
-    interfaces: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Interface]] = None,
+    interfaces: _root_.scala.Option[Seq[String]] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
   )
 
@@ -174,7 +174,7 @@ package io.apibuilder.api.json.v0.models {
     description: _root_.scala.Option[String] = None,
     types: Seq[io.apibuilder.api.json.v0.models.UnionType],
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
-    interfaces: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Interface]] = None,
+    interfaces: _root_.scala.Option[Seq[String]] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
   )
 
@@ -802,7 +802,7 @@ package io.apibuilder.api.json.v0.models {
         plural <- (__ \ "plural").readNullable[String]
         fields <- (__ \ "fields").read[Seq[io.apibuilder.api.json.v0.models.Field]]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
-        interfaces <- (__ \ "interfaces").readNullable[Seq[io.apibuilder.api.json.v0.models.Interface]]
+        interfaces <- (__ \ "interfaces").readNullable[Seq[String]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
       } yield Model(description, plural, fields, attributes, interfaces, deprecation)
     }
@@ -1036,7 +1036,7 @@ package io.apibuilder.api.json.v0.models {
         description <- (__ \ "description").readNullable[String]
         types <- (__ \ "types").read[Seq[io.apibuilder.api.json.v0.models.UnionType]]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
-        interfaces <- (__ \ "interfaces").readNullable[Seq[io.apibuilder.api.json.v0.models.Interface]]
+        interfaces <- (__ \ "interfaces").readNullable[Seq[String]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
       } yield Union(plural, discriminator, description, types, attributes, interfaces, deprecation)
     }

@@ -15,14 +15,17 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   )
 
   private[this] val user: Model = makeModel(
-    interfaces = Some(Seq(person)),
+    interfaces = Some(Seq("person")),
     fields = Seq(
       makeField(name = "id")
     )
   )
 
   private[this] val guest: Model = makeModel(
-    interfaces = Some(Seq(person)),
+    interfaces = Some(Seq("person")),
+    fields = Seq(
+      makeField(name = "age")
+    )
   )
 
   private[this] def model(service: spec.Service, name: String): spec.Model = service.models.find(_.name == name).getOrElse {
@@ -72,7 +75,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
       Seq("id", "name")
     )
     model(service, "guest").fields.map(_.name) should equal(
-      Seq("name")
+      Seq("age", "name")
     )
   }
 

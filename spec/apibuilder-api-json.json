@@ -81,7 +81,7 @@
         { "name": "plural", "type": "string", "required": false },
         { "name": "fields", "type": "[field]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "interfaces", "type": "[interface]", "required": false },
+        { "name": "interfaces", "type": "[string]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
@@ -189,7 +189,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "types", "type": "[union_type]", "minimum": 1 },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "interfaces", "type": "[interface]", "required": false },
+        { "name": "interfaces", "type": "[string]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
