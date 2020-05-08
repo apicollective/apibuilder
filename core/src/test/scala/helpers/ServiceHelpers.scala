@@ -66,6 +66,42 @@ trait ServiceHelpers {
     )
   }
 
+  def makeInterface(
+    name: String = randomString(),
+    fields: Seq[Field] = Nil,
+  ): Interface = {
+    Interface(
+      name = name,
+      plural = name + "s",
+      fields = fields,
+    )
+  }
+
+  def makeField(
+    name: String = randomString(),
+    `type`: String = "string",
+    required: Boolean = true,
+  ): Field = {
+    Field(
+      name = name,
+      `type` = `type`,
+      required = required,
+    )
+  }
+
+  def makeModel(
+    name: String = randomString(),
+    interfaces: Seq[Interface] = Nil,
+    fields: Seq[Field] = Nil,
+  ): Model = {
+    Model(
+      name = name,
+      plural = name + "s",
+      interfaces = interfaces,
+      fields = fields,
+    )
+  }
+
   def makeService(
     name: String = randomString(),
     organization: Organization = makeOrganization(),
@@ -74,6 +110,8 @@ trait ServiceHelpers {
     version: String = randomString(),
     imports: Seq[Import] = Nil,
     enums: Seq[Enum] = Nil,
+    interfaces: Seq[Interface] = Nil,
+    models: Seq[Model] = Nil,
   ): Service = {
     Service(
       apidoc = makeApidoc(),
@@ -85,6 +123,8 @@ trait ServiceHelpers {
       info = makeInfo(),
       imports = imports,
       enums = enums,
+      interfaces = interfaces,
+      models = models,
     )
   }
 }

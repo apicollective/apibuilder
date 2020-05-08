@@ -9,6 +9,8 @@ import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
+import play.api.libs.json.{JsObject, Json}
+
 object TestHelper {
 
   trait ServiceValidatorForSpecs extends ServiceValidator[Service] {
@@ -36,7 +38,7 @@ object TestHelper {
 
   }
 
-  val serviceConfig = ServiceConfiguration(
+  val serviceConfig: ServiceConfiguration = ServiceConfiguration(
     orgKey = "test",
     orgNamespace = "test.apibuilder",
     version = "0.0.1-dev"
@@ -82,6 +84,16 @@ object TestHelper {
       case ResponseCodeOption.UNDEFINED(value) => sys.error(s"invalid value[$value]")
       case ResponseCodeUndefinedType(value) => sys.error(s"invalid response code type[$value]")
     }
+  }
+
+  def serviceValidator(
+    contents: JsObject,
+    fetcher: MockServiceFetcher = MockServiceFetcher(),
+  ): ServiceValidatorForSpecs = {
+    serviceValidatorFromApiJson(
+      contents = contents.toString,
+      fetcher = fetcher,
+    )
   }
 
   def serviceValidatorFromApiJson(

@@ -32,6 +32,7 @@ class ImporterSpec extends FunSpec with Matchers {
 
       "imports": [],
       "headers": [],
+      "interfaces": [],
       "unions": [],
       "enums": [],
       "resources": [],
@@ -41,6 +42,7 @@ class ImporterSpec extends FunSpec with Matchers {
         {
           "name": "user",
           "plural": "users",
+          "interfaces": [],
           "fields": [
             { "name": "id", "type": "long", "required": true, "attributes": [] }
           ],

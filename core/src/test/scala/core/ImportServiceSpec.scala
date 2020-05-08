@@ -63,6 +63,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "imports": [],
       "headers": [],
       "resources": [],
+      "interfaces": [],
 
       "enums": [
         {
@@ -84,6 +85,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
             { "type": "user", "attributes": [] },
             { "type": "guest", "attributes": [] }
           ],
+          "interfaces": [],
           "attributes": []
         },
 
@@ -94,6 +96,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
             { "type": "user", "attributes": [] },
             { "type": "random_user", "attributes": [] }
           ],
+          "interfaces": [],
           "attributes": []
         }
       ],
@@ -105,6 +108,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
           "fields": [
             { "name": "id", "type": "long", "required": true, "attributes": [] }
           ],
+          "interfaces": [],
           "attributes": []
         },
 
@@ -114,6 +118,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
           "fields": [
             { "name": "id", "type": "long", "required": true, "attributes": [] }
           ],
+          "interfaces": [],
           "attributes": []
         },
 
@@ -123,6 +128,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
           "fields": [
             { "name": "id", "type": "uuid", "required": true, "attributes": [] }
           ],
+          "interfaces": [],
           "attributes": []
         }
       ]
@@ -138,11 +144,12 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "info": {},
 
       "imports": [
-	{ "uri": "file://$json1File" }
+        { "uri": "file://$json1File" }
       ],
 
       "models": {
         "membership": {
+          "interfaces": [],
           "fields": [
             { "name": "id", "type": "long" },
             { "name": "user", "type": "test.apibuilder.import-shared.models.user" },
