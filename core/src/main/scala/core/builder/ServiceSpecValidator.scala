@@ -128,7 +128,7 @@ case class ServiceSpecValidator(
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
     service.interfaces.find(_.name == interfaceName) match {
-      case None => Seq("Interface with '$name' was not found")
+      case None => Seq(s"$prefix interface[$interfaceName] was not found")
       case Some(i) => validateInterfaceFields(prefix, i, fields)
     }
   }
@@ -136,12 +136,14 @@ case class ServiceSpecValidator(
   private def validateInterfaceFields(prefix: String, interface: Interface, fields: Seq[Field]): Seq[String] = {
     interface.fields.flatMap { interfaceField =>
       fields.find(_.name == interfaceField.name) match {
-        case None => Nil // field is inherited from interface
+        case None => {
+          Seq(s"$prefix missing field '${interfaceField.name}' as defined in the interface '${interface.name}'")
+        }
         case Some(modelField) => {
           if (interfaceField.`type` == modelField.`type`) {
             Nil
           } else {
-            Seq(s"$prefix field '${modelField.name}' type '${modelField.`type`}' is invalid and must be '${interfaceField.`type`} to match the '${interface.name}' interface'")
+            Seq(s"$prefix field '${modelField.name}' type '${modelField.`type`}' is invalid. Must match the '${interface.name}' interface which defines this field as type '${interfaceField.`type`}'")
           }
         }
       }

@@ -49,17 +49,20 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     expectErrors(
       makeApiJson(models = Map("user" -> user))
     ) should be(
-      Seq(s"Model[user] Interface[person] was not found")
+      Seq(s"Model[user] interface[person] was not found")
     )
   }
 
   it("validates field types if declared are consistent") {
     expectErrors(
-      makeApiJson(models = Map("user" -> user.copy(
-        fields = Seq(makeField(name = "name", `type` = "long"))
-      )))
+      makeApiJson(
+        interfaces = Map("person" -> person),
+        models = Map("user" -> user.copy(
+          fields = Seq(makeField(name = "name", `type` = "long"))
+        ))
+      )
     ) should be(
-      Seq(s"Model[user] Field[name] type 'long' must be 'string' as defined in the interface 'person'")
+      Seq(s"Model[user] field 'name' type 'long' is invalid. Must match the 'person' interface which defines this field as type 'string'")
     )
   }
 

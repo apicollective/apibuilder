@@ -219,6 +219,7 @@ case class InternalUnionForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   types: Seq[InternalUnionTypeForm],
+  interfaces: Seq[String],
   attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
@@ -226,7 +227,6 @@ case class InternalUnionForm(
 case class InternalUnionTypeForm(
   datatype: Either[Seq[String], InternalDatatype],
   description: Option[String],
-  interfaces: Seq[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
@@ -417,7 +417,6 @@ object InternalUnionForm {
                default = JsonUtil.asOptBoolean(json \ "default"),
                discriminatorValue = JsonUtil.asOptString(json \ "discriminator_value"),
                attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
-               interfaces = (value \ "interfaces").asOpt[Seq[String]].getOrElse(Nil),
                warnings = JsonUtil.validate(
                  json,
                  anys = Seq("type"),
@@ -425,7 +424,6 @@ object InternalUnionForm {
                  optionalBooleans = Seq("default"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),
-                 optionalArraysOfStrings = Seq("interfaces"),
                  prefix = Some(s"Union[$name] type[${datatypeName.getOrElse("")}]")
                )
              )
@@ -441,12 +439,14 @@ object InternalUnionForm {
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
       types = types.toSeq,
+      interfaces = (value \ "interfaces").asOpt[Seq[String]].getOrElse(Nil),
       attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("discriminator", "description", "plural"),
         arrayOfObjects = Seq("types"),
         optionalObjects = Seq("deprecation"),
+        optionalArraysOfStrings = Seq("interfaces"),
         optionalArraysOfObjects = Seq("attributes"),
         prefix = Some(s"Union[$name]")
       )
