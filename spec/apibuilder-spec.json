@@ -137,7 +137,7 @@
         { "name": "deprecation", "type": "deprecation", "required": false },
         { "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "interfaces", "type": "[interface]", "default": "[]" }        
+        { "name": "interfaces", "type": "[string]", "default": "[]" }        
       ]
     },
 
@@ -161,7 +161,7 @@
         { "name": "deprecation", "type": "deprecation", "required": false },
         { "name": "fields", "type": "[field]" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "interfaces", "type": "[interface]", "default": "[]" }
+        { "name": "interfaces", "type": "[string]", "default": "[]" }
       ]
     },
 

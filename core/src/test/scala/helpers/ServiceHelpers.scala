@@ -91,7 +91,7 @@ trait ServiceHelpers {
 
   def makeModel(
     name: String = randomString(),
-    interfaces: Seq[Interface] = Nil,
+    interfaces: Seq[String] = Nil,
     fields: Seq[Field] = Nil,
   ): Model = {
     Model(

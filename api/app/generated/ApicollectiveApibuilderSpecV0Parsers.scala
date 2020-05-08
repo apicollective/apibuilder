@@ -502,7 +502,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
       io.apibuilder.spec.v0.anorm.parsers.Deprecation.parserWithPrefix(prefixOpt.getOrElse("") + deprecationPrefix).? ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Field]](prefixOpt.getOrElse("") + fields) ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Interface]](prefixOpt.getOrElse("") + interfaces) map {
+      SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + interfaces) map {
         case name ~ plural ~ description ~ deprecation ~ fields ~ attributes ~ interfaces => {
           io.apibuilder.spec.v0.models.Model(
             name = name,
@@ -790,7 +790,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
       io.apibuilder.spec.v0.anorm.parsers.Deprecation.parserWithPrefix(prefixOpt.getOrElse("") + deprecationPrefix).? ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.UnionType]](prefixOpt.getOrElse("") + types) ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Interface]](prefixOpt.getOrElse("") + interfaces) map {
+      SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + interfaces) map {
         case name ~ plural ~ discriminator ~ description ~ deprecation ~ types ~ attributes ~ interfaces => {
           io.apibuilder.spec.v0.models.Union(
             name = name,

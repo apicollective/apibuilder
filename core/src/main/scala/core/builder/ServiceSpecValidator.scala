@@ -1,7 +1,7 @@
 package builder
 
 import core.{TypeValidator, TypesProvider, Util}
-import io.apibuilder.spec.v0.models.{Annotation, Header, Method, Operation, ParameterLocation, Resource, ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service, Union, UnionType}
+import io.apibuilder.spec.v0.models._
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 
 case class ServiceSpecValidator(
@@ -15,7 +15,7 @@ case class ServiceSpecValidator(
     modelNames = service.models.map(_.name),
     unionNames = service.unions.map(_.name)
   )
-  
+
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
@@ -45,6 +45,7 @@ case class ServiceSpecValidator(
     validateApidoc() ++
     validateName() ++
     validateBaseUrl() ++
+    validateInterfaces() ++
     validateModels() ++
     validateEnums() ++
     validateUnions() ++
@@ -85,25 +86,35 @@ case class ServiceSpecValidator(
 
   private def validateBaseUrl(): Seq[String] = {
     service.baseUrl match {
-      case Some(url) => { 
+      case Some(url) => {
         if(url.endsWith("/")){
-          Seq(s"base_url[$url] must not end with a '/'")  
+          Seq(s"base_url[$url] must not end with a '/'")
         } else {
           Seq.empty
-        } 
+        }
       }
       case None => Seq.empty
     }
   }
 
+  def validateName(prefix: String, name: String): Seq[String] = {
+    Text.validateName(name) match {
+      case Nil => Nil
+      case errors => Seq(s"$prefix name is invalid: ${errors.mkString(" and ")}")
+    }
+  }
+
+  private def validateInterfaces(): Seq[String] = {
+    val nameErrors = service.interfaces.flatMap { i => validateName(s"Interface[${i.name}]", i.name) }
+    val duplicates = dupsError("Interface", service.interfaces.map(_.name))
+    nameErrors ++ duplicates
+  }
+
   private def validateModels(): Seq[String] = {
-    val nameErrors = service.models.flatMap { model =>
-      Text.validateName(model.name) match {
-        case Nil => None
-        case errors => {
-          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" and ")}")
-        }
-      }
+    val modelErrors = service.models.flatMap { model =>
+      val nameErrors = validateName(s"Model[${model.name}]", model.name)
+      val interfaceErrors = model.interfaces.flatMap { n => validateInterfaceFields(s"Model[${model.name}]", n, model.fields) }
+      nameErrors ++ interfaceErrors
     }
 
     val fieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
@@ -112,7 +123,29 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Model", service.models.map(_.name))
 
-    nameErrors ++ fieldErrors ++ duplicates
+    modelErrors ++ fieldErrors ++ duplicates
+  }
+
+  private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
+    service.interfaces.find(_.name == interfaceName) match {
+      case None => Seq("Interface with '$name' was not found")
+      case Some(i) => validateInterfaceFields(prefix, i, fields)
+    }
+  }
+
+  private def validateInterfaceFields(prefix: String, interface: Interface, fields: Seq[Field]): Seq[String] = {
+    interface.fields.flatMap { interfaceField =>
+      fields.find(_.name == interfaceField.name) match {
+        case None => Nil // field is inherited from interface
+        case Some(modelField) => {
+          if (interfaceField.`type` == modelField.`type`) {
+            Nil
+          } else {
+            Seq(s"$prefix field '${modelField.name}' type '${modelField.`type`}' is invalid and must be '${interfaceField.`type`} to match the '${interface.name}' interface'")
+          }
+        }
+      }
+    }
   }
 
   private def validateEnums(): Seq[String] = {
@@ -399,7 +432,7 @@ case class ServiceSpecValidator(
     }
   }
 
-  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {  
+  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {
     kind match {
       case Kind.Primitive(_) | Kind.Enum(_) => {
         Nil

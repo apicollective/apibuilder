@@ -251,9 +251,10 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateModels(): Seq[String] = {
-    val warnings = internalService.get.models.flatMap(_.warnings)
+    val models = internalService.get.models
+    val warnings = models.flatMap(_.warnings)
 
-    val attributeErrors = internalService.get.models.flatMap { model =>
+    val attributeErrors = models.flatMap { model =>
       validateAttributes(s"Model[${model.name}]", model.attributes)
     }
 

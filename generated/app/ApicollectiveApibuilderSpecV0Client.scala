@@ -173,7 +173,7 @@ package io.apibuilder.spec.v0.models {
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
     fields: Seq[io.apibuilder.spec.v0.models.Field],
     attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil,
-    interfaces: Seq[io.apibuilder.spec.v0.models.Interface] = Nil
+    interfaces: Seq[String] = Nil
   )
 
   /**
@@ -284,7 +284,7 @@ package io.apibuilder.spec.v0.models {
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
     types: Seq[io.apibuilder.spec.v0.models.UnionType],
     attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil,
-    interfaces: Seq[io.apibuilder.spec.v0.models.Interface] = Nil
+    interfaces: Seq[String] = Nil
   )
 
   /**
@@ -1054,7 +1054,7 @@ package io.apibuilder.spec.v0.models {
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
         fields <- (__ \ "fields").read[Seq[io.apibuilder.spec.v0.models.Field]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        interfaces <- (__ \ "interfaces").read[Seq[io.apibuilder.spec.v0.models.Interface]]
+        interfaces <- (__ \ "interfaces").read[Seq[String]]
       } yield Model(name, plural, description, deprecation, fields, attributes, interfaces)
     }
 
@@ -1352,7 +1352,7 @@ package io.apibuilder.spec.v0.models {
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
         types <- (__ \ "types").read[Seq[io.apibuilder.spec.v0.models.UnionType]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        interfaces <- (__ \ "interfaces").read[Seq[io.apibuilder.spec.v0.models.Interface]]
+        interfaces <- (__ \ "interfaces").read[Seq[String]]
       } yield Union(name, plural, discriminator, description, deprecation, types, attributes, interfaces)
     }
 
