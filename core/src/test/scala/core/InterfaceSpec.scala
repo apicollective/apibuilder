@@ -1,43 +1,40 @@
 package core
 
-import io.apibuilder.spec.v0.models.{Interface, Model, Service}
+import io.apibuilder.api.json.v0.models.{Interface, Model, ApiJson}
 import org.scalatest.{FunSpec, Matchers}
 
 class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] val person: Interface = makeInterface(
-    name = "person",
-    fields = Seq(
+    fields = Some(Seq(
       makeField(name = "name")
-    )
+    ))
   )
 
   private[this] val user: Model = makeModel(
-    name = "user",
-    interfaces = Seq(person),
+    interfaces = Some(Seq(person)),
     fields = Seq(
       makeField(name = "id")
     )
   )
 
   private[this] val guest: Model = makeModel(
-    name = "guest",
-    interfaces = Seq(person),
+    interfaces = Some(Seq(person)),
   )
 
-  private[this] val apiJson = makeService(
-    interfaces = Seq(person),
-    models = Seq(user, guest),
+  private[this] val apiJson = makeApiJson(
+    interfaces = Map("person" -> person),
+    models = Map("user" -> user, "guest" -> guest),
   )
 
   private[this] lazy val service = expectValid(apiJson)
 
-  private[this] def expectErrors(service: Service): Seq[String] = {
-    TestHelper.serviceValidator(toApiJson(service)).errors()
+  private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
+    TestHelper.serviceValidator(apiJson).errors()
   }
 
-  private[this] def expectValid(apiJson: Service): Service = {
-    val validator = TestHelper.serviceValidator(toApiJson(apiJson))
+  private[this] def expectValid(apiJson: ApiJson) = {
+    val validator = TestHelper.serviceValidator(apiJson)
     if (validator.errors().nonEmpty) {
       sys.error(s"Error: ${validator.errors()}")
     }
@@ -46,7 +43,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   it("validates that interfaces specified refer to a known interface") {
     expectErrors(
-      makeService(models = Seq(user))
+      makeApiJson(models = Map("user" -> user))
     ) should be(
       Seq(s"Model[user] Interface[person] was not found")
     )
@@ -54,7 +51,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   it("validates field types if declared are consistent") {
     expectErrors(
-      makeService(models = Seq(user.copy(
+      makeApiJson(models = Map("user" -> user.copy(
         fields = Seq(makeField(name = "name", `type` = "long"))
       )))
     ) should be(

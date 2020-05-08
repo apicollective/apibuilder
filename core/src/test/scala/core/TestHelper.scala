@@ -3,12 +3,15 @@ package core
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
 import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.api.json.v0.models.ApiJson
+import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.{ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service}
 import lib.Text
 import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
+import io.apibuilder.api.json.v0.models.ApiJson
 import play.api.libs.json.{JsObject, Json}
 
 object TestHelper {
@@ -87,11 +90,11 @@ object TestHelper {
   }
 
   def serviceValidator(
-    contents: JsObject,
+    apiJson: ApiJson,
     fetcher: MockServiceFetcher = MockServiceFetcher(),
   ): ServiceValidatorForSpecs = {
     serviceValidatorFromApiJson(
-      contents = contents.toString,
+      contents = Json.toJson(apiJson).toString,
       fetcher = fetcher,
     )
   }

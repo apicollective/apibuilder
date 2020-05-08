@@ -97,7 +97,7 @@
         { "name": "minimum", "type": "long", "required": false },
         { "name": "maximum", "type": "long", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
-        { "name": "annotations", "type": "[string]", "required": false },
+        { "name": "annotations", "type": "[annotation]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
