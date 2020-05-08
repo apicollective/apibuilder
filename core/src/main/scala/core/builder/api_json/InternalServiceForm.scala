@@ -67,8 +67,25 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
+  private[this] lazy val declaredInterfaces: Seq[InternalInterfaceForm] = {
+    (json \ "interfaces").asOpt[JsValue] match {
+      case Some(interfaces: JsObject) => {
+        interfaces.fields.flatMap { v =>
+          v match {
+            case(k, value) => value.asOpt[JsObject].map(InternalInterfaceForm(internalDatatypeBuilder, k, _))
+          }
+        }
+      }.toSeq
+      case _ => Seq.empty
+    }
+  }
+
   def models: Seq[InternalModelForm] = {
     declaredModels ++ internalDatatypeBuilder.modelForms
+  }
+
+  def interfaces: Seq[InternalInterfaceForm] = {
+    declaredInterfaces ++ internalDatatypeBuilder.interfaceForms
   }
 
   private[this] lazy val declaredEnums: Seq[InternalEnumForm] = {
@@ -155,6 +172,16 @@ case class InternalDeprecationForm(
   description: Option[String]
 )
 
+case class InternalInterfaceForm(
+  name: String,
+  plural: String,
+  description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
+  fields: Seq[InternalFieldForm],
+  attributes: Seq[InternalAttributeForm],
+  warnings: Seq[String]
+)
+
 case class InternalModelForm(
   name: String,
   plural: String,
@@ -162,6 +189,7 @@ case class InternalModelForm(
   deprecation: Option[InternalDeprecationForm],
   fields: Seq[InternalFieldForm],
   attributes: Seq[InternalAttributeForm],
+  interfaces: Seq[String],
   warnings: Seq[String]
 )
 
@@ -198,6 +226,7 @@ case class InternalUnionForm(
 case class InternalUnionTypeForm(
   datatype: Either[Seq[String], InternalDatatype],
   description: Option[String],
+  interfaces: Seq[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
@@ -388,6 +417,7 @@ object InternalUnionForm {
                default = JsonUtil.asOptBoolean(json \ "default"),
                discriminatorValue = JsonUtil.asOptString(json \ "discriminator_value"),
                attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
+               interfaces = (value \ "interfaces").asOpt[Seq[String]].getOrElse(Nil),
                warnings = JsonUtil.validate(
                  json,
                  anys = Seq("type"),
@@ -395,6 +425,7 @@ object InternalUnionForm {
                  optionalBooleans = Seq("default"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),
+                 optionalArraysOfStrings = Seq("interfaces"),
                  prefix = Some(s"Union[$name] type[${datatypeName.getOrElse("")}]")
                )
              )
@@ -439,35 +470,45 @@ object InternalImportForm {
 
 }
 
-object InternalModelForm {
+object InternalInterfaceForm {
 
-  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject): InternalModelForm = {
-    val description = JsonUtil.asOptString(value \ "description")
-    val plural: String = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) )
-
-    val fields = (value \ "fields").asOpt[JsArray] match {
-
-      case None => Seq.empty
-
-      case Some(a: JsArray) => {
-        a.value.flatMap { _.asOpt[JsObject].map { v =>
-          InternalFieldForm(internalDatatypeBuilder, v)
-        }}
-      }
-
-    }
-
-    InternalModelForm(
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject): InternalInterfaceForm = {
+    InternalInterfaceForm(
       name = name,
-      plural = plural,
-      description = description,
+      plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
+      description = JsonUtil.asOptString(value \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(value),
-      fields = fields.toSeq,
+      fields = InternalFieldForm.parse(internalDatatypeBuilder, value),
       attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("description", "plural"),
         arrayOfObjects = Seq("fields"),
+        optionalArraysOfObjects = Seq("attributes"),
+        optionalObjects = Seq("deprecation"),
+        prefix = Some(s"Interface[$name]")
+      )
+    )
+  }
+
+}
+
+object InternalModelForm {
+
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject): InternalModelForm = {
+    InternalModelForm(
+      name = name,
+      plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
+      description = JsonUtil.asOptString(value \ "description"),
+      deprecation = InternalDeprecationForm.fromJsValue(value),
+      fields = InternalFieldForm.parse(internalDatatypeBuilder, value),
+      attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
+      interfaces = (value \ "interfaces").asOpt[Seq[String]].getOrElse(Nil),
+      warnings = JsonUtil.validate(
+        value,
+        optionalStrings = Seq("description", "plural"),
+        arrayOfObjects = Seq("fields"),
+        optionalArraysOfStrings = Seq("interfaces"),
         optionalArraysOfObjects = Seq("attributes"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Model[$name]")
@@ -703,7 +744,7 @@ object InternalOperationForm {
         optionalObjects = Seq("body", "responses", "deprecation")
       )
     )
-  
+
   }
 }
 
@@ -729,6 +770,17 @@ object InternalResponseForm {
 }
 
 object InternalFieldForm {
+
+  def parse(internalDatatypeBuilder: InternalDatatypeBuilder, value: JsValue): Seq[InternalFieldForm] = {
+    (value \ "fields").asOpt[JsArray] match {
+      case None => Seq.empty
+      case Some(a: JsArray) => {
+        a.value.flatMap { _.asOpt[JsObject].map { v =>
+          InternalFieldForm(internalDatatypeBuilder, v)
+        }}.toSeq
+      }
+    }
+  }
 
   def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalFieldForm = {
     val warnings = if (JsonUtil.hasKey(json, "enum") || JsonUtil.hasKey(json, "values")) {

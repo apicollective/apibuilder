@@ -16,6 +16,7 @@ object JsonUtil {
     anys: Seq[String] = Nil,
     arrayOfAnys: Seq[String] = Nil,
     arrayOfObjects: Seq[String] = Nil,
+    optionalArraysOfStrings: Seq[String] = Nil,
     optionalArraysOfObjects: Seq[String] = Nil,
     optionalObjects: Seq[String] = Nil,
     objects: Seq[String] = Nil,
@@ -24,7 +25,7 @@ object JsonUtil {
     optionalAnys: Seq[String] = Nil,
     prefix: Option[String] = None
   ): Seq[String] = {
-    val keys = strings ++ anys ++ optionalStrings ++ arrayOfAnys ++ arrayOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ objects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
+    val keys = strings ++ anys ++ optionalStrings ++ arrayOfAnys ++ arrayOfObjects ++ optionalArraysOfStrings ++ optionalArraysOfObjects ++ optionalObjects ++ objects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
 
     val unrecognized = json.asOpt[JsObject] match {
       case None => Seq.empty
@@ -96,6 +97,13 @@ object JsonUtil {
         case None => Some(withPrefix(prefix, s"Missing $field"))
       }
     } ++
+    optionalArraysOfStrings.flatMap { field =>
+      (json \ field).toOption match {
+        case Some(o: JsArray) => validateArrayOfStrings(withPrefix(prefix, s"elements of $field"), o.value.toSeq)
+        case Some(_) => Some(withPrefix(prefix, s"$field must be an array"))
+        case None => None
+      }
+    } ++
     optionalArraysOfObjects.flatMap { field =>
       (json \ field).toOption match {
         case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value.toSeq)
@@ -118,6 +126,22 @@ object JsonUtil {
       }
     }
   }
+
+  private def validateArrayOfStrings(
+    prefix: String,
+    js: Seq[JsValue]
+  ): Option[String] = {
+    js.headOption match {
+      case None => None
+      case Some(o) => {
+        o match {
+          case _: JsString => None
+          case _ => Some(s"${prefix} must be strings")
+        }
+      }
+    }
+  }
+
 
   private def validateArrayOfObjects(
     prefix: String,
@@ -198,7 +222,7 @@ object JsonUtil {
       case Failure(_) => false
     }
   }
-  
+
   def asOptLong(value: JsValue): Option[Long] = {
     asOptString(value).flatMap { parseLong }
   }

@@ -81,6 +81,7 @@ case class ApiJsonServiceValidator(
             validateParameterBodies ++
             validateParameters ++
             validateResponses ++
+            validateInterfaces ++
             validateUnions ++
             validateModels ++
             validateFields ++
@@ -239,6 +240,16 @@ case class ApiJsonServiceValidator(
     enum.values.flatMap(_.warnings) ++ attributeErrors
   }
 
+  private def validateInterfaces(): Seq[String] = {
+    val warnings = internalService.get.interfaces.flatMap(_.warnings)
+
+    val attributeErrors = internalService.get.interfaces.flatMap { interface =>
+      validateAttributes(s"Interface[${interface.name}]", interface.attributes)
+    }
+
+    warnings ++ attributeErrors
+  }
+
   private def validateModels(): Seq[String] = {
     val warnings = internalService.get.models.flatMap(_.warnings)
 
@@ -362,7 +373,7 @@ case class ApiJsonServiceValidator(
         validateAttributes(opLabel(resource, op, "body"), op.body.get.attributes)
       }
     }
-    
+
     warnings ++ attributeErrors ++ bodyAttributeErrors
   }
 
