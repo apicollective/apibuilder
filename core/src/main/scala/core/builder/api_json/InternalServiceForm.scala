@@ -65,7 +65,7 @@ private[api_json] case class InternalServiceForm(
     }
   )
 
-  private[this] lazy val declaredInterfaces: Seq[InternalInterfaceForm] = {
+  def interfaces: Seq[InternalInterfaceForm] = {
     (json \ "interfaces").asOpt[JsValue] match {
       case Some(interfaces: JsObject) => {
         interfaces.fields.flatMap { v =>
@@ -76,10 +76,6 @@ private[api_json] case class InternalServiceForm(
       }.toSeq
       case _ => Seq.empty
     }
-  }
-
-  def interfaces: Seq[InternalInterfaceForm] = {
-    declaredInterfaces ++ internalDatatypeBuilder.interfaceForms
   }
 
   private[this] lazy val interfaceInheritance: InterfaceInheritance = InterfaceInheritance(interfaces)

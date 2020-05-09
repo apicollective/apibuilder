@@ -40,17 +40,14 @@ object InternalDatatype {
 private[api_json] case class InternalDatatypeBuilder() {
 
   private[this] val dynamicEnums = scala.collection.mutable.ListBuffer[InternalEnumForm]()
-  private[this] val dynamicInterfaces = scala.collection.mutable.ListBuffer[InternalInterfaceForm]()
   private[this] val dynamicModels = scala.collection.mutable.ListBuffer[InternalModelForm]()
   private[this] val dynamicUnions = scala.collection.mutable.ListBuffer[InternalUnionForm]()
 
   private[this] val EnumMarker = "enum"
-  private[this] val InterfaceMarker = "interface"
   private[this] val ModelMarker = "model"
   private[this] val UnionMarker = "union"
 
   def enumForms: List[InternalEnumForm] = dynamicEnums.toList
-  def interfaceForms: List[InternalInterfaceForm] = dynamicInterfaces.toList
   def modelForms: List[InternalModelForm] = dynamicModels.toList
   def unionForms: List[InternalUnionForm] = dynamicUnions.toList
 
@@ -84,15 +81,6 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineInterface(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
-    fromString(name).map { dt =>
-      dynamicInterfaces.append(
-        InternalInterfaceForm(this, dt.name, value - InterfaceMarker)
-      )
-      dt
-    }
-  }
-
   private[this] def inlineModel(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicModels.append(
@@ -115,17 +103,12 @@ private[api_json] case class InternalDatatypeBuilder() {
     JsonUtil.asOptString(value \ EnumMarker) match {
       case Some(name) => inlineEnum(name, value)
       case None => {
-        JsonUtil.asOptString(value \ InterfaceMarker) match {
-          case Some(name) => inlineInterface(name, value)
+        JsonUtil.asOptString(value \ ModelMarker) match {
+          case Some(name) => inlineModel(name, value)
           case None => {
-            JsonUtil.asOptString(value \ ModelMarker) match {
-              case Some(name) => inlineModel(name, value)
-              case None => {
-                JsonUtil.asOptString(value \ UnionMarker) match {
-                  case Some(name) => inlineUnion(name, value)
-                  case None => Left(Seq(s"must specify field '$EnumMarker', '$InterfaceMarker', '$ModelMarker' or '$UnionMarker'"))
-                }
-              }
+            JsonUtil.asOptString(value \ UnionMarker) match {
+              case Some(name) => inlineUnion(name, value)
+              case None => Left(Seq(s"must specify field '$EnumMarker', '$ModelMarker' or '$UnionMarker'"))
             }
           }
         }

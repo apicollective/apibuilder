@@ -33,7 +33,6 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
-    println(s"API JSon: ${Json.toJson(apiJson)}")
     TestHelper.serviceValidator(apiJson).errors()
   }
 
