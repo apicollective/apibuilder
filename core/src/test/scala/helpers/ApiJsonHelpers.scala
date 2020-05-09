@@ -22,11 +22,13 @@ trait ApiJsonHelpers {
     name: String = randomString(),
     `type`: String = "string",
     required: Boolean = true,
+    default: Option[String] = None,
   ): Field = {
     Field(
       name = name,
       `type` = `type`,
       required = required,
+      default = default,
     )
   }
 
