@@ -66,7 +66,7 @@ class ImportServiceServiceJsonSpec extends FunSpec with Matchers with helpers.Ap
           fields = Seq(
             makeField("id", "long"),
             makeField("user", "test.apibuilder.import-shared.models.user"),
-            makeField("age_group", "test.apibuilder.import-shared.enums.user"),
+            makeField("age_group", "test.apibuilder.import-shared.enums.age_group"),
           )
         ),
       ),
