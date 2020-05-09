@@ -65,12 +65,12 @@ case class ServiceSpecValidator(
 
   private def validateApidoc(): Seq[String] = {
     val specified = VersionTag(service.apidoc.version)
-    val current = io.apibuilder.spec.v0.Constants.Version
     specified.major match {
       case None => {
+        val current = io.apibuilder.spec.v0.Constants.Version
         Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")
       }
-      case Some(major) => {
+      case Some(_) => {
         Nil
       }
     }

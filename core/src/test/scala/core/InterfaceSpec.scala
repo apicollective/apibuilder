@@ -33,6 +33,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
+    println(s"API JSon: ${Json.toJson(apiJson)}")
     TestHelper.serviceValidator(apiJson).errors()
   }
 
@@ -45,7 +46,6 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   it("validates that interfaces specified refer to a known interface") {
-    println(Json.toJson(makeApiJson(models = Map("user" -> user))))
     expectErrors(
       makeApiJson(models = Map("user" -> user))
     ) should be(
@@ -80,18 +80,6 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     model(service, "guest").fields.map(_.name) should equal(
       Seq("age", "name")
     )
-  }
-
-  it("model can override description") {
-    val service = expectValid(
-      makeApiJson(
-        interfaces = Map("person" -> person.copy(description = Some("foo"))),
-        models = Map("user" -> user.copy(description = Some("bar")), "guest" -> guest),
-      )
-    )
-
-    model(service, "user").description should equal(Some("bar"))
-    model(service, "guest").description should equal(Some("foo"))
   }
 
 }

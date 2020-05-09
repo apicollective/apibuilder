@@ -1,7 +1,5 @@
 package builder.api_json
 
-import akka.http.scaladsl
-import akka.http.scaladsl.model
 import builder.JsonUtil
 import core.{Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
