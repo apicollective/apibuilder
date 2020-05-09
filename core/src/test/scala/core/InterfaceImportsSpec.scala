@@ -31,7 +31,7 @@ class InterfaceImportsSpec extends FunSpec with Matchers with helpers.ApiJsonHel
     }
 
     setup(Nil).errors() should equal(
-      Seq("TODO")
+      Seq("Model[test] Interface[definitions.user] not found")
     )
 
     val v = setup(Seq(s"file://$importedServiceFile"))

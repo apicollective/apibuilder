@@ -93,7 +93,7 @@ object TestHelper {
 
   def serviceValidator(
     apiJson: ApiJson,
-    fetcher: MockServiceFetcher = MockServiceFetcher(),
+    fetcher: ServiceFetcher = FileServiceFetcher(),
   ): ServiceValidatorForSpecs = {
     serviceValidatorFromApiJson(
       contents = Json.toJson(apiJson).toString,
@@ -104,7 +104,7 @@ object TestHelper {
   def serviceValidatorFromApiJson(
     contents: String,
     migration: VersionMigration = VersionMigration(internal = false),
-    fetcher: MockServiceFetcher = MockServiceFetcher()
+    fetcher: ServiceFetcher = MockServiceFetcher(),
   ): ServiceValidatorForSpecs = {
     TestServiceValidator(
       OriginalValidator(
