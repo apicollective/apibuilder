@@ -545,7 +545,7 @@ case class ServiceSpecValidator(
         case one :: two :: Nil => s"both ${one} and ${two}"
         case all => all.mkString(", ")
       }
-      s"Name[$name] cannot be used as the name of $english"
+      s"Name[$name] cannot be used as the name of $english type"
     }
   }
 

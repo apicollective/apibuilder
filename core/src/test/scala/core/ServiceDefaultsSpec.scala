@@ -67,7 +67,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
+    validator.errors().mkString("") should be("Model[user] Field[is_active] Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
   it("fields with defaults may be marked optional") {
@@ -145,7 +145,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     buildMinMaxErrors(1, max = Some(1)) should be(Nil)
     buildMinMaxErrors(1, max = Some(2)) should be(Nil)
   }
-  
+
   it("numeric default ourtide of min, max") {
     buildMinMaxErrors(1, min = Some(2)) should be(
       Seq("user.age default[1] must be >= specified minimum[2]")
@@ -155,5 +155,5 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       Seq("user.age default[1000] must be <= specified maximum[100]")
     )
   }
-  
+
 }
