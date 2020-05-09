@@ -132,7 +132,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHel
     guid.location should be(spec.ParameterLocation.Header)
 
     setup("user").errors should be(
-      Seq("Resource[user] DELETE /users/:guid Parameter[guid] has an invalid type[user]. Model and union types are not supported as header parameters.")
+      Seq("Resource[user] DELETE /users/:guid Parameter[guid] has an invalid type[user]. Interface, model and union types are not supported as header parameters.")
     )
   }
 
@@ -446,7 +446,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHel
 
     it("models are not valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("tag"))
-      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
+      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Interface, model and union types are not supported as query parameters.")
     }
 
     it("validates type name in collection") {

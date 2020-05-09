@@ -288,6 +288,7 @@
         { "name": "application", "type": "application" },
         { "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
         { "name": "enums", "type": "[string]", "description": "Enums made available by this import", "default": "[]" },
+        { "name": "interfaces", "type": "[string]", "description": "Interfaces made available by this import", "default": "[]", "required": false },
         { "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
         { "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
         { "name": "annotations", "type": "[annotation]", "description": "Annotations made available by this import", "default": "[]", "required": false }

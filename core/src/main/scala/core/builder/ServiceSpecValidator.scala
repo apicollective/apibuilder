@@ -1,26 +1,34 @@
 package builder
 
-import core.{TypeValidator, TypesProvider, Util}
+import core.{ServiceFetcher, TypeValidator, TypesProvider, Util}
 import io.apibuilder.spec.v0.models._
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 
+import scala.annotation.tailrec
+
 case class ServiceSpecValidator(
-  service: Service
+  service: Service,
 ) {
 
   private val ReservedDiscriminatorValues = Seq("value", "implicit")
 
   private val localTypeResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
+    interfaceNames = service.interfaces.map(_.name),
     modelNames = service.models.map(_.name),
     unionNames = service.unions.map(_.name)
   )
 
-  // TODO: Support import of interfaces
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
         s"${service.namespace}.enums.$enum"
+      }
+    },
+
+    interfaceNames = localTypeResolver.interfaceNames ++ service.imports.flatMap { service =>
+      service.interfaces.map { interface =>
+        s"${service.namespace}.interfaces.$interface"
       }
     },
 
@@ -155,9 +163,17 @@ case class ServiceSpecValidator(
   }
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
-    service.interfaces.find(_.name == interfaceName) match {
-      case None => Seq(s"$prefix Interface[$interfaceName] not found")
-      case Some(i) => validateInterfaceFields(prefix, i, fields)
+    typeResolver.parse(interfaceName) match {
+      case Some(_: Kind.Interface) => {
+        service.interfaces.find(_.name == interfaceName) match {
+          case Some(i) => validateInterfaceFields(prefix, i, fields)
+          case None => {
+            // TODO: should we validate for imported interfaces?
+            Nil
+          }
+        }
+      }
+      case other => Seq(s"$prefix Interface[$interfaceName] not found")
     }
   }
 
@@ -486,7 +502,15 @@ case class ServiceSpecValidator(
     }
   }
 
+  @tailrec
   private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {
+    def findField(fields: Seq[Field]) = {
+      fields.find(_.name == fieldName) match {
+        case None => Nil
+        case Some(_) => Seq(kind.toString)
+      }
+    }
+
     kind match {
       case Kind.Primitive(_) | Kind.Enum(_) => {
         Nil
@@ -500,15 +524,17 @@ case class ServiceSpecValidator(
         unionTypesWithNamedField(inner, fieldName)
       }
 
+      case Kind.Interface(name) => {
+        service.interfaces.find(_.name == name) match {
+          case None => Nil
+          case Some(model) => findField(model.fields)
+        }
+      }
+
       case Kind.Model(name) => {
         service.models.find(_.name == name) match {
           case None => Nil
-          case Some(model) => {
-            model.fields.find(_.name == fieldName) match {
-              case None => Nil
-              case Some(_) => Seq(kind.toString)
-            }
-          }
+          case Some(model) => findField(model.fields)
         }
       }
 
@@ -533,7 +559,7 @@ case class ServiceSpecValidator(
           kind match {
             case Kind.Enum(_) | Kind.Primitive("string") => None
             case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => None
-            case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
+            case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
               Some(s"$location[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
             }
           }
@@ -618,7 +644,7 @@ case class ServiceSpecValidator(
             case Kind.List(_) | Kind.Map(_) => {
               Some(s"Resource[${resource.`type`}] has an invalid type: must be a singleton (not a list nor map)")
             }
-            case Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
+            case Kind.Interface(_) | Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
               None
             }
             case Kind.Primitive(name) => {
@@ -747,8 +773,8 @@ case class ServiceSpecValidator(
                       Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
                     }
 
-                    case Kind.Model(_) | Kind.Union(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
+                    case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) => {
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Interface, model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
                     }
 
                     case Kind.Map(_) => {
@@ -796,7 +822,7 @@ case class ServiceSpecValidator(
         // Serializes as a string
         true
       }
-      case Kind.Model(_) | Kind.Union(_) | Kind.List(_) | Kind.Map(_) => {
+      case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.List(_) | Kind.Map(_) => {
         false
       }
     }

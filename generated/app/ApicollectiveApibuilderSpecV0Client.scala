@@ -125,6 +125,7 @@ package io.apibuilder.spec.v0.models {
    * @param namespace the fully qualified namespace that we have imported
    * @param version The version of the service that we are importing
    * @param enums Enums made available by this import
+   * @param interfaces Interfaces made available by this import
    * @param unions Unions made available by this import
    * @param models Models made available by this import
    * @param annotations Annotations made available by this import
@@ -136,6 +137,7 @@ package io.apibuilder.spec.v0.models {
     application: io.apibuilder.spec.v0.models.Application,
     version: String,
     enums: Seq[String] = Nil,
+    interfaces: Seq[String] = Nil,
     unions: Seq[String] = Nil,
     models: Seq[String] = Nil,
     annotations: Seq[io.apibuilder.spec.v0.models.Annotation] = Nil
@@ -933,10 +935,11 @@ package io.apibuilder.spec.v0.models {
         application <- (__ \ "application").read[io.apibuilder.spec.v0.models.Application]
         version <- (__ \ "version").read[String]
         enums <- (__ \ "enums").read[Seq[String]]
+        interfaces <- (__ \ "interfaces").readWithDefault[Seq[String]](Nil)
         unions <- (__ \ "unions").read[Seq[String]]
         models <- (__ \ "models").read[Seq[String]]
         annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
-      } yield Import(uri, namespace, organization, application, version, enums, unions, models, annotations)
+      } yield Import(uri, namespace, organization, application, version, enums, interfaces, unions, models, annotations)
     }
 
     def jsObjectImport(obj: io.apibuilder.spec.v0.models.Import): play.api.libs.json.JsObject = {
@@ -947,6 +950,7 @@ package io.apibuilder.spec.v0.models {
         "application" -> jsObjectApplication(obj.application),
         "version" -> play.api.libs.json.JsString(obj.version),
         "enums" -> play.api.libs.json.Json.toJson(obj.enums),
+        "interfaces" -> play.api.libs.json.Json.toJson(obj.interfaces),
         "unions" -> play.api.libs.json.Json.toJson(obj.unions),
         "models" -> play.api.libs.json.Json.toJson(obj.models),
         "annotations" -> play.api.libs.json.Json.toJson(obj.annotations)

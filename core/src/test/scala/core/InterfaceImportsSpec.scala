@@ -13,6 +13,7 @@ class InterfaceImportsSpec extends FunSpec with Matchers with helpers.ApiJsonHel
     Json.toJson(
       toService(
         makeApiJson(
+          name = "definitions",
           namespace = Some("definitions"),
           interfaces = Map("user" -> makeInterface())
         )
@@ -20,22 +21,29 @@ class InterfaceImportsSpec extends FunSpec with Matchers with helpers.ApiJsonHel
     ).toString
   )
 
-  it("models inherit fields") {
+  it("models can declare an interface from an imported service") {
     def setup(importUris: Seq[String]) = {
       TestHelper.serviceValidator(
         makeApiJson(
+          name = "svc",
           imports = importUris.map { uri => makeImport(uri = uri) },
-          models = Map("test" -> makeModelWithField(interfaces = Some(Seq("definitions.user")))),
+          models = Map("test" -> makeModelWithField(interfaces = Some(Seq("definitions.interfaces.user")))),
         )
       )
     }
 
     setup(Nil).errors() should equal(
-      Seq("Model[test] Interface[definitions.user] not found")
+      Seq("Model[test] Interface[definitions.interfaces.user] not found")
     )
 
     val v = setup(Seq(s"file://$importedServiceFile"))
     v.errors() should equal(Nil)
+    v.service().models.head.interfaces should equal(
+      Seq("definitions.interfaces.user")
+    )
   }
 
+  // TODO: Ideally we can fetch the imported service and get the list of interface fields
+  // like we do for a locally declared interface. We should make the treatment the same
+  // for imported or local interfaces
 }

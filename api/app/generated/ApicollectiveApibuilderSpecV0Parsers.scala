@@ -372,6 +372,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
       applicationPrefix: String = "application",
       version: String = "version",
       enums: String = "enums",
+      interfaces: String = "interfaces",
       unions: String = "unions",
       models: String = "models",
       annotations: String = "annotations",
@@ -383,10 +384,11 @@ package io.apibuilder.spec.v0.anorm.parsers {
       io.apibuilder.spec.v0.anorm.parsers.Application.parserWithPrefix(prefixOpt.getOrElse("") + applicationPrefix) ~
       SqlParser.str(prefixOpt.getOrElse("") + version) ~
       SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + enums) ~
+      SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + interfaces) ~
       SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + unions) ~
       SqlParser.get[Seq[String]](prefixOpt.getOrElse("") + models) ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Annotation]](prefixOpt.getOrElse("") + annotations) map {
-        case uri ~ namespace ~ organization ~ application ~ version ~ enums ~ unions ~ models ~ annotations => {
+        case uri ~ namespace ~ organization ~ application ~ version ~ enums ~ interfaces ~ unions ~ models ~ annotations => {
           io.apibuilder.spec.v0.models.Import(
             uri = uri,
             namespace = namespace,
@@ -394,6 +396,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
             application = application,
             version = version,
             enums = enums,
+            interfaces = interfaces,
             unions = unions,
             models = models,
             annotations = annotations

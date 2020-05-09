@@ -76,7 +76,7 @@ private[api_json] case class InternalServiceForm(
       }.toSeq
       case _ => Seq.empty
     }
-  }
+  } ++ internalDatatypeBuilder.interfaceForms
 
   private[this] lazy val interfaceInheritance: InterfaceInheritance = InterfaceInheritance(interfaces)
   def models: Seq[InternalModelForm] = interfaceInheritance.models(

@@ -441,6 +441,7 @@ case class ServiceBuilder(
             version = service.version,
             enums = service.enums.map(_.name),
             unions = service.unions.map(_.name),
+            interfaces = service.interfaces.map(_.name),
             models = service.models.map(_.name),
             annotations = service.annotations
           )
