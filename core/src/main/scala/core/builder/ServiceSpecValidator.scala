@@ -16,6 +16,7 @@ case class ServiceSpecValidator(
     unionNames = service.unions.map(_.name)
   )
 
+  // TODO: Support import of interfaces
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
@@ -51,8 +52,6 @@ case class ServiceSpecValidator(
     validateUnions() ++
     validateHeaders(service.headers, "Header") ++
     validateTypeNamesAreUnique() ++
-    validateFields() ++
-    validateFieldDefaults() ++
     validateResources() ++
     validateParameterLocations() ++
     validateParameterBodies() ++
@@ -108,30 +107,52 @@ case class ServiceSpecValidator(
   }
 
   private def validateInterfaces(): Seq[String] = {
-    val nameErrors = service.interfaces.flatMap { i => validateName(s"Interface[${i.name}]", i.name) }
-    val duplicates = dupsError("Interface", service.interfaces.map(_.name))
-    nameErrors ++ duplicates
+    service.interfaces.flatMap { interface =>
+      val p = s"Interface[${interface.name}]"
+      validateName(p, interface.name) ++
+        interface.fields.flatMap { f => validateField(s"$p Field[${f.name}]", f) }
+    } ++
+      dupsError("Interface", service.interfaces.map(_.name))
   }
 
   private def validateModels(): Seq[String] = {
     val modelErrors = service.models.flatMap { model =>
-      val nameErrors = validateName(s"Model[${model.name}]", model.name)
-      val interfaceErrors = model.interfaces.flatMap { n => validateInterfaceFields(s"Model[${model.name}]", n, model.fields) }
-      nameErrors ++ interfaceErrors
+      val p = s"Model[${model.name}]"
+
+      validateName(p, model.name) ++
+        model.fields.flatMap { f => validateField(s"$p Field[${f.name}]", f) } ++
+        model.interfaces.flatMap { n => validateInterfaceFields(p, n, model.fields) }
     }
 
-    val fieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
+    val atLeastOneFieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
       s"Model[${model.name}] must have at least one field"
     }
 
     val duplicates = dupsError("Model", service.models.map(_.name))
 
-    modelErrors ++ fieldErrors ++ duplicates
+    modelErrors ++ atLeastOneFieldErrors ++ duplicates
+  }
+
+  def validateAnnotation(prefix: String, anno: String): Seq[String] = {
+    if (service.annotations.map(_.name).contains(anno)){
+      Nil
+    } else {
+      Seq(s"$prefix annotation[$anno] is invalid. Annotations must be defined.")
+    }
+  }
+
+  def validateField(prefix: String, field: Field): Seq[String] = {
+    validateName(prefix, field.name) ++
+      validateType(prefix, field.`type`) ++
+      validateRange(prefix, field.minimum, field.maximum) ++
+      validateInRange(prefix, field.minimum, field.maximum, field.default) ++
+      field.default.toSeq.flatMap { d => validateDefault(prefix, field.`type`, d) } ++
+      field.annotations.flatMap { a => validateAnnotation(prefix, a) }
   }
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
     service.interfaces.find(_.name == interfaceName) match {
-      case None => Seq(s"$prefix interface[$interfaceName] was not found")
+      case None => Seq(s"$prefix Interface[$interfaceName] was not found")
       case Some(i) => validateInterfaceFields(prefix, i, fields)
     }
   }
@@ -528,99 +549,36 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def validateFields(): Seq[String] = {
-    val nameErrors = service.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        Text.validateName(field.name) match {
-          case Nil => None
-          case errors => {
-            Some(s"Model[${model.name}] field name[${field.name}] is invalid: ${errors.mkString(" and ")}")
-          }
+  private def validateRange(prefix: String, minimum: Option[Long], maximum: Option[Long]): Seq[String] = {
+    (minimum, maximum) match {
+      case (Some(min), Some(max)) => {
+        if (min <= max) {
+          Nil
+        } else {
+          Seq(s"$prefix minimum[$min] must be <= specified maximum[$max]")
         }
       }
+      case (_, _) => Nil
     }
-
-    val duplicateFieldErrors = service.models.flatMap { model =>
-      dupsError(s"Model[${model.name}] field", model.fields.filterNot(_.name.isEmpty).map(_.name))
-    }
-
-    val typeErrors = service.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        typeResolver.parse(field.`type`) match {
-          case None => Some(s"${model.name}.${field.name} has invalid type[${field.`type`}]")
-          case _ => None
-        }
-      }
-    }
-
-    val annotationFieldErrors = service.models.flatMap{ model =>
-      model.fields.flatMap{ field =>
-        field.annotations.flatMap{ anno =>
-          if (service.annotations.map(_.name).contains(anno)){
-            None
-          } else {
-            Some(s"${model.name}.${field.name}.annotation[$anno] is invalid. Annotations must be defined.")
-          }
-        }
-      }
-    }
-
-    val annotationDuplicateErrors = service.models.flatMap{ model =>
-      model.fields.flatMap{ field =>
-        dupsError(s"${model.name}.${field.name}.annotation", field.annotations)
-      }
-    }
-
-    nameErrors ++ duplicateFieldErrors ++ typeErrors ++ annotationFieldErrors ++ annotationDuplicateErrors
   }
 
-  /**
-   * Validates that any defaults specified for fields are valid:
-   *   Any field with a default is required
-   *   Valid based on the datatype
-   *   If an enum, the default is listed as a value for that enum
-   */
-  private def validateFieldDefaults(): Seq[String] = {
-    service.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        field.default.flatMap { default =>
-          validateDefault(s"${model.name}.${field.name}", field.`type`, default)
-        }
-      }
-    } match {
-      case Nil => {
-        service.models.flatMap { model =>
-          model.fields.
-            filter { f => f.minimum.isDefined || f.maximum.isDefined }.
-            filter { f => f.default.isDefined && JsonUtil.isNumeric(f.default.get) }.
-            flatMap { field =>
-              field.default match {
-                case None => Nil
-                case Some(default) => {
-                  Seq(
-                    field.minimum.flatMap { min =>
-                      if (default.toLong < min) {
-                        Some(s"${model.name}.${field.name} default[$default] must be >= specified minimum[$min]")
-                      } else {
-                        None
-                      }
-                    },
-                    field.maximum.flatMap { max =>
-                      if (default.toLong > max) {
-                        Some(s"${model.name}.${field.name} default[$default] must be <= specified maximum[$max]")
-                      } else {
-                        None
-                      }
-                    }
-                  ).flatten
-                }
-              }
+  private def validateInRange(prefix: String, minimum: Option[Long], maximum: Option[Long], value: Option[String]): Seq[String] = {
+    (minimum, maximum, value) match {
+      case (Some(min), Some(max), Some(v)) => {
+        JsonUtil.parseBigDecimal(v) match {
+          case None => Nil
+          case Some(bd) => {
+            if (bd < min) {
+              Seq(s"$prefix default[$bd] must be >= specified minimum[$min]")
+            } else if (bd > max) {
+              Seq(s"$prefix default[$bd] must be <= specified maximum[$max]")
+            } else {
+              Nil
             }
+          }
         }
       }
-      case errors => {
-        errors
-      }
+      case (_, _, _) => Nil
     }
   }
 
@@ -705,15 +663,13 @@ case class ServiceSpecValidator(
     service.resources.flatMap { resource =>
       resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
-          typeResolver.parse(param.`type`).flatMap { pd =>
-            param.default match {
-              case None => None
-              case Some(default) => {
-                if (param.required) {
-                  validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
-                } else {
-                  Some(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
-                }
+          param.default match {
+            case None => Nil
+            case Some(default) => {
+              if (param.required) {
+                validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+              } else {
+                Seq(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
               }
             }
           }
@@ -915,19 +871,21 @@ case class ServiceSpecValidator(
     invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes ++ invalidHeaders.flatten
   }
 
+  private def validateType(prefix: String, `type`: String): Seq[String] = {
+    typeResolver.parse(`type`) match {
+      case None => Seq(s"$prefix type '${`type`}' was not found'")
+      case Some(_) => Nil
+    }
+  }
 
   private def validateDefault(
     prefix: String,
     `type`: String,
     default: String
-  ): Option[String] = {
+  ): Seq[String] = {
     typeResolver.parse(`type`) match {
-      case None => {
-        None
-      }
-      case Some(pd) => {
-        validator.validate(pd, default, Some(prefix))
-      }
+      case None => Nil
+      case Some(kind) => validator.validate(kind, default, Some(prefix)).toSeq
     }
   }
 

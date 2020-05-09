@@ -231,6 +231,13 @@ object JsonUtil {
     value.toOption.flatMap { asOptLong }
   }
 
+  def parseBigDecimal(value: String): Option[BigDecimal] = {
+    Try(BigDecimal(value)) match {
+      case Success(v) => Some(v)
+      case Failure(_) => None
+    }
+  }
+
   private def parseLong(value: String): Option[Long] = {
     Try(value.toLong) match {
       case Success(v) => Some(v)

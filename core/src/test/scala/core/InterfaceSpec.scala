@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.api.json.v0.models.{ApiJson, Interface, Model}
+import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
@@ -65,19 +65,20 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   it("validates fields") {
-    expectErrors(
-      makeApiJson(
-        models = Map("user" -> makeModel(
-          fields = Seq(makeField(name = "!"))
-        )),
-        interfaces = Map("test" -> makeInterface(
-          fields = Some(
-            Seq(makeField(name = "!"))
-          )
-        ))
+    def test(field: Field) = {
+      expectErrors(
+        makeApiJson(
+          interfaces = Map("test" -> makeInterface(
+            fields = Some(Seq(field))
+          ))
+        )
       )
-    ) should be(
-      Seq("TODO")
+    }
+    test(makeField(name = "!")) should be(
+      Seq("Interface[test] Field[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter")
+    )
+    test(makeField(name = "id", `type` = "foo")) should be(
+      Seq("Interface[test] Field[id] type 'foo' was not found'")
     )
   }
 
@@ -85,7 +86,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     expectErrors(
       makeApiJson(models = Map("user" -> user))
     ) should be(
-      Seq(s"Model[user] interface[person] was not found")
+      Seq("Model[user] Interface[person] was not found")
     )
   }
 
