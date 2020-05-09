@@ -15,12 +15,12 @@ trait ServiceHelpers {
       version = "1.0",
     )
   }
-  def makeOrganization(): Organization = {
-    Organization(key = randomString())
+  def makeOrganization(key: String = randomString()): Organization = {
+    Organization(key = key)
   }
 
-  def makeApplication(): Application = {
-    Application(key = randomString())
+  def makeApplication(key: String = randomString()): Application = {
+    Application(key = key)
   }
 
   def makeInfo(): Info = {
@@ -86,6 +86,14 @@ trait ServiceHelpers {
       name = name,
       `type` = `type`,
       required = required,
+    )
+  }
+
+  def makeModelWithField(): Model = {
+    makeModel(
+      fields = Seq(
+        makeField(name = "id"),
+      )
     )
   }
 

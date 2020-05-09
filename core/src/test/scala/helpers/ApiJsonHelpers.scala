@@ -100,6 +100,7 @@ trait ApiJsonHelpers {
 
   def makeApiJson(
     name: String = randomString(),
+    namespace: Option[String] = None,
     baseUrl: Option[String] = None,
     interfaces: Map[String, Interface] = Map.empty,
     enums: Map[String, Enum] = Map.empty,
@@ -109,6 +110,7 @@ trait ApiJsonHelpers {
   ): ApiJson = {
     ApiJson(
       name = name,
+      namespace = namespace,
       baseUrl = baseUrl,
       interfaces = interfaces,
       enums = enums,
