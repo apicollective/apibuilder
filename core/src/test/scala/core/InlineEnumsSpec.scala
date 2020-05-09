@@ -17,7 +17,7 @@ class InlineEnumsSpec extends FunSpec with Matchers {
         |  }
         |}
       """.stripMargin.trim,
-    extras: String = ""    
+    extras: String = ""
   ): String = {
     s"""
     {
@@ -57,7 +57,7 @@ $extras
         |{ "type": {} }
       """.stripMargin
     )).errors() should equal(
-      Seq("Resource[user] POST /users 422 type: must specify field 'enum', 'model' or 'union'")
+      Seq("Resource[user] POST /users 422 type: must specify field 'enum', 'interface', 'model' or 'union'")
     )
 
     TestHelper.serviceValidatorFromApiJson(buildJson(
