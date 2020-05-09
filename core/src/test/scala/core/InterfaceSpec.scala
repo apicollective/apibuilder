@@ -44,6 +44,43 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     validator.service()
   }
 
+  it("validates interface name") {
+    expectErrors(
+      makeApiJson(interfaces = Map("  " -> makeInterface()))
+    ) should be(
+      Seq("Interface[  ] name cannot be empty")
+    )
+
+    expectErrors(
+      makeApiJson(interfaces = Map("!" -> makeInterface()))
+    ) should be(
+      Seq("Interface[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter")
+    )
+  }
+
+  it("supports interface with no fields") {
+    expectValid(
+      makeApiJson(interfaces = Map("test" -> makeInterface(fields = None)))
+    )
+  }
+
+  it("validates fields") {
+    expectErrors(
+      makeApiJson(
+        models = Map("user" -> makeModel(
+          fields = Seq(makeField(name = "!"))
+        )),
+        interfaces = Map("test" -> makeInterface(
+          fields = Some(
+            Seq(makeField(name = "!"))
+          )
+        ))
+      )
+    ) should be(
+      Seq("TODO")
+    )
+  }
+
   it("validates that interfaces specified refer to a known interface") {
     expectErrors(
       makeApiJson(models = Map("user" -> user))

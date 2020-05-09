@@ -50,7 +50,7 @@ case class ServiceSpecValidator(
     validateEnums() ++
     validateUnions() ++
     validateHeaders(service.headers, "Header") ++
-    validateModelAndEnumAndUnionNamesAreDistinct() ++
+    validateTypeNamesAreUnique() ++
     validateFields() ++
     validateFieldDefaults() ++
     validateResources() ++
@@ -98,9 +98,12 @@ case class ServiceSpecValidator(
   }
 
   def validateName(prefix: String, name: String): Seq[String] = {
-    Text.validateName(name) match {
-      case Nil => Nil
-      case errors => Seq(s"$prefix name is invalid: ${errors.mkString(" and ")}")
+    name.trim match {
+      case "" => Seq(s"$prefix name cannot be empty")
+      case n => Text.validateName(n) match {
+        case Nil => Nil
+        case errors => Seq(s"$prefix name is invalid: ${errors.mkString(" and ")}")
+      }
     }
   }
 
@@ -494,22 +497,34 @@ case class ServiceSpecValidator(
     headersWithInvalidTypes ++ duplicates
   }
 
+  private[this] case class TypesUniqueValidator(label: String, names: Seq[String]) {
+    val all: Set[String] = names.map(_.toLowerCase()).toSet
+    def contains(name: String): Boolean = all.contains(name.toLowerCase())
+  }
+
   /**
     * While not strictly necessary, we do this to reduce
     * confusion. Otherwise we would require an extension to
     * always indicate if a type referenced a model, union, or enum.
     */
-  private def validateModelAndEnumAndUnionNamesAreDistinct(): Seq[String] = {
-    val modelNames = service.models.map(_.name.toLowerCase)
-    val enumNames = service.enums.map(_.name.toLowerCase)
-    val unionNames = service.unions.map(_.name.toLowerCase)
+  private def validateTypeNamesAreUnique(): Seq[String] = {
+    val validators: Seq[TypesUniqueValidator] = Seq(
+      TypesUniqueValidator("an interface", service.interfaces.map(_.name)),
+      TypesUniqueValidator("a model", service.models.map(_.name)),
+      TypesUniqueValidator("an enum", service.enums.map(_.name)),
+      TypesUniqueValidator("a union", service.unions.map(_.name)),
+    )
 
-    modelNames.filter { enumNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both a model and an enum"
-    } ++ modelNames.filter { unionNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both a model and a union type"
-    } ++ enumNames.filter { unionNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both an enum and a union type"
+    validators.flatMap(_.all.toSeq)
+      .groupBy { identity }
+      .filter { case (_, v ) => v.size > 1 }
+      .keys.toList.sorted
+      .map { name =>
+      val english = validators.filter(_.contains(name)).map(_.label).sorted.toList match {
+        case one :: two :: Nil => s"both ${one} and ${two}"
+        case all => all.mkString(", ")
+      }
+      s"Name[$name] cannot be used as the name of $english"
     }
   }
 

@@ -478,8 +478,7 @@ object InternalInterfaceForm {
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("description", "plural"),
-        arrayOfObjects = Seq("fields"),
-        optionalArraysOfObjects = Seq("attributes"),
+        optionalArraysOfObjects = Seq("fields", "attributes"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Interface[$name]")
       )
