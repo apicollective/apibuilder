@@ -75,12 +75,12 @@
         { "name": "headers", "type": "[header]", "default": "[]" },
         { "name": "imports", "type": "[import]", "default": "[]" },
         { "name": "enums", "type": "[enum]", "default": "[]" },
-        { "name": "interfaces", "type": "[interface]", "default": "[]" },
+        { "name": "interfaces", "type": "[interface]", "default": "[]", "required": false },
         { "name": "unions", "type": "[union]", "default": "[]" },
         { "name": "models", "type": "[model]", "default": "[]" },
         { "name": "resources", "type": "[resource]", "default": "[]" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false}
+        { "name": "annotations", "type": "[annotation]", "default": "[]", "required": false }
       ]
     },
 
@@ -137,7 +137,7 @@
         { "name": "deprecation", "type": "deprecation", "required": false },
         { "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "interfaces", "type": "[string]", "default": "[]" }        
+        { "name": "interfaces", "type": "[string]", "default": "[]", "required": false }
       ]
     },
 
@@ -161,7 +161,7 @@
         { "name": "deprecation", "type": "deprecation", "required": false },
         { "name": "fields", "type": "[field]" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
-        { "name": "interfaces", "type": "[string]", "default": "[]" }
+        { "name": "interfaces", "type": "[string]", "default": "[]", "required": false }
       ]
     },
 
