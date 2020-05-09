@@ -3,7 +3,7 @@ package core
 import io.apibuilder.spec.v0.models.ParameterLocation
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceValidatorSpec extends FunSpec with Matchers {
+class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   it("should detect empty inputs") {
     val validator = TestHelper.serviceValidatorFromApiJson("")
@@ -42,39 +42,25 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("model that is missing fields") {
-    val json =
-      """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": []
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Model[user] must have at least one field")
+    TestHelper.serviceValidator(
+      makeApiJson(
+        models = Map("user" -> makeModel(fields = Nil))
+      )
+    ).errors() should be(
+      Seq("Model[user] must have at least one field")
+    )
   }
 
   it("model has a field with an invalid name") {
-    val json =
-      """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "_!@#", "type": "string" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Model[user] field name[_!@#] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters")
+    TestHelper.serviceValidator(
+      makeApiJson(
+        models = Map("user" -> makeModel(
+          fields = Seq(makeField(name = "_!@#"))
+        ))
+      )
+    ).errors() should be(
+      Seq("Model[user] Field[_!@#] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters")
+    )
   }
 
   it("model with duplicate field names") {
@@ -98,91 +84,44 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
 
   it("reference that points to a non-existent model") {
-    val json =
-      """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "foo", "type": "foo" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("user.foo has invalid type[foo]")
+    TestHelper.serviceValidator(
+      makeApiJson(
+        models = Map("user" -> makeModel(
+          fields = Seq(makeField(name = "id", `type` = "foo"))
+        ))
+      )
+    ).errors() should be(
+      Seq("Model[user] Field[id] type 'foo' was not found")
+    )
   }
 
   it("types are lowercased in service definition") {
-    val json =
-      """
-    {
-      "name": "API Builder",
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "id", "type": "UUID" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
-
-    validator.service().models.head.fields.head.`type` should be("uuid")
+    TestHelper.serviceValidator(
+      makeApiJson(
+        models = Map("user" -> makeModel(
+          fields = Seq(makeField(name = "id", `type` = "UUID"))
+        ))
+      )
+    ).service().models.head.fields.head.`type` should be("uuid")
   }
 
   it("base_url is optional") {
-    val json =
-      """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "id", "type": "long" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
+    TestHelper.serviceValidator(
+      makeApiJson().copy(baseUrl = None)
+    ).errors() should be(Nil)
   }
 
   it("defaults to a NoContent response") {
-    val json =
-      """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "guid", "type": "string" }
-          ]
-        }
-      },
-      "resources": {
-        "user": {
-          "operations": [
-            {
-              "method": "DELETE",
-              "path": "/:guid"
-            }
-          ]
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    validator.service().resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").getOrElse {
+    TestHelper.serviceValidator(
+      makeApiJson(
+        models = Map("user" -> makeModelWithField()),
+        resources = Map("user" -> makeResource(
+          operations = Seq(
+            makeOperation(method = "DELETE", path = "/:guid")
+          )
+        ))
+      )
+    ).service().resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").getOrElse {
       sys.error("Missing 204 response")
     }
   }
@@ -489,15 +428,15 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     {
         "name": "Test Validation of Parameters",
         "apidoc": { "version": "0.9.6" },
-    
+
         "models": {
-    
+
             "tag": {
                 "fields": [
                     { "name": "name", "type": "string" }
                 ]
             }
-    
+
         },
 
         "resources": {

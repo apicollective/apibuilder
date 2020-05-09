@@ -109,8 +109,7 @@ case class ServiceSpecValidator(
   private def validateInterfaces(): Seq[String] = {
     service.interfaces.flatMap { interface =>
       val p = s"Interface[${interface.name}]"
-      validateName(p, interface.name) ++
-        interface.fields.flatMap { f => validateField(s"$p Field[${f.name}]", f) }
+      validateName(p, interface.name) ++ validateFields(p, interface.fields)
     } ++
       dupsError("Interface", service.interfaces.map(_.name))
   }
@@ -120,7 +119,7 @@ case class ServiceSpecValidator(
       val p = s"Model[${model.name}]"
 
       validateName(p, model.name) ++
-        model.fields.flatMap { f => validateField(s"$p Field[${f.name}]", f) } ++
+        validateFields(p, model.fields) ++
         model.interfaces.flatMap { n => validateInterfaceFields(p, n, model.fields) }
     }
 
@@ -139,6 +138,11 @@ case class ServiceSpecValidator(
     } else {
       Seq(s"$prefix annotation[$anno] is invalid. Annotations must be defined.")
     }
+  }
+
+  def validateFields(prefix: String, fields: Seq[Field]) = {
+    dupsError(s"$prefix field", fields.map(_.name)) ++
+      fields.flatMap { f => validateField(s"$prefix Field[${f.name}]", f) }
   }
 
   def validateField(prefix: String, field: Field): Seq[String] = {
@@ -563,22 +567,19 @@ case class ServiceSpecValidator(
   }
 
   private def validateInRange(prefix: String, minimum: Option[Long], maximum: Option[Long], value: Option[String]): Seq[String] = {
-    (minimum, maximum, value) match {
-      case (Some(min), Some(max), Some(v)) => {
-        JsonUtil.parseBigDecimal(v) match {
-          case None => Nil
-          case Some(bd) => {
-            if (bd < min) {
-              Seq(s"$prefix default[$bd] must be >= specified minimum[$min]")
-            } else if (bd > max) {
-              Seq(s"$prefix default[$bd] must be <= specified maximum[$max]")
-            } else {
-              Nil
-            }
-          }
+    value.flatMap(JsonUtil.parseBigDecimal) match {
+      case None => Nil
+      case Some(bd) => {
+        val minErrors = minimum match {
+          case Some(min) if bd < min => Seq(s"$prefix default[$bd] must be >= specified minimum[$min]")
+          case _ => Nil
         }
+        val maxErrors = maximum match {
+          case Some(max) if bd > max => Seq(s"$prefix default[$bd] must be <= specified maximum[$max]")
+          case _ => Nil
+        }
+        minErrors ++ maxErrors
       }
-      case (_, _, _) => Nil
     }
   }
 
@@ -873,7 +874,7 @@ case class ServiceSpecValidator(
 
   private def validateType(prefix: String, `type`: String): Seq[String] = {
     typeResolver.parse(`type`) match {
-      case None => Seq(s"$prefix type '${`type`}' was not found'")
+      case None => Seq(s"$prefix type '${`type`}' was not found")
       case Some(_) => Nil
     }
   }
@@ -892,11 +893,13 @@ case class ServiceSpecValidator(
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
     dups(values).map { n =>
       s"$label[$n] appears more than once"
-    }.toSeq
+    }
   }
 
-  private def dups(values: Iterable[String]): Iterable[String] = {
-    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim).filter { _._2.size > 1 }.keys
+  private def dups(values: Iterable[String]): List[String] = {
+    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim)
+      .filter { _._2.size > 1 }
+      .keys.toList.sorted
   }
 
   private def opLabel(

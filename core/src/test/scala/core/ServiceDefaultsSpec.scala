@@ -146,13 +146,13 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     buildMinMaxErrors(1, max = Some(2)) should be(Nil)
   }
 
-  it("numeric default ourtide of min, max") {
+  it("numeric default outside of min, max") {
     buildMinMaxErrors(1, min = Some(2)) should be(
-      Seq("user.age default[1] must be >= specified minimum[2]")
+      Seq("Model[user] Field[age] default[1] must be >= specified minimum[2]")
     )
 
     buildMinMaxErrors(1000, max = Some(100)) should be(
-      Seq("user.age default[1000] must be <= specified maximum[100]")
+      Seq("Model[user] Field[age] default[1000] must be <= specified maximum[100]")
     )
   }
 

@@ -30,6 +30,30 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeEnumValue(
+    name: String = randomString(),
+  ): EnumValue = {
+    EnumValue(
+      name = name,
+    )
+  }
+
+  def makeEnum(
+    values: Seq[EnumValue] = Nil,
+  ): Enum = {
+    Enum(
+      values = values,
+    )
+  }
+
+  def makeModelWithField(): Model = {
+    makeModel(
+      fields = Seq(
+        makeField(name = "id"),
+      )
+    )
+  }
+
   def makeModel(
     fields: Seq[Field] = Nil,
     interfaces: Option[Seq[String]] = None,
@@ -40,15 +64,39 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeOperation(
+    method: String = "GET",
+    path: String = "/",
+  ): Operation = {
+    Operation(
+      method = method,
+      path = path,
+    )
+  }
+
+  def makeResource(
+    operations: Seq[Operation] = Nil,
+  ): Resource = {
+    Resource(
+      operations = operations,
+    )
+  }
+
   def makeApiJson(
     name: String = randomString(),
     interfaces: Map[String, Interface] = Map.empty,
+    enums: Map[String, Enum] = Map.empty,
     models: Map[String, Model] = Map.empty,
+    unions: Map[String, Union] = Map.empty,
+    resources: Map[String, Resource] = Map.empty,
   ): ApiJson = {
     ApiJson(
       name = name,
       interfaces = interfaces,
+      enums = enums,
       models = models,
+      unions = unions,
+      resources = resources,
     )
   }
 }
