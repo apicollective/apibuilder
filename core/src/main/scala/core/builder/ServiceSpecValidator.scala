@@ -269,40 +269,13 @@ case class ServiceSpecValidator(
     }
 
     val invalidTypes = service.unions.filter(!_.name.isEmpty).flatMap { union =>
-      union.types.flatMap { t =>
-        typeResolver.parse(t.`type`) match {
-          case None => {
-            Seq(s"Union[${union.name}] type[${t.`type`}] not found")
-          }
-          case Some(_) => {
-            // Validate that the type is NOT imported as there is
-            // no way we could retroactively modify the imported
-            // type to extend the union type that is only being
-            // defined in this service.
-            localTypeResolver.parse(t.`type`) match {
-              case None => {
-                Seq(s"Union[${union.name}] type[${t.`type`}] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
-              }
-              case Some(kind: Kind) => {
-                kind match {
-                  case Kind.Primitive("unit") => {
-                    Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
-                  }
-                  case _ => {
-                    Nil
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      validateUnionTypes(s"Union[${union.name}]", union.types)
     }
 
     val discriminatorErrors = service.unions.flatMap { union =>
       union.discriminator match {
         case None => {
-          union.types.filter { t => t.default.isDefined }.toList match {
+          union.types.filter { t => t.default.getOrElse(false) }.toList match {
             case Nil => None
             case types => Seq(
               s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")
@@ -336,6 +309,51 @@ case class ServiceSpecValidator(
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
     nameErrors ++ typeErrors ++ invalidTypes ++ validateUnionCyclicReferences() ++ discriminatorErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
+  }
+
+  // Validate that the type is NOT imported as there is
+  // no way we could retroactively modify the imported
+  // type to extend the union type that is only being
+  // defined in this service.
+  private def validateTypeLocal(prefix: String, typ: String): Seq[String] = {
+    validateType(prefix, typ) match {
+      case Nil => {
+        localTypeResolver.parse(typ) match {
+          case None => {
+            Seq(s"$prefix is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
+          }
+          case Some(_) => Nil
+        }
+      }
+      case _ => Nil // another type error already found
+    }
+  }
+
+  private def validateTypeNotUnit(prefix: String, typ: String): Seq[String] = {
+    localTypeResolver.parse(typ) match {
+      case Some(kind: Kind.Primitive) if kind.name == "unit" => {
+        Seq(s"$prefix Union types cannot contain unit. To make a particular field optional, use the required property.")
+      }
+      case _ => Nil
+    }
+  }
+
+  private def validateUnionTypes(prefix: String, types: Seq[UnionType]): Seq[String] = {
+    types.flatMap { t =>
+      validateType(s"$prefix", t.`type`) ++
+        validateTypeNotUnit(prefix, t.`type`) ++
+        validateTypeLocal(s"$prefix Type[${t.`type`}]", t.`type`) ++
+        dupsError(s"$prefix Type", types.map(_.`type`))
+    } ++ validateUnionTypeDefaults(prefix, types)
+  }
+
+  private def validateUnionTypeDefaults(prefix: String, types: Seq[UnionType]): Seq[String] = {
+    val defaultTypes = types.filter(_.default.getOrElse(false)).map(_.`type`)
+    if (defaultTypes.size > 1) {
+      Seq(s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.sorted.mkString(", ")}")
+    } else {
+      Nil
+    }
   }
 
   private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
@@ -880,7 +898,7 @@ case class ServiceSpecValidator(
 
   private def validateType(prefix: String, `type`: String): Seq[String] = {
     typeResolver.parse(`type`) match {
-      case None => Seq(s"$prefix type '${`type`}' was not found")
+      case None => Seq(s"$prefix type[${`type`}] not found")
       case Some(_) => Nil
     }
   }

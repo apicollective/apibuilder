@@ -1,10 +1,8 @@
 package core
 
 import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
-import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
-import play.api.libs.json.Json
 
 class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 

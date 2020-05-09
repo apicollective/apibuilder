@@ -29,11 +29,12 @@ trait ServiceHelpers {
 
   def makeEnum(
     name: String = randomString(),
+    plural: String = randomString(),
     values: Seq[EnumValue],
   ): Enum = {
     Enum(
       name = name,
-      plural = randomString(),
+      plural = plural,
       values = values,
     )
   }
@@ -99,14 +100,36 @@ trait ServiceHelpers {
 
   def makeModel(
     name: String = randomString(),
+    plural: String = randomString(),
     interfaces: Seq[String] = Nil,
     fields: Seq[Field] = Nil,
   ): Model = {
     Model(
       name = name,
-      plural = name + "s",
+      plural = plural,
       interfaces = interfaces,
       fields = fields,
+    )
+  }
+
+  def makeUnionType(
+    `type`: String,
+  ): UnionType = {
+    UnionType(
+      `type` = `type`,
+    )
+  }
+
+
+  def makeUnion(
+    name: String = randomString(),
+    plural: String = randomString(),
+    types: Seq[UnionType] = Nil,
+  ): Union = {
+    Union(
+      name = name,
+      plural = plural,
+      types = types,
     )
   }
 
@@ -120,6 +143,7 @@ trait ServiceHelpers {
     enums: Seq[Enum] = Nil,
     interfaces: Seq[Interface] = Nil,
     models: Seq[Model] = Nil,
+    unions: Seq[Union] = Nil,
   ): Service = {
     Service(
       apidoc = makeApidoc(),
@@ -133,6 +157,7 @@ trait ServiceHelpers {
       enums = enums,
       interfaces = interfaces,
       models = models,
+      unions = unions,
     )
   }
 }

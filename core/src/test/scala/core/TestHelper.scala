@@ -27,14 +27,16 @@ object TestHelper {
     */
   case class TestServiceValidator(validator: ServiceValidator[Service]) extends ServiceValidatorForSpecs {
 
-    override def validate() = validator.validate()
+    private[this] lazy val validateResult = validator.validate()
 
-    override def errors() = validate match {
+    override def validate(): Either[Seq[String], Service] = validateResult
+
+    override def errors(): Seq[String] = validateResult match {
       case Left(errors) => errors
       case Right(_) => Seq.empty
     }
 
-    override lazy val service: Service = validate match {
+    override lazy val service: Service = validateResult match {
       case Left(errors) => sys.error(errors.mkString(", "))
       case Right(service) => service
     }

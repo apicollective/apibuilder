@@ -172,35 +172,7 @@ case class ApiJsonServiceValidator(
     val typeErrors = union.types.filter(_.datatype.isLeft).flatMap { typ =>
       Seq(s"Union[${union.name}] type[] " + typ.datatype.left.get.mkString(", "))
     }
-
-    val defaultErrors = union.discriminator match {
-      case None => {
-        union.types.
-          filter(_.datatype.isRight).
-          filter(_.default.isDefined).
-          map(_.datatype.right.get.name).
-          toList match {
-            case Nil => Nil
-            case types => {
-              val plural = if (types.length > 1) { "types" } else { "type "}
-              Seq(s"Union[${union.name}] $plural[${types.mkString(", ")}] cannot specify 'default' as the union does not define an explicit discriminator.")
-            }
-        }
-      }
-
-      case Some(_) => {
-        union.types.
-          filter(_.datatype.isRight).
-          filter(_.default.getOrElse(false)).
-          map(_.datatype.right.get.name).
-          toList match {
-            case Nil => Nil
-            case _ :: Nil => Nil
-            case types => Seq(s"Union[${union.name}] More than one type marked as default: " + types.mkString(", "))
-          }
-      }
-    }
-    union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors ++ defaultErrors
+    union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors
   }
 
   private def validateAnnotations(): Seq[String] = {

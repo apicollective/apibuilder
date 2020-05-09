@@ -1,7 +1,12 @@
 package helpers
 
 import java.util.UUID
+
+import core.TestHelper
 import io.apibuilder.api.json.v0.models._
+import io.apibuilder.api.json.v0.models.json._
+import io.apibuilder.spec.v0.models.Service
+import play.api.libs.json.Json
 
 trait ApiJsonHelpers {
 
@@ -41,9 +46,11 @@ trait ApiJsonHelpers {
   }
 
   def makeEnum(
+    plural: Option[String] = None,
     values: Seq[EnumValue] = Nil,
   ): Enum = {
     Enum(
+      plural = plural,
       values = values,
     )
   }
@@ -59,10 +66,12 @@ trait ApiJsonHelpers {
   def makeModel(
     fields: Seq[Field] = Nil,
     interfaces: Option[Seq[String]] = None,
+    plural: Option[String] = None,
   ): Model = {
     Model(
       fields = fields,
       interfaces = interfaces,
+      plural = plural,
     )
   }
 
@@ -104,6 +113,29 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeUnionType(
+    `type`: String,
+    default: Boolean = false,
+  ): UnionType = {
+    UnionType(
+      `type` = `type`,
+      default = default,
+    )
+  }
+
+
+  def makeUnion(
+    discriminator: Option[String] = None,
+    plural: Option[String] = None,
+    types: Seq[UnionType] = Nil,
+  ): Union = {
+    Union(
+      discriminator = discriminator,
+      plural = plural,
+      types = types,
+    )
+  }
+
   def makeApiJson(
     name: String = randomString(),
     namespace: Option[String] = None,
@@ -127,4 +159,14 @@ trait ApiJsonHelpers {
       resources = resources,
     )
   }
+
+  def toService(apiJson: ApiJson): Service = {
+    val validator = TestHelper.serviceValidator(apiJson)
+    if (validator.errors().nonEmpty) {
+      println(Json.prettyPrint(Json.toJson(apiJson)))
+      sys.error(s"Cannot convert to API Builder Spec Service Model:\n  - ${validator.errors().mkString("\n  - ")}")
+    }
+    validator.service()
+  }
+
 }
