@@ -59,7 +59,7 @@ case class ServiceSpecValidator(
     validateParameterNames() ++
     validateParameters() ++
     validateResponses() ++
-    validateAnnotations()
+    validateGlobalAnnotations()
   }
 
   private def validateApidoc(): Seq[String] = {
@@ -151,7 +151,7 @@ case class ServiceSpecValidator(
       validateRange(prefix, field.minimum, field.maximum) ++
       validateInRange(prefix, field.minimum, field.maximum, field.default) ++
       field.default.toSeq.flatMap { d => validateDefault(prefix, field.`type`, d) } ++
-      field.annotations.flatMap { a => validateAnnotation(prefix, a) }
+      validateAnnotations(prefix, field.annotations)
   }
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
@@ -219,7 +219,13 @@ case class ServiceSpecValidator(
     nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues ++ valuesWithInvalidNames ++ duplicateValues
   }
 
-  private def validateAnnotations(): Seq[String] = {
+  private def validateAnnotations(prefix: String, annotations: Seq[String]): Seq[String] = {
+    annotations.flatMap { a => validateAnnotation(prefix, a) } ++
+      dupsError(s"$prefix Annotation", annotations)
+
+  }
+
+  private def validateGlobalAnnotations(): Seq[String] = {
     val nameErrors = service.annotations.flatMap { anno =>
       Text.validateName(anno.name) match {
         case Nil => None
