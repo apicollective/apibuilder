@@ -55,8 +55,11 @@ trait ApiJsonHelpers {
     )
   }
 
-  def makeModelWithField(): Model = {
+  def makeModelWithField(
+    interfaces: Option[Seq[String]] = None,
+  ): Model = {
     makeModel(
+      interfaces = interfaces,
       fields = Seq(
         makeField(name = "id"),
       )
