@@ -156,7 +156,7 @@ case class ServiceSpecValidator(
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
     service.interfaces.find(_.name == interfaceName) match {
-      case None => Seq(s"$prefix Interface[$interfaceName] was not found")
+      case None => Seq(s"$prefix Interface[$interfaceName] not found")
       case Some(i) => validateInterfaceFields(prefix, i, fields)
     }
   }

@@ -76,7 +76,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHel
         ))
       )
     ).errors() should be(
-      Seq("Model[user] Field[id] type 'foo' was not found")
+      Seq("Model[user] Field[id] type[foo] not found")
     )
   }
 
