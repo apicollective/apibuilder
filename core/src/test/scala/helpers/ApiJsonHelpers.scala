@@ -64,13 +64,27 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeParameter(
+    name: String = randomString(),
+    `type`: String = "string",
+    location: ParameterLocation = ParameterLocation.Query,
+  ): Parameter = {
+    Parameter(
+      name = name,
+      `type` = `type`,
+      location = location,
+    )
+  }
+
   def makeOperation(
     method: String = "GET",
     path: String = "/",
+    parameters: Option[Seq[Parameter]] = None,
   ): Operation = {
     Operation(
       method = method,
       path = path,
+      parameters = parameters,
     )
   }
 
@@ -84,6 +98,7 @@ trait ApiJsonHelpers {
 
   def makeApiJson(
     name: String = randomString(),
+    baseUrl: Option[String] = None,
     interfaces: Map[String, Interface] = Map.empty,
     enums: Map[String, Enum] = Map.empty,
     models: Map[String, Model] = Map.empty,
@@ -92,6 +107,7 @@ trait ApiJsonHelpers {
   ): ApiJson = {
     ApiJson(
       name = name,
+      baseUrl = baseUrl,
       interfaces = interfaces,
       enums = enums,
       models = models,
