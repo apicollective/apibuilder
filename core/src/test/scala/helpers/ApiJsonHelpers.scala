@@ -98,10 +98,17 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeImport(uri: String = s"https://${randomString()}test.apibuilder.io"): Import = {
+    Import(
+      uri = uri,
+    )
+  }
+
   def makeApiJson(
     name: String = randomString(),
     namespace: Option[String] = None,
     baseUrl: Option[String] = None,
+    imports: Seq[Import] = Nil,
     interfaces: Map[String, Interface] = Map.empty,
     enums: Map[String, Enum] = Map.empty,
     models: Map[String, Model] = Map.empty,
@@ -112,6 +119,7 @@ trait ApiJsonHelpers {
       name = name,
       namespace = namespace,
       baseUrl = baseUrl,
+      imports = imports,
       interfaces = interfaces,
       enums = enums,
       models = models,

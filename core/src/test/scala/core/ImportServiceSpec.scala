@@ -1,23 +1,21 @@
 package core
 
 import builder.OriginalValidator
+import io.apibuilder.api.json.v0.models.{ApiJson, Import}
 import io.apibuilder.api.v0.models.{Original, OriginalType}
 import org.scalatest.{FunSpec, Matchers}
 
-class ImportServiceSpec extends FunSpec with Matchers {
+class ImportServiceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+
+  def buildApiJson(
+    imports: Seq[Import] = Nil,
+  ): ApiJson = {
+    makeApiJson(
+      imports = imports,
+    )
+  }
 
   describe("validation") {
-
-    val baseJson = """
-    {
-      "name": "Import Shared",
-      "apidoc": { "version": "0.9.6" },
-      "info": {},
-      "imports": [
-	{ "uri": "%s" }
-      ]
-    }
-    """
 
     it("import uri is present") {
       val json = """{
@@ -31,18 +29,16 @@ class ImportServiceSpec extends FunSpec with Matchers {
     }
 
     it("import uri cannot be empty") {
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("  "))
-      validator.errors().mkString("") should be("Import uri must be a non empty string")
-    }
-
-    it("import uri starts with a valid protocol") {
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("foobar"))
-      validator.errors().mkString("") should be("URI[foobar] must start with http://, https://, or file://")
-    }
-
-    it("import uri does not end with a /") {
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("http://www.apidoc.me/"))
-      validator.errors().mkString("") should be("URI[http://www.apidoc.me/] cannot end with a '/'")
+      def testUri(uri: String) = {
+        TestHelper.serviceValidator(
+          makeApiJson(
+            imports = Seq(makeImport(uri = uri))
+          )
+        )
+      }
+      testUri("  ").errors should be(Seq("Import uri must be a non empty string"))
+      testUri("foobar").errors should be(Seq("URI[foobar] must start with http://, https://, or file://"))
+      testUri("https://app.apibuilder.io/").errors should be(Seq("URI[https://app.apibuilder.io/] cannot end with a '/'"))
     }
 
   }
