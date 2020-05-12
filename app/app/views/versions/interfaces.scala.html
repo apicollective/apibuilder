@@ -1,0 +1,15 @@
+@(org: io.apibuilder.api.v0.models.Organization,
+  app: io.apibuilder.api.v0.models.Application,
+  version: String,
+  service: io.apibuilder.spec.v0.models.Service,
+  interfaces: Iterable[String]
+)
+
+<p>
+  <b>Interfaces:</b>
+  @if(interfaces.isEmpty) {
+    <em>None</em>
+  } else {
+    @interfaces.mkString(", ")
+  }
+</p>

@@ -51,7 +51,7 @@
     </ul>
     </div>
   </div>
- 
+
   <div class="versions-show">
     <h2>Resources</h2>
     @if(service.resources.isEmpty) {
@@ -92,6 +92,26 @@
       }
     }
 
+    <h2>Interfaces</h2>
+    @if(service.interfaces.isEmpty) {
+      <em>No interfaces</em>
+    } else {
+      @service.interfaces.map { interface =>
+        <div id="model-@lib.UrlKey.generate(interface.name)"></div>
+        <a name="model-@lib.UrlKey.generate(interface.name)"></a>
+        <div class="version_interface">
+          <h3>@interface.name</h3>
+          @exampleJson(tpl.org.get, application, tpl.version.get, interface.name)
+
+          @interface.deprecation.map(deprecation(_))
+
+          @Html(lib.Markdown(interface.description))
+
+          @fields(tpl.org.get, application, tpl.version.get, service, interface.fields)
+        </div>
+      }
+    }
+
     <h2>Models</h2>
     @if(service.models.isEmpty) {
       <em>No models</em>
@@ -102,6 +122,7 @@
         <div class="version_model">
           <h3>@model.name</h3>
           @exampleJson(tpl.org.get, application, tpl.version.get, model.name)
+          @interfaces(tpl.org.get, application, tpl.version.get, service, model.interfaces)
 
           @model.deprecation.map(deprecation(_))
 
@@ -120,9 +141,10 @@
         <a name="union-@lib.UrlKey.generate(union.name)"></a>
         <div class="version_union">
           <h3>@union.name</h3>
+          @interfaces(tpl.org.get, application, tpl.version.get, service, union.interfaces)
           <ul>
 	    <li>Type discriminator: @union.discriminator.getOrElse("N/A")</li>
-            @union.deprecation.map { deprecation => <li> + deprecation(deprecation) </li> }
+            @union.deprecation.map(deprecation(_))
 	  </ul>
 
           @Html(lib.Markdown(union.description))

@@ -1,0 +1,28 @@
+{
+  "name": "example-interface",
+
+  "interfaces": {
+    "person": {
+      "fields": [
+        { "name": "email", "type": "string", "required": false },
+        { "name": "name", "type": "string", "required": false }
+      ]
+    }
+  },
+
+  "models": {
+    "user": {
+      "fields": [
+        { "name": "id", "type": "string" }
+      ]
+    },
+
+    "guest": {
+      "fields": [
+        { "name": "seession_id", "type": "string" }
+      ]
+    }
+  }
+}
+
+  
