@@ -97,16 +97,12 @@
       <em>No interfaces</em>
     } else {
       @service.interfaces.map { interface =>
-        <div id="model-@lib.UrlKey.generate(interface.name)"></div>
-        <a name="model-@lib.UrlKey.generate(interface.name)"></a>
+        <div id="interface-@lib.UrlKey.generate(interface.name)"></div>
+        <a name="interface-@lib.UrlKey.generate(interface.name)"></a>
         <div class="version_interface">
           <h3>@interface.name</h3>
-          @exampleJson(tpl.org.get, application, tpl.version.get, interface.name)
-
           @interface.deprecation.map(deprecation(_))
-
           @Html(lib.Markdown(interface.description))
-
           @fields(tpl.org.get, application, tpl.version.get, service, interface.fields)
         </div>
       }

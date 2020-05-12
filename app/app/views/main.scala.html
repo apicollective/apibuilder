@@ -16,7 +16,7 @@
 
     <div class="container-fluid main-container">
       <div class="row">
-          
+
         <div class="col-sm-3 col-md-2 sidebar models">
           <ul class="nav nav-sidebar">
             @metadata.org.map { org =>
@@ -73,6 +73,15 @@
                 @service.enums.map { enum =>
                   <li><a href="#enum-@lib.UrlKey.generate(enum.name)">@enum.name</a></li>
                 }
+              </ul>
+            }
+
+            @if(!service.interfaces.isEmpty) {
+              <b>Interfaces</b>
+              <ul class="nav nav-sidebar">
+              @service.interfaces.map { interface =>
+                <li><a href="#interface-@lib.UrlKey.generate(interface.name)">@interface.name</a></li>
+              }
               </ul>
             }
 
