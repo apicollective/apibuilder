@@ -8,7 +8,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] val person: Interface = makeInterface(
     fields = Some(Seq(
-      makeField(name = "name")
+      makeField(name = "name", required = true)
     ))
   )
 
@@ -98,6 +98,19 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
       )
     ) should be(
       Seq(s"Model[user] field 'name' type 'long' is invalid. Must match the 'person' interface which defines this field as type 'string'")
+    )
+  }
+
+  it("validates field 'required' if declared is consistent") {
+    expectErrors(
+      makeApiJson(
+        interfaces = Map("person" -> person),
+        models = Map("user" -> user.copy(
+          fields = Seq(makeField(name = "name", required = false))
+        ))
+      )
+    ) should be(
+      Seq(s"Model[user] field 'name' cannot be optional. Must match the 'person' interface which defines this field as required")
     )
   }
 

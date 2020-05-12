@@ -184,13 +184,29 @@ case class ServiceSpecValidator(
           Seq(s"$prefix missing field '${interfaceField.name}' as defined in the interface '${interface.name}'")
         }
         case Some(modelField) => {
-          if (interfaceField.`type` == modelField.`type`) {
-            Nil
-          } else {
-            Seq(s"$prefix field '${modelField.name}' type '${modelField.`type`}' is invalid. Must match the '${interface.name}' interface which defines this field as type '${interfaceField.`type`}'")
-          }
+          val fieldPrefix = s"$prefix field '${modelField.name}'"
+          validateInterfaceFieldsType(fieldPrefix, interface, interfaceField, modelField) ++
+            validateInterfaceFieldsRequired(fieldPrefix, interface, interfaceField, modelField)
         }
       }
+    }
+  }
+
+  private def validateInterfaceFieldsType(prefix: String, interface: Interface, interfaceField: Field, modelField: Field): Seq[String] = {
+    if (interfaceField.`type` == modelField.`type`) {
+      Nil
+    } else {
+      Seq(s"$prefix type '${modelField.`type`}' is invalid. Must match the '${interface.name}' interface which defines this field as type '${interfaceField.`type`}'")
+    }
+  }
+
+  private def validateInterfaceFieldsRequired(prefix: String, interface: Interface, interfaceField: Field, modelField: Field): Seq[String] = {
+    if (interfaceField.required == modelField.required) {
+      Nil
+    } else if (interfaceField.required) {
+      Seq(s"$prefix cannot be optional. Must match the '${interface.name}' interface which defines this field as required")
+    } else {
+      Seq(s"$prefix cannot be required. Must match the '${interface.name}' interface which defines this field as optional")
     }
   }
 
