@@ -63,7 +63,7 @@ lazy val generated = project
 
 lazy val api = project
   .in(file("api"))
-  .dependsOn(generated, core)
+  .dependsOn(generated, core % "compile->compile;test->test")
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
   .enablePlugins(NewRelic)

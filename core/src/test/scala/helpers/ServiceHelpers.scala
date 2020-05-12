@@ -3,6 +3,7 @@ package helpers
 import java.util.UUID
 
 import io.apibuilder.spec.v0.models._
+import play.api.libs.json.{JsObject, Json}
 
 trait ServiceHelpers {
 
@@ -69,12 +70,27 @@ trait ServiceHelpers {
 
   def makeInterface(
     name: String = randomString(),
+    plural: String = randomString(),
     fields: Seq[Field] = Nil,
+    attributes: Seq[Attribute] = Nil,
   ): Interface = {
     Interface(
       name = name,
-      plural = name + "s",
+      plural = plural,
       fields = fields,
+      attributes = attributes,
+    )
+  }
+
+  def makeAttribute(
+    name: String = randomString(),
+    value: JsObject = Json.obj(randomString() -> randomString()),
+  ): Attribute = {
+    Attribute(
+      name = name,
+      value = value,
+      description = None,
+      deprecation = None,
     )
   }
 
@@ -82,11 +98,13 @@ trait ServiceHelpers {
     name: String = randomString(),
     `type`: String = "string",
     required: Boolean = true,
+    default: Option[String] = None,
   ): Field = {
     Field(
       name = name,
       `type` = `type`,
       required = required,
+      default = default,
     )
   }
 
