@@ -96,9 +96,10 @@ case class ServiceDiff(
         case Some(headerB) => diffHeader(headerA, headerB)
       }
     } ++ b.headers.find( h => added.contains(h.name) ).map { h =>
-      h.required match {
-        case false => DiffNonBreaking(Helpers.added("optional header", h.name))
-        case true => DiffBreaking(Helpers.added("required header", h.name))
+      if (h.required) {
+        DiffBreaking(Helpers.added("required header", h.name))
+      } else {
+        DiffNonBreaking(Helpers.added("optional header", h.name))
       }
     }
   }
@@ -380,8 +381,8 @@ case class ServiceDiff(
   private[this] def diffBody(prefix: String, a: Option[Body], b: Option[Body]): Seq[Diff] = {
     (a, b) match {
       case (None, None) => Nil
-      case (None, Some(bodyB)) => Seq(DiffBreaking(Helpers.added(prefix, "body")))
-      case (Some(bodyB), None) => Seq(DiffBreaking(Helpers.removed(prefix, "body")))
+      case (None, Some(_)) => Seq(DiffBreaking(Helpers.added(prefix, "body")))
+      case (Some(_), None) => Seq(DiffBreaking(Helpers.removed(prefix, "body")))
       case (Some(bodyA), Some(bodyB)) => {
         Helpers.diffStringBreaking(s"$prefix body type", bodyA.`type`, bodyB.`type`) ++
         Helpers.diffOptionalStringNonBreaking(s"$prefix body description", bodyA.description, bodyB.description) ++
@@ -392,7 +393,7 @@ case class ServiceDiff(
   }
 
   private[this] def diffParameters(prefix: String, a: Seq[Parameter], b: Seq[Parameter]): Seq[Diff] = {
-    val added = b.map(_.name).filter(h => a.find(_.name == h).isEmpty)
+    val added = b.map(_.name).filterNot(h => a.exists(_.name == h))
 
     a.flatMap { parameterA =>
       b.find(_.name == parameterA.name) match {
@@ -468,7 +469,7 @@ case class ServiceDiff(
     def changed(label: String, from: String, to: String) = s"$label changed from ${Text.truncate(from)} to ${Text.truncate(to)}"
 
     def findNew(prefix: String, a: Seq[String], b: Seq[String]): Seq[Diff] = {
-      b.filter(n => a.find(_ == n).isEmpty).map { name =>
+      b.filterNot(n => a.exists(_ == n)).map { name =>
         DiffNonBreaking(Helpers.added(prefix, name))
       }
     }
@@ -568,7 +569,7 @@ case class ServiceDiff(
       a: String,
       b: String
     ): Seq[Diff] = {
-      diffString(label, a, b).map { DiffBreaking(_) }
+      diffString(label, a, b).map(DiffBreaking)
     }
 
     def diffStringNonBreaking(
@@ -576,7 +577,7 @@ case class ServiceDiff(
       a: String,
       b: String
     ): Seq[Diff] = {
-      diffString(label, a, b).map { DiffNonBreaking(_) }
+      diffString(label, a, b).map(DiffNonBreaking)
     }
 
     def diffArrayNonBreaking(
@@ -611,7 +612,7 @@ case class ServiceDiff(
       a: Option[String],
       b: Option[String]
     ): Seq[Diff] = {
-      diffOptionalString(label, a, b).map { DiffBreaking(_) }
+      diffOptionalString(label, a, b).map (DiffBreaking)
     }
 
     def diffOptionalStringNonBreaking(
