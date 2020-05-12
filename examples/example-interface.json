@@ -2,6 +2,11 @@
   "name": "example-interface",
 
   "interfaces": {
+    "database_record": {
+      "fields": [
+        { "name": "id", "type": "string" }
+      ]
+    },
     "person": {
       "fields": [
         { "name": "email", "type": "string", "required": false },
@@ -12,12 +17,14 @@
 
   "models": {
     "user": {
+      "interfaces": ["database_record", "person"],
       "fields": [
-        { "name": "id", "type": "string" }
+        { "name": "registration_date", "type": "date-time-iso8601" }
       ]
     },
 
     "guest": {
+      "interfaces": ["person"],
       "fields": [
         { "name": "seession_id", "type": "string" }
       ]
