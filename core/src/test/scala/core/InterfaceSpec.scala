@@ -114,20 +114,4 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     )
   }
 
-  it("models inherit fields") {
-    val service = expectValid(
-      makeApiJson(
-        interfaces = Map("person" -> person),
-        models = Map("user" -> user, "guest" -> guest),
-      )
-    )
-
-    model(service, "user").fields.map(_.name) should equal(
-      Seq("id", "name")
-    )
-    model(service, "guest").fields.map(_.name) should equal(
-      Seq("age", "name")
-    )
-  }
-
 }

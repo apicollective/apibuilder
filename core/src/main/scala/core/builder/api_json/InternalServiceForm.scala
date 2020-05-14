@@ -52,18 +52,16 @@ private[api_json] case class InternalServiceForm(
 
   def unions: Seq[InternalUnionForm] = declaredUnions ++ internalDatatypeBuilder.unionForms
 
-  private[this] lazy val declaredModels: Seq[InternalModelForm] = interfaceInheritance.models(
-    (json \ "models").asOpt[JsValue] match {
-      case Some(models: JsObject) => {
-        models.fields.flatMap { v =>
-          v match {
-            case(k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
-          }
+  private[this] lazy val declaredModels: Seq[InternalModelForm] = (json \ "models").asOpt[JsValue] match {
+    case Some(models: JsObject) => {
+      models.fields.flatMap { v =>
+        v match {
+          case(k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
         }
-      }.toSeq
-      case _ => Seq.empty
-    }
-  )
+      }
+    }.toSeq
+    case _ => Seq.empty
+  }
 
   def interfaces: Seq[InternalInterfaceForm] = {
     (json \ "interfaces").asOpt[JsValue] match {
@@ -78,10 +76,7 @@ private[api_json] case class InternalServiceForm(
     }
   } ++ internalDatatypeBuilder.interfaceForms
 
-  private[this] lazy val interfaceInheritance: InterfaceInheritance = InterfaceInheritance(interfaces)
-  def models: Seq[InternalModelForm] = interfaceInheritance.models(
-    declaredModels ++ internalDatatypeBuilder.modelForms
-  )
+  def models: Seq[InternalModelForm] = declaredModels ++ internalDatatypeBuilder.modelForms
 
   private[this] lazy val declaredEnums: Seq[InternalEnumForm] = {
     (json \ "enums").asOpt[JsValue] match {
