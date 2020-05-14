@@ -15,7 +15,7 @@ case class ServiceSpecValidator(
     modelNames = service.models.map(_.name),
     unionNames = service.unions.map(_.name)
   )
-  
+
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
@@ -85,12 +85,12 @@ case class ServiceSpecValidator(
 
   private def validateBaseUrl(): Seq[String] = {
     service.baseUrl match {
-      case Some(url) => { 
+      case Some(url) => {
         if(url.endsWith("/")){
-          Seq(s"base_url[$url] must not end with a '/'")  
+          Seq(s"base_url[$url] must not end with a '/'")
         } else {
           Seq.empty
-        } 
+        }
       }
       case None => Seq.empty
     }
@@ -106,13 +106,9 @@ case class ServiceSpecValidator(
       }
     }
 
-    val fieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
-      s"Model[${model.name}] must have at least one field"
-    }
-
     val duplicates = dupsError("Model", service.models.map(_.name))
 
-    nameErrors ++ fieldErrors ++ duplicates
+    nameErrors ++  duplicates
   }
 
   private def validateEnums(): Seq[String] = {
@@ -399,7 +395,7 @@ case class ServiceSpecValidator(
     }
   }
 
-  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {  
+  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {
     kind match {
       case Kind.Primitive(_) | Kind.Enum(_) => {
         Nil
