@@ -5,6 +5,7 @@ sealed trait Kind
 object Kind {
 
   case class Enum(name: String) extends Kind { override def toString = name }
+  case class Interface(name: String) extends Kind { override def toString = name }
   case class Model(name: String) extends Kind { override def toString = name }
   case class Primitive(name: String) extends Kind { override def toString = name }
   case class Union(name: String) extends Kind { override def toString = name }
@@ -16,6 +17,7 @@ object Kind {
 
 case class DatatypeResolver(
   enumNames: Iterable[String],
+  interfaceNames: Iterable[String],
   unionNames: Iterable[String],
   modelNames: Iterable[String]
 ) {
@@ -46,12 +48,15 @@ case class DatatypeResolver(
         enumNames.find(_ == name) match {
           case Some(_) => Some(Kind.Enum(name))
           case None => {
-            modelNames.find(_ == name) match {
-              case Some(_) => Some(Kind.Model(name))
-              case None => {
-                unionNames.find(_ == name) match {
-                  case Some(_) => Some(Kind.Union(name))
-                  case None => None
+            interfaceNames.find(_ == name) match {
+              case Some(_) => Some(Kind.Interface(name))
+              case None => modelNames.find(_ == name) match {
+                case Some(_) => Some(Kind.Model(name))
+                case None => {
+                  unionNames.find(_ == name) match {
+                    case Some(_) => Some(Kind.Union(name))
+                    case None => None
+                  }
                 }
               }
             }
@@ -110,7 +115,7 @@ case class DatatypeResolver(
         t match {
           case TextDatatype.List => parse(Kind.List(kind), rest.drop(1))
           case TextDatatype.Map => parse(Kind.Map(kind), rest.drop(1))
-          case TextDatatype.Singleton(name) => sys.error("Singleton type found in non tail position")
+          case TextDatatype.Singleton(_) => sys.error("Singleton type found in non tail position")
         }
       }
     }
@@ -118,7 +123,7 @@ case class DatatypeResolver(
 
   private[this] def isSingleton(kind: Kind): Boolean = {
     kind match {
-      case Kind.Enum(_) | Kind.Model(_) | Kind.Primitive(_) | Kind.Union(_) => true
+      case Kind.Enum(_) | Kind.Model(_) | Kind.Interface(_) | Kind.Primitive(_) | Kind.Union(_) => true
       case Kind.List(_) | Kind.Map(_) => false
     }
   }

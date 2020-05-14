@@ -1,0 +1,257 @@
+{
+  "name": "apibuilder api json",
+  "description": "Specification of the API Builder Input form (api.json). See https://app.apibuilder.io/doc/apiJson",
+
+  "info": {
+    "contact": {
+      "name": "Michael Bryzek",
+      "email": "mbryzek@alum.mit.edu",
+      "url": "http://twitter.com/mbryzek"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  },
+  "enums": {
+    "parameter_location": {
+      "values": [
+        { "name": "path" },
+        { "name": "query" },
+        { "name": "form" },
+        { "name": "header" }
+      ]
+    }
+  },
+
+  "models": {
+    "api_json": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "apidoc", "type": "apidoc", "required": false },
+        { "name": "info", "type": "info", "required": false },
+        { "name": "namespace", "type": "string", "required": false },
+        { "name": "base_url", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "imports", "type": "[import]", "default": "[]", "required": false },
+        { "name": "headers", "type": "[header]", "default": "[]", "required": false },
+        { "name": "enums", "type": "map[enum]", "default": "{}", "required": false },
+        { "name": "interfaces", "type": "map[interface]", "default": "{}", "required": false },
+        { "name": "unions", "type": "map[union]", "default": "{}", "required": false },
+        { "name": "models", "type": "map[model]", "default": "{}", "required": false },
+        { "name": "resources", "type": "map[resource]", "default": "{}", "required": false },
+        { "name": "annotations", "type": "map[annotation]", "default": "{}", "required": false},
+        { "name": "attributes", "type": "[attribute]", "default": "[]", "required": false }
+      ]
+    },
+
+    "info": {
+      "fields": [
+        { "name": "contact", "type": "contact", "required": false },
+        { "name": "license", "type": "license", "required": false }
+      ]
+    },
+
+    "contact": {
+      "fields": [
+        { "name": "name", "type": "string", "example": "Michael Bryzek", "required": false  },
+        { "name": "url", "type": "string", "example": "https://www.apibuilder.io", "required": false  },
+        { "name": "email", "type": "string", "example": "michael@test.apibuilder.io", "required": false  }
+      ]
+    },
+
+    "license": {
+      "description": "Describes the software license contact for this service",
+      "fields": [
+        { "name": "name", "type": "string", "example": "MIT" },
+        { "name": "url", "type": "string", "required": false, "example": "http://opensource.org/licenses/MIT" }
+      ]
+    },
+
+    "apidoc": {
+      "fields": [
+        { "name": "version", "type": "string", "example": "0.14.97" }
+      ]
+    },
+
+
+    "model": {
+      "fields": [
+        { "name": "description", "type": "string", "required": false },
+        { "name": "plural", "type": "string", "required": false },
+        { "name": "fields", "type": "[field]" },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "interfaces", "type": "[string]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "field": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "required", "type": "boolean", "default": true },
+        { "name": "default", "type": "string", "required": false },
+        { "name": "example", "type": "string", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "annotations", "type": "[string]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+
+    "resource": {
+      "fields": [
+        { "name": "plural", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "operations", "type": "[operation]" },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "operation": {
+      "fields": [
+        { "name": "method", "type": "string" },
+        { "name": "path", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "body", "type": "body", "required": false },
+        { "name": "parameters", "type": "[parameter]", "required": false },
+        { "name": "responses", "type": "[response]", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "body": {
+      "fields": [
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "parameter": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "location", "type": "parameter_location", "required": false, "default": "query" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "required", "type": "boolean", "default": true },
+        { "name": "default", "type": "string", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "example", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+
+    "enum": {
+      "fields": [
+        { "name": "plural", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "values", "type": "[enum_value]" },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "enum_value": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "value", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "interface": {
+      "fields": [
+        { "name": "plural", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "fields", "type": "[field]", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "union": {
+      "fields": [
+        { "name": "plural", "type": "string", "required": false },
+        { "name": "discriminator", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "types", "type": "[union_type]", "minimum": 1 },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "interfaces", "type": "[string]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "union_type": {
+      "fields": [
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "default", "type": "boolean", "default": false },
+        { "name": "discriminator_value", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "import": {
+      "fields": [
+        { "name": "uri", "type": "string" }
+      ]
+    },
+
+    "header": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "required", "type": "boolean", "default": true },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "response": {
+      "fields": [
+        { "name": "type", "type": "string" },
+        { "name": "headers", "type": "[header]", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "attributes", "type": "[attribute]", "required": false }
+      ]
+    },
+
+    "attribute": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "value", "type": "object" }
+      ]
+    },
+
+    "annotation": {
+      "fields": [
+        { "name": "description", "type": "string", "required": false },
+        { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "deprecation": {
+      "fields": [
+        { "name": "description", "type": "string", "required": false }
+      ]
+    }
+
+  }
+
+}

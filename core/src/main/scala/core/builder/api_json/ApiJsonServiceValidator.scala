@@ -1,7 +1,5 @@
 package builder.api_json
 
-import akka.http.scaladsl
-import akka.http.scaladsl.model
 import builder.JsonUtil
 import core.{Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
@@ -81,6 +79,7 @@ case class ApiJsonServiceValidator(
             validateParameterBodies ++
             validateParameters ++
             validateResponses ++
+            validateInterfaces ++
             validateUnions ++
             validateModels ++
             validateFields ++
@@ -133,7 +132,7 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace"),
       optionalArraysOfObjects = Seq("imports", "headers", "attributes"),
-      optionalObjects = Seq("apidoc", "info", "enums", "models", "unions", "resources", "annotations")
+      optionalObjects = Seq("apidoc", "info", "enums", "interfaces", "models", "unions", "resources", "annotations")
     )
   }
 
@@ -173,35 +172,7 @@ case class ApiJsonServiceValidator(
     val typeErrors = union.types.filter(_.datatype.isLeft).flatMap { typ =>
       Seq(s"Union[${union.name}] type[] " + typ.datatype.left.get.mkString(", "))
     }
-
-    val defaultErrors = union.discriminator match {
-      case None => {
-        union.types.
-          filter(_.datatype.isRight).
-          filter(_.default.isDefined).
-          map(_.datatype.right.get.name).
-          toList match {
-            case Nil => Nil
-            case types => {
-              val plural = if (types.length > 1) { "types" } else { "type "}
-              Seq(s"Union[${union.name}] $plural[${types.mkString(", ")}] cannot specify 'default' as the union does not define an explicit discriminator.")
-            }
-        }
-      }
-
-      case Some(_) => {
-        union.types.
-          filter(_.datatype.isRight).
-          filter(_.default.getOrElse(false)).
-          map(_.datatype.right.get.name).
-          toList match {
-            case Nil => Nil
-            case _ :: Nil => Nil
-            case types => Seq(s"Union[${union.name}] More than one type marked as default: " + types.mkString(", "))
-          }
-      }
-    }
-    union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors ++ defaultErrors
+    union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors
   }
 
   private def validateAnnotations(): Seq[String] = {
@@ -239,10 +210,21 @@ case class ApiJsonServiceValidator(
     enum.values.flatMap(_.warnings) ++ attributeErrors
   }
 
-  private def validateModels(): Seq[String] = {
-    val warnings = internalService.get.models.flatMap(_.warnings)
+  private def validateInterfaces(): Seq[String] = {
+    val warnings = internalService.get.interfaces.flatMap(_.warnings)
 
-    val attributeErrors = internalService.get.models.flatMap { model =>
+    val attributeErrors = internalService.get.interfaces.flatMap { interface =>
+      validateAttributes(s"Interface[${interface.name}]", interface.attributes)
+    }
+
+    warnings ++ attributeErrors
+  }
+
+  private def validateModels(): Seq[String] = {
+    val models = internalService.get.models
+    val warnings = models.flatMap(_.warnings)
+
+    val attributeErrors = models.flatMap { model =>
       validateAttributes(s"Model[${model.name}]", model.attributes)
     }
 
@@ -362,7 +344,7 @@ case class ApiJsonServiceValidator(
         validateAttributes(opLabel(resource, op, "body"), op.body.get.attributes)
       }
     }
-    
+
     warnings ++ attributeErrors ++ bodyAttributeErrors
   }
 

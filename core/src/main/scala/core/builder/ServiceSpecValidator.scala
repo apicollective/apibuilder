@@ -1,25 +1,34 @@
 package builder
 
-import core.{TypeValidator, TypesProvider, Util}
-import io.apibuilder.spec.v0.models.{Annotation, Header, Method, Operation, ParameterLocation, Resource, ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service, Union, UnionType}
+import core.{ServiceFetcher, TypeValidator, TypesProvider, Util}
+import io.apibuilder.spec.v0.models._
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 
+import scala.annotation.tailrec
+
 case class ServiceSpecValidator(
-  service: Service
+  service: Service,
 ) {
 
   private val ReservedDiscriminatorValues = Seq("value", "implicit")
 
   private val localTypeResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
+    interfaceNames = service.interfaces.map(_.name),
     modelNames = service.models.map(_.name),
     unionNames = service.unions.map(_.name)
   )
-  
+
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
         s"${service.namespace}.enums.$enum"
+      }
+    },
+
+    interfaceNames = localTypeResolver.interfaceNames ++ service.imports.flatMap { service =>
+      service.interfaces.map { interface =>
+        s"${service.namespace}.interfaces.$interface"
       }
     },
 
@@ -45,13 +54,12 @@ case class ServiceSpecValidator(
     validateApidoc() ++
     validateName() ++
     validateBaseUrl() ++
+    validateInterfaces() ++
     validateModels() ++
     validateEnums() ++
     validateUnions() ++
     validateHeaders(service.headers, "Header") ++
-    validateModelAndEnumAndUnionNamesAreDistinct() ++
-    validateFields() ++
-    validateFieldDefaults() ++
+    validateTypeNamesAreUnique() ++
     validateResources() ++
     validateParameterLocations() ++
     validateParameterBodies() ++
@@ -59,17 +67,17 @@ case class ServiceSpecValidator(
     validateParameterNames() ++
     validateParameters() ++
     validateResponses() ++
-    validateAnnotations()
+    validateGlobalAnnotations()
   }
 
   private def validateApidoc(): Seq[String] = {
     val specified = VersionTag(service.apidoc.version)
-    val current = io.apibuilder.spec.v0.Constants.Version
     specified.major match {
       case None => {
+        val current = io.apibuilder.spec.v0.Constants.Version
         Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")
       }
-      case Some(major) => {
+      case Some(_) => {
         Nil
       }
     }
@@ -85,34 +93,121 @@ case class ServiceSpecValidator(
 
   private def validateBaseUrl(): Seq[String] = {
     service.baseUrl match {
-      case Some(url) => { 
+      case Some(url) => {
         if(url.endsWith("/")){
-          Seq(s"base_url[$url] must not end with a '/'")  
+          Seq(s"base_url[$url] must not end with a '/'")
         } else {
           Seq.empty
-        } 
+        }
       }
       case None => Seq.empty
     }
   }
 
-  private def validateModels(): Seq[String] = {
-    val nameErrors = service.models.flatMap { model =>
-      Text.validateName(model.name) match {
-        case Nil => None
-        case errors => {
-          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" and ")}")
-        }
+  def validateName(prefix: String, name: String): Seq[String] = {
+    name.trim match {
+      case "" => Seq(s"$prefix name cannot be empty")
+      case n => Text.validateName(n) match {
+        case Nil => Nil
+        case errors => Seq(s"$prefix name is invalid: ${errors.mkString(" and ")}")
       }
     }
+  }
 
-    val fieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
+  private def validateInterfaces(): Seq[String] = {
+    service.interfaces.flatMap { interface =>
+      val p = s"Interface[${interface.name}]"
+      validateName(p, interface.name) ++ validateFields(p, interface.fields)
+    } ++
+      dupsError("Interface", service.interfaces.map(_.name))
+  }
+
+  private def validateModels(): Seq[String] = {
+    val modelErrors = service.models.flatMap { model =>
+      val p = s"Model[${model.name}]"
+
+      validateName(p, model.name) ++
+        validateFields(p, model.fields) ++
+        model.interfaces.flatMap { n => validateInterfaceFields(p, n, model.fields) }
+    }
+
+    val atLeastOneFieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
       s"Model[${model.name}] must have at least one field"
     }
 
     val duplicates = dupsError("Model", service.models.map(_.name))
 
-    nameErrors ++ fieldErrors ++ duplicates
+    modelErrors ++ atLeastOneFieldErrors ++ duplicates
+  }
+
+  def validateAnnotation(prefix: String, anno: String): Seq[String] = {
+    if (service.annotations.map(_.name).contains(anno)){
+      Nil
+    } else {
+      Seq(s"$prefix annotation[$anno] is invalid. Annotations must be defined.")
+    }
+  }
+
+  def validateFields(prefix: String, fields: Seq[Field]) = {
+    dupsError(s"$prefix field", fields.map(_.name)) ++
+      fields.flatMap { f => validateField(s"$prefix Field[${f.name}]", f) }
+  }
+
+  def validateField(prefix: String, field: Field): Seq[String] = {
+    validateName(prefix, field.name) ++
+      validateType(prefix, field.`type`) ++
+      validateRange(prefix, field.minimum, field.maximum) ++
+      validateInRange(prefix, field.minimum, field.maximum, field.default) ++
+      field.default.toSeq.flatMap { d => validateDefault(prefix, field.`type`, d) } ++
+      validateAnnotations(prefix, field.annotations)
+  }
+
+  private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
+    typeResolver.parse(interfaceName) match {
+      case Some(_: Kind.Interface) => {
+        service.interfaces.find(_.name == interfaceName) match {
+          case Some(i) => validateInterfaceFields(prefix, i, fields)
+          case None => {
+            // TODO: should we validate for imported interfaces?
+            Nil
+          }
+        }
+      }
+      case other => Seq(s"$prefix Interface[$interfaceName] not found")
+    }
+  }
+
+  private def validateInterfaceFields(prefix: String, interface: Interface, fields: Seq[Field]): Seq[String] = {
+    interface.fields.flatMap { interfaceField =>
+      fields.find(_.name == interfaceField.name) match {
+        case None => {
+          Seq(s"$prefix missing field '${interfaceField.name}' as defined in the interface '${interface.name}'")
+        }
+        case Some(modelField) => {
+          val fieldPrefix = s"$prefix field '${modelField.name}'"
+          validateInterfaceFieldsType(fieldPrefix, interface, interfaceField, modelField) ++
+            validateInterfaceFieldsRequired(fieldPrefix, interface, interfaceField, modelField)
+        }
+      }
+    }
+  }
+
+  private def validateInterfaceFieldsType(prefix: String, interface: Interface, interfaceField: Field, modelField: Field): Seq[String] = {
+    if (interfaceField.`type` == modelField.`type`) {
+      Nil
+    } else {
+      Seq(s"$prefix type '${modelField.`type`}' is invalid. Must match the '${interface.name}' interface which defines this field as type '${interfaceField.`type`}'")
+    }
+  }
+
+  private def validateInterfaceFieldsRequired(prefix: String, interface: Interface, interfaceField: Field, modelField: Field): Seq[String] = {
+    if (interfaceField.required == modelField.required) {
+      Nil
+    } else if (interfaceField.required) {
+      Seq(s"$prefix cannot be optional. Must match the '${interface.name}' interface which defines this field as required")
+    } else {
+      Seq(s"$prefix cannot be required. Must match the '${interface.name}' interface which defines this field as optional")
+    }
   }
 
   private def validateEnums(): Seq[String] = {
@@ -156,7 +251,13 @@ case class ServiceSpecValidator(
     nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues ++ valuesWithInvalidNames ++ duplicateValues
   }
 
-  private def validateAnnotations(): Seq[String] = {
+  private def validateAnnotations(prefix: String, annotations: Seq[String]): Seq[String] = {
+    annotations.flatMap { a => validateAnnotation(prefix, a) } ++
+      dupsError(s"$prefix Annotation", annotations)
+
+  }
+
+  private def validateGlobalAnnotations(): Seq[String] = {
     val nameErrors = service.annotations.flatMap { anno =>
       Text.validateName(anno.name) match {
         case Nil => None
@@ -200,40 +301,13 @@ case class ServiceSpecValidator(
     }
 
     val invalidTypes = service.unions.filter(!_.name.isEmpty).flatMap { union =>
-      union.types.flatMap { t =>
-        typeResolver.parse(t.`type`) match {
-          case None => {
-            Seq(s"Union[${union.name}] type[${t.`type`}] not found")
-          }
-          case Some(_) => {
-            // Validate that the type is NOT imported as there is
-            // no way we could retroactively modify the imported
-            // type to extend the union type that is only being
-            // defined in this service.
-            localTypeResolver.parse(t.`type`) match {
-              case None => {
-                Seq(s"Union[${union.name}] type[${t.`type`}] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
-              }
-              case Some(kind: Kind) => {
-                kind match {
-                  case Kind.Primitive("unit") => {
-                    Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
-                  }
-                  case _ => {
-                    Nil
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      validateUnionTypes(s"Union[${union.name}]", union.types)
     }
 
     val discriminatorErrors = service.unions.flatMap { union =>
       union.discriminator match {
         case None => {
-          union.types.filter { t => t.default.isDefined }.toList match {
+          union.types.filter { t => t.default.getOrElse(false) }.toList match {
             case Nil => None
             case types => Seq(
               s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")
@@ -267,6 +341,51 @@ case class ServiceSpecValidator(
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
     nameErrors ++ typeErrors ++ invalidTypes ++ validateUnionCyclicReferences() ++ discriminatorErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
+  }
+
+  // Validate that the type is NOT imported as there is
+  // no way we could retroactively modify the imported
+  // type to extend the union type that is only being
+  // defined in this service.
+  private def validateTypeLocal(prefix: String, typ: String): Seq[String] = {
+    validateType(prefix, typ) match {
+      case Nil => {
+        localTypeResolver.parse(typ) match {
+          case None => {
+            Seq(s"$prefix is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
+          }
+          case Some(_) => Nil
+        }
+      }
+      case _ => Nil // another type error already found
+    }
+  }
+
+  private def validateTypeNotUnit(prefix: String, typ: String): Seq[String] = {
+    localTypeResolver.parse(typ) match {
+      case Some(kind: Kind.Primitive) if kind.name == "unit" => {
+        Seq(s"$prefix Union types cannot contain unit. To make a particular field optional, use the required property.")
+      }
+      case _ => Nil
+    }
+  }
+
+  private def validateUnionTypes(prefix: String, types: Seq[UnionType]): Seq[String] = {
+    types.flatMap { t =>
+      validateType(s"$prefix", t.`type`) ++
+        validateTypeNotUnit(prefix, t.`type`) ++
+        validateTypeLocal(s"$prefix Type[${t.`type`}]", t.`type`) ++
+        dupsError(s"$prefix Type", types.map(_.`type`))
+    } ++ validateUnionTypeDefaults(prefix, types)
+  }
+
+  private def validateUnionTypeDefaults(prefix: String, types: Seq[UnionType]): Seq[String] = {
+    val defaultTypes = types.filter(_.default.getOrElse(false)).map(_.`type`)
+    if (defaultTypes.size > 1) {
+      Seq(s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.sorted.mkString(", ")}")
+    } else {
+      Nil
+    }
   }
 
   private[this] def validateUnionTypeDiscriminatorValues(): Seq[String] = {
@@ -399,7 +518,15 @@ case class ServiceSpecValidator(
     }
   }
 
-  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {  
+  @tailrec
+  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {
+    def findField(fields: Seq[Field]) = {
+      fields.find(_.name == fieldName) match {
+        case None => Nil
+        case Some(_) => Seq(kind.toString)
+      }
+    }
+
     kind match {
       case Kind.Primitive(_) | Kind.Enum(_) => {
         Nil
@@ -413,15 +540,17 @@ case class ServiceSpecValidator(
         unionTypesWithNamedField(inner, fieldName)
       }
 
+      case Kind.Interface(name) => {
+        service.interfaces.find(_.name == name) match {
+          case None => Nil
+          case Some(model) => findField(model.fields)
+        }
+      }
+
       case Kind.Model(name) => {
         service.models.find(_.name == name) match {
           case None => Nil
-          case Some(model) => {
-            model.fields.find(_.name == fieldName) match {
-              case None => Nil
-              case Some(_) => Seq(kind.toString)
-            }
-          }
+          case Some(model) => findField(model.fields)
         }
       }
 
@@ -446,7 +575,7 @@ case class ServiceSpecValidator(
           kind match {
             case Kind.Enum(_) | Kind.Primitive("string") => None
             case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => None
-            case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
+            case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
               Some(s"$location[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
             }
           }
@@ -459,117 +588,63 @@ case class ServiceSpecValidator(
     headersWithInvalidTypes ++ duplicates
   }
 
+  private[this] case class TypesUniqueValidator(label: String, names: Seq[String]) {
+    val all: Set[String] = names.map(_.toLowerCase()).toSet
+    def contains(name: String): Boolean = all.contains(name.toLowerCase())
+  }
+
   /**
     * While not strictly necessary, we do this to reduce
     * confusion. Otherwise we would require an extension to
     * always indicate if a type referenced a model, union, or enum.
     */
-  private def validateModelAndEnumAndUnionNamesAreDistinct(): Seq[String] = {
-    val modelNames = service.models.map(_.name.toLowerCase)
-    val enumNames = service.enums.map(_.name.toLowerCase)
-    val unionNames = service.unions.map(_.name.toLowerCase)
+  private def validateTypeNamesAreUnique(): Seq[String] = {
+    val validators: Seq[TypesUniqueValidator] = Seq(
+      TypesUniqueValidator("an interface", service.interfaces.map(_.name)),
+      TypesUniqueValidator("a model", service.models.map(_.name)),
+      TypesUniqueValidator("an enum", service.enums.map(_.name)),
+      TypesUniqueValidator("a union", service.unions.map(_.name)),
+    )
 
-    modelNames.filter { enumNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both a model and an enum"
-    } ++ modelNames.filter { unionNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both a model and a union type"
-    } ++ enumNames.filter { unionNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both an enum and a union type"
+    validators.flatMap(_.all.toSeq)
+      .groupBy { identity }
+      .filter { case (_, v ) => v.size > 1 }
+      .keys.toList.sorted
+      .map { name =>
+      val english = validators.filter(_.contains(name)).map(_.label).sorted.toList match {
+        case one :: two :: Nil => s"both ${one} and ${two}"
+        case all => all.mkString(", ")
+      }
+      s"Name[$name] cannot be used as the name of $english type"
     }
   }
 
-  private def validateFields(): Seq[String] = {
-    val nameErrors = service.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        Text.validateName(field.name) match {
-          case Nil => None
-          case errors => {
-            Some(s"Model[${model.name}] field name[${field.name}] is invalid: ${errors.mkString(" and ")}")
-          }
+  private def validateRange(prefix: String, minimum: Option[Long], maximum: Option[Long]): Seq[String] = {
+    (minimum, maximum) match {
+      case (Some(min), Some(max)) => {
+        if (min <= max) {
+          Nil
+        } else {
+          Seq(s"$prefix minimum[$min] must be <= specified maximum[$max]")
         }
       }
+      case (_, _) => Nil
     }
-
-    val duplicateFieldErrors = service.models.flatMap { model =>
-      dupsError(s"Model[${model.name}] field", model.fields.filterNot(_.name.isEmpty).map(_.name))
-    }
-
-    val typeErrors = service.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        typeResolver.parse(field.`type`) match {
-          case None => Some(s"${model.name}.${field.name} has invalid type[${field.`type`}]")
-          case _ => None
-        }
-      }
-    }
-
-    val annotationFieldErrors = service.models.flatMap{ model =>
-      model.fields.flatMap{ field =>
-        field.annotations.flatMap{ anno =>
-          if (service.annotations.map(_.name).contains(anno)){
-            None
-          } else {
-            Some(s"${model.name}.${field.name}.annotation[$anno] is invalid. Annotations must be defined.")
-          }
-        }
-      }
-    }
-
-    val annotationDuplicateErrors = service.models.flatMap{ model =>
-      model.fields.flatMap{ field =>
-        dupsError(s"${model.name}.${field.name}.annotation", field.annotations)
-      }
-    }
-
-    nameErrors ++ duplicateFieldErrors ++ typeErrors ++ annotationFieldErrors ++ annotationDuplicateErrors
   }
 
-  /**
-   * Validates that any defaults specified for fields are valid:
-   *   Any field with a default is required
-   *   Valid based on the datatype
-   *   If an enum, the default is listed as a value for that enum
-   */
-  private def validateFieldDefaults(): Seq[String] = {
-    service.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        field.default.flatMap { default =>
-          validateDefault(s"${model.name}.${field.name}", field.`type`, default)
+  private def validateInRange(prefix: String, minimum: Option[Long], maximum: Option[Long], value: Option[String]): Seq[String] = {
+    value.flatMap(JsonUtil.parseBigDecimal) match {
+      case None => Nil
+      case Some(bd) => {
+        val minErrors = minimum match {
+          case Some(min) if bd < min => Seq(s"$prefix default[$bd] must be >= specified minimum[$min]")
+          case _ => Nil
         }
-      }
-    } match {
-      case Nil => {
-        service.models.flatMap { model =>
-          model.fields.
-            filter { f => f.minimum.isDefined || f.maximum.isDefined }.
-            filter { f => f.default.isDefined && JsonUtil.isNumeric(f.default.get) }.
-            flatMap { field =>
-              field.default match {
-                case None => Nil
-                case Some(default) => {
-                  Seq(
-                    field.minimum.flatMap { min =>
-                      if (default.toLong < min) {
-                        Some(s"${model.name}.${field.name} default[$default] must be >= specified minimum[$min]")
-                      } else {
-                        None
-                      }
-                    },
-                    field.maximum.flatMap { max =>
-                      if (default.toLong > max) {
-                        Some(s"${model.name}.${field.name} default[$default] must be <= specified maximum[$max]")
-                      } else {
-                        None
-                      }
-                    }
-                  ).flatten
-                }
-              }
-            }
+        val maxErrors = maximum match {
+          case Some(max) if bd > max => Seq(s"$prefix default[$bd] must be <= specified maximum[$max]")
+          case _ => Nil
         }
-      }
-      case errors => {
-        errors
+        minErrors ++ maxErrors
       }
     }
   }
@@ -585,7 +660,7 @@ case class ServiceSpecValidator(
             case Kind.List(_) | Kind.Map(_) => {
               Some(s"Resource[${resource.`type`}] has an invalid type: must be a singleton (not a list nor map)")
             }
-            case Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
+            case Kind.Interface(_) | Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
               None
             }
             case Kind.Primitive(name) => {
@@ -655,15 +730,13 @@ case class ServiceSpecValidator(
     service.resources.flatMap { resource =>
       resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
-          typeResolver.parse(param.`type`).flatMap { pd =>
-            param.default match {
-              case None => None
-              case Some(default) => {
-                if (param.required) {
-                  validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
-                } else {
-                  Some(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
-                }
+          param.default match {
+            case None => Nil
+            case Some(default) => {
+              if (param.required) {
+                validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+              } else {
+                Seq(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
               }
             }
           }
@@ -716,8 +789,8 @@ case class ServiceSpecValidator(
                       Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
                     }
 
-                    case Kind.Model(_) | Kind.Union(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
+                    case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) => {
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Interface, model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
                     }
 
                     case Kind.Map(_) => {
@@ -765,7 +838,7 @@ case class ServiceSpecValidator(
         // Serializes as a string
         true
       }
-      case Kind.Model(_) | Kind.Union(_) | Kind.List(_) | Kind.Map(_) => {
+      case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.List(_) | Kind.Map(_) => {
         false
       }
     }
@@ -865,30 +938,34 @@ case class ServiceSpecValidator(
     invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes ++ invalidHeaders.flatten
   }
 
+  private def validateType(prefix: String, `type`: String): Seq[String] = {
+    typeResolver.parse(`type`) match {
+      case None => Seq(s"$prefix type[${`type`}] not found")
+      case Some(_) => Nil
+    }
+  }
 
   private def validateDefault(
     prefix: String,
     `type`: String,
     default: String
-  ): Option[String] = {
+  ): Seq[String] = {
     typeResolver.parse(`type`) match {
-      case None => {
-        None
-      }
-      case Some(pd) => {
-        validator.validate(pd, default, Some(prefix))
-      }
+      case None => Nil
+      case Some(kind) => validator.validate(kind, default, Some(prefix)).toSeq
     }
   }
 
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
     dups(values).map { n =>
       s"$label[$n] appears more than once"
-    }.toSeq
+    }
   }
 
-  private def dups(values: Iterable[String]): Iterable[String] = {
-    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim).filter { _._2.size > 1 }.keys
+  private def dups(values: Iterable[String]): List[String] = {
+    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim)
+      .filter { _._2.size > 1 }
+      .keys.toList.sorted
   }
 
   private def opLabel(

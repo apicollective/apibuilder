@@ -31,7 +31,7 @@ class TypeValidatorSpec extends FunSpec with Matchers {
 
   it("models cannot have defaults") {
     validator.validate(Kind.Model("foo"), "bar") should be(
-      Some("default[bar] is not valid for model[foo]. apidoc does not support default values for models")
+      Some("default[bar] is not valid for model[foo]. API Builder does not support default values for models")
     )
   }
 

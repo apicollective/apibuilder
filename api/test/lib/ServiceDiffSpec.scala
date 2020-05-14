@@ -539,6 +539,19 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         )
       )
 
+      val serviceWithFooInterface = base.copy(unions = Seq(union.copy(interfaces = Seq("foo"))))
+      ServiceDiff(serviceWithUnion, serviceWithFooInterface).differences must be(
+        Seq(
+          DiffBreaking("union user interface added: foo")
+        )
+      )
+
+      ServiceDiff(serviceWithFooInterface, serviceWithUnion).differences must be(
+        Seq(
+          DiffBreaking("union user interface removed: foo")
+        )
+      )
+
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Nil)))).differences must be(
         Seq(
           DiffBreaking("union user type removed: registered")
@@ -672,6 +685,19 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
           DiffNonBreaking("model user deprecated")
+        )
+      )
+
+      val serviceWithFooInterface = base.copy(models = Seq(model.copy(interfaces = Seq("foo"))))
+      ServiceDiff(serviceWithModel, serviceWithFooInterface).differences must be(
+        Seq(
+          DiffBreaking("model user interface added: foo")
+        )
+      )
+
+      ServiceDiff(serviceWithFooInterface, serviceWithModel).differences must be(
+        Seq(
+          DiffBreaking("model user interface removed: foo")
         )
       )
 

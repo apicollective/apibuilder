@@ -17,7 +17,7 @@ class InlineEnumsSpec extends FunSpec with Matchers {
         |  }
         |}
       """.stripMargin.trim,
-    extras: String = ""    
+    extras: String = ""
   ): String = {
     s"""
     {

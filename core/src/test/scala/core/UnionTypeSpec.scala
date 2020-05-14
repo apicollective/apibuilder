@@ -2,7 +2,7 @@ package core
 
 import org.scalatest.{FunSpec, Matchers}
 
-class UnionTypeSpec extends FunSpec with Matchers {
+class UnionTypeSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
     val baseJson = """
     {
@@ -130,8 +130,17 @@ class UnionTypeSpec extends FunSpec with Matchers {
     }
 
     it("validates unit type") {
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "unit", "uuid", "registered"))
-      validator.errors should be(Seq("Union types cannot contain unit. To make a particular field optional, use the required property."))
+      TestHelper.serviceValidator(
+        makeApiJson(
+          unions = Map(
+            "user" -> makeUnion(
+              types = Seq(makeUnionType(`type` = "unit"))
+            )
+          )
+        )
+      ).errors() should equal(
+        Seq("Union[user] Union types cannot contain unit. To make a particular field optional, use the required property.")
+      )
     }
 
     it("infers proper parameter type if field is common across all types") {
@@ -337,9 +346,32 @@ class UnionTypeSpec extends FunSpec with Matchers {
     fetcher.add(uri, validator.service)
 
     TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).errors should be(
-      Seq("Union[expandable_user] type[test.common.models.reference] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
+      Seq("Union[expandable_user] Type[test.common.models.reference] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
     )
 
+  }
+
+  it("only one type can be marked default") {
+    def test(userDefault: Boolean = false, guestDefault: Boolean = false) = {
+      TestHelper.serviceValidator(
+        makeApiJson(
+          models = Map("user" -> makeModelWithField(), "guest" -> makeModelWithField()),
+          unions = Map("visitor" -> makeUnion(
+            discriminator = Some("discriminator"),
+            types = Seq(
+              makeUnionType(`type` = "user", default = userDefault),
+              makeUnionType(`type` = "guest", default = guestDefault),
+            )
+          ))
+        )
+      )
+    }
+    test(userDefault = false, guestDefault = false).errors() should be(Nil)
+    test(userDefault = true, guestDefault = false).errors() should be(Nil)
+    test(userDefault = false, guestDefault = true).errors() should be(Nil)
+    test(userDefault = true, guestDefault = true).errors() should be(
+      Seq("Union[visitor] Only 1 type can be specified as default. Currently the following types are marked as default: guest, user")
+    )
   }
 
 }

@@ -372,4 +372,5 @@ class ExampleJsonSpec  extends PlaySpec
       Json.obj("discriminator" -> "json", "value" -> JsNull)
     )
   }
+
 }

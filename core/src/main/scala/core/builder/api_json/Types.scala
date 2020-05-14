@@ -1,6 +1,6 @@
 package builder.api_json
 
-import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderModel, TypesProviderUnion}
+import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderInterface, TypesProviderModel, TypesProviderUnion}
 import lib.{DatatypeResolver, Kind}
 
 private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {
@@ -43,6 +43,22 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
     )
   }
 
+  override def interfaces: Seq[TypesProviderInterface] = internal.interfaces.map { i =>
+    TypesProviderInterface(
+      namespace = internal.namespace.getOrElse(""),
+      name = i.name,
+      plural = i.plural,
+      fields = i.fields.
+        filter(_.name.isDefined).
+        filter(_.datatype.isRight).
+        map { f =>
+          TypesProviderField(
+            name = f.name.get,
+            `type` = f.datatype.right.get.label
+          )
+        }
+    )
+  }
 }
 
 /**
@@ -60,6 +76,8 @@ private[api_json] case class RecursiveTypesProvider(
   override def unions: Seq[TypesProviderUnion] = providers.flatMap(_.unions)
 
   override def models: Seq[TypesProviderModel] = providers.flatMap(_.models)
+
+  override def interfaces: Seq[TypesProviderInterface] = providers.flatMap(_.interfaces)
 
   private lazy val providers = Seq(InternalServiceFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
@@ -79,7 +97,7 @@ private[api_json] case class RecursiveTypesProvider(
             case Nil => {
               Seq(TypesProvider.FromService(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
             }
-            case _ => {
+            case errors => {
               // There are errors w/ this import - skip it
               resolve(importUris.drop(1), imported ++ Set(uri))
             }
@@ -98,6 +116,7 @@ private[api_json] case class TypeResolver(
 
   private val resolver = DatatypeResolver(
     enumNames = provider.enums.map(_.name),
+    interfaceNames = provider.interfaces.map(_.name),
     modelNames = provider.models.map(_.name),
     unionNames = provider.unions.map(_.name)
   )

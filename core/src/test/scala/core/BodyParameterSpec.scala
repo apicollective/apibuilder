@@ -152,7 +152,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   it("If body specified, parameters cannot be models") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "message")
     val validator = TestHelper.serviceValidatorFromApiJson(baseJsonWithInvalidModel)
-    validator.errors().mkString("") should be(s"Resource[message] POST /messages/:mimeType Parameter[debug] has an invalid type[message]. Model and union types are not supported as query parameters.")
+    validator.errors().mkString("") should be(s"Resource[message] POST /messages/:mimeType Parameter[debug] has an invalid type[message]. Interface, model and union types are not supported as query parameters.")
   }
 
 }

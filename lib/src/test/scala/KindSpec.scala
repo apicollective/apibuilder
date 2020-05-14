@@ -5,9 +5,10 @@ import org.scalatest.{FunSpec, Matchers}
 class KindSpec extends FunSpec with Matchers {
 
   private[this] val resolver = DatatypeResolver(
-    enumNames = Seq.empty,
-    modelNames = Seq.empty,
-    unionNames = Seq.empty
+    enumNames = Nil,
+    interfaceNames = Nil,
+    modelNames = Nil,
+    unionNames = Nil
   )
 
   it("primitives") {
@@ -44,8 +45,9 @@ class KindSpec extends FunSpec with Matchers {
   it("with enums and models") {
     val resolver = DatatypeResolver(
       enumNames = Seq("age_group"),
+      interfaceNames = Nil,
       modelNames = Seq("user"),
-      unionNames = Seq.empty
+      unionNames = Nil,
     )
 
     resolver.parse("map[age_group]").map(_.toString) should be(Some("map[age_group]"))
@@ -59,6 +61,7 @@ class KindSpec extends FunSpec with Matchers {
   it("precedence rules") {
     val resolver = DatatypeResolver(
       enumNames = Seq("age_group", "string", "other_enum"),
+      interfaceNames = Seq("visitor"),
       modelNames = Seq("guest_user", "registered_user", "uuid"),
       unionNames = Seq("user", "other_enum")
     )
@@ -66,6 +69,7 @@ class KindSpec extends FunSpec with Matchers {
     resolver.parse("age_group") should be(Some(Kind.Enum("age_group")))
     resolver.parse("other_enum") should be(Some(Kind.Enum("other_enum")))
     resolver.parse("string") should be(Some(Kind.Primitive("string")))
+    resolver.parse("visitor") should be(Some(Kind.Interface("visitor")))
     resolver.parse("guest_user") should be(Some(Kind.Model("guest_user")))
     resolver.parse("registered_user") should be(Some(Kind.Model("registered_user")))
     resolver.parse("uuid") should be(Some(Kind.Primitive("uuid")))
