@@ -41,7 +41,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors().mkString should be("base_url[http://localhost:9000/] must not end with a '/'")
   }
 
-  it("model that is missing fields") {
+  it("model w/ no fields") {
     val json =
       """
     {
@@ -55,7 +55,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Model[user] must have at least one field")
+    validator.errors() should be(Nil)
   }
 
   it("model has a field with an invalid name") {
@@ -489,15 +489,15 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     {
         "name": "Test Validation of Parameters",
         "apidoc": { "version": "0.9.6" },
-    
+
         "models": {
-    
+
             "tag": {
                 "fields": [
                     { "name": "name", "type": "string" }
                 ]
             }
-    
+
         },
 
         "resources": {
