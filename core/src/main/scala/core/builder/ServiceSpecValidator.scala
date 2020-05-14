@@ -591,11 +591,12 @@ case class ServiceSpecValidator(
     * always indicate if a type referenced a model, union, or enum.
     */
   private def validateTypeNamesAreUnique(): Seq[String] = {
+    val unionNames = service.unions.map(_.name)
     val validators: Seq[TypesUniqueValidator] = Seq(
-      TypesUniqueValidator("an interface", service.interfaces.map(_.name)),
+      TypesUniqueValidator("an interface", service.interfaces.map(_.name).filterNot(unionNames.contains)),
       TypesUniqueValidator("a model", service.models.map(_.name)),
       TypesUniqueValidator("an enum", service.enums.map(_.name)),
-      TypesUniqueValidator("a union", service.unions.map(_.name)),
+      TypesUniqueValidator("a union", unionNames),
     )
 
     validators.flatMap(_.all.toSeq)

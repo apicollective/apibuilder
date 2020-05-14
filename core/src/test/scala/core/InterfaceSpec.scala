@@ -1,6 +1,7 @@
 package core
 
 import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
+import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
 
@@ -41,6 +42,14 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     }
     validator.service()
   }
+
+  private[this] lazy val servicePersonUnionAndInterface: Service = expectValid(
+    makeApiJson(
+      interfaces = Map("person" -> person),
+      unions = Map("person" -> makeUnion(types = Seq(makeUnionType("user")))),
+      models = Map("user" -> makeModel()),
+    )
+  )
 
   it("validates interface name") {
     expectErrors(
@@ -111,6 +120,27 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
       )
     ) should be(
       Seq(s"Model[user] field 'name' cannot be optional. Must match the 'person' interface which defines this field as required")
+    )
+  }
+
+  it("union and interface can have the same name (both essentially define interfaces and can be combined in generators)") {
+    servicePersonUnionAndInterface.unions.head.name should be("person")
+    servicePersonUnionAndInterface.unions.head.interfaces should be(Seq("person"))
+    servicePersonUnionAndInterface.interfaces.head.name should be("person")
+  }
+
+  it("union automatically lists any interface matching its name") {
+    servicePersonUnionAndInterface.unions.head.interfaces should be(Seq("person"))
+  }
+
+  it("model and interface cannot have the same name") {
+    expectErrors(
+      makeApiJson(
+        interfaces = Map("person" -> person),
+        models = Map("person" -> makeModel()),
+      )
+    ) should be(
+      Seq("Name[person] cannot be used as the name of both a model and an interface type")
     )
   }
 

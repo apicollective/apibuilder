@@ -8,6 +8,11 @@ import play.api.libs.json._
 
 import scala.util.{Failure, Success, Try}
 
+case class InterfaceLookup(interfaces: Seq[Interface]) {
+  private[this] val interfacesByName = interfaces.map { i => i.name -> i }.toMap
+  def byName(name: String): Option[Interface] = interfacesByName.get(name)
+}
+
 case class ServiceBuilder(
   migration: VersionMigration
 ) {
@@ -39,7 +44,8 @@ case class ServiceBuilder(
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val interfaces = internal.interfaces.map { InterfaceBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    lazy val interfaceLookup = InterfaceLookup(interfaces)
+    val unions = internal.unions.map { UnionBuilder(_, interfaceLookup) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
     val attributes = internal.attributes.map { AttributeBuilder(_) }
@@ -354,14 +360,14 @@ case class ServiceBuilder(
 
   object UnionBuilder {
 
-    def apply(internal: InternalUnionForm): Union = {
+    def apply(internal: InternalUnionForm, interfaceLookup: InterfaceLookup): Union = {
       Union(
         name = internal.name,
         plural = internal.plural,
         discriminator = internal.discriminator,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        interfaces = internal.interfaces,
+        interfaces = (internal.interfaces ++ interfaceLookup.byName(internal.name).map(_.name).toSeq).distinct,
         types = internal.types.map { it =>
           val typ = rightOrError(it.datatype)
           UnionType(
