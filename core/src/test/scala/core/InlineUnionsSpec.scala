@@ -1,10 +1,13 @@
 package core
 
 import org.scalatest.{FunSpec, Matchers}
+import play.api.libs.json.Json
 
-class InlineUnionsSpec extends FunSpec with Matchers {
+class InlineUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
-  it("union types support inline models") {
+
+
+    it("union types support inline models") {
     val json =
       """
     {

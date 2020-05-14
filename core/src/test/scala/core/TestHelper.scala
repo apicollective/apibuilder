@@ -3,11 +3,16 @@ package core
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
 import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.api.json.v0.models.ApiJson
+import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.{ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service}
 import lib.Text
 import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.util.UUID
+
+import io.apibuilder.api.json.v0.models.ApiJson
+import play.api.libs.json.{JsObject, Json}
 
 object TestHelper {
 
@@ -22,21 +27,23 @@ object TestHelper {
     */
   case class TestServiceValidator(validator: ServiceValidator[Service]) extends ServiceValidatorForSpecs {
 
-    override def validate() = validator.validate()
+    private[this] lazy val validateResult = validator.validate()
 
-    override def errors() = validate match {
+    override def validate(): Either[Seq[String], Service] = validateResult
+
+    override def errors(): Seq[String] = validateResult match {
       case Left(errors) => errors
       case Right(_) => Seq.empty
     }
 
-    override lazy val service: Service = validate match {
+    override lazy val service: Service = validateResult match {
       case Left(errors) => sys.error(errors.mkString(", "))
       case Right(service) => service
     }
 
   }
 
-  val serviceConfig = ServiceConfiguration(
+  val serviceConfig: ServiceConfiguration = ServiceConfiguration(
     orgKey = "test",
     orgNamespace = "test.apibuilder",
     version = "0.0.1-dev"
@@ -84,10 +91,20 @@ object TestHelper {
     }
   }
 
+  def serviceValidator(
+    apiJson: ApiJson,
+    fetcher: ServiceFetcher = FileServiceFetcher(),
+  ): ServiceValidatorForSpecs = {
+    serviceValidatorFromApiJson(
+      contents = Json.toJson(apiJson).toString,
+      fetcher = fetcher,
+    )
+  }
+
   def serviceValidatorFromApiJson(
     contents: String,
     migration: VersionMigration = VersionMigration(internal = false),
-    fetcher: MockServiceFetcher = MockServiceFetcher()
+    fetcher: ServiceFetcher = MockServiceFetcher(),
   ): ServiceValidatorForSpecs = {
     TestServiceValidator(
       OriginalValidator(

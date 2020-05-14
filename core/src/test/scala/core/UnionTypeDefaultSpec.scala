@@ -46,7 +46,7 @@ class UnionTypeDefaultSpec extends FunSpec with Matchers {
     it("reports error if default specified") {
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors should be(
-        Seq("Union[user] type [registered_user] cannot specify 'default' as the union does not define an explicit discriminator.")
+        Seq("Union[user] types cannot specify default as the union type does not have a 'discriminator' specified: registered_user")
       )
     }
   }
@@ -55,7 +55,7 @@ class UnionTypeDefaultSpec extends FunSpec with Matchers {
 
     val True = """, "default": true"""
     val False = """, "default": false"""
-    
+
     val json = baseJson.format(
       """
       "unions": {
@@ -82,7 +82,7 @@ class UnionTypeDefaultSpec extends FunSpec with Matchers {
         json.format(True, True)
       )
       validator.errors should be(
-        Seq("Union[user] More than one type marked as default: registered_user, guest_user")
+        Seq("Union[user] Only 1 type can be specified as default. Currently the following types are marked as default: guest_user, registered_user")
       )
     }
 

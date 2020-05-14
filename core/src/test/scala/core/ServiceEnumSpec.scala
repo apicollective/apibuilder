@@ -1,81 +1,96 @@
 package core
 
+import core.TestHelper.ServiceValidatorForSpecs
+import io.apibuilder.api.json.v0.models.{EnumValue, Field, Parameter}
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceEnumSpec extends FunSpec with Matchers {
+class ServiceEnumSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
-    val baseJson = """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "enums": {
-        "age_group": {
-          "values": [
-            { "name": "Twenties" },
-            { "name": "Thirties" }%s
-          ]
-        }
-      },
+  private[this] val ageGroupField: Field = makeField(name = "age_group", `type` = "age_group")
+  private[this] val ageGroupParameter: Parameter = makeParameter(name = "age_group", `type` = "age_group")
+  private[this] val twentiesEnumValue: EnumValue = makeEnumValue(name = "Twenties")
 
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "age_group", "type": "age_group"%s }
-          ]
-        }
-      },
-
-      "resources": {
-        "user": {
-          "operations": [
-            {
-              "method": "GET",
-              "parameters": [
-                { "name": "age_group", "type": "age_group"%s }
-              ]
-            }
-          ]
-        }
-      }
-    }
-    """
+  private[this] def setup[T](
+    twentiesEnumValue: EnumValue = twentiesEnumValue,
+    field: Field = ageGroupField,
+    parameter: Parameter = ageGroupParameter,
+  )(
+    f: ServiceValidatorForSpecs => T
+  ) = {
+    f(
+      TestHelper.serviceValidator(
+        makeApiJson(
+          enums = Map("age_group" -> makeEnum(
+            values = Seq(
+              twentiesEnumValue,
+              makeEnumValue(name = "Thirties"),
+            )
+          )),
+          models = Map("user" -> makeModel(fields = Seq(field))),
+          resources = Map("user" -> makeResource(
+            operations = Seq(makeOperation(parameters = Some(Seq(parameter))))
+          ))
+        )
+      )
+    )
+  }
 
   describe("defaults") {
 
     it("supports a known default") {
-      val json = baseJson.format("", """, "default": "Twenties" """, "")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
-      val field = validator.service().models.head.fields.find(_.name == "age_group").get
-      field.default should be(Some("Twenties"))
+      setup(
+        field = ageGroupField.copy(
+          default = Some("Twenties"),
+        )
+      ) { v =>
+        v.errors() should be(Nil)
+        v.service().models.head.fields.find(_.name == "age_group").get.default should be(Some("Twenties"))
+      }
     }
 
     it("validates unknown defaults") {
-      val json = baseJson.format("", """, "default": "other" """, "")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("user.age_group default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
+      setup(
+        field = ageGroupField.copy(
+          default = Some("other"),
+        )
+      ) { v =>
+        v.errors() should be(
+          Seq("Model[user] Field[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
+        )
+      }
     }
 
     it("validates unknown defaults in parameters") {
-      val json = baseJson.format("", "", """, "default": "other" """)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("Resource[user] GET /users param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
+      setup(
+        parameter = ageGroupParameter.copy(
+          default = Some("other"),
+        )
+      ) { v =>
+        v.errors() should be(
+          Seq("Resource[user] GET /users/ param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
+        )
+      }
     }
 
   }
 
   it("field can be defined as an enum") {
-    val json = baseJson.format("", "", "")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val ageGroup = validator.service().models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.`type` should be("age_group")
+    setup() { v =>
+      v.errors should be(Nil)
+      v.service().models.head.fields.find {
+        _.name == "age_group"
+      }.get.`type` should be("age_group")
+    }
   }
 
   it("validates that enum values do not start with numbers") {
-    val json = baseJson.format(""", { "name": "1" } """, "", "")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("Enum[age_group] value[1] is invalid: must start with a letter")
+    setup(
+      twentiesEnumValue = twentiesEnumValue.copy(name = "1")
+    ) { v =>
+      v.errors should be(
+        Seq("Enum[age_group] value[1] is invalid: must start with a letter")
+      )
+    }
   }
 
 }

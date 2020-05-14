@@ -111,7 +111,7 @@ class ServiceAnnotationsSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors().nonEmpty should be(true)
-    validator.errors().mkString should be("user.id.annotation[nodupes] appears more than once")
+    validator.errors().mkString should be("Model[user] Field[id] Annotation[nodupes] appears more than once")
   }
 
   it("fields with multiple annotations allowed") {

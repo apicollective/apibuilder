@@ -8,6 +8,9 @@ apicollective:
     - generated/app/ApicollectiveApibuilderApiV0Client.scala
     play_2_x_routes:
     - api/conf/routes
+  apibuilder-api-json:
+    play_2_x_json:
+    - core/src/main/scala/core/generated/ApicollectiveApibuilderApiJsonV0Models.scala
   apibuilder-common:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderCommonV0Conversions.scala

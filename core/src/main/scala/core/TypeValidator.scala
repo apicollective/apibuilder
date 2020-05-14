@@ -55,6 +55,17 @@ case class TypesProviderUnionType(
   `type`: String
 )
 
+case class TypesProviderInterface(
+  namespace: String,
+  name: String,
+  plural: String,
+  fields: Seq[TypesProviderField],
+) extends TypesProviderWithName {
+
+  override def packageName = "interfaces"
+
+}
+
 case class TypesProviderModel(
   namespace: String,
   name: String,
@@ -74,6 +85,7 @@ case class TypesProviderField(
 trait TypesProvider {
 
   def enums: Iterable[TypesProviderEnum]
+  def interfaces: Iterable[TypesProviderInterface]
   def models: Iterable[TypesProviderModel]
   def unions: Iterable[TypesProviderUnion]
 
@@ -115,6 +127,20 @@ object TypesProvider {
       )
     }
 
+    override def interfaces: Iterable[TypesProviderInterface] = service.interfaces.map { interface =>
+      TypesProviderInterface(
+        namespace = service.namespace,
+        name = interface.name,
+        plural = interface.plural,
+        fields = interface.fields.map { f =>
+          TypesProviderField(
+            name = f.name,
+            `type` = f.`type`
+          )
+        }
+      )
+    }
+
   }
 
 }
@@ -130,9 +156,9 @@ case class TypeValidator(
     Try(Json.parse(value)) match {
       case Success(jsValue) => Some(jsValue)
       case Failure(ex) => ex match {
-        case e: JsonParseException => None
-        case e: JsonMappingException => None
-        case e: JsonProcessingException => None
+        case _: JsonParseException => None
+        case _: JsonMappingException => None
+        case _: JsonProcessingException => None
         case e: Throwable => throw e
       }
     }
@@ -147,7 +173,7 @@ case class TypeValidator(
       case Kind.List(t) => {
         parseJsonOrNone(value) match {
           case None => {
-            Some(s"default[$value] is not valid json")
+            Some(withPrefix(errorPrefix, s"default[$value] is not valid json"))
           }
           case Some(json) => {
             json.asOpt[JsArray] match {
@@ -160,7 +186,7 @@ case class TypeValidator(
                 }
               }
               case None => {
-                Some(s"default[$value] is not a valid JSON Array")
+                Some(withPrefix(errorPrefix, s"default[$value] is not a valid JSON Array"))
               }
             }
           }
@@ -169,7 +195,7 @@ case class TypeValidator(
       case Kind.Map(t) => {
         parseJsonOrNone(value) match {
           case None => {
-            Some(s"default[$value] is not valid json")
+            Some(withPrefix(errorPrefix, s"default[$value] is not valid json"))
           }
           case Some(json) => {
             json.asOpt[JsObject] match {
@@ -184,7 +210,7 @@ case class TypeValidator(
                 }
               }
               case None => {
-                Some(s"default[$value] is not a valid JSON Object")
+                Some(withPrefix(errorPrefix, s"default[$value] is not a valid JSON Object"))
               }
             }
           }
@@ -219,13 +245,17 @@ case class TypeValidator(
           }
         }
       }
-      
+
+      case Kind.Interface(name) => {
+        Some(withPrefix(errorPrefix, s"default[$value] is not valid for interface[$name]. API Builder does not support default values for interfaces"))
+      }
+
       case Kind.Model(name) => {
-        Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. apidoc does not support default values for models"))
+        Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. API Builder does not support default values for models"))
       }
 
       case Kind.Union(name) => {
-        Some(withPrefix(errorPrefix, s"default[$value] is not valid for union[$name]. apidoc does not support default values for unions"))
+        Some(withPrefix(errorPrefix, s"default[$value] is not valid for union[$name]. API Builder does not support default values for unions"))
       }
 
       case Kind.Primitive(name) => {
@@ -246,8 +276,8 @@ case class TypeValidator(
 
               case Primitives.Double => {
                 Try(value.toDouble) match {
-                  case Success(v) => None
-                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
+                  case Success(_) => None
+                  case Failure(_) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
                 }
               }
 

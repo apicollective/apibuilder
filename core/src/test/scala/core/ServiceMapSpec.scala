@@ -1,91 +1,98 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import core.TestHelper.ServiceValidatorForSpecs
+import io.apibuilder.api.json.v0.models.Field
+import org.scalatest.{Assertion, FunSpec, Matchers}
+import play.api.libs.json.{JsObject, JsValue, Json}
 
-class ServiceMapSpec extends FunSpec with Matchers {
+class ServiceMapSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
-  private val baseJson = """
-    {
-      "name": "API Builder",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": [
-            %s
-          ]
-        }
-      }
+  def setup[T](field: Field)(f: ServiceValidatorForSpecs => T): T = {
+    f(
+      TestHelper.serviceValidator(
+        makeApiJson(
+          models = Map("user" -> makeModel(fields = Seq(field)))
+        )
+      )
+    )
+  }
+
+  private[this] def expectError(typ: String, default: JsValue): Assertion = {
+    setup(makeField(name = "tags", `type` = typ, default = Some(
+      default.toString()
+    ))) { v =>
+      v.errors should not be (empty)
     }
-  """
+  }
+
+  private[this] def expectSuccess(typ: String, default: JsValue): Assertion = {
+    setup(makeField(name = "tags", `type` = typ, default = Some(
+      default.toString()
+    ))) { v =>
+      v.errors should be(Nil)
+
+      val js = v.service().models.head.fields.head.default.getOrElse {
+        sys.error("Missing default")
+      }
+      Json.parse(js) should equal(default)
+    }
+  }
 
   it("accepts type: map, defaulting to element type of string for backwards compatibility") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val tags = validator.service().models.head.fields.head
-    tags.`type` should be("map[string]")
+    setup(makeField(name = "tags", `type` = "map")) { v =>
+      v.errors should be(Nil)
+      v.service().models.head.fields.head.`type` should be("map[string]")
+    }
   }
 
   it("accept defaults for maps") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "{ }" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val tags = validator.service().models.head.fields.head
-    tags.default shouldBe Some("{ }")
+    setup(makeField(name = "tags", `type` = "map", default = Some("{ }"))) { v =>
+      v.errors should be(Nil)
+      v.service().models.head.fields.head.default shouldBe Some("{ }")
+    }
   }
 
   it("validates invalid json") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "bar" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("default[bar] is not valid json")
+    def expectError(default: String, msg: String) = {
+      setup(makeField(name = "tags", `type` = "map", default = Some(default))) { v =>
+        v.errors should be(Seq(msg))
+      }
+    }
+    expectError("bar", "Model[user] Field[tags] default[bar] is not valid json")
+    // TODO: Track down why error message is different
+    expectError("1", "Model[user] Field[tags] default[1] is not a valid JSON Object")
   }
 
   it("accepts valid defaults for map[string]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map[string]", "default": "{ \"foo\": \"bar\" }" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val default = Json.obj("foo" -> "bar")
+    setup(makeField(name = "tags", `type` = "map", default = Some(default.toString))) { v =>
+      v.errors should be(Nil)
+      v.service().models.head.fields.head.default shouldBe Some(default.toString)
+    }
   }
 
   it("accepts valid defaults for map[integer]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map[integer]", "default": "{ \"foo\": 1 }" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val default = Json.obj("foo" -> 1)
+    setup(makeField(name = "tags", `type` = "map", default = Some(default.toString))) { v =>
+      v.errors should be(Nil)
+      v.service().models.head.fields.head.default shouldBe Some(default.toString)
+    }
   }
 
-  it("rejects invalid json objects for map[integer]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map[integer]", "default": "1" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("default[1] is not a valid JSON Object")
+  it("rejects invalid defaults for typed maps") {
+    expectError("map[integer]", Json.obj("foo" -> "bar"))
+    expectSuccess("map[integer]", Json.obj("foo" -> 1))
+
+    expectError("map[boolean]", Json.obj("foo" -> "bar"))
+    expectSuccess("map[boolean]", Json.obj("foo" -> true))
+    expectSuccess("map[boolean]", Json.obj("foo" -> "true"))
   }
 
-  it("rejects invalid defaults for map[integer]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "map[integer]", "default": "{ \"foo\": \"bar\" }" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("user.tags Value[bar] is not a valid integer")
-  }
-
-  it("accepts valid defaults for list[string]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "[string]", "default": "[\"foo\", \"bar\"]" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-  }
-
-  it("accepts valid defaults for list[integer]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "[integer]", "default": "[1]" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-  }
-
-  it("rejects invalid json objects for list[integer]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "[integer]", "default": "1" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("default[1] is not a valid JSON Array")
-  }
-
-  it("rejects invalid defaults for list[integer]") {
-    val json = baseJson.format("""{ "name": "tags", "type": "[integer]", "default": "[\"bar\"]" }""")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("user.tags Value[bar] is not a valid integer")
+  it("accepts valid defaults for list") {
+    expectError("[integer]", Json.arr("foo", "bar"))
+    expectError("[integer]", Json.toJson("1"))
+    expectSuccess("[integer]", Json.arr("1", "2"))
+    expectSuccess("[string]", Json.arr("foo", "bar"))
   }
 
 }

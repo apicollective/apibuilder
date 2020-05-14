@@ -38,6 +38,7 @@ case class ServiceBuilder(
     val imports = internal.imports.map { ImportBuilder(internal.fetcher, _) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val interfaces = internal.interfaces.map { InterfaceBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
@@ -67,6 +68,7 @@ case class ServiceBuilder(
       description = internal.description,
       baseUrl = internal.baseUrl,
       enums = enums,
+      interfaces = interfaces,
       unions = unions,
       models = models,
       headers = headers,
@@ -359,6 +361,7 @@ case class ServiceBuilder(
         discriminator = internal.discriminator,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+        interfaces = internal.interfaces,
         types = internal.types.map { it =>
           val typ = rightOrError(it.datatype)
           UnionType(
@@ -438,11 +441,27 @@ case class ServiceBuilder(
             version = service.version,
             enums = service.enums.map(_.name),
             unions = service.unions.map(_.name),
+            interfaces = service.interfaces.map(_.name),
             models = service.models.map(_.name),
             annotations = service.annotations
           )
         }
       }
+    }
+
+  }
+
+  object InterfaceBuilder {
+
+    def apply(im: InternalInterfaceForm): Interface = {
+      Interface(
+        name = im.name,
+        plural = im.plural,
+        description = im.description,
+        deprecation = im.deprecation.map(DeprecationBuilder(_)),
+        fields = im.fields.map { FieldBuilder(_) },
+        attributes = im.attributes.map { AttributeBuilder(_) }
+      )
     }
 
   }
@@ -456,6 +475,7 @@ case class ServiceBuilder(
         description = im.description,
         deprecation = im.deprecation.map(DeprecationBuilder(_)),
         fields = im.fields.map { FieldBuilder(_) },
+        interfaces = im.interfaces,
         attributes = im.attributes.map { AttributeBuilder(_) }
       )
     }

@@ -168,6 +168,7 @@
       "minimum": <em>long (optional)</em>,
       "maximum": <em>long (optional)</em>,
       "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
+      "annotations": <em>JSON Object of <a href="#annotation">Annotation</a></em> (optional)
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
@@ -483,6 +484,7 @@
         "type": <em>type</em>,
         "headers": <em>JSON Array of <a href="#header">Header</a> (optional)</em>,
         "description": <em>string (optional)</em>,
+        "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
         "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
@@ -500,6 +502,7 @@
 
       <li><em>type</em> @typeInfo("response")</li>
       @description("response")
+      <li><em>attributes</em> JSON array defining additional meta data about this service. Attributes are used to add custom extensions to API Builder and are typically used by generators to enable advanced code generation. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 

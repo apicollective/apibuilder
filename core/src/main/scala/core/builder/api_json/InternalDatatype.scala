@@ -41,14 +41,17 @@ private[api_json] case class InternalDatatypeBuilder() {
 
   private[this] val dynamicEnums = scala.collection.mutable.ListBuffer[InternalEnumForm]()
   private[this] val dynamicModels = scala.collection.mutable.ListBuffer[InternalModelForm]()
+  private[this] val dynamicInterfaces = scala.collection.mutable.ListBuffer[InternalInterfaceForm]()
   private[this] val dynamicUnions = scala.collection.mutable.ListBuffer[InternalUnionForm]()
 
   private[this] val EnumMarker = "enum"
+  private[this] val InterfaceMarker = "interface"
   private[this] val ModelMarker = "model"
   private[this] val UnionMarker = "union"
 
   def enumForms: List[InternalEnumForm] = dynamicEnums.toList
   def modelForms: List[InternalModelForm] = dynamicModels.toList
+  def interfaceForms: List[InternalInterfaceForm] = dynamicInterfaces.toList
   def unionForms: List[InternalUnionForm] = dynamicUnions.toList
 
   private val ListRx = "^\\[(.*)\\]$".r
@@ -72,59 +75,58 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
+  private[this] def inlineEnum(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+    fromString(name).map { dt =>
+      dynamicEnums.append(
+        InternalEnumForm(dt.name, value - EnumMarker)
+      )
+      dt
+    }
+  }
+
+  private[this] def inlineModel(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+    fromString(name).map { dt =>
+      dynamicModels.append(
+        InternalModelForm(this, dt.name, value - ModelMarker)
+      )
+      dt
+    }
+  }
+
+  private[this] def inlineInterface(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+    fromString(name).map { dt =>
+      dynamicInterfaces.append(
+        InternalInterfaceForm(this, dt.name, value - InterfaceMarker)
+      )
+      dt
+    }
+  }
+
+  private[this] def inlineUnion(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+    fromString(name).map { dt =>
+      dynamicUnions.append(
+        InternalUnionForm(this, dt.name, value - UnionMarker)
+      )
+      dt
+    }
+  }
+
   private[this] def inlineType(value: JsObject): Either[Seq[String], InternalDatatype] = {
     JsonUtil.asOptString(value \ EnumMarker) match {
+      case Some(name) => inlineEnum(name, value)
       case None => {
-        JsonUtil.asOptString(value \ ModelMarker) match {
+        JsonUtil.asOptString(value \ InterfaceMarker) match {
+          case Some(name) => inlineInterface(name, value)
           case None => {
-            JsonUtil.asOptString(value \ UnionMarker) match {
-              case None => Left(Seq(s"must specify field '$EnumMarker', '$ModelMarker' or '$UnionMarker'"))
-              case Some(unionName) => {
-                fromString(unionName) match {
-                  case Left(errors) => {
-                    Left(errors)
-                  }
-
-                  case Right(dt) => {
-                    dynamicUnions.append(
-                      InternalUnionForm(this, dt.name, value - UnionMarker)
-                    )
-                    Right(dt)
-                  }
+            JsonUtil.asOptString(value \ ModelMarker) match {
+              case Some(name) => inlineModel(name, value)
+              case None => {
+                JsonUtil.asOptString(value \ UnionMarker) match {
+                  case Some(name) => inlineUnion(name, value)
+                  case None => Left(Seq(s"must specify field '$EnumMarker', '$ModelMarker' or '$UnionMarker'"))
                 }
-
               }
             }
-          }
-
-          case Some(modelName) => {
-            fromString(modelName) match {
-              case Left(errors) => {
-                Left(errors)
-              }
-
-              case Right(dt) => {
-                dynamicModels.append(
-                  InternalModelForm(this, dt.name, value - ModelMarker)
-                )
-                Right(dt)
-              }
-            }
-          }
-        }
-      }
-
-      case Some(enumName) => {
-        fromString(enumName) match {
-          case Left(errors) => {
-            Left(errors)
-          }
-
-          case Right(dt) => {
-            dynamicEnums.append(
-              InternalEnumForm(dt.name, value - EnumMarker)
-            )
-            Right(dt)
           }
         }
       }
