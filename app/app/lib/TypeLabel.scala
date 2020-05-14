@@ -128,6 +128,9 @@ object Href {
       case Kind.Model(name) => {
         Href(name, prefix(orgKey, appKey, version) + s"#model-${UrlKey.generate(name)}")
       }
+      case Kind.Interface(name) => {
+        Href(name, prefix(orgKey, appKey, version) + s"#interface-${UrlKey.generate(name)}")
+      }
       case Kind.Union(name) => {
         Href(name, prefix(orgKey, appKey, version) + s"#union-${UrlKey.generate(name)}")
       }
