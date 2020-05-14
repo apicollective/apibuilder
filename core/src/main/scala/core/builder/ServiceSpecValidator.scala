@@ -123,21 +123,13 @@ case class ServiceSpecValidator(
   }
 
   private def validateModels(): Seq[String] = {
-    val modelErrors = service.models.flatMap { model =>
+    service.models.flatMap { model =>
       val p = s"Model[${model.name}]"
 
       validateName(p, model.name) ++
         validateFields(p, model.fields) ++
         model.interfaces.flatMap { n => validateInterfaceFields(p, n, model.fields) }
-    }
-
-    val atLeastOneFieldErrors = service.models.filter { _.fields.isEmpty }.map { model =>
-      s"Model[${model.name}] must have at least one field"
-    }
-
-    val duplicates = dupsError("Model", service.models.map(_.name))
-
-    modelErrors ++ atLeastOneFieldErrors ++ duplicates
+    } ++ dupsError("Model", service.models.map(_.name))
   }
 
   def validateAnnotation(prefix: String, anno: String): Seq[String] = {
@@ -148,7 +140,7 @@ case class ServiceSpecValidator(
     }
   }
 
-  def validateFields(prefix: String, fields: Seq[Field]) = {
+  def validateFields(prefix: String, fields: Seq[Field]): Seq[String] = {
     dupsError(s"$prefix field", fields.map(_.name)) ++
       fields.flatMap { f => validateField(s"$prefix Field[${f.name}]", f) }
   }
