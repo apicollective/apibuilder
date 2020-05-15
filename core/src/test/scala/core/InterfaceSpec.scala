@@ -137,7 +137,7 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     expectErrors {
       servicePersonUnionAndInterface(Nil)
     } should be(
-      Seq("Name[person] cannot be used as the name of both a union and an interface type")
+      Seq("'person' is defined as both a union and an interface. You must either make the names unique, or document in the union interfaces field that the type extends the 'person' interface.")
     )
   }
 

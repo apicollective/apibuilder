@@ -602,7 +602,7 @@ case class ServiceSpecValidator(
       TypesUniqueValidator("an enum", service.enums.map(_.name)),
       TypesUniqueValidator("a union", service.unions.filterNot { u =>
         u.interfaces.contains(u.name)
-      }.map(_.name)),
+      }.map(_.name).filterNot(interfaceNames.contains)),
     )
 
     validators.flatMap(_.all.toSeq)
@@ -615,6 +615,20 @@ case class ServiceSpecValidator(
         case all => all.mkString(", ")
       }
       s"Name[$name] cannot be used as the name of $english type"
+    } ++ validateUnionAndInterfaceNames()
+  }
+
+  private def validateUnionAndInterfaceNames(): Seq[String] = {
+    val interfaceNames = service.interfaces.map(_.name)
+    service.unions.filter { u =>
+      interfaceNames.contains(u.name) && !u.interfaces.contains(u.name)
+    }.map(_.name).toList match {
+      case Nil => Nil
+      case names => {
+        names.map { n =>
+          s"'$n' is defined as both a union and an interface. You must either make the names unique, or document in the union interfaces field that the type extends the '$n' interface."
+        }
+      }
     }
   }
 
