@@ -131,11 +131,13 @@ trait ApiJsonHelpers {
     discriminator: Option[String] = None,
     plural: Option[String] = None,
     types: Seq[UnionType] = Nil,
+    interfaces: Option[Seq[String]] = None,
   ): Union = {
     Union(
       discriminator = discriminator,
       plural = plural,
       types = types,
+      interfaces = interfaces,
     )
   }
 

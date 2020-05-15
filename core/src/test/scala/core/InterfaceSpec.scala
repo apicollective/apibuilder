@@ -43,12 +43,13 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     validator.service()
   }
 
-  private[this] lazy val servicePersonUnionAndInterface: Service = expectValid(
-    makeApiJson(
-      interfaces = Map("person" -> person),
-      unions = Map("person" -> makeUnion(types = Seq(makeUnionType("user")))),
-      models = Map("user" -> makeModel()),
-    )
+  private[this] def servicePersonUnionAndInterface(interfaces: Seq[String]): ApiJson = makeApiJson(
+    interfaces = Map("person" -> person),
+    unions = Map("person" -> makeUnion(
+      interfaces = Some(interfaces),
+      types = Seq(makeUnionType("user")))
+    ),
+    models = Map("user" -> makeModel()),
   )
 
   it("validates interface name") {
@@ -124,13 +125,20 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   it("union and interface can have the same name (both essentially define interfaces and can be combined in generators)") {
-    servicePersonUnionAndInterface.unions.head.name should be("person")
-    servicePersonUnionAndInterface.unions.head.interfaces should be(Seq("person"))
-    servicePersonUnionAndInterface.interfaces.head.name should be("person")
+    val svc = expectValid {
+      servicePersonUnionAndInterface(Seq("person"))
+    }
+    svc.unions.head.name should be("person")
+    svc.unions.head.interfaces should be(Seq("person"))
+    svc.interfaces.head.name should be("person")
   }
 
-  it("union automatically lists any interface matching its name") {
-    servicePersonUnionAndInterface.unions.head.interfaces should be(Seq("person"))
+  it("union and interface can have the same name only if interface is specified") {
+    expectErrors {
+      servicePersonUnionAndInterface(Nil)
+    } should be(
+      Seq("Name[person] cannot be used as the name of both a union and an interface type")
+    )
   }
 
   it("model and interface cannot have the same name") {
