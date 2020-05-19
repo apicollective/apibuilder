@@ -1,6 +1,17 @@
 {
   "name": "example-interface",
 
+  "unions": {
+    "person": {
+      "discriminator": "discriminator",
+      "interfaces": ["person"],
+      "types": [
+        { "type": "guest" },
+        { "type": "user" }
+      ]
+    }
+  },
+
   "interfaces": {
     "database_record": {
       "fields": [
@@ -19,6 +30,9 @@
     "user": {
       "interfaces": ["database_record", "person"],
       "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "email", "type": "string", "required": false },
+        { "name": "name", "type": "string", "required": false },
         { "name": "registration_date", "type": "date-time-iso8601" }
       ]
     },
@@ -26,7 +40,9 @@
     "guest": {
       "interfaces": ["person"],
       "fields": [
-        { "name": "seession_id", "type": "string" }
+        { "name": "seession_id", "type": "string" },
+        { "name": "email", "type": "string", "required": false },
+        { "name": "name", "type": "string", "required": false }
       ]
     }
   }
