@@ -28,7 +28,7 @@
 
   "models": {
     "user": {
-      "interfaces": ["database_record", "person"],
+      "interfaces": ["database_record"],
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "email", "type": "string", "required": false },
@@ -38,7 +38,6 @@
     },
 
     "guest": {
-      "interfaces": ["person"],
       "fields": [
         { "name": "seession_id", "type": "string" },
         { "name": "email", "type": "string", "required": false },
