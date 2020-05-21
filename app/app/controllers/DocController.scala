@@ -26,6 +26,10 @@ class DocController @Inject() (
     Ok(views.html.doc.apiJson(util, request.user))
   }
 
+  def interfaces = Anonymous { implicit request =>
+    Ok(views.html.doc.interfaces(util, request.user))
+  }
+
   def attributes = Anonymous { implicit request =>
     Ok(views.html.doc.attributes(util, request.user))
   }
