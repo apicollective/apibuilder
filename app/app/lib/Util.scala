@@ -33,6 +33,7 @@ object Labels {
   val ServiceJsonText = "service.json"
 
   val ApibuilderApi = ExampleService("apicollective", "apibuilder-api")
+  val ApibuilderApiJson = ExampleService("apicollective", "apibuilder-api-json")
   val ApibuilderExample = ApibuilderApi
   val ApibuilderExampleWithVersionNumber = ExampleService("apicollective", "apibuilder-api", "0.13.29")
   val ApibuilderGeneratorExample = ExampleService("apicollective", "apibuilder-generator")
