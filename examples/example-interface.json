@@ -38,8 +38,9 @@
     },
 
     "guest": {
+      "interfaces": 
       "fields": [
-        { "name": "seession_id", "type": "string" },
+        { "name": "session_id", "type": "string" },
         { "name": "email", "type": "string", "required": false },
         { "name": "name", "type": "string", "required": false }
       ]

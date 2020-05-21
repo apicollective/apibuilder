@@ -1,0 +1,88 @@
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
+
+@doc.main(routes.DocController.playRoutesFile.url, user, Some("Interfaces")) {
+
+    <p>
+        Interfaces are used to shared fields across models and union types.
+        Models and union types can extend 0 or more interfaces, but interfaces themselves are abstract and cannot be instantiated.
+    <p>
+
+    <p>
+        To define an interface, declare an interface:
+        <pre><code>
+        "person": {
+            "fields": [
+                { "name": "email", "type": "string", "required": false },
+                { "name": "name", "type": "string", "required": false }
+            ]
+        }
+        </pre></code>
+    </p>
+
+    <p>
+        A scala code generator may produce the following to represent this interface:
+        <pre><code>
+        sealed trait Person {
+            def email: Option[String]
+            def name: Option[String]
+        }
+        </pre></code>
+    </p>
+
+    <p>
+        To indicate a particular model extends this interface:
+        <pre><code>
+        "models": {
+            "guest": {
+                <b>"interfaces": ["person"]</b>,
+                "fields": [
+                    { "name": "session_id", "type": "string" },
+                    { "name": "email", "type": "string", "required": false },
+                    { "name": "name", "type": "string", "required": false }
+                ]
+            }
+        }
+        </pre></code>
+
+        API Builder will enforce that any model that extends an interface will declare fields that match the interface (by name, type, and required).
+
+    </p>
+
+    <p>
+        A scala code generator may produce the following to represent this interface:
+        <pre><code>
+        case class Guest(
+            sessionId: String,
+            override val email: Option[String] = None,
+            override val name: Option[String] = None
+        ) extends Person
+        </pre></code>
+    </p>
+
+    <p>
+        Union types behave similarly to models with a few additional features:
+        <ul>
+            <li> You can declare an interface with the same name as a union type, as long as the union type documents that you are intentionally doing so by listing the interface.</li>
+            <li> Any type listed in the union type will automatically inherit the interface defined on the union type</li>
+        </ul>
+        As an example, we can define the following union type:
+        <pre><code>
+            "unions": {
+                "person": {
+                    "discriminator": "discriminator",
+                    "interfaces": ["person"],
+                    "types": [
+                        { "type": "guest" }
+                    ]
+                }
+            },
+        </code></pre>
+        This means that the guest model is of type person and will automatically inherit the person interface (no need to explicitly specify the interface on the guest model).
+
+    </p>
+
+    For a complete example of an api.json example demonstrating interfaces, see <a href="@lib.Labels.ApibuilderGitHubUrl/blob/master/examples/example-interface.json">example-interface.json</a>
+}

@@ -23,7 +23,7 @@ case class ExampleService(
 
 }
 
-object Labels {
+object  Labels {
   val SubscriptionsText = "Subscriptions"
   val SubscriptionsVersionsCreateText = "For applications that I watch, email me when a version is created."
 

@@ -30,6 +30,7 @@ GET     /doc                                                      controllers.Do
 GET     /doc/                                                     controllers.DocController.index
 GET     /doc/start                                                controllers.DocController.start
 GET     /doc/apiJson                                              controllers.DocController.apiJson
+GET     /doc/interfaces                                           controllers.DocController.interfaces
 GET     /doc/attributes                                           controllers.DocController.attributes
 GET     /doc/types                                                controllers.DocController.types
 GET     /doc/examples                                             controllers.DocController.examples
