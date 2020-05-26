@@ -105,7 +105,7 @@
 
     "resource": {
       "fields": [
-        { "name": "plural", "type": "string", "required": false },
+        { "name": "path", "type": "string", "required": false },
         { "name": "description", "type": "string", "required": false },
         { "name": "operations", "type": "[operation]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
