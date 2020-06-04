@@ -9,15 +9,16 @@ import db._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
-import _root_.util.ApibuilderServiceImportResolver
+import _root_.util.ApiBuilderServiceImportResolver
 
 @Singleton
 class Versions @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
+  apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
   applicationsDao: ApplicationsDao,
   databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
-  versionValidator: VersionValidator
+  versionValidator: VersionValidator,
 ) extends ApibuilderController {
 
   private[this] val DefaultVisibility = Visibility.Organization
@@ -48,9 +49,10 @@ class Versions @Inject() (
       case None => NotFound
       case Some(v: Version) => {
 
-        val service = ApibuilderServiceImportResolver
-          .resolveChildren(v.service, versionsDao, request.authorization)
-          .foldLeft(v.service) { case (service, (namespace, child)) =>
+        val service = apiBuilderServiceImportResolver
+          .resolve(request.authorization, v.service)
+          .foldLeft(v.service) { case (service, child) =>
+          val namespace = child.namespace
 
           def fixType[T](origTyp: String, update: String => T): T = {
             val ArrayRx = """(\[?)(.*?)(\]?)""".r

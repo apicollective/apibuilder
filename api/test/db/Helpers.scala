@@ -6,15 +6,10 @@ import play.api.libs.json.Json
 import lib.Role
 import java.util.UUID
 
-trait Helpers extends util.Daos {
+import helpers.RandomHelpers
+import io.apibuilder.spec.v0.models.Service
 
-  def randomString(): String = {
-    "z-test-" + UUID.randomUUID.toString
-  }
-
-  def createRandomName(suffix: String): String = {
-    s"z-test-$suffix-" + UUID.randomUUID.toString
-  }
+trait Helpers extends util.Daos with RandomHelpers {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
@@ -34,6 +29,12 @@ trait Helpers extends util.Daos {
   def upsertOrganization(name: String): Organization = {
     organizationsDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
       createOrganization(name = Some(name))
+    }
+  }
+
+  def upsertOrganizationByKey(key: String): Organization = {
+    organizationsDao.findByKey(Authorization.All, key).getOrElse {
+      createOrganization(key = Some(key))
     }
   }
 
@@ -102,6 +103,36 @@ trait Helpers extends util.Daos {
     name = name,
     description = description
   )
+
+  def upsertApplicationByOrganizationAndKey(
+    org: Organization,
+    key: String,
+  ): io.apibuilder.api.v0.models.Application = {
+    applicationsDao.findByOrganizationKeyAndApplicationKey(
+      Authorization.All, org.key, key,
+    ).getOrElse {
+      createApplication(
+        org = org,
+        form = createApplicationForm().copy(key = Some(key))
+      )
+    }
+  }
+
+  def createVersion(service: Service): Version = {
+    val org = upsertOrganizationByKey(service.organization.key)
+    val application = upsertApplicationByOrganizationAndKey(org, service.application.key)
+    versionsDao.create(testUser, application, service.version, createOriginal(service), service)
+  }
+
+  def createApplicationByKey(
+    org: Organization = testOrg,
+    key: String = "test-" + UUID.randomUUID.toString,
+  ): io.apibuilder.api.v0.models.Application = {
+    createApplication(
+      org = org,
+      form = createApplicationForm().copy(key = Some(key))
+    )
+  }
 
   def createVersion(
     application: Application = createApplication(),
