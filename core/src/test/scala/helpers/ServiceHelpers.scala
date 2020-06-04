@@ -5,11 +5,7 @@ import java.util.UUID
 import io.apibuilder.spec.v0.models._
 import play.api.libs.json.{JsObject, Json}
 
-trait ServiceHelpers {
-
-  def randomString(): String = {
-    UUID.randomUUID.toString
-  }
+trait ServiceHelpers extends RandomHelpers {
 
   def makeApidoc(): Apidoc = {
     Apidoc(
@@ -53,7 +49,7 @@ trait ServiceHelpers {
   }
 
   def makeImport(
-    service: Service = makeService()
+    service: Service = makeService(),
   ): Import = {
     Import(
       uri = makeImportUri(service),

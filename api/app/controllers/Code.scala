@@ -24,11 +24,12 @@ import scala.concurrent.Future
 class Code @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   wSClient: WSClient,
+  apibuilderServiceImportResolver: ApibuilderServiceImportResolver,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
-  userAgentGenerator: UserAgent
+  userAgentGenerator: UserAgent,
 ) extends ApibuilderController {
 
   case class CodeParams(
@@ -51,7 +52,7 @@ class Code @Inject() (
     params: CodeParams,
     userAgent: String,
     version: Version,
-    importedServices: Seq[Service]
+    importedServices: Seq[Service],
   ) {
     val invocationForm: InvocationForm = {
       InvocationForm(
@@ -205,14 +206,13 @@ class Code @Inject() (
       }
 
       case Some(version) => {
-        val importedApibuilderServices = ApibuilderServiceImportResolver
-          .resolveChildren(version.service, versionsDao, request.authorization).values.toSeq
+        val importedServices = apibuilderServiceImportResolver.resolve(request.authorization, version.service)
         Right(
           InvocationFormData(
             params = params,
             version = version,
             userAgent = params.userAgent,
-            importedServices = importedApibuilderServices
+            importedServices = importedServices
           )
         )
       }

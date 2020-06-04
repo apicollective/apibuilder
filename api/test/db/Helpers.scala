@@ -6,15 +6,9 @@ import play.api.libs.json.Json
 import lib.Role
 import java.util.UUID
 
-trait Helpers extends util.Daos {
+import helpers.RandomHelpers
 
-  def randomString(): String = {
-    "z-test-" + UUID.randomUUID.toString
-  }
-
-  def createRandomName(suffix: String): String = {
-    s"z-test-$suffix-" + UUID.randomUUID.toString
-  }
+trait Helpers extends util.Daos with RandomHelpers {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
@@ -102,6 +96,16 @@ trait Helpers extends util.Daos {
     name = name,
     description = description
   )
+
+  def createApplicationByKey(
+    org: Organization = testOrg,
+    key: String = "test-" + UUID.randomUUID.toString,
+  ): io.apibuilder.api.v0.models.Application = {
+    createApplication(
+      org = org,
+      form = createApplicationForm().copy(key = Some(key))
+    )
+  }
 
   def createVersion(
     application: Application = createApplication(),

@@ -14,6 +14,7 @@ import _root_.util.ApibuilderServiceImportResolver
 @Singleton
 class Versions @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
+  apibuilderServiceImportResolver: ApibuilderServiceImportResolver,
   applicationsDao: ApplicationsDao,
   databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
@@ -48,9 +49,10 @@ class Versions @Inject() (
       case None => NotFound
       case Some(v: Version) => {
 
-        val service = ApibuilderServiceImportResolver
-          .resolveChildren(v.service, versionsDao, request.authorization)
-          .foldLeft(v.service) { case (service, (namespace, child)) =>
+        val service = apibuilderServiceImportResolver
+          .resolve(request.authorization, v.service)
+          .foldLeft(v.service) { case (service, child) =>
+          val namespace = child.namespace
 
           def fixType[T](origTyp: String, update: String => T): T = {
             val ArrayRx = """(\[?)(.*?)(\]?)""".r

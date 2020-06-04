@@ -11,19 +11,10 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
 
   private[this] val Original = createOriginal()
 
-  private[this] def createApplicationByKey(
-    key: String = "test-" + UUID.randomUUID.toString
-  ): io.apibuilder.api.v0.models.Application = {
-    createApplication(
-      org = testOrg,
-      form = createApplicationForm().copy(key = Some(key))
-    )
-  }
-
   "with an application" must {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    lazy val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(applicationKey)
+    lazy val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(key = applicationKey)
     lazy val service = createService(application)
 
     "create" in {
