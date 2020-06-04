@@ -2,7 +2,7 @@ package util
 
 import db.Authorization
 import io.apibuilder.api.v0.models.Version
-import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.{Import, Service}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -33,17 +33,16 @@ class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
   }
 
   "resolve service with no imports" in {
-    val service = makeService()
-    apibuilderServiceImportResolver.resolve(Authorization.All, service) must equal(Nil)
+    resolve(makeService(imports = Nil)) must equal(Nil)
   }
 
   "resolve service with 1 import" in {
-    val userService = createUserServiceVersion(version = "1.0.0")
-
     resolve(
       makeService(
         imports = Seq(
-          makeImport(userService),
+          makeImport(
+            createUserServiceVersion(version = "1.0.0")
+          ),
         )
       )
     ) must equal(
@@ -59,23 +58,23 @@ class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
         makeImport(userService),
       )
     )
-    apibuilderServiceImportResolver.resolve(Authorization.All, service) must equal(
-      Seq("test/user/1.0.0")
-    )
+    resolve(service) must equal(Seq("test/user/1.0.0"))
   }
 
-  "selects latest version" in {
+  "selects latest version regardless of order of imports" in {
+    def test(svc1: Service, svc2: Service) = {
+      resolve(
+        makeService(imports = Seq(
+          makeImport(svc1), makeImport(svc2)
+        ))
+      )
+    }
+
     val userService1 = createUserServiceVersion(version = "1.0.0")
     val userService2 = createUserServiceVersion(version = "1.0.1")
-    val service = makeService(
-      imports = Seq(
-        makeImport(userService1),
-        makeImport(userService2),
-      )
-    )
-    apibuilderServiceImportResolver.resolve(Authorization.All, service) must equal(
-      Seq("test/user/1.0.1")
-    )
+
+    test(userService1, userService2) must equal(Seq("test/user/1.0.1"))
+    test(userService2, userService1) must equal(Seq("test/user/1.0.1"))
   }
 
 }
