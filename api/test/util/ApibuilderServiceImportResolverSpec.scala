@@ -13,7 +13,7 @@ class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
 
   private[this] def apibuilderServiceImportResolver: ApibuilderServiceImportResolver = app.injector.instanceOf[ApibuilderServiceImportResolver]
 
-  private[this] def makeUserService(version: String): Service = {
+  private[this] def createUserServiceVersion(version: String): Service = {
     val svc = makeService(
       organization = makeOrganization(key = "test"),
       application = makeApplication(key = "user"),
@@ -38,7 +38,7 @@ class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
   }
 
   "resolve service with 1 import" in {
-    val userService = makeUserService(version = "1.0.0")
+    val userService = createUserServiceVersion(version = "1.0.0")
 
     resolve(
       makeService(
@@ -52,7 +52,7 @@ class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
   }
 
   "collapses duplicate imports" in {
-    val userService = makeUserService(version = "1.0.0")
+    val userService = createUserServiceVersion(version = "1.0.0")
     val service = makeService(
       imports = Seq(
         makeImport(userService),
@@ -65,8 +65,8 @@ class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
   }
 
   "selects latest version" in {
-    val userService1 = makeUserService(version = "1.0.0")
-    val userService2 = makeUserService(version = "1.0.1")
+    val userService1 = createUserServiceVersion(version = "1.0.0")
+    val userService2 = createUserServiceVersion(version = "1.0.1")
     val service = makeService(
       imports = Seq(
         makeImport(userService1),
