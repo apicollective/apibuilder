@@ -9,7 +9,7 @@ import lib.VersionTag
 
 import scala.annotation.tailrec
 
-class ApibuilderServiceImportResolver @Inject() (
+class ApiBuilderServiceImportResolver @Inject()(
   versionsDao: VersionsDao,
   rollbarLogger: RollbarLogger,
 ) {

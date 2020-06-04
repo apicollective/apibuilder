@@ -13,7 +13,7 @@ import db.{OrganizationAttributeValuesDao, VersionsDao}
 import lib.{Pager, Validation}
 import play.api.libs.json._
 import _root_.util.UserAgent
-import _root_.util.ApibuilderServiceImportResolver
+import _root_.util.ApiBuilderServiceImportResolver
 import io.apibuilder.spec.v0.models.Service
 import play.api.libs.ws.WSClient
 import play.api.mvc.Result
@@ -24,7 +24,7 @@ import scala.concurrent.Future
 class Code @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   wSClient: WSClient,
-  apibuilderServiceImportResolver: ApibuilderServiceImportResolver,
+  apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
@@ -206,7 +206,7 @@ class Code @Inject() (
       }
 
       case Some(version) => {
-        val importedServices = apibuilderServiceImportResolver.resolve(request.authorization, version.service)
+        val importedServices = apiBuilderServiceImportResolver.resolve(request.authorization, version.service)
         Right(
           InvocationFormData(
             params = params,

@@ -1,23 +1,22 @@
 package util
 
 import db.Authorization
-import io.apibuilder.api.v0.models.Version
-import io.apibuilder.spec.v0.models.{Import, Service}
+import io.apibuilder.spec.v0.models.Service
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class ApibuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSuite
+class ApiBuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSuite
   with helpers.ServiceHelpers
   with db.Helpers
 {
 
-  private[this] def apibuilderServiceImportResolver: ApibuilderServiceImportResolver = app.injector.instanceOf[ApibuilderServiceImportResolver]
+  private[this] def apibuilderServiceImportResolver: ApiBuilderServiceImportResolver = app.injector.instanceOf[ApiBuilderServiceImportResolver]
 
   private[this] def createServiceVersion(name: String = "user", version: String): Service = {
     val svc = makeService(
       organization = makeOrganization(key = "test"),
       namespace = "test.com",
-      application = makeApplication(key = "user"),
+      application = makeApplication(key = name),
       version = version,
       name = name,
     )
