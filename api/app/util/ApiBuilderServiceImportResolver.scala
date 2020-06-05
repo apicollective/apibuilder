@@ -41,7 +41,7 @@ class ApiBuilderServiceImportResolver @Inject()(
               resolve(auth, rest, builder)
             }
             case Some(v: Version) => {
-              resolve(auth, rest, builder.withService(v.service))
+              resolve(auth, rest ++ v.service.imports, builder.withService(v.service))
             }
           }
         }

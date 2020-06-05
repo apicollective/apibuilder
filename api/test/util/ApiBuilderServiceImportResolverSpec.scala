@@ -104,37 +104,18 @@ class ApiBuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
   }
 
   "resolves deep imports" in {
-    val service = makeService(
-      name = "svc1",
-      version = "0.9.10",
-      imports = Seq(
-        makeImport(
-          createServiceVersion(
-            name = "svc2",
-            version = "0.9.10",
-            imports = Seq(
-              makeImport(
-                createServiceVersion(
-                  name = "svc3",
-                  version = "0.9.10",
-                  imports = Seq(
-                    makeImport(
-                      createServiceVersion(
-                        name = "svc4",
-                        version = "0.9.10"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
+    val svc4 = createServiceVersion(name = "svc4", version = "4")
+    val svc3 = createServiceVersion(name = "svc3", version = "3", imports = Seq(makeImport(svc4)))
+    val svc2 = createServiceVersion(name = "svc2", version = "2", imports = Seq(makeImport(svc3)))
 
-    resolve(service).sorted must equal(
-      Seq("test/svc2/0.9.10", "test/svc3/0.9.10", "test/svc4/0.9.10")
+    resolve(
+      makeService(
+        name = "svc1",
+        version = "0.9.10",
+        imports = Seq(makeImport(svc2))
+      )
+    ).sorted must equal(
+      Seq("test/svc2/2", "test/svc3/3", "test/svc4/4")
     )
   }
 
