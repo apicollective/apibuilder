@@ -1,7 +1,7 @@
 package util
 
 import db.Authorization
-import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.{Import, Service}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -12,13 +12,18 @@ class ApiBuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
 
   private[this] def apibuilderServiceImportResolver: ApiBuilderServiceImportResolver = app.injector.instanceOf[ApiBuilderServiceImportResolver]
 
-  private[this] def createServiceVersion(name: String = "user", version: String): Service = {
+  private[this] def createServiceVersion(
+    name: String = "user",
+    version: String,
+    imports: Seq[Import] = Nil,
+  ): Service = {
     val svc = makeService(
       organization = makeOrganization(key = "test"),
       namespace = "test.com",
       application = makeApplication(key = name),
       version = version,
       name = name,
+      imports = imports,
     )
     createVersion(svc)
     svc
@@ -96,6 +101,41 @@ class ApiBuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
 
     test(s3, s1, s2) must equal(Seq("test/user/1.0.1"))
     test(s3, s2, s1) must equal(Seq("test/user/1.0.1"))
+  }
+
+  "resolves deep imports" in {
+    val service = makeService(
+      name = "svc1",
+      version = "0.9.10",
+      imports = Seq(
+        makeImport(
+          createServiceVersion(
+            name = "svc2",
+            version = "0.9.10",
+            imports = Seq(
+              makeImport(
+                createServiceVersion(
+                  name = "svc3",
+                  version = "0.9.10",
+                  imports = Seq(
+                    makeImport(
+                      createServiceVersion(
+                        name = "svc4",
+                        version = "0.9.10"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+
+    resolve(service).sorted must equal(
+      Seq("test/svc2/0.9.10", "test/svc3/0.9.10", "test/svc4/0.9.10")
+    )
   }
 
 }
