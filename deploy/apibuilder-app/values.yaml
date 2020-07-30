@@ -1,0 +1,61 @@
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  port: 9000
+  metricsEndpoint:
+    enabled: false
+
+iamRole: ecsInstanceRole
+image:
+  repository: flowcommerce/apibuilder-app
+  pullPolicy: IfNotPresent
+resources:
+  limits:
+    memory: "3400Mi"
+    cpu: 1
+  requests:
+    memory: "3400Mi"
+    cpu: .05
+
+jvmMemory: 3000
+
+nodeSelector: {} 
+affinity: {}
+tolerations: {} 
+
+ingress:
+  enabled: true
+  gateways:
+    - key: app-apibuilder-io
+      tld: apibuilder.io
+      hosts:
+        - app.apibuilder.io
+    - key: apibuilder-flow-pub
+      tld: flo.pub
+      hosts:
+        - apibuilder.flo.pub
+
+services:
+  live:
+    hosts:
+      - apibuilder-app
+      - app.apibuilder.io
+      - apibuilder.flo.pub
+    gateways:
+      - mesh
+      - app-apibuilder-io
+      - apibuilder-flow-pub
+    stages:
+      - deployment: live
+        weight: 100
+
+deployments:
+  live:
+    minReplicas: 2
+    maxReplicas: 2
+    maxUnavailable: 1
+    disruptionBudgetEnabled: true
+    targetCPUUtilizationPercentage: 80
+    version: #from commandline
+    strategy: RollingUpdate
