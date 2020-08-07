@@ -27,11 +27,11 @@
               Symbol("_error") -> addForm.error("nickname")
           )
 
-          @select(
+          @helper.select(
               addForm("role"),
               options = lib.Role.All.map( r => (r.key, r.name) ),
               Symbol("_label") -> "Role",
-              Symbol("_error") -> addForm("role")
+              Symbol("_error") -> addForm.error("role")
           )
 
       </fieldset>

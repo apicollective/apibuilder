@@ -191,7 +191,7 @@ object Members {
   case class AddMemberData(role: String, email: String, nickname: String)
   private[controllers] val addMemberForm = Form(
     mapping(
-      "role" -> nonEmptyText,
+      "role" -> default(nonEmptyText, lib.Role.Member.name),
       "email" -> text,
       "nickname" -> text
     )(AddMemberData.apply)(AddMemberData.unapply)
