@@ -16,7 +16,7 @@ case class TypeLabel(
 
   private[this] val localResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
-    interfaceNames = service.models.map(_.name),
+    interfaceNames = service.interfaces.map(_.name),
     modelNames = service.models.map(_.name),
     unionNames = service.unions.map(_.name)
   )
