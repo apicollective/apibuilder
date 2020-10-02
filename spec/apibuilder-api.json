@@ -990,11 +990,10 @@
     },
 
     "batch_download_applications": {
-      "path": "/:orgKey/batch/download",
+      "path": "/:orgKey/batch/download/applications",
       "operations": [
         {
           "method": "POST",
-          "path": "/applications",
           "description": "Retrieve multiple applications in one api call.",
           "body": { "type": "batch_download_applications_form" },
           "responses": {

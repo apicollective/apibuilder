@@ -66,7 +66,7 @@ POST       /:orgKey                                                  controllers
 PUT        /:orgKey/:applicationKey                                  controllers.Applications.putByApplicationKey(orgKey: String, applicationKey: String)
 DELETE     /:orgKey/:applicationKey                                  controllers.Applications.deleteByApplicationKey(orgKey: String, applicationKey: String)
 POST       /:orgKey/:applicationKey/move                             controllers.Applications.postMoveByApplicationKey(orgKey: String, applicationKey: String)
-POST       /:orgKey/batch/download/applications                      controllers.BatchDownloadApplications.postApplications(orgKey: String)
+POST       /:orgKey/batch/download/applications                      controllers.BatchDownloadApplications.post(orgKey: String)
 POST       /:orgKey/:applicationKey/:version/form                    controllers.Code.postForm(orgKey: String, applicationKey: String, version: String)
 GET        /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.getByGeneratorKey(orgKey: String, applicationKey: String, version: String, generatorKey: String)
 POST       /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.postByGeneratorKey(orgKey: String, applicationKey: String, version: String, generatorKey: String)

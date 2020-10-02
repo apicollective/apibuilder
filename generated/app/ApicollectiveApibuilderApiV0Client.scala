@@ -2772,7 +2772,7 @@ package io.apibuilder.api.v0 {
     }
 
     object BatchDownloadApplications extends BatchDownloadApplications {
-      override def postApplications(
+      override def post(
         orgKey: String,
         batchDownloadApplicationsForm: io.apibuilder.api.v0.models.BatchDownloadApplicationsForm,
         requestHeaders: Seq[(String, String)] = Nil
@@ -4020,7 +4020,7 @@ package io.apibuilder.api.v0 {
     /**
      * Retrieve multiple applications in one api call.
      */
-    def postApplications(
+    def post(
       orgKey: String,
       batchDownloadApplicationsForm: io.apibuilder.api.v0.models.BatchDownloadApplicationsForm,
       requestHeaders: Seq[(String, String)] = Nil
