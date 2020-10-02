@@ -2781,9 +2781,8 @@ package io.apibuilder.api.v0 {
 
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/batch/download/applications", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 201 => _root_.io.apibuilder.api.v0.Client.parseJson("io.apibuilder.api.v0.models.BatchDownloadApplications", r, _.validate[io.apibuilder.api.v0.models.BatchDownloadApplications])
-          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 409 => throw io.apibuilder.api.v0.errors.ErrorsResponse(r)
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 404, 409")
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
         }
       }
     }
