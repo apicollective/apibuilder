@@ -86,6 +86,7 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
+      "org.typelevel"     %% "cats-core" % "2.2.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.20.0" % Test
     )
