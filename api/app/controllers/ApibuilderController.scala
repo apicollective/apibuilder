@@ -30,7 +30,7 @@ trait ApibuilderController extends BaseController {
   def membershipsDao: MembershipsDao = apibuilderControllerComponents.membershipsDao
   def organizationsDao: OrganizationsDao = apibuilderControllerComponents.organizationsDao
 
-  def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result) = {
+  def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result): Result = {
     organizationsDao.findByKey(auth, orgKey) match {
       case None => Results.NotFound(
         jsonError(s"Organization[$orgKey] does not exist or you are not authorized to access it")
@@ -42,7 +42,7 @@ trait ApibuilderController extends BaseController {
     }
   }
 
-  def withOrgMember(user: User, orgKey: String)(f: Organization => Result) = {
+  def withOrgMember(user: User, orgKey: String)(f: Organization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
       withRole(org, user, Role.All) {
         f(org)
@@ -50,7 +50,7 @@ trait ApibuilderController extends BaseController {
     }
   }
 
-  def withOrgAdmin(user: User, orgKey: String)(f: Organization => Result) = {
+  def withOrgAdmin(user: User, orgKey: String)(f: Organization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
       withRole(org, user, Seq(Role.Admin)) {
         f(org)
@@ -107,7 +107,7 @@ case class AnonymousRequest[A](
   user: Option[User],
   request: Request[A]
 ) extends WrappedRequest(request) {
-  val authorization = user match {
+  val authorization: Authorization = user match {
     case None => Authorization.PublicOnly
     case Some(u) => Authorization.User(u.guid)
   }
@@ -117,7 +117,7 @@ case class IdentifiedRequest[A](
   user: User,
   request: Request[A]
 ) extends WrappedRequest(request) {
-  val authorization = Authorization.User(user.guid)
+  val authorization: Authorization.User = Authorization.User(user.guid)
 }
 
 class AnonymousActionBuilder @Inject()(

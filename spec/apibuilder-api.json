@@ -513,6 +513,26 @@
       "fields": [
         { "name": "version", "type": "string", "example": "0.2.5" }
       ]
+    },
+
+    "batch_download_applications": {
+      "plural": "batch_download_applications",
+      "fields": [
+        { "name": "applications", "type": "[version]" }
+      ]
+    },
+
+    "batch_download_applications_form": {
+      "fields": [
+        { "name": "applications", "type": "[batch_download_application_form]" }
+      ]
+    },
+
+    "batch_download_application_form": {
+      "fields": [
+        { "name": "application_key", "type": "string" },
+        { "name": "version", "type": "string", "default": "latest", "required": false }
+      ]
     }
   },
 
@@ -963,6 +983,21 @@
           "description": "Declines this membership request. User will NOT become a member of the specified organization.",
           "responses": {
             "204": { "type": "unit" },
+            "409": { "type": "[error]" }
+          }
+        }
+      ]
+    },
+
+    "batch_download_applications": {
+      "path": "/:orgKey/batch/download/applications",
+      "operations": [
+        {
+          "method": "POST",
+          "description": "Retrieve multiple applications in one api call.",
+          "body": { "type": "batch_download_applications_form" },
+          "responses": {
+            "201": { "type": "batch_download_applications" },
             "409": { "type": "[error]" }
           }
         }
