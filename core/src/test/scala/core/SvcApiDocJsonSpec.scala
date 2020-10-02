@@ -1,12 +1,12 @@
 package core
 
-import io.apibuilder.spec.v0.models.Method
+import io.apibuilder.spec.v0.models.{Method, Response, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType}
 import org.scalatest.{FunSpec, Matchers}
 
-class SvcApiDocJson extends FunSpec with Matchers {
+class SvcApiDocJsonSpec extends FunSpec with Matchers {
 
   private val Path = "spec/apibuilder-api.json"
-  private lazy val service = TestHelper.parseFile(Path).service
+  private lazy val service = TestHelper.parseFile(Path).service()
 
   it("parses models") {
     val models = service.models.map(_.name)
@@ -47,8 +47,17 @@ class SvcApiDocJson extends FunSpec with Matchers {
     val validCodes = Seq("200", "201", "204", "401", "409")
     service.resources.flatMap(_.operations.filter(_.method == Method.Post)).foreach { op =>
       op.responses.find { r => !validCodes.contains(TestHelper.responseCode(r.code))}.foreach { code =>
-        fail(s"POST operation should return a ${validCodes.mkString(", ")} - invalid response for op[$op] response[$code]")
+        fail(s"POST operation should return a ${validCodes.mkString(", ")} - Operation[${op.method} ${op.path}] has invalid response code[${toLabel(code)}]")
       }
+    }
+  }
+
+  private[this] def toLabel(response: Response): String = {
+    response.code match {
+      case i: ResponseCodeInt => i.value.toString
+      case ResponseCodeOption.Default => "*"
+      case ResponseCodeOption.UNDEFINED(other) => other
+      case ResponseCodeUndefinedType(other) => other
     }
   }
 
