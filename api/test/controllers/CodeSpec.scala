@@ -108,13 +108,13 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
 
         val wireMockRequestList = wireMockServer.findRequestsMatching(RequestPattern.ANYTHING).getRequests
         val postRequestBodyString = Try(wireMockRequestList.get(0))
-          .getOrElse(throw new IllegalArgumentException("WireMock test server has not captured any Apibuilder Generator invocation call"))
+          .getOrElse(throw new IllegalArgumentException("WireMock test server has not captured any ApiBuilder Generator invocation call"))
           .getBodyAsString
         val sentInvocationForm = Json.parse(postRequestBodyString).as[InvocationForm]
 
-        sentInvocationForm.importedServices mustEqual Some(
-          Seq(intermediateService, childService)
-        )
+        sentInvocationForm.importedServices.getOrElse(Nil).map(_.namespace).sorted mustEqual Seq(
+          intermediateService, childService
+        ).map(_.namespace).sorted
 
       } finally {
         wireMockServer.stop()
