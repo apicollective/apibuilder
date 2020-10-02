@@ -1,7 +1,10 @@
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
 import io.apibuilder.api.v0.models.BatchDownloadApplicationsForm
+import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
+import lib.Validation
 import play.api.libs.json.Json
 import services.BatchDownloadApplicationsService
 
@@ -12,16 +15,10 @@ class BatchDownloadApplications @Inject() (
 ) extends ApibuilderController {
 
   def postApplications(orgKey: String) = Anonymous(parse.json[BatchDownloadApplicationsForm]) { request =>
-    service.validate(request.authorization, orgKey, request.body)
-    val versions = applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
-      versionsDao.findAll(
-        request.authorization,
-        applicationGuid = Some(application.guid),
-        limit = limit,
-        offset = offset
-      )
-    }.getOrElse(Nil)
-    Ok(Json.toJson(versions))
+    service.process(request.authorization, orgKey, request.body) match {
+      case Valid(result) => Ok(Json.toJson(result))
+      case Invalid(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+    }
   }
 
 }

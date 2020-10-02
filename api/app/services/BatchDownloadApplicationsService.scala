@@ -11,7 +11,7 @@ class BatchDownloadApplicationsService @Inject() (
   versionsDao: VersionsDao,
 ) {
 
-  def validate(
+  def process(
     auth: Authorization,
     orgKey: String,
     form: BatchDownloadApplicationsForm,

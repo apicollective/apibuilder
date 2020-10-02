@@ -1,7 +1,7 @@
 package lib
 
+import cats.data.NonEmptyChain
 import io.apibuilder.api.v0.models.Error
-import play.api.libs.json.Json
 import play.api.libs.json.JsError
 
 object Validation {
@@ -35,6 +35,8 @@ object Validation {
   def errors(messages: Seq[String]): Seq[Error] = {
     messages.map { msg => Error(ErrorCode, msg) }
   }
+
+  def errors(messages: NonEmptyChain[String]): Seq[Error] = errors(messages.toNonEmptyList.toList)
 
   def serverError(error: String = "Internal Server Error"): Seq[Error] = {
     Seq(Error(ServerError, error))
