@@ -33,7 +33,12 @@ class BatchDownloadApplicationsService @Inject() (
     applicationsDao.findByOrganizationKeyAndApplicationKey(auth, orgKey, form.applicationKey) match {
       case None => s"Cannot find application with key '${form.applicationKey}'".invalidNec
       case Some(a) => {
-        versionsDao.findByApplicationAndVersion(auth, a, form.version) match {
+        versionsDao.findVersion(
+          auth,
+          orgKey = orgKey,
+          applicationKey = a.key,
+          version = form.version,
+        ) match {
           case None => s"Cannot find version '${form.version}' for application with key '${form.applicationKey}'".invalidNec
           case Some(v) => v.validNec
         }

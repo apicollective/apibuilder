@@ -14,7 +14,7 @@ class BatchDownloadApplications @Inject() (
   service: BatchDownloadApplicationsService,
 ) extends ApibuilderController {
 
-  def postApplications(orgKey: String) = Anonymous(parse.json[BatchDownloadApplicationsForm]) { request =>
+  def post(orgKey: String) = Anonymous(parse.json[BatchDownloadApplicationsForm]) { request =>
     service.process(request.authorization, orgKey, request.body) match {
       case Valid(result) => Ok(Json.toJson(result))
       case Invalid(errors) => Conflict(Json.toJson(Validation.errors(errors)))
