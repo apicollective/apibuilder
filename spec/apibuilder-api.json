@@ -516,6 +516,7 @@
     },
 
     "batch_download_applications": {
+      "plural": "batch_download_applications",
       "fields": [
         { "name": "applications", "type": "[version]" }
       ]
