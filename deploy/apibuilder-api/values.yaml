@@ -30,7 +30,7 @@ ingress:
     - key: api-apibuilder-io
       tld: apibuilder.io
       hosts:
-        - k8s.api.apibuilder.io
+        - api.apibuilder.io
     - key: apibuilder-api-flow-pub
       tld: flo.pub
       hosts:
