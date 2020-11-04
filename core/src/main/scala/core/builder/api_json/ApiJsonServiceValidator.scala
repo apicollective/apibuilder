@@ -129,8 +129,8 @@ case class ApiJsonServiceValidator(
   private def validateStructure(): Seq[String] = {
     JsonUtil.validate(
       internalService.get.json,
-      strings = Seq("name", "$schema"),
-      optionalStrings = Seq("base_url", "description", "namespace"),
+      strings = Seq("name"),
+      optionalStrings = Seq("base_url", "description", "namespace", "$schema"),
       optionalArraysOfObjects = Seq("imports", "headers", "attributes"),
       optionalObjects = Seq("apidoc", "info", "enums", "interfaces", "models", "unions", "resources", "annotations")
     )
