@@ -15,7 +15,12 @@ class ApiClientProvider @Inject() (
   config: Config
 ) {
 
-  private[this] val baseUrl = config.requiredString("apibuilder.api.host")
+  private[this] val baseUrl = {
+    if (Hacks.runningOnK8s)
+      "https://apibuilder-api.flo.pub"
+    else
+      config.requiredString("apibuilder.api.host")
+  }
   private[this] val apiAuth = Authorization.Basic(config.requiredString("apibuilder.api.token"))
 
   private[this] def newClient(sessionId: Option[String]): Client = {

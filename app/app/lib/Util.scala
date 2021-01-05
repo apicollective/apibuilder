@@ -51,8 +51,18 @@ class Util @Inject() (
   config: Config
 ) {
 
-  private[this] val ApiHost: String = config.requiredString("apibuilder.api.host")
-  val Host: String = config.requiredString("apibuilder.app.host")
+  private[this] val ApiHost: String = {
+    if (Hacks.runningOnK8s)
+      "https://apibuilder-api.flo.pub"
+    else
+      config.requiredString("apibuilder.api.host")
+  }
+  val Host: String = {
+    if (Hacks.runningOnK8s)
+      "https://apibuilder.flo.pub"
+    else
+      config.requiredString("apibuilder.app.host")
+  }
 
   def fullUrl(stub: String): String = s"$Host$stub"
   def fullApiUrl(stub: String): String = s"$ApiHost$stub"
@@ -69,7 +79,8 @@ class Util @Inject() (
     "http://apidoc.me", "http://www.apidoc.me",
     "https://apidoc.me", "https://www.apidoc.me",
     "http://apibuilder.io", "http://www.apibuilder.io", "http://app.apibuilder.io", "http://ui.apibuilder.io",
-    "https://apibuilder.io", "https://www.apibuilder.io", "https://app.apibuilder.io", "https://ui.apibuilder.io"
+    "https://apibuilder.io", "https://www.apibuilder.io", "https://app.apibuilder.io", "https://ui.apibuilder.io",
+    "https://apibuilder.flo.pub"
   )
 
   def validateReturnUrl(value: String): Either[Seq[String], String] = {
