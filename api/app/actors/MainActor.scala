@@ -110,7 +110,7 @@ class MainActor @javax.inject.Inject() (
       versionsDao.migrate()
     } match {
       case Success(result) => log.info("ensureServices() completed: " + result)
-      case Failure(ex) => log.error(s"Error migrating versions: ${ex.getMessage}")
+      case Failure(ex) => log.error(s"Error migrating versions: ${ex.getMessage}", ex)
     }
   }
 }
