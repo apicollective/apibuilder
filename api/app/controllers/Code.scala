@@ -147,13 +147,7 @@ class Code @Inject() (
           case Some(gws) => {
             val orgAttributes = getAllAttributes(data.version.organization.guid, gws.generator.attributes)
 
-            val realUri =
-              if (service.uri == "https://generator.apibuilder.io" && lib.Hacks.runningOnK8s)
-                "https://apibuilder-generator.flo.pub"
-              else
-                service.uri
-
-            new Client(wSClient, realUri).invocations.postByKey(
+            new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
               invocationForm = data.invocationForm,
             ).map { invocation =>
