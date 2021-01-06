@@ -27,7 +27,7 @@ class ApiClientProvider @Inject() (
     new io.apibuilder.api.v0.Client(
       wSClient,
       baseUrl = baseUrl,
-      auth = Some(apiAuth),
+      auth = if (sessionId.isEmpty) Some(apiAuth) else None,
       defaultHeaders = sessionId.map { id =>
         "Authorization" -> ("Session " + URLEncoder.encode(id, "UTF-8"))
       }.toSeq
