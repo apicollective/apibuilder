@@ -67,16 +67,28 @@ pipeline {
 
     stage('Deploy Helm chart') {
       when { branch 'master' }
-      steps {
-        container('helm') {
-          script {
-          
-            new helmDeploy().deploy('apibuilder-api', VERSION.printable(), 300, 'apicollective')
-          
-            new helmDeploy().deploy('apibuilder-app', VERSION.printable(), 300, 'apicollective')
-          
+      parallel {
+        
+        stage('deploy apibuilder-api') {
+          steps {
+            script {
+              container('helm') {
+                new helmDeploy().deploy('apibuilder-api', VERSION.printable(), 300, 'apicollective')
+              }
+            }
           }
         }
+        
+        stage('deploy apibuilder-app') {
+          steps {
+            script {
+              container('helm') {
+                new helmDeploy().deploy('apibuilder-app', VERSION.printable(), 300, 'apicollective')
+              }
+            }
+          }
+        }
+        
       }
     }
   }
