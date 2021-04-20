@@ -76,7 +76,7 @@ class ServiceEnumSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers 
 
   it("field can be defined as an enum") {
     setup() { v =>
-      v.errors should be(Nil)
+      v.errors() should be(Nil)
       v.service().models.head.fields.find {
         _.name == "age_group"
       }.get.`type` should be("age_group")
@@ -87,7 +87,7 @@ class ServiceEnumSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers 
     setup(
       twentiesEnumValue = twentiesEnumValue.copy(name = "1")
     ) { v =>
-      v.errors should be(
+      v.errors() should be(
         Seq("Enum[age_group] value[1] is invalid: must start with a letter")
       )
     }

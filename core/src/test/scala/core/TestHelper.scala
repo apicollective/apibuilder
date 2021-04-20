@@ -1,19 +1,17 @@
 package core
 
-import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text}
-import builder.OriginalValidator
-import io.apibuilder.api.v0.models.{Original, OriginalType}
+import _root_.builder.OriginalValidator
 import io.apibuilder.api.json.v0.models.ApiJson
 import io.apibuilder.api.json.v0.models.json._
-import io.apibuilder.spec.v0.models.{ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service}
-
-import java.nio.file.{Files, Paths}
-import java.nio.charset.StandardCharsets
-import java.util.UUID
-import io.apibuilder.api.json.v0.models.ApiJson
-import play.api.libs.json.{JsObject, Json}
+import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.spec.v0.models._
+import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text}
+import play.api.libs.json.Json
 
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
+import java.util.UUID
 
 object TestHelper {
 
@@ -123,7 +121,7 @@ object TestHelper {
     tmpPath
   }
 
-  def writeToFile(path: String, contents: String) {
+  def writeToFile(path: String, contents: String): Unit = {
     val outputPath = Paths.get(path)
     val bytes = contents.getBytes(StandardCharsets.UTF_8)
     Files.write(outputPath, bytes)
@@ -163,7 +161,7 @@ object TestHelper {
     )
   }
 
-  def assertEqualsFile(filename: String, contents: String) {
+  def assertEqualsFile(filename: String, contents: String): Unit = {
     if (contents.trim != readFile(filename).trim) {
       val tmpPath = "/tmp/apibuilder.tmp." + Text.safeName(filename)
       TestHelper.writeToFile(tmpPath, contents.trim)

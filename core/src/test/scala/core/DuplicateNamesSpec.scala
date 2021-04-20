@@ -14,7 +14,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers with helpers.ApiJsonHelpe
           "someUser" -> makeModel(fields = Seq(idField)),
         )
       )
-    ).errors should be(
+    ).errors() should be(
       Seq("Model[some_user] appears more than once")
     )
   }
@@ -29,7 +29,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers with helpers.ApiJsonHelpe
           )),
         ),
       )
-    ).errors should be(
+    ).errors() should be(
       Seq("Enum[foo] value[some_id] appears more than once")
     )
   }
@@ -44,7 +44,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers with helpers.ApiJsonHelpe
           ))
         )
       )
-    ).errors should be(
+    ).errors() should be(
       Seq("Model[user] field[some_id] appears more than once")
     )
   }
@@ -82,7 +82,7 @@ class DuplicateNamesSpec extends FunSpec with Matchers with helpers.ApiJsonHelpe
     }
     """
 
-    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors should be(
+    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors() should be(
       Seq("Resource[user] GET /users/:guid Parameter[some_id] appears more than once")
     )
   }

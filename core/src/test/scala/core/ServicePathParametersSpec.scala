@@ -55,49 +55,49 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     it("numbers can be path parameters") {
       val json = baseJson.format("GET", "/:id")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("strings can be path parameters") {
       val json = baseJson.format("GET", "/:name")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("supports file extensions") {
       val json = baseJson.format("GET", "/:id.html")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("parameters not defined on the model are accepted (assumed strings)") {
       val json = baseJson.format("GET", "/:some_string")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("enums can be path parameters - assumed type is string") {
       val json = baseJson.format("GET", "/:age_group")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("dates can be path parameters") {
       val json = baseJson.format("GET", "/:created_at_date")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("date-time can be path parameters") {
       val json = baseJson.format("GET", "/:created_at_date_time")
-      TestHelper.serviceValidatorFromApiJson(json).errors should be(Nil)
+      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
     }
 
     it("other models cannot be path parameters") {
       val json = baseJson.format("GET", "/:tag")
-      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be(
+      TestHelper.serviceValidatorFromApiJson(json).errors().mkString("") should be(
         "Resource[user] GET /users/:tag path parameter[tag] has an invalid type[tag]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
       )
     }
 
     it("unsupported types declared as parameters are validated") {
       val json = baseJson.format("POST", "/:tags")
-      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be(
+      TestHelper.serviceValidatorFromApiJson(json).errors().mkString("") should be(
         "Resource[user] POST /users/:tags path parameter[tags] has an invalid type[map[string]]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
       )
     }

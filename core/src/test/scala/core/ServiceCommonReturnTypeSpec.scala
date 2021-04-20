@@ -38,8 +38,8 @@ class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
       }
     }
     """
-    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors.mkString should be("")
-    TestHelper.serviceValidatorFromApiJson(json.format("[user]")).errors.mkString should be("Resource[user] cannot have varying response types for 2xx response codes: [user], user")
+    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors().mkString should be("")
+    TestHelper.serviceValidatorFromApiJson(json.format("[user]")).errors().mkString should be("Resource[user] cannot have varying response types for 2xx response codes: [user], user")
   }
 
 }
