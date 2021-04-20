@@ -148,7 +148,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
     it("can identify common type for path parameter if all union types have the same type") {
       val json = baseJson.format("guid")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors should be(Nil)
+      validator.errors() should be(Nil)
       val userResource = validator.service().resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
@@ -159,7 +159,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
     it("uses default 'string' if path parameter type varies across union type") {
       val json = baseJson.format("age")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors should be(Nil)
+      validator.errors() should be(Nil)
       val userResource = validator.service().resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
@@ -194,7 +194,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     val json = baseJson.format("age")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors shouldBe List.empty
+    validator.errors() shouldBe List.empty
   }
 
   it("fails missing path parameters") {

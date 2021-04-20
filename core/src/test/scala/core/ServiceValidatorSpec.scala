@@ -429,7 +429,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHel
 
     it("lists of primitives are valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[string]"))
-      validator.errors should be(Nil)
+      validator.errors() should be(Nil)
     }
 
     it("maps of primitives are valid in query parameters") {
@@ -439,7 +439,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHel
 
     it("lists of models are not valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[tag]"))
-      validator.errors should be(
+      validator.errors() should be(
         Seq("Resource[tag] GET /tags Parameter[tags] has an invalid type[[tag]]. Valid nested types for lists in query parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
       )
     }

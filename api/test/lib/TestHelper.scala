@@ -6,13 +6,13 @@ import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models.Service
 import play.api.Application
 
+import java.io.File
+
 trait TestHelper {
 
   def app: Application
 
-  def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
+  def readFile(path: String): String = FileUtils.readToString(new File(path))
 
   def readService(path: String): Service = {
     val config = ServiceConfiguration(

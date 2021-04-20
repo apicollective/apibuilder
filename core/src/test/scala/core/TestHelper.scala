@@ -1,18 +1,19 @@
 package core
 
-import lib.{ServiceConfiguration, ServiceValidator}
+import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text}
 import builder.OriginalValidator
 import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.api.json.v0.models.ApiJson
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.{ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service}
-import lib.Text
+
 import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.util.UUID
-
 import io.apibuilder.api.json.v0.models.ApiJson
 import play.api.libs.json.{JsObject, Json}
+
+import java.io.File
 
 object TestHelper {
 
@@ -128,9 +129,7 @@ object TestHelper {
     Files.write(outputPath, bytes)
   }
 
-  def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
+  def readFile(path: String): String = FileUtils.readToString(new File(path))
 
   def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
@@ -153,7 +152,7 @@ object TestHelper {
   ): ServiceValidatorForSpecs = {
     val contents = readFile(filename)
     val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
-    validator.validate match {
+    validator.validate() match {
       case Left(errors) => {
         sys.error(s"Invalid api.json file[$filename]: " + errors.mkString("\n"))
       }
