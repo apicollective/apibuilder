@@ -58,7 +58,7 @@ class Members @Inject() (
     request.withMember {
       val tpl = request.mainTemplate(Some("Add Member")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
 
-      Members.addMemberForm.bindFromRequest.fold(
+      Members.addMemberForm.bindFromRequest().fold(
 
         errors => {
           Ok(views.html.members.add(tpl, errors))

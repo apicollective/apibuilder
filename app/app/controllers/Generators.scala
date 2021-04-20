@@ -60,7 +60,7 @@ class Generators @Inject() (
   }
 
   def createPost = Identified.async { implicit request =>
-    val form = Generators.generatorServiceCreateFormData.bindFromRequest
+    val form = Generators.generatorServiceCreateFormData.bindFromRequest()
     form.fold (
 
       errors => Future {

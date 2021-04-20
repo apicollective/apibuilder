@@ -143,7 +143,7 @@ private[api_json] case class TypeResolver(
     resolver.parse(internal.label)
   }
 
-  def assertValidDefault(kind: Kind, value: String) {
+  def assertValidDefault(kind: Kind, value: String): Unit = {
     validate(kind, value) match {
       case None => {}
       case Some(msg) => sys.error(msg)

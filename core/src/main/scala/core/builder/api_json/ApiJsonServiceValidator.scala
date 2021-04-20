@@ -69,22 +69,22 @@ case class ApiJsonServiceValidator(
       case Some(_: InternalServiceForm) => {
         validateStructure() match {
           case Nil => {
-            validateInfo ++
-            validateKey ++
-            validateImports ++
+            validateInfo() ++
+            validateKey() ++
+            validateImports() ++
             validateAttributes("Service", internalService.get.attributes) ++
-            validateHeaders ++
-            validateResources ++
-            validateOperations ++
-            validateParameterBodies ++
-            validateParameters ++
-            validateResponses ++
-            validateInterfaces ++
-            validateUnions ++
-            validateModels ++
-            validateFields ++
-            validateEnums ++
-            validateAnnotations
+            validateHeaders() ++
+            validateResources() ++
+            validateOperations() ++
+            validateParameterBodies() ++
+            validateParameters() ++
+            validateResponses() ++
+            validateInterfaces() ++
+            validateUnions() ++
+            validateModels() ++
+            validateFields() ++
+            validateEnums() ++
+            validateAnnotations()
           }
 
           case errs => {

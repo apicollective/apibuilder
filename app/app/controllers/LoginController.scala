@@ -56,7 +56,7 @@ class LoginController @Inject() (
 
   def legacyPost = Anonymous.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val form = LoginController.loginForm.bindFromRequest
+    val form = LoginController.loginForm.bindFromRequest()
     form.fold (
 
       formWithErrors => Future.successful {
@@ -100,7 +100,7 @@ class LoginController @Inject() (
 
   def postForgotPassword = Anonymous.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val form = LoginController.forgotPasswordForm.bindFromRequest
+    val form = LoginController.forgotPasswordForm.bindFromRequest()
     form.fold (
 
       formWithErrors => Future {
@@ -126,7 +126,7 @@ class LoginController @Inject() (
 
   def postResetPassword(token: String) = Anonymous.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val form = LoginController.resetPasswordForm.bindFromRequest
+    val form = LoginController.resetPasswordForm.bindFromRequest()
     form.fold (
 
       formWithErrors => Future {

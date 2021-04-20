@@ -194,7 +194,7 @@ class Organizations @Inject() (
       case Some(org) => {
         val tpl = request.mainTemplate(Some("Edit Organization"))
 
-        val form = Organizations.orgForm.bindFromRequest
+        val form = Organizations.orgForm.bindFromRequest()
         form.fold(
 
           errors => Future {

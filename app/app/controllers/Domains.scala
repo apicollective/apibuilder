@@ -33,7 +33,7 @@ class Domains @Inject() (
   def postCreate(orgKey: String) = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       val tpl = request.mainTemplate(title = Some("Add Domain"))
-      val boundForm = Domains.domainForm.bindFromRequest
+      val boundForm = Domains.domainForm.bindFromRequest()
       boundForm.fold(
 
         errors => Future {

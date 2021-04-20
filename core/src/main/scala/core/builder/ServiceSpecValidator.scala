@@ -240,7 +240,7 @@ case class ServiceSpecValidator(
       case errs => errs
     }
 
-    nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues ++ valuesWithInvalidNames ++ duplicateValues
+    nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues() ++ valuesWithInvalidNames ++ duplicateValues
   }
 
   private def validateAnnotations(prefix: String, annotations: Seq[String]): Seq[String] = {

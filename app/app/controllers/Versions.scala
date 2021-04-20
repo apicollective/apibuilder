@@ -2,13 +2,13 @@ package controllers
 
 import java.io.File
 import javax.inject.Inject
-
 import io.apibuilder.api.v0.models._
 import io.apibuilder.spec.v0.models.json._
-import lib.{ApiClientProvider, Labels, VersionTag}
+import lib.{ApiClientProvider, FileUtils, Labels, VersionTag}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json._
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -267,7 +267,7 @@ class Versions @Inject() (
         case None => request.mainTemplate(Some(Labels.AddApplicationText))
         case Some(_) => request.mainTemplate(Some("Upload New Version"))
       }
-      val boundForm = Versions.uploadForm.bindFromRequest
+      val boundForm = Versions.uploadForm.bindFromRequest()
       boundForm.fold(
 
         errors => Future {
@@ -287,7 +287,7 @@ class Versions @Inject() (
               val versionForm = VersionForm(
                 originalForm = OriginalForm(
                   `type` = valid.originalType.map(OriginalType(_)),
-                  data = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim
+                  data = FileUtils.readToString(path),
                 ),
                 Some(Visibility(valid.visibility))
               )
