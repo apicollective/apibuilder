@@ -6,7 +6,7 @@ object VersionTag {
   val Dot = """\."""
   val Separator = "|99999|"
 
-  def isDigit(x: String) = {
+  def isDigit(x: String): Boolean = {
     x.matches("^\\d+$")
   }
 
@@ -32,9 +32,10 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
   val major: Option[Int] = {
     trimmedVersion.split(VersionTag.Dash).headOption.flatMap { s =>
       splitOnDot(s).headOption.flatMap { value =>
-        VersionTag.isDigit(value) match {
-          case true => Some(value.toInt)
-          case false => value match {
+        if (VersionTag.isDigit(value)) {
+          Some(value.toInt)
+        } else {
+          value match {
             case GithubVersionRx(number) => Some(number.toInt)
             case _ => None
           }
@@ -51,7 +52,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
     }
   }
 
-  def compare(that: VersionTag) = {
+  def compare(that: VersionTag): Int = {
     sortKey.compare(that.sortKey)
   }
 
@@ -60,7 +61,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
    * version number, then returns None.
    */
   def nextMicro(): Option[String] = {
-    trimmedVersion.split(VersionTag.Dash).size match {
+    trimmedVersion.split(VersionTag.Dash).length match {
       case 1 => {
         val pieces = splitOnDot(version)
         if (pieces.forall(s => VersionTag.isDigit(s))) {
@@ -85,7 +86,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
         pieces = pieces ++ Seq("0")
       }
     }
-    pieces
+    pieces.toSeq
   }
 
 }

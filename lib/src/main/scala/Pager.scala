@@ -24,7 +24,7 @@ object Pager {
     pagerFunction: Int => Seq[T]
   )(
     perObjectFunction: T => Unit
-  ) {
+  ): Unit = {
     var offset = 0
     var haveMore = true
 

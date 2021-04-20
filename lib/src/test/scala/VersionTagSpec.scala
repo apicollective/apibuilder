@@ -89,7 +89,14 @@ class VersionTagSpec extends FunSpec with Matchers {
     assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
     assertSorted(Seq("1.2", "1.2.1"), "1.2 1.2.1")
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
-
   }
 
+  it("splitOnDot") {
+    VersionTag.splitOnDot("") should be(None)
+    VersionTag.splitOnDot("1") should be(Some(Seq(1, 0, 0)))
+    VersionTag.splitOnDot("1.2") should be(Some(Seq(1, 2, 0)))
+    VersionTag.splitOnDot("1.2.3") should be(Some(Seq(1, 2, 3)))
+    VersionTag.splitOnDot("1.2.3.4") should be(Some(Seq(1, 2, 3, 4)))
+    VersionTag.splitOnDot("1-dev") should be(None)
+  }
 }
