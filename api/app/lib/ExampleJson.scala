@@ -234,7 +234,7 @@ case class ExampleJson(service: Service, selection: Selection) {
       }
       case Primitives.DateTimeIso8601 => JsString(ISODateTimeFormat.dateTime.print(DateTime.now))
       case Primitives.Decimal => Json.toJson(BigDecimal("1"))
-      case Primitives.String => JsString(randomString)
+      case Primitives.String => JsString(randomString())
       case Primitives.Object => Json.obj("foo" -> "bar")
       case Primitives.JsonValue => JsNull
       case Primitives.Unit => JsNull

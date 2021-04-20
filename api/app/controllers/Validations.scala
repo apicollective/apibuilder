@@ -2,9 +2,11 @@ package controllers
 
 import io.apibuilder.api.v0.models.{Original, Validation}
 import io.apibuilder.api.v0.models.json._
-import lib.{DatabaseServiceFetcher, OriginalUtil, ServiceConfiguration}
+import lib.{DatabaseServiceFetcher, FileUtils, OriginalUtil, ServiceConfiguration}
+
 import javax.inject.{Inject, Singleton}
 import builder.OriginalValidator
+import play.api.libs.Files
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -20,8 +22,8 @@ class Validations @Inject() (
     version = "0.0.1-dev"
   )
 
-  def post() = Anonymous(parse.temporaryFile) { request =>
-    val contents = scala.io.Source.fromFile(request.body.path.toFile, "UTF-8").getLines.mkString("\n")
+  def post(): Action[Files.TemporaryFile] = Anonymous(parse.temporaryFile) { request =>
+    val contents = FileUtils.readToString(request.body.path.toFile)
     OriginalUtil.guessType(contents) match {
       case None => {
         UnprocessableEntity(Json.toJson(Validation(
