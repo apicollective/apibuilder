@@ -8,7 +8,7 @@ object Util {
 
   // Select out named parameters in the path. E.g. /:org/:service/foo would return [org, service]
   def namedParametersInPath(path: String): Seq[String] = {
-    path.split("/").flatMap { name =>
+    path.split("/").toSeq.flatMap { name =>
       if (name.startsWith(":")) {
         val idx = if (name.indexOf(".") >= 0) {
           name.indexOf(".")
@@ -39,7 +39,7 @@ object Util {
       Seq(s"URI[$value] cannot end with a '/'")
     } else {
       Try(new URL(value)) match {
-        case Success(url) => Nil
+        case Success(_) => Nil
         case Failure(e) => e match {
           case e: MalformedURLException => Seq(s"URL is not valid: ${e.getMessage}")
         }
