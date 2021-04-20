@@ -1,5 +1,7 @@
 package lib
 
+import lib.VersionTag.VersionTagType
+
 object VersionTag {
 
   val Dash = """\-"""
@@ -10,6 +12,28 @@ object VersionTag {
     x.matches("^\\d+$")
   }
 
+  sealed trait VersionTagType
+  object VersionTagType {
+    case class SemVer(tag: String, parts: List[Int]) extends VersionTagType {
+      assert(parts.length >= 3, "SemVer tags need to have at least 3 parts")
+    }
+    case class Other(tag: String, parts: List[String]) extends VersionTagType {
+      assert(parts.nonEmpty, "VersionTagType.Other: must have at least one tag")
+    }
+  }
+
+  private[lib] def parse(value: String): VersionTagType = {
+    value.split(VersionTag.Dot).toList match {
+      case all if all.forall(isDigit) => {
+        all.map(_.toInt) match {
+          case one :: Nil => VersionTagType.SemVer(value, List(one, 0, 0))
+          case one :: two :: Nil => VersionTagType.SemVer(value, List(one, two, 0))
+          case tags => VersionTagType.SemVer(value, tags)
+        }
+      }
+      case all => VersionTagType.Other(value, all)
+    }
+  }
 }
 
 case class VersionTag(version: String) extends Ordered[VersionTag] {
@@ -17,28 +41,22 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
 
   private[this] val Padding = 10000
   private[this] val GithubVersionRx = """^v(\d+)$""".r
+  private[this] val parsed: List[VersionTagType] = trimmedVersion.split(VersionTag.Dash).map(VersionTag.parse).toList
 
   val sortKey: String = {
-    trimmedVersion.split(VersionTag.Dash).map { s =>
-      val pieces = splitOnDot(s)
-      if (pieces.forall(s => VersionTag.isDigit(s))) {
-        "5:%s".format(pieces.map( _.toInt + Padding ).mkString(":"))
-      } else {
-        "0:%s".format(s.toLowerCase)
-      }
+    parsed.map {
+      case s: VersionTagType.SemVer => "5:%s".format(s.parts.map(_ + Padding).mkString(":"))
+      case o: VersionTagType.Other => "0:%s".format(o.tag.toLowerCase)
     }.mkString("|") + "|9"
   }
 
   val major: Option[Int] = {
-    trimmedVersion.split(VersionTag.Dash).headOption.flatMap { s =>
-      splitOnDot(s).headOption.flatMap { value =>
-        if (VersionTag.isDigit(value)) {
-          Some(value.toInt)
-        } else {
-          value match {
-            case GithubVersionRx(number) => Some(number.toInt)
-            case _ => None
-          }
+    parsed.headOption.flatMap {
+      case s: VersionTagType.SemVer => s.parts.headOption
+      case o: VersionTagType.Other => {
+        o.parts.head match {
+          case GithubVersionRx(number) => Some(number.toInt)
+          case _ => None
         }
       }
     }
@@ -47,7 +65,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
   val qualifier: Option[String] = {
     trimmedVersion.split(VersionTag.Dash).toList match {
       case Nil => None
-      case one :: Nil => None
+      case _ :: Nil => None
       case multiple => multiple.lastOption
     }
   }
@@ -61,32 +79,12 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
    * version number, then returns None.
    */
   def nextMicro(): Option[String] = {
-    trimmedVersion.split(VersionTag.Dash).length match {
-      case 1 => {
-        val pieces = splitOnDot(version)
-        if (pieces.forall(s => VersionTag.isDigit(s))) {
-          Some((Seq(pieces.last.toInt + 1) ++ pieces.reverse.drop(1)).reverse.mkString("."))
-        } else {
-          None
-        }
+    parsed match {
+      case (tag: VersionTagType.SemVer) :: Nil => {
+        Some((Seq(tag.parts.last + 1) ++ tag.parts.reverse.drop(1)).reverse.mkString("."))
       }
       case _ => None
     }
-  }
-
-  /**
-   * Splits on dot and as long as the numbers are numeric, ensures
-   * that the returned array has at least 3 elements. So
-   * splitOnDot("1") would return Seq("1", "0", "0").
-   */
-  private[this] def splitOnDot(value: String): Seq[String] = {
-    var pieces = value.split(VersionTag.Dot)
-    if (pieces.forall(s => VersionTag.isDigit(s))) {
-      while (pieces.length < 3) {
-        pieces = pieces ++ Seq("0")
-      }
-    }
-    pieces.toSeq
   }
 
 }
