@@ -14,7 +14,7 @@ case class MockServiceFetcher() extends ServiceFetcher {
 
   val services: mutable.Map[String, Service] = scala.collection.mutable.Map[String, Service]()
 
-  def add(uri: String, service: Service) {
+  def add(uri: String, service: Service): Unit = {
     services += (uri -> service)
   }
 

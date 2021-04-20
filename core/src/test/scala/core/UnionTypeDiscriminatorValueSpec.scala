@@ -44,7 +44,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors should be(Nil)
+    validator.errors() should be(Nil)
     validator.service().unions.head.types.flatMap(_.discriminatorValue) should be(
       Seq("registered_user", "guest_user")
     )
@@ -63,7 +63,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors should be(Nil)
+    validator.errors() should be(Nil)
     validator.service().unions.head.types.flatMap(_.discriminatorValue) should be(
       Seq("registered", "guest_user")
     )
@@ -82,7 +82,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors should be(
+    validator.errors() should be(
       Seq(
         "Union[user] discriminator values[guest_user] appears more than once"
       )
@@ -102,7 +102,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors should be(Nil)
+    validator.errors() should be(Nil)
     validator.service().unions.head.types.flatMap(_.discriminatorValue) should be(
       Seq("guest_user", "guest_user2")
     )
@@ -121,7 +121,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors should be(
+    validator.errors() should be(
       Seq(
         "Union[user] type[registered_user] discriminator_value[!@#] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter"
       )
@@ -147,7 +147,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors shouldBe empty
+    validator.errors() shouldBe empty
 
     val sortedUnions = validator.service().unions.sortBy(_.name)
     validator.service().unions should have size 2
@@ -176,7 +176,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors shouldBe empty
+    validator.errors() shouldBe empty
 
     val sortedUnions = validator.service().unions.sortBy(_.name)
     validator.service().unions should have size 2
@@ -205,7 +205,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors should be (Seq(
+    validator.errors() should be (Seq(
       "Model[registered_user] used in unions[other_user_union, user] cannot use more than one discriminator value. " +
         "Found distinct discriminator values[other_registered, registered]."
     ))
@@ -232,7 +232,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
         """.stripMargin
       )
     )
-    validator.errors shouldBe empty
+    validator.errors() shouldBe empty
 
     val sortedUnions = validator.service().unions.sortBy(_.name)
     validator.service().unions should have size 2
@@ -263,7 +263,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
      """.stripMargin
       )
     )
-    validator.errors should be (Seq(
+    validator.errors() should be (Seq(
       "Model[registered_user] used in unions[other_user_union, user] cannot use more than one discriminator name. " +
         "Found distinct discriminator names[other_key, key]."
     ))
@@ -289,7 +289,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
      """.stripMargin
       )
     )
-    validator.errors should be (Seq(
+    validator.errors() should be (Seq(
       "Model[registered_user] used in unions[other_user_union, user] cannot use more than one discriminator name. " +
         "All unions should define the same discriminator name, or not define one at all."
     ))

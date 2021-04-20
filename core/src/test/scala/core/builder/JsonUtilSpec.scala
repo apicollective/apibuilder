@@ -29,8 +29,8 @@ class JsonUtilSpec extends FunSpec with Matchers {
     JsonUtil.asOptLong(Json.toJson("")) should be(None)
     JsonUtil.asOptLong(JsUndefined("null")) should be(None)
 
-    JsonUtil.asOptLong(Json.toJson("1")) should be(Some(1l))
-    JsonUtil.asOptLong(Json.toJson(" 1 ")) should be(Some(1l))
+    JsonUtil.asOptLong(Json.toJson("1")) should be(Some(1L))
+    JsonUtil.asOptLong(Json.toJson(" 1 ")) should be(Some(1L))
 
     JsonUtil.asOptLong(Json.toJson("foo")) should be(None)
   }

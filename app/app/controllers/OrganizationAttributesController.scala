@@ -72,7 +72,7 @@ class OrganizationAttributesController @Inject() (
     request.api.attributes.getByName(name).flatMap { attr =>
       val tpl = request.mainTemplate(Some("Edit Attribute"))
 
-      val form = OrganizationAttributesController.formData.bindFromRequest
+      val form = OrganizationAttributesController.formData.bindFromRequest()
       form.fold (
 
         errors => Future {

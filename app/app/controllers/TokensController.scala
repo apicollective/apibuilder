@@ -73,7 +73,7 @@ class TokensController @Inject() (
   def postCreate = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Create token"))
 
-    val form = TokensController.tokenForm.bindFromRequest
+    val form = TokensController.tokenForm.bindFromRequest()
     form.fold (
 
       errors => Future {

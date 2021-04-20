@@ -1,7 +1,6 @@
 package controllers
 
 import java.util.UUID
-
 import javax.inject.{Inject, Singleton}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{CodeForm, Version}
@@ -18,6 +17,7 @@ import io.apibuilder.spec.v0.models.Service
 import play.api.libs.ws.WSClient
 import play.api.mvc.Result
 
+import scala.annotation.nowarn
 import scala.concurrent.Future
 
 @Singleton
@@ -128,6 +128,7 @@ class Code @Inject() (
     }
   }
 
+  @nowarn
   private def _invoke(
     request: AnonymousRequest[_],
     params: CodeParams,

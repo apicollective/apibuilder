@@ -126,7 +126,7 @@ private[api_json] case class InternalServiceForm(
 
   lazy val attributes: Seq[InternalAttributeForm] = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray])
 
-  lazy val typeResolver = TypeResolver(
+  lazy val typeResolver: TypeResolver = TypeResolver(
     defaultNamespace = namespace,
     RecursiveTypesProvider(this)
   )
@@ -636,23 +636,26 @@ object InternalResourceForm {
       }
     }
 
-    InternalResourceForm(
-      datatype = internalDatatypeBuilder.fromString(typeName).right.getOrElse {
-        sys.error(s"Invalid datatype[$typeName]")
-      },
-      description = JsonUtil.asOptString(value \ "description"),
-      deprecation = InternalDeprecationForm.fromJsValue(value),
-      path = path,
-      operations = operations.toSeq,
-      attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
-      warnings = JsonUtil.validate(
-        value,
-        optionalStrings = Seq("path", "description"),
-        optionalObjects = Seq("deprecation"),
-        arrayOfObjects = Seq("operations"),
-        optionalArraysOfObjects = Seq("attributes")
-      )
-    )
+    internalDatatypeBuilder.fromString(typeName) match {
+      case Left(errors) => sys.error(s"Invalid datatype[$typeName]: ${errors.mkString(", ")}")
+      case Right(datatype) => {
+        InternalResourceForm(
+          datatype = datatype,
+          description = JsonUtil.asOptString(value \ "description"),
+          deprecation = InternalDeprecationForm.fromJsValue(value),
+          path = path,
+          operations = operations.toSeq,
+          attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
+          warnings = JsonUtil.validate(
+            value,
+            optionalStrings = Seq("path", "description"),
+            optionalObjects = Seq("deprecation"),
+            arrayOfObjects = Seq("operations"),
+            optionalArraysOfObjects = Seq("attributes")
+          )
+        )
+      }
+    }
   }
 
 }

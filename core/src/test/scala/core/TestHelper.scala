@@ -1,18 +1,17 @@
 package core
 
-import lib.{ServiceConfiguration, ServiceValidator}
-import builder.OriginalValidator
-import io.apibuilder.api.v0.models.{Original, OriginalType}
+import _root_.builder.OriginalValidator
 import io.apibuilder.api.json.v0.models.ApiJson
 import io.apibuilder.api.json.v0.models.json._
-import io.apibuilder.spec.v0.models.{ResponseCode, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType, Service}
-import lib.Text
-import java.nio.file.{Files, Paths}
-import java.nio.charset.StandardCharsets
-import java.util.UUID
+import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.spec.v0.models._
+import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text}
+import play.api.libs.json.Json
 
-import io.apibuilder.api.json.v0.models.ApiJson
-import play.api.libs.json.{JsObject, Json}
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
+import java.util.UUID
 
 object TestHelper {
 
@@ -122,15 +121,13 @@ object TestHelper {
     tmpPath
   }
 
-  def writeToFile(path: String, contents: String) {
+  def writeToFile(path: String, contents: String): Unit = {
     val outputPath = Paths.get(path)
     val bytes = contents.getBytes(StandardCharsets.UTF_8)
     Files.write(outputPath, bytes)
   }
 
-  def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
+  def readFile(path: String): String = FileUtils.readToString(new File(path))
 
   def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
@@ -153,7 +150,7 @@ object TestHelper {
   ): ServiceValidatorForSpecs = {
     val contents = readFile(filename)
     val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
-    validator.validate match {
+    validator.validate() match {
       case Left(errors) => {
         sys.error(s"Invalid api.json file[$filename]: " + errors.mkString("\n"))
       }
@@ -164,7 +161,7 @@ object TestHelper {
     )
   }
 
-  def assertEqualsFile(filename: String, contents: String) {
+  def assertEqualsFile(filename: String, contents: String): Unit = {
     if (contents.trim != readFile(filename).trim) {
       val tmpPath = "/tmp/apibuilder.tmp." + Text.safeName(filename)
       TestHelper.writeToFile(tmpPath, contents.trim)

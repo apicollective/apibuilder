@@ -66,7 +66,7 @@ class AttributesController @Inject() (
   def createPost = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Attribute"))
 
-    val form = AttributesController.attributesFormData.bindFromRequest
+    val form = AttributesController.attributesFormData.bindFromRequest()
     form.fold (
 
       errors => Future {

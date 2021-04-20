@@ -1,10 +1,11 @@
 package lib
 
-import org.scalatest.{FunSpec, Matchers}
+import lib.VersionTag.VersionTagType
+import org.scalatest.{Assertion, FunSpec, Matchers}
 
 class VersionTagSpec extends FunSpec with Matchers {
 
-  def assertSorted(versions: Seq[String], target: String) {
+  private def assertSorted(versions: Seq[String], target: String): Assertion = {
     val versionObjects = versions.map( VersionTag(_) )
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
   }
@@ -72,10 +73,10 @@ class VersionTagSpec extends FunSpec with Matchers {
   }
 
   it("nextMicro") {
-    VersionTag("foo").nextMicro should be(None)
-    VersionTag("0.0.1").nextMicro should be(Some("0.0.2"))
-    VersionTag("1.2.3").nextMicro should be(Some("1.2.4"))
-    VersionTag("0.0.5-dev").nextMicro should be(None)
+    VersionTag("foo").nextMicro() should be(None)
+    VersionTag("0.0.1").nextMicro() should be(Some("0.0.2"))
+    VersionTag("1.2.3").nextMicro() should be(Some("1.2.4"))
+    VersionTag("0.0.5-dev").nextMicro() should be(None)
   }
 
   it("qualifier") {
@@ -89,7 +90,27 @@ class VersionTagSpec extends FunSpec with Matchers {
     assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
     assertSorted(Seq("1.2", "1.2.1"), "1.2 1.2.1")
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
-
   }
 
+  it("parse") {
+    VersionTag.parse("") should be(
+      VersionTagType.Other("", List(""))
+    )
+    VersionTag.parse("1-dev") should be(
+      VersionTagType.Other("1-dev", List("1-dev"))
+    )
+
+    VersionTag.parse("1") should be(
+      VersionTagType.SemVer("1", List(1, 0, 0))
+    )
+    VersionTag.parse("1.2") should be(
+      VersionTagType.SemVer("1.2", List(1, 2, 0))
+    )
+    VersionTag.parse("1.2.3") should be(
+      VersionTagType.SemVer("1.2.3", List(1, 2, 3))
+    )
+    VersionTag.parse("1.2.3.4") should be(
+      VersionTagType.SemVer("1.2.3.4", List(1, 2, 3, 4))
+    )
+  }
 }

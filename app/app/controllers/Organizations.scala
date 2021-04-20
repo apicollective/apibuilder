@@ -1,17 +1,16 @@
 package controllers
 
 import java.util.UUID
-
 import lib._
 import models.{SettingSection, SettingsMenu}
 import io.apibuilder.api.v0.models.{AppSortBy, Organization, OrganizationForm, SortOrder, Visibility}
 import play.api.data._
 import play.api.data.Forms._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
-
 import io.apibuilder.api.v0.Client
+import play.api.mvc.{Action, AnyContent}
 
 class Organizations @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
@@ -19,11 +18,11 @@ class Organizations @Inject() (
   config: Config
 ) extends ApibuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apibuilderSupportEmail: String = config.requiredString("apibuilder.supportEmail")
+  private[this] val apiBuilderSupportEmail: String = config.requiredString("apibuilder.supportEmail")
 
-  def show(orgKey: String, page: Int = 0, sortBy: Option[AppSortBy] = None, ord: Option[SortOrder] = None) = AnonymousOrg.async { implicit request =>
+  def show(orgKey: String, page: Int = 0, sortBy: Option[AppSortBy] = None, ord: Option[SortOrder] = None): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     request.api.Applications.get(
       orgKey = orgKey,
       limit = Pagination.DefaultLimit+1,
@@ -45,14 +44,15 @@ class Organizations @Inject() (
     }
   }
 
-  def details(orgKey: String) = IdentifiedOrg.async { implicit request =>
+  def details(orgKey: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
+    assert(request.org.key == orgKey, s"Invalid org: ${orgKey}")
     hasMembershipRequests(request.api, request.requestData.isAdmin, request.org.guid).map { haveMembershipRequests =>
       val tpl = request.mainTemplate().copy(settings = Some(SettingsMenu(section = Some(SettingSection.Details))))
       Ok(views.html.organizations.details(tpl, request.org, haveMembershipRequests = haveMembershipRequests))
     }
   }
 
-  def membershipRequests(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
+  def membershipRequests(orgKey: String, page: Int = 0): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         requests <- request.api.MembershipRequests.get(
@@ -69,7 +69,7 @@ class Organizations @Inject() (
     }
   }
 
-  def requestMembership(orgKey: String) = Identified.async { implicit request =>
+  def requestMembership(orgKey: String): Action[AnyContent] = Identified.async { implicit request =>
     for {
       orgResponse <- request.api.Organizations.get(key = Some(orgKey))
       membershipsResponse <- request.api.Memberships.get(
@@ -100,14 +100,14 @@ class Organizations @Inject() (
             adminsResponse,
             hasMembershipRequest,
             isMember,
-            apibuilderSupportEmail
+            apiBuilderSupportEmail
           ))
         }
       }
     }
   }
 
-  def postRequestMembership(orgKey: String) = Identified.async { implicit request =>
+  def postRequestMembership(orgKey: String): Action[AnyContent] = Identified.async { implicit request =>
     request.api.Organizations.get(key = Some(orgKey)).flatMap { orgs =>
       orgs.headOption match {
         case None => Future {
@@ -124,7 +124,7 @@ class Organizations @Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
+  def create(): Action[AnyContent] = Identified { implicit request =>
     val filledForm = Organizations.orgForm.fill(
       Organizations.OrgData(
         name = "",
@@ -137,10 +137,10 @@ class Organizations @Inject() (
     Ok(views.html.organizations.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Identified.async { implicit request =>
+  def createPost: Action[AnyContent] = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Organization"))
 
-    val form = Organizations.orgForm.bindFromRequest
+    val form = Organizations.orgForm.bindFromRequest()
     form.fold (
 
       errors => Future {
@@ -167,7 +167,7 @@ class Organizations @Inject() (
     )
   }
 
-  def edit(orgKey: String) = Identified.async { implicit request =>
+  def edit(orgKey: String): Action[AnyContent] = Identified.async { implicit request =>
     apiClientProvider.callWith404(request.api.Organizations.getByKey(orgKey)).map {
       case None => {
         Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
@@ -186,7 +186,7 @@ class Organizations @Inject() (
     }
   }
 
-  def editPost(orgKey: String) = Identified.async { implicit request =>
+  def editPost(orgKey: String): Action[AnyContent] = Identified.async { implicit request =>
     apiClientProvider.callWith404(request.api.Organizations.getByKey(orgKey)).flatMap {
       case None => Future.successful {
         Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
@@ -194,7 +194,7 @@ class Organizations @Inject() (
       case Some(org) => {
         val tpl = request.mainTemplate(Some("Edit Organization"))
 
-        val form = Organizations.orgForm.bindFromRequest
+        val form = Organizations.orgForm.bindFromRequest()
         form.fold(
 
           errors => Future {
@@ -225,7 +225,7 @@ class Organizations @Inject() (
     }
   }
 
-  def deletePost(orgKey: String) = Identified.async { implicit request =>
+  def deletePost(orgKey: String): Action[AnyContent] = Identified.async { implicit request =>
     for {
       _ <- request.api.Organizations.deleteByKey(orgKey)
     } yield {

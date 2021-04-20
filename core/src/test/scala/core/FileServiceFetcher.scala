@@ -8,8 +8,13 @@ import java.net.URI
 case class FileServiceFetcher() extends ServiceFetcher {
 
   override def fetch(uri: String): Service = {
-    val contents = scala.io.Source.fromURI(new URI(uri)).getLines.mkString
-    Json.parse(contents).as[Service]
+    val source = scala.io.Source.fromURI(new URI(uri))
+    try {
+      val contents = source.getLines().mkString
+      Json.parse(contents).as[Service]
+    } finally {
+      source.close()
+    }
   }
 
 }

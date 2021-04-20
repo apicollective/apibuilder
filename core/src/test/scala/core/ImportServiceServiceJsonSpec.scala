@@ -89,13 +89,13 @@ class ImportServiceServiceJsonSpec extends FunSpec with Matchers with helpers.Ap
       fetcher = FileServiceFetcher(),
     )
 
-    lazy val validService = validator.validate match {
+    lazy val validService = validator.validate() match {
       case Left(errors) => sys.error(errors.mkString(","))
       case Right(service) => service
     }
 
     it("parses service definition with imports") {
-      validator.validate match {
+      validator.validate() match {
         case Left(errors) => {
           fail(errors.mkString(""))
         }

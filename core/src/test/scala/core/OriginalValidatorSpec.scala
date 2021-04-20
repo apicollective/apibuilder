@@ -1,20 +1,19 @@
 package core
 
 import _root_.builder.OriginalValidator
-import lib.ServiceConfiguration
+import lib.{FileUtils, ServiceConfiguration}
 import io.apibuilder.api.v0.models.Original
 import io.apibuilder.api.v0.models.OriginalType.Swagger
 import org.scalatest.{FunSpec, Matchers}
 
 class OriginalValidatorSpec
-    extends FunSpec
-    with Matchers{
+  extends FunSpec
+  with Matchers
+{
 
-  private def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
+  private def readFile(path: String): String = FileUtils.readToString(path)
 
-  val config = ServiceConfiguration(
+  private val config: ServiceConfiguration = ServiceConfiguration(
     orgKey = "apidoc",
     orgNamespace = "me.apidoc",
     version = "0.0.2-dev"
@@ -28,12 +27,12 @@ class OriginalValidatorSpec
       val result =
         OriginalValidator(
           config,
-          original = Original (
+          original = Original(
             Swagger,
             readFile(path)
           ),
-          new MockServiceFetcher()
-        ).validate
+          MockServiceFetcher()
+        ).validate()
     result.isRight should be(true)
     }
 
@@ -43,12 +42,12 @@ class OriginalValidatorSpec
       val result =
         OriginalValidator(
           config,
-          original = Original (
+          original = Original(
             Swagger,
             readFile(path)
           ),
-          new MockServiceFetcher()
-        ).validate
+          MockServiceFetcher()
+        ).validate()
       result.isRight should be(true)
     }
   }

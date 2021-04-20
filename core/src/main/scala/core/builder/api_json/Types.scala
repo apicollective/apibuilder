@@ -19,10 +19,9 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
       namespace = internal.namespace.getOrElse(""),
       name = u.name,
       plural = u.plural,
-      types = u.types.
-        filter(_.datatype.isRight).
-        map(_.datatype.right.get.name).
-        map { core.TypesProviderUnionType }
+      types = u.types.flatMap { t =>
+        t.datatype.toOption.map(_.name).map(core.TypesProviderUnionType)
+      }
     )
   }
 
@@ -33,12 +32,13 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
       plural = m.plural,
       fields = m.fields.
         filter(_.name.isDefined).
-        filter(_.datatype.isRight).
-        map { f =>
-          TypesProviderField(
-            name = f.name.get,
-            `type` = f.datatype.right.get.label
-          )
+        flatMap { f =>
+          f.datatype.toOption.map { dt =>
+            TypesProviderField(
+              name = f.name.get,
+              `type` = dt.label,
+            )
+          }
       }
     )
   }
@@ -50,12 +50,13 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
       plural = i.plural,
       fields = i.fields.
         filter(_.name.isDefined).
-        filter(_.datatype.isRight).
-        map { f =>
-          TypesProviderField(
-            name = f.name.get,
-            `type` = f.datatype.right.get.label
-          )
+        flatMap { f =>
+          f.datatype.toOption.map { dt =>
+            TypesProviderField(
+              name = f.name.get,
+              `type` = dt.label,
+            )
+          }
         }
     )
   }
@@ -143,7 +144,7 @@ private[api_json] case class TypeResolver(
     resolver.parse(internal.label)
   }
 
-  def assertValidDefault(kind: Kind, value: String) {
+  def assertValidDefault(kind: Kind, value: String): Unit = {
     validate(kind, value) match {
       case None => {}
       case Some(msg) => sys.error(msg)

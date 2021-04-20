@@ -39,7 +39,7 @@ class AccountProfileController @Inject() (
   def postEdit = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Edit Profile"))
 
-    val form = AccountProfileController.profileForm.bindFromRequest
+    val form = AccountProfileController.profileForm.bindFromRequest()
     form.fold (
       _ => Future {
         Ok(views.html.account.profile.edit(tpl, request.user, form))

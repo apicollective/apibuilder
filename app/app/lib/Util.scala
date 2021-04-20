@@ -32,13 +32,13 @@ object  Labels {
   val OrgAttributesText = "Org Attributes"
   val ServiceJsonText = "service.json"
 
-  val ApibuilderApi = ExampleService("apicollective", "apibuilder-api")
-  val ApibuilderApiJson = ExampleService("apicollective", "apibuilder-api-json")
-  val ApibuilderExample = ApibuilderApi
-  val ApibuilderExampleWithVersionNumber = ExampleService("apicollective", "apibuilder-api", "0.13.29")
-  val ApibuilderGeneratorExample = ExampleService("apicollective", "apibuilder-generator")
-  val ApibuilderSpecExample = ExampleService("apicollective", "apibuilder-spec")
-  val Examples = Seq(ApibuilderExample, ApibuilderGeneratorExample, ApibuilderSpecExample)
+  val ApibuilderApi: ExampleService = ExampleService("apicollective", "apibuilder-api")
+  val ApibuilderApiJson: ExampleService = ExampleService("apicollective", "apibuilder-api-json")
+  val ApibuilderExample: ExampleService = ApibuilderApi
+  val ApibuilderExampleWithVersionNumber: ExampleService = ExampleService("apicollective", "apibuilder-api", "0.13.29")
+  val ApibuilderGeneratorExample: ExampleService = ExampleService("apicollective", "apibuilder-generator")
+  val ApibuilderSpecExample: ExampleService = ExampleService("apicollective", "apibuilder-spec")
+  val Examples: List[ExampleService] = List(ApibuilderExample, ApibuilderGeneratorExample, ApibuilderSpecExample)
 
   private val gitHub = "https://github.com/apicollective"
   val ApibuilderGitHubUrl = s"$gitHub/apibuilder"
@@ -76,7 +76,7 @@ class Util @Inject() (
     if (value.startsWith("/")) {
       Right(value)
     } else {
-      WhiteListedDomains.find { d => value.startsWith(d) } match {
+      WhiteListedDomains.find(value.startsWith) match {
         case None => Left(Seq(s"Redirect URL[$value] must start with / or a known domain"))
         case Some(d) => Right(
           value.substring(d.length).trim match {

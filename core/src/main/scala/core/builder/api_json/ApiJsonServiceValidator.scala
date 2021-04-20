@@ -69,22 +69,22 @@ case class ApiJsonServiceValidator(
       case Some(_: InternalServiceForm) => {
         validateStructure() match {
           case Nil => {
-            validateInfo ++
-            validateKey ++
-            validateImports ++
+            validateInfo() ++
+            validateKey() ++
+            validateImports() ++
             validateAttributes("Service", internalService.get.attributes) ++
-            validateHeaders ++
-            validateResources ++
-            validateOperations ++
-            validateParameterBodies ++
-            validateParameters ++
-            validateResponses ++
-            validateInterfaces ++
-            validateUnions ++
-            validateModels ++
-            validateFields ++
-            validateEnums ++
-            validateAnnotations
+            validateHeaders() ++
+            validateResources() ++
+            validateOperations() ++
+            validateParameterBodies() ++
+            validateParameters() ++
+            validateResponses() ++
+            validateInterfaces() ++
+            validateUnions() ++
+            validateModels() ++
+            validateFields() ++
+            validateEnums() ++
+            validateAnnotations()
           }
 
           case errs => {
@@ -166,12 +166,19 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnionTypes(union: InternalUnionForm): Seq[String] = {
-    val attributeErrors = union.types.filter(_.datatype.isRight).flatMap { typ =>
-      validateAttributes(s"Union[${union.name}] type[${typ.datatype.right.get}]", typ.attributes)
+    val attributeErrors = union.types.flatMap { typ =>
+      typ.datatype match {
+        case Left(_) => None
+        case Right(dt) => validateAttributes(s"Union[${union.name}] type[${dt.name}]", typ.attributes)
+      }
     }
-    val typeErrors = union.types.filter(_.datatype.isLeft).flatMap { typ =>
-      Seq(s"Union[${union.name}] type[] " + typ.datatype.left.get.mkString(", "))
+    val typeErrors = union.types.flatMap { typ =>
+      typ.datatype match {
+        case Left(errors) => Seq(s"Union[${union.name}] type[] " + errors.mkString(", "))
+        case Right(_) => Nil
+      }
     }
+
     union.types.flatMap(_.warnings) ++ attributeErrors ++ typeErrors
   }
 
@@ -249,8 +256,11 @@ case class ApiJsonServiceValidator(
     }
 
     val missingTypes = internalService.get.models.flatMap { model =>
-      model.fields.filter(_.name.isDefined).filter(_.datatype.isLeft).map { f =>
-        s"Model[${model.name}] field[${f.name.get}] type ${f.datatype.left.get.mkString(", ")}"
+      model.fields.filter(_.name.isDefined).flatMap { f =>
+        f.datatype match {
+          case Left(errors) => Some(s"Model[${model.name}] field[${f.name.get}] type ${errors.mkString(", ")}")
+          case Right(_) => None
+        }
       }
     }
 
@@ -296,8 +306,11 @@ case class ApiJsonServiceValidator(
 
     val typeErrors = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.responses.filter(r => r.datatype.isLeft).map { r =>
-          opLabel(resource, op, s"${r.code} type: " + r.datatype.left.get.mkString(", "))
+        op.responses.flatMap { r =>
+          r.datatype match {
+            case Left(errors) => Some(opLabel(resource, op, s"${r.code} type: " + errors.mkString(", ")))
+            case Right(_) => None
+          }
         }
       }
     }

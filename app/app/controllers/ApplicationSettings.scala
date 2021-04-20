@@ -90,7 +90,7 @@ class ApplicationSettings @Inject() (
           Redirect(routes.ApplicationController.index()).flashing("warning" -> error)
         }
         case Right(tpl) => {
-          val boundForm = ApplicationSettings.settingsForm.bindFromRequest
+          val boundForm = ApplicationSettings.settingsForm.bindFromRequest()
           boundForm.fold (
             errors => Future {
               Ok(views.html.application_settings.form(tpl, errors))
@@ -145,7 +145,7 @@ class ApplicationSettings @Inject() (
           Redirect(routes.ApplicationController.index()).flashing("warning" -> error)
         }
         case Right(tpl) => {
-          val boundForm = ApplicationSettings.moveOrgForm.bindFromRequest
+          val boundForm = ApplicationSettings.moveOrgForm.bindFromRequest()
           boundForm.fold (
             errors => Future {
               Ok(views.html.application_settings.move_form(tpl, errors))

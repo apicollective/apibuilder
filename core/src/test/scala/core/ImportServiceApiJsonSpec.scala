@@ -28,9 +28,9 @@ class ImportServiceApiJsonSpec extends FunSpec with Matchers with helpers.ApiJso
         )
       }
 
-      testUri("  ").errors should be(Seq("Import uri must be a non empty string"))
-      testUri("foobar").errors should be(Seq("URI[foobar] must start with http://, https://, or file://"))
-      testUri("https://app.apibuilder.io/").errors should be(Seq("URI[https://app.apibuilder.io/] cannot end with a '/'"))
+      testUri("  ").errors() should be(Seq("Import uri must be a non empty string"))
+      testUri("foobar").errors() should be(Seq("URI[foobar] must start with http://, https://, or file://"))
+      testUri("https://app.apibuilder.io/").errors() should be(Seq("URI[https://app.apibuilder.io/] cannot end with a '/'"))
     }
 
   }
