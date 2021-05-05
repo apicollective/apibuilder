@@ -4,7 +4,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.13.5"
+ThisBuild / scalaVersion := "2.13.5"
 
 lazy val allScalacOptions = Seq(
   "-deprecation",
@@ -108,6 +108,7 @@ lazy val app = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
+  .enablePlugins(SbtTwirl)
   .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
@@ -148,8 +149,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
   ),
   scalacOptions ++= allScalacOptions,
-  sources in (Compile,doc) := Seq.empty,
-  publishArtifact in (Compile, packageDoc) := false
+  Compile / doc / sources := Seq.empty,
+  Compile / packageDoc / publishArtifact := false
 ) ++ publishSettings
 
 lazy val publishSettings: Seq[Setting[_]] = Seq(
@@ -181,4 +182,3 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
-version := "0.15.11"
