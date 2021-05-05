@@ -108,6 +108,7 @@ lazy val app = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
+  .enablePlugins(SbtTwirl)
   .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
