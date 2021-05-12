@@ -5,7 +5,7 @@ import io.swagger.models.parameters.BodyParameter
 import io.swagger.{models => swagger}
 import me.apidoc.swagger.{SwaggerData, Util}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object Operation {
 

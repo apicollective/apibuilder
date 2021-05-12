@@ -140,7 +140,6 @@ lazy val spec = project
     )
   )
 
-
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("apibuilder-" + _),
   organization := "io.apibuilder",
