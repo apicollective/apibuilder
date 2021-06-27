@@ -162,7 +162,7 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { _ => false },
   licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
   homepage := Some(url("https://github.com/apicollective/apibuilder")),
