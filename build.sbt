@@ -4,7 +4,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / scalaVersion := "2.13.6"
 
 lazy val allScalacOptions = Seq(
   "-deprecation",
@@ -139,7 +139,6 @@ lazy val spec = project
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
     )
   )
-
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("apibuilder-" + _),
