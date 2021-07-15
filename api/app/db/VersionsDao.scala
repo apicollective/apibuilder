@@ -68,6 +68,7 @@ class VersionsDao @Inject() (
      left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
+     where service_json is not null
   """)
 
   private[this] val InsertQuery = """
