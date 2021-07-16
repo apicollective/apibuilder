@@ -1,14 +1,16 @@
 package lib
 
+import scala.annotation.tailrec
+
 sealed trait Kind
 
 object Kind {
 
-  case class Enum(name: String) extends Kind { override def toString = name }
-  case class Interface(name: String) extends Kind { override def toString = name }
-  case class Model(name: String) extends Kind { override def toString = name }
-  case class Primitive(name: String) extends Kind { override def toString = name }
-  case class Union(name: String) extends Kind { override def toString = name }
+  case class Enum(name: String) extends Kind { override def toString: String = name }
+  case class Interface(name: String) extends Kind { override def toString: String = name }
+  case class Model(name: String) extends Kind { override def toString: String = name }
+  case class Primitive(name: String) extends Kind { override def toString: String = name }
+  case class Union(name: String) extends Kind { override def toString: String = name }
 
   case class List(kind: Kind) extends Kind { override def toString = s"[$kind]" }
   case class Map(kind: Kind) extends Kind { override def toString = s"map[$kind]" }
@@ -105,6 +107,7 @@ case class DatatypeResolver(
     * into an error. This can parse types like "map[[string]]" but
     * will throw errors if it finds a non container type.
     */
+  @tailrec
   private[this] def parse(kind: Kind, rest: Seq[TextDatatype]): Kind = {
     rest.headOption match {
       case None => {

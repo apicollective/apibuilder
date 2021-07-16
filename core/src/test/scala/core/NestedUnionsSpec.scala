@@ -17,7 +17,7 @@ class NestedUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers
             ),
             "abstract_guest" -> makeUnion(
               types = Seq(makeUnionType("guest", discriminatorValue = Some(guestDiscriminatorValue)))
-            ),
+              ),
             "party" -> makeUnion(
               types = Seq(
                 makeUnionType("abstract_user"),
