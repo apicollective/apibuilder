@@ -84,7 +84,7 @@ class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
     )
     validator.errors() should be(
       Seq(
-        "Union[user] discriminator values[guest_user] appears more than once"
+        "Union[user] discriminator value[guest_user] appears more than once"
       )
     )
   }

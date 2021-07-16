@@ -31,7 +31,7 @@ class NestedUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers
 
       setup("user", "guest") shouldBe Nil
       setup("user", "user") shouldBe Seq(
-        "TODO"
+        "Union[party] discriminator value[user] appears more than once"
       )
   }
 }

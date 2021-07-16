@@ -2,7 +2,7 @@ package builder
 
 import core.{TypeValidator, TypesProvider, Util}
 import io.apibuilder.spec.v0.models._
-import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
+import lib._
 
 import scala.annotation.tailrec
 
@@ -437,9 +437,20 @@ case class ServiceSpecValidator(
   private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): Seq[String] = {
     service.unions.flatMap { union =>
       dupsError(
-        s"Union[${union.name}] discriminator values",
-        union.types.map(getDiscriminatorValue)
+        s"Union[${union.name}] discriminator value",
+        getAllDiscriminatorValues(union),
       )
+    }
+  }
+
+  private[this] def getAllDiscriminatorValues(union: Union, resolved: Set[String] = Set.empty): Seq[String] = {
+    union.types.flatMap { t =>
+      service.unions.find(_.name == t.`type`) match {
+        case Some(nestedUnion) if !resolved.contains(nestedUnion.name) && union.name != nestedUnion.name => {
+          getAllDiscriminatorValues(nestedUnion, resolved ++ Seq(union.name))
+        }
+        case _ => Seq(getDiscriminatorValue(t))
+      }
     }
   }
 
@@ -986,7 +997,7 @@ case class ServiceSpecValidator(
       op.method.toString,
       op.path,
       message
-    ).map(_.trim).filter(!_.isEmpty).mkString(" ")
+    ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
 
