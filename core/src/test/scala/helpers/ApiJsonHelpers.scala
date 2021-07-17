@@ -119,10 +119,12 @@ trait ApiJsonHelpers {
   def makeUnionType(
     `type`: String,
     default: Boolean = false,
+    discriminatorValue: Option[String] = None,
   ): UnionType = {
     UnionType(
       `type` = `type`,
       default = default,
+      discriminatorValue = discriminatorValue,
     )
   }
 

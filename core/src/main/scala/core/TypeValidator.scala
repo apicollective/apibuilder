@@ -1,9 +1,9 @@
 package core
 
 import io.apibuilder.spec.v0.models.Service
-import lib.{Kind, PrimitiveMetadata, Primitives}
-import java.util.UUID
+import lib.{DatatypeResolver, Kind, PrimitiveMetadata, Primitives}
 
+import java.util.UUID
 import builder.JsonUtil
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
@@ -88,6 +88,13 @@ trait TypesProvider {
   def interfaces: Iterable[TypesProviderInterface]
   def models: Iterable[TypesProviderModel]
   def unions: Iterable[TypesProviderUnion]
+
+  def resolver: DatatypeResolver = DatatypeResolver(
+    enumNames = enums.map(_.name),
+    interfaceNames = interfaces.map(_.name),
+    modelNames = models.map(_.name),
+    unionNames = unions.map(_.name)
+  )
 
 }
 

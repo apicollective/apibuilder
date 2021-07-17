@@ -1,8 +1,8 @@
 package builder
 
-import core.{ServiceFetcher, TypeValidator, TypesProvider, Util}
+import core.{TypeValidator, TypesProvider, Util}
 import io.apibuilder.spec.v0.models._
-import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
+import lib._
 
 import scala.annotation.tailrec
 
@@ -12,12 +12,7 @@ case class ServiceSpecValidator(
 
   private val ReservedDiscriminatorValues = Seq("value", "implicit")
 
-  private val localTypeResolver = DatatypeResolver(
-    enumNames = service.enums.map(_.name),
-    interfaceNames = service.interfaces.map(_.name),
-    modelNames = service.models.map(_.name),
-    unionNames = service.unions.map(_.name)
-  )
+  private val localTypeResolver = TypesProvider.FromService(service).resolver
 
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
@@ -165,7 +160,7 @@ case class ServiceSpecValidator(
           }
         }
       }
-      case other => Seq(s"$prefix Interface[$interfaceName] not found")
+      case _ => Seq(s"$prefix Interface[$interfaceName] not found")
     }
   }
 
@@ -219,7 +214,7 @@ case class ServiceSpecValidator(
     }
 
     val valuesWithInvalidNames = service.enums.flatMap { enum =>
-      enum.values.filter(v => !v.name.isEmpty && !Text.startsWithLetter(v.name)).map { value =>
+      enum.values.filter(v => v.name.nonEmpty && !Text.startsWithLetter(v.name)).map { value =>
         s"Enum[${enum.name}] value[${value.name}] is invalid: must start with a letter"
       }
     }
@@ -292,7 +287,7 @@ case class ServiceSpecValidator(
       s"Union[${union.name}] must have at least one type"
     }
 
-    val invalidTypes = service.unions.filter(!_.name.isEmpty).flatMap { union =>
+    val invalidTypes = service.unions.filter(_.name.nonEmpty).flatMap { union =>
       validateUnionTypes(s"Union[${union.name}]", union.types)
     }
 
@@ -442,9 +437,18 @@ case class ServiceSpecValidator(
   private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): Seq[String] = {
     service.unions.flatMap { union =>
       dupsError(
-        s"Union[${union.name}] discriminator values",
-        union.types.map(getDiscriminatorValue)
+        s"Union[${union.name}] discriminator value",
+        getAllDiscriminatorValues(union),
       )
+    }
+  }
+
+  private[this] def getAllDiscriminatorValues(union: Union, resolved: Set[String] = Set.empty): Seq[String] = {
+    if (resolved.contains(union.name))
+      Nil
+    else {
+      val subUnions = union.types.flatMap(t => service.unions.find(_.name == t.`type`))
+      union.types.map(getDiscriminatorValue) ++ subUnions.flatMap(su => getAllDiscriminatorValues(su, resolved + union.name))
     }
   }
 
@@ -676,7 +680,7 @@ case class ServiceSpecValidator(
             case Kind.Interface(_) | Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
               None
             }
-            case Kind.Primitive(name) => {
+            case Kind.Primitive(_) => {
               Some(s"Resource[${resource.`type`}] has an invalid type: Primitives cannot be mapped to resources")
             }
           }
@@ -862,7 +866,7 @@ case class ServiceSpecValidator(
       case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
       case ResponseCodeOption.UNDEFINED(value) => value
       case ResponseCodeInt(value) => value.toString
-      case ResponseCodeUndefinedType(value) => value.toString
+      case ResponseCodeUndefinedType(value) => value
     }
   }
 
@@ -991,7 +995,7 @@ case class ServiceSpecValidator(
       op.method.toString,
       op.path,
       message
-    ).map(_.trim).filter(!_.isEmpty).mkString(" ")
+    ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
 
