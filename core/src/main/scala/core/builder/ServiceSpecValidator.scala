@@ -444,13 +444,11 @@ case class ServiceSpecValidator(
   }
 
   private[this] def getAllDiscriminatorValues(union: Union, resolved: Set[String] = Set.empty): Seq[String] = {
-    union.types.flatMap { t =>
-      service.unions.find(_.name == t.`type`) match {
-        case Some(nestedUnion) if !resolved.contains(nestedUnion.name) && union.name != nestedUnion.name => {
-          getAllDiscriminatorValues(nestedUnion, resolved ++ Seq(union.name))
-        }
-        case _ => Seq(getDiscriminatorValue(t))
-      }
+    if (resolved.contains(union.name))
+      Nil
+    else {
+      val subUnions = union.types.flatMap(t => service.unions.find(_.name == t.`type`))
+      union.types.map(getDiscriminatorValue) ++ subUnions.flatMap(su => getAllDiscriminatorValues(su, resolved + union.name))
     }
   }
 

@@ -5,7 +5,11 @@ import org.scalatest.{FunSpec, Matchers}
 class NestedUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
     it("validates discriminator values are unique") {
-      def setup(userDiscriminatorValue: String, guestDiscriminatorValue: String) = {
+      def setup(
+        userDiscriminatorValue: String,
+        guestDiscriminatorValue: String,
+        abstractUserDiscriminatorValue: Option[String],
+      ) = {
         val service = makeApiJson(
           models = Map(
             "user" -> makeModelWithField(),
@@ -20,7 +24,7 @@ class NestedUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers
               ),
             "party" -> makeUnion(
               types = Seq(
-                makeUnionType("abstract_user"),
+                makeUnionType("abstract_user", discriminatorValue = abstractUserDiscriminatorValue),
                 makeUnionType("abstract_guest"),
               )
             )
@@ -29,8 +33,11 @@ class NestedUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers
         TestHelper.serviceValidator(service).errors()
       }
 
-      setup("user", "guest") shouldBe Nil
-      setup("user", "user") shouldBe Seq(
+      setup("user", "guest", None) shouldBe Nil
+      setup("user", "user", None) shouldBe Seq(
+        "Union[party] discriminator value[user] appears more than once"
+      )
+      setup("user", "guest", Some("user")) shouldBe Seq(
         "Union[party] discriminator value[user] appears more than once"
       )
   }
