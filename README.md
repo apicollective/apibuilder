@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/apicollective/apibuilder.svg?branch=master)](https://travis-ci.org/apicollective/apibuilder)
+[![Build Status](https://travis-ci.org/apicollective/apibuilder.svg?branch=main)](https://travis-ci.org/apicollective/apibuilder)
 
 apibuilder
 ==========
