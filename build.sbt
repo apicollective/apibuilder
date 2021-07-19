@@ -77,7 +77,6 @@ lazy val api = project
   .dependsOn(generated, core % "compile->compile;test->test")
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
-  .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
     testOptions += Tests.Argument("-oF"),
@@ -109,7 +108,6 @@ lazy val app = project
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
   .enablePlugins(SbtTwirl)
-  .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
