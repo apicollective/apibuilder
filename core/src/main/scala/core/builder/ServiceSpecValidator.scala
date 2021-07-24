@@ -327,7 +327,14 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ validateUnionCyclicReferences() ++ discriminatorErrors ++ duplicates ++ validateUnionTypeDiscriminatorValues()
+    // Only do additional validation if we have a valid discriminator
+    val additionalDiscriminatorErrors = if (discriminatorErrors.isEmpty) {
+      validateUnionTypeDiscriminatorValues() ++ validateUnionTypeDiscriminatorNames()
+    } else {
+      Nil
+    }
+
+    nameErrors ++ typeErrors ++ invalidTypes ++ validateUnionCyclicReferences() ++ discriminatorErrors ++ duplicates ++ additionalDiscriminatorErrors
   }
 
   // Validate that the type is NOT imported as there is
@@ -372,6 +379,29 @@ case class ServiceSpecValidator(
       Seq(s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.sorted.mkString(", ")}")
     } else {
       Nil
+    }
+  }
+
+  private[this] def validateUnionTypeDiscriminatorNames(): Seq[String] = {
+    service.unions.flatMap { union =>
+      val all = getAllDiscriminatorNames(union).distinct
+      if (all.length > 1) {
+        union.discriminator match {
+          case None => Some(s"Union[${union.name}] does not specify a discriminator yet one of the types does. Either add the same discriminator to this union or remove from the member types")
+          case Some(d) => Some(s"Union[${union.name}] specifies a discriminator named '$d'. All member types must also specify this same discriminator")
+        }
+      } else {
+        None
+      }
+    }
+  }
+
+  private[this] def getAllDiscriminatorNames(union: Union, resolved: Set[String] = Set.empty): Seq[Option[String]] = {
+    if (resolved.contains(union.name))
+      Nil
+    else {
+      val subUnions = union.types.flatMap(t => service.unions.find(_.name == t.`type`))
+      Seq(union.discriminator) ++ subUnions.map(_.discriminator)
     }
   }
 
