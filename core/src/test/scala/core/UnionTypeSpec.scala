@@ -176,13 +176,13 @@ class UnionTypeSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   }
 
   describe("with nested union type") {
-    val nestedUnionTypeJson = """
+    def nestedUnionTypeJson(userDiscriminator: String, guestDiscriminator: String): String = s"""
     {
       "name": "Union Types Test",
 
       "unions": {
         "user": {
-          "discriminator": "%s",
+          "discriminator": "$userDiscriminator",
           "types": [
             { "type": "registered" },
             { "type": "guest" }
@@ -190,6 +190,7 @@ class UnionTypeSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
         },
 
         "guest": {
+          "discriminator": "$guestDiscriminator",
           "types": [
             { "type": "uuid" },
             { "type": "anonymous" }
@@ -216,33 +217,34 @@ class UnionTypeSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
   """
 
     it("valid discriminator") {
-      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("type"))
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson("type", "type"))
       validator.errors() should be(Nil)
     }
 
     it("invalid discriminator") {
-      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("foo"))
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson("foo", "foo"))
       validator.errors() should be(Seq(
+        "Union[guest] discriminator[foo] must be unique. Field exists on: anonymous",
         "Union[user] discriminator[foo] must be unique. Field exists on: guest.anonymous"
       ))
     }
 
     it("non text discriminator") {
-      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("!@KL#"))
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson("!@KL#", "type"))
       validator.errors() should be(Seq(
         "Union[user] discriminator[!@KL#]: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter"
       ))
     }
 
     it("'value' is reserved for primitive wrappers") {
-      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("value"))
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson("value", "type"))
       validator.errors() should be(Seq(
         "Union[user] discriminator[value]: The keyword[value] is reserved and cannot be used as a discriminator"
       ))
     }
 
     it("'implicit' is reserved for future implicit discriminators") {
-      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("implicit"))
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson("implicit", "type"))
       validator.errors() should be(Seq(
         "Union[user] discriminator[implicit]: The keyword[implicit] is reserved and cannot be used as a discriminator"
       ))
