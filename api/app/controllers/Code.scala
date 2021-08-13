@@ -1,15 +1,14 @@
 package controllers
 
-import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{CodeForm, Version}
 import io.apibuilder.generator.v0.Client
-import io.apibuilder.generator.v0.models.{Attribute, InvocationForm}
+import io.apibuilder.generator.v0.models.InvocationForm
 import io.apibuilder.generator.v0.models.json._
 import db.generators.{GeneratorsDao, ServicesDao}
-import db.{OrganizationAttributeValuesDao, VersionsDao}
-import lib.{Pager, Validation}
+import db.VersionsDao
+import lib.{OrgAttributeUtil, Validation}
 import play.api.libs.json._
 import _root_.util.UserAgent
 import _root_.util.ApiBuilderServiceImportResolver
@@ -25,7 +24,7 @@ class Code @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
   wSClient: WSClient,
   apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
-  organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+  orgAttributeUtil: OrgAttributeUtil,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
@@ -146,7 +145,18 @@ class Code @Inject() (
             Future.successful(conflict(s"Generator with key[$generatorKey] not found"))
           }
           case Some(gws) => {
-            val orgAttributes = getAllAttributes(data.version.organization.guid, gws.generator.attributes)
+            // TODO: Should we merge the org attributes into the provided invocation form? I think that
+            // was the original intent, but not sure if it would impact anybody. For now going to log
+            // the instance for which this results in a change.
+            val updatedAttributes = orgAttributeUtil.merge(data.version.organization, gws.generator.attributes, data.invocationForm.attributes)
+            if (updatedAttributes != data.invocationForm.attributes) {
+              val newAttributes = updatedAttributes.filterNot { a =>
+                data.invocationForm.attributes.map(_.name).contains(a.name)
+              }.mkString(", ")
+              println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: $newAttributes")
+            } else {
+              println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
+            }
 
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
@@ -170,32 +180,6 @@ class Code @Inject() (
       }
     }
   }
-
-  /**
-    * Fetch all attribute values specified for this organization,
-    * filtered by those matching names.
-    */
-  private[this] def getAllAttributes(organizationGuid: UUID, names: Seq[String]): Seq[Attribute] = {
-    names match {
-      case Nil => Nil
-      case _ => {
-        var all = scala.collection.mutable.ListBuffer[Attribute]()
-
-        Pager.eachPage { offset =>
-          organizationAttributeValuesDao.findAll(
-            organizationGuid = Some(organizationGuid),
-            attributeNames = Some(names),
-            offset = offset
-          )
-        } { av =>
-          all += Attribute(av.attribute.name, av.value)
-        }
-
-        all.toSeq
-      }
-    }
-  }
-
 
   private def invocationForm[T](
     request: AnonymousRequest[_],
