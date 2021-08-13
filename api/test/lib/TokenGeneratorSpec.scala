@@ -11,8 +11,11 @@ class TokenGeneratorSpec extends PlaySpec with GuiceOneAppPerSuite {
   }
 
   "generates tokens that are long" in {
-    val token = TokenGenerator.generate()
-    token.length >= 80
+    TokenGenerator.generate().length >= 80 mustBe true
+    TokenGenerator.generate(100).length mustBe 100
   }
 
+  "generates tokens that are short" in {
+    TokenGenerator.generate(5).length mustBe 5
+  }
 }
