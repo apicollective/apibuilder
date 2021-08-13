@@ -181,3 +181,4 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
+version := "0.15.33"
