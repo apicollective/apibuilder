@@ -12,13 +12,13 @@ image:
   pullPolicy: IfNotPresent
 resources:
   limits:
-    memory: "3400Mi"
+    memory: "4Gi"
     cpu: 1
   requests:
-    memory: "3400Mi"
+    memory: "4Gi"
     cpu: .05
 
-jvmMemory: 3000
+jvmMemory: 3072
 
 nodeSelector: {} 
 affinity: {}
