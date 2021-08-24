@@ -81,6 +81,7 @@ lazy val api = project
   .settings(
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     testOptions += Tests.Argument("-oF"),
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "0.83.2",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
@@ -112,6 +113,7 @@ lazy val app = project
   .settings(commonSettings: _*)
   .settings(
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "0.83.2",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
