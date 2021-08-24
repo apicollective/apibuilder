@@ -77,6 +77,7 @@ lazy val api = project
   .dependsOn(generated, core % "compile->compile;test->test")
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
+  .enablePlugins(JavaAgent)
   .settings(commonSettings: _*)
   .settings(
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
@@ -109,6 +110,7 @@ lazy val app = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
+  .enablePlugins(JavaAgent)
   .enablePlugins(SbtTwirl)
   .settings(commonSettings: _*)
   .settings(
