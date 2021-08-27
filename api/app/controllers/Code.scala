@@ -16,6 +16,7 @@ import io.apibuilder.spec.v0.models.Service
 import play.api.libs.ws.WSClient
 import play.api.mvc.Result
 
+import java.util.UUID
 import scala.annotation.nowarn
 import scala.concurrent.Future
 
@@ -158,6 +159,10 @@ class Code @Inject() (
               println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
 
+            val requestId = UUID.randomUUID().toString.replaceAll("-", "")
+            def debug(msg: String) = logDebug(params.orgKey, s"request[$requestId] $msg")
+
+            debug("invocations.postByKey: About to call")
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
               invocationForm = data.invocationForm,
@@ -169,9 +174,11 @@ class Code @Inject() (
               )))
             }.recover {
               case r: io.apibuilder.generator.v0.errors.ErrorsResponse => {
+                debug("invocations.postByKey Received ErrorsResponse: " + r.errors.map(_.message).mkString(", "))
                 conflict(r.errors.map(_.message))
               }
               case r: io.apibuilder.generator.v0.errors.FailedRequest => {
+                debug("invocations.postByKey Received FailedRequest: " + r.getMessage)
                 conflict(s"Generator failed with ${r.getMessage}")
               }
             }
@@ -217,5 +224,11 @@ class Code @Inject() (
 
   private[this] def conflict(messages: Seq[String]): Result = {
     Conflict(Json.toJson(Validation.errors(messages)))
+  }
+
+  private[this] def logDebug(orgKey: String, message: String): Unit = {
+    if (orgKey == "moda-operandi") {
+      println(message)
+    }
   }
 }
