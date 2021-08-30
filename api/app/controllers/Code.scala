@@ -14,11 +14,11 @@ import _root_.util.UserAgent
 import _root_.util.ApiBuilderServiceImportResolver
 import io.apibuilder.spec.v0.models.Service
 import play.api.libs.ws.WSClient
-import play.api.mvc.Result
+import play.api.mvc.{Action, AnyContent, Result}
 
 import java.util.UUID
 import scala.annotation.nowarn
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class Code @Inject() (
@@ -64,14 +64,14 @@ class Code @Inject() (
     }
   }
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def getByGeneratorKey(
     orgKey: String,
     applicationKey: String,
     versionName: String,
     generatorKey: String
-  ) = Anonymous.async { request =>
+  ): Action[AnyContent] = Anonymous.async { request =>
     val params = CodeParams(
       orgKey = orgKey,
       applicationKey = applicationKey,
@@ -90,7 +90,7 @@ class Code @Inject() (
     applicationKey: String,
     versionName: String,
     generatorKey: String
-  ) = Anonymous.async(parse.json) { request =>
+  ): Action[JsValue] = Anonymous.async(parse.json) { request =>
     withCodeForm(request.body) { form =>
       val params = CodeParams(
         orgKey = orgKey,
@@ -110,7 +110,7 @@ class Code @Inject() (
     orgKey: String,
     applicationKey: String,
     versionName: String
-  ) = Anonymous.async(parse.json) { request =>
+  ): Action[JsValue] = Anonymous.async(parse.json) { request =>
     withCodeForm(request.body) { form =>
       invocationForm(
         request,
@@ -160,9 +160,9 @@ class Code @Inject() (
             }
 
             val requestId = UUID.randomUUID().toString.replaceAll("-", "")
-            def debug(msg: String) = logDebug(params.orgKey, s"request[$requestId] $msg")
+            def debug(msg: String): Unit = logDebug(params.orgKey, s"request[$requestId] $msg")
 
-            debug("invocations.postByKey: About to call")
+            debug(s"invocations.postByKey: About to call service.uri[${service.uri}]")
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
               invocationForm = data.invocationForm,
