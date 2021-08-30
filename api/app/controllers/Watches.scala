@@ -11,7 +11,7 @@ import java.util.UUID
 
 @Singleton
 class Watches @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   watchesDao: WatchesDao
 ) extends ApibuilderController {
 

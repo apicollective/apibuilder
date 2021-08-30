@@ -10,7 +10,7 @@ import play.api.mvc._
 
 @Singleton
 class Authentications @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   sessionsDao: SessionsDao,
   usersDao: UsersDao
 ) extends ApibuilderController {

@@ -10,7 +10,7 @@ import play.api.libs.json._
 
 @Singleton
 class PasswordResetRequests @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   passwordResetRequestsDao: PasswordResetRequestsDao,
   usersDao: UsersDao
 ) extends ApibuilderController {

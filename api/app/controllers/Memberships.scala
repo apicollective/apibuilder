@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 
 @Singleton
 class Memberships @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   membershipsDao: MembershipsDao
 ) extends ApibuilderController {
 

@@ -12,7 +12,7 @@ import play.api.libs.json._
 
 @Singleton
 class Validations @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   databaseServiceFetcher: DatabaseServiceFetcher
 ) extends ApibuilderController {
 

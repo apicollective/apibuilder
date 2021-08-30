@@ -12,7 +12,7 @@ import java.util.UUID
 
 @Singleton
 class Applications @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao
 ) extends ApibuilderController {

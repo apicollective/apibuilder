@@ -11,7 +11,7 @@ import play.api.libs.json._
 
 @Singleton
 class Domains @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   organizationDomainsDao: OrganizationDomainsDao
 ) extends ApibuilderController {
 

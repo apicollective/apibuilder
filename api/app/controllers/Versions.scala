@@ -13,7 +13,7 @@ import _root_.util.ApiBuilderServiceImportResolver
 
 @Singleton
 class Versions @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
   applicationsDao: ApplicationsDao,
   databaseServiceFetcher: DatabaseServiceFetcher,

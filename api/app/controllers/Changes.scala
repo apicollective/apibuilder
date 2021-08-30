@@ -8,7 +8,7 @@ import play.api.libs.json._
 
 @Singleton
 class Changes @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   changesDao: ChangesDao
 ) extends ApibuilderController {
 

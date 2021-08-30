@@ -10,7 +10,7 @@ import play.api.libs.json._
 
 @Singleton
 class EmailVerificationConfirmationForms @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   emailVerificationsDao: EmailVerificationsDao
 ) extends ApibuilderController {
 

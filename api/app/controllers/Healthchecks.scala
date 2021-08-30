@@ -8,7 +8,7 @@ import play.api.libs.json._
 @Singleton
 class Healthchecks @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao
 ) extends ApibuilderController {

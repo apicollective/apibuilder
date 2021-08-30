@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class Code @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   wSClient: WSClient,
   apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
   orgAttributeUtil: OrgAttributeUtil,

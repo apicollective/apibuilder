@@ -11,7 +11,7 @@ import java.util.UUID
 
 @Singleton
 class Subscriptions @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   subscriptionsDao: SubscriptionsDao
 ) extends ApibuilderController {
 

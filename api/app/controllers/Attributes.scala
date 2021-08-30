@@ -11,7 +11,7 @@ import java.util.UUID
 
 @Singleton
 class Attributes @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   attributesDao: AttributesDao
 ) extends ApibuilderController {
 

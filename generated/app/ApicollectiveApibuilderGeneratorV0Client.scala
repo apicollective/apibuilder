@@ -604,6 +604,7 @@ package io.apibuilder.generator.v0 {
         value <- values
       } yield s"$name=$value"
       val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
+      println(s"_logRequest method[$method] url[$url]")
       auth.fold(logger.info(s"curl -X $method '$url'")) { _ =>
         logger.info(s"curl -X $method -u '[REDACTED]:' '$url'")
       }

@@ -20,15 +20,15 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 trait ApibuilderController extends BaseController {
 
-  protected def apibuilderControllerComponents: ApibuilderControllerComponents
+  protected def apiBuilderControllerComponents: ApiBuilderControllerComponents
 
-  def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
-  def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
+  def Anonymous: AnonymousActionBuilder = apiBuilderControllerComponents.anonymousActionBuilder
+  def Identified: IdentifiedActionBuilder = apiBuilderControllerComponents.identifiedActionBuilder
 
-  def controllerComponents: ControllerComponents = apibuilderControllerComponents.controllerComponents
+  def controllerComponents: ControllerComponents = apiBuilderControllerComponents.controllerComponents
 
-  def membershipsDao: MembershipsDao = apibuilderControllerComponents.membershipsDao
-  def organizationsDao: OrganizationsDao = apibuilderControllerComponents.organizationsDao
+  def membershipsDao: MembershipsDao = apiBuilderControllerComponents.membershipsDao
+  def organizationsDao: OrganizationsDao = apiBuilderControllerComponents.organizationsDao
 
   def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result): Result = {
     organizationsDao.findByKey(auth, orgKey) match {
@@ -86,8 +86,8 @@ trait ApibuilderController extends BaseController {
   }
 }
 
-@ImplementedBy(classOf[ApibuilderDefaultControllerComponents])
-trait ApibuilderControllerComponents {
+@ImplementedBy(classOf[ApiBuilderDefaultControllerComponents])
+trait ApiBuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
   def controllerComponents: ControllerComponents
@@ -95,13 +95,13 @@ trait ApibuilderControllerComponents {
   def organizationsDao: OrganizationsDao
 }
 
-class ApibuilderDefaultControllerComponents @Inject() (
+class ApiBuilderDefaultControllerComponents @Inject() (
   val controllerComponents: ControllerComponents,
   val anonymousActionBuilder: AnonymousActionBuilder,
   val identifiedActionBuilder: IdentifiedActionBuilder,
   val membershipsDao: MembershipsDao,
   val organizationsDao: OrganizationsDao
-) extends ApibuilderControllerComponents
+) extends ApiBuilderControllerComponents
 
 case class AnonymousRequest[A](
   user: Option[User],

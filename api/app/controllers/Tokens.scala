@@ -11,7 +11,7 @@ import java.util.UUID
 
 @Singleton
 class Tokens @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   tokensDao: TokensDao
 ) extends ApibuilderController {
 

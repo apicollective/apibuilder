@@ -10,7 +10,7 @@ import services.BatchDownloadApplicationsService
 
 @Singleton
 class BatchDownloadApplications @Inject() (
-  override val apibuilderControllerComponents: ApibuilderControllerComponents,
+  override val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   service: BatchDownloadApplicationsService,
 ) extends ApibuilderController {
 

@@ -9,7 +9,7 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class GeneratorWithServices @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   generatorsDao: GeneratorsDao
 ) extends ApibuilderController {
 
