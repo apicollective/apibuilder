@@ -146,6 +146,21 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
       privateApplication
     }
 
+    "by version" in {
+      val v1 = createVersion(publicApplication)
+      val v2 = createVersion(publicApplication)
+      val privateVersion = createVersion(privateApplication)
+      println(s"Private version: ${privateVersion.guid} for app: ${privateApplication.guid}")
+
+      def findByVersion(version: Version) = {
+        applicationsDao.findAll(Authorization.All, version = Some(version)).map(_.guid)
+      }
+
+      findByVersion(v1) mustBe Seq(publicApplication.guid)
+      findByVersion(v2) mustBe Seq(publicApplication.guid)
+      findByVersion(privateVersion) mustBe Seq(privateApplication.guid)
+    }
+
     "by orgKey" in {
       initialize()
       val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
@@ -274,5 +289,4 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     }
 
   }
-
 }
