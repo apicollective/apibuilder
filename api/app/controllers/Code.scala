@@ -159,10 +159,6 @@ class Code @Inject() (
               println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
 
-            val requestId = UUID.randomUUID().toString.replaceAll("-", "")
-            def debug(msg: String): Unit = logDebug(params.orgKey, s"request[$requestId] $msg")
-
-            debug(s"invocations.postByKey: About to call service.uri[${service.uri}]")
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
               invocationForm = data.invocationForm,
@@ -174,11 +170,9 @@ class Code @Inject() (
               )))
             }.recover {
               case r: io.apibuilder.generator.v0.errors.ErrorsResponse => {
-                debug("invocations.postByKey Received ErrorsResponse: " + r.errors.map(_.message).mkString(", "))
                 conflict(r.errors.map(_.message))
               }
               case r: io.apibuilder.generator.v0.errors.FailedRequest => {
-                debug("invocations.postByKey Received FailedRequest: " + r.getMessage)
                 conflict(s"Generator failed with ${r.getMessage}")
               }
             }
@@ -224,11 +218,5 @@ class Code @Inject() (
 
   private[this] def conflict(messages: Seq[String]): Result = {
     Conflict(Json.toJson(Validation.errors(messages)))
-  }
-
-  private[this] def logDebug(orgKey: String, message: String): Unit = {
-    if (orgKey == "moda-operandi") {
-      println(message)
-    }
   }
 }
