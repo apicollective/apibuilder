@@ -330,7 +330,7 @@ class ApplicationsDao @Inject() (
           version.map { _ =>
             "applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
           }
-        ).bind("version_guid", "version_guid").
+        ).bind("version_guid", version.map(_.guid.toString)).
         and(
           hasVersion.map { v =>
             val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
