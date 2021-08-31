@@ -150,7 +150,6 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
       val v1 = createVersion(publicApplication)
       val v2 = createVersion(publicApplication)
       val privateVersion = createVersion(privateApplication)
-      println(s"Private version: ${privateVersion.guid} for app: ${privateApplication.guid}")
 
       def findByVersion(version: Version) = {
         applicationsDao.findAll(Authorization.All, version = Some(version)).map(_.guid)
