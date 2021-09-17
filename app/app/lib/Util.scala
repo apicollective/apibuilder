@@ -26,6 +26,7 @@ case class ExampleService(
 object  Labels {
   val SubscriptionsText = "Subscriptions"
   val SubscriptionsVersionsCreateText = "For applications that I watch, email me when a version is created."
+  val SubscriptionsVersionsMeaningfulChangeText = "For applications that I watch, email me when a version is created with a meaningful change."
 
   val AddApplicationText = "Add Application"
   val OrgDetailsText = "Org Details"

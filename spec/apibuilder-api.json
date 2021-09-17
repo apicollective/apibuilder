@@ -57,7 +57,8 @@
         { "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
         { "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user joins the org." },
         { "name": "applications.create", "description": "For organizations for which I am a member, email me whenever an application is created." },
-        { "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
+        { "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." },
+        { "name": "versions.meaningful_change", "description": "For applications that I watch, email me whenever there is a meaningful change. Generally, this means avoiding email for simple changes (like only a version change)." }
       ]
     },
 

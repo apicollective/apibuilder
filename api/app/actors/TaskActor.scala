@@ -5,10 +5,11 @@ import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUnd
 import io.apibuilder.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao, WatchesDao}
 import lib.{AppConfig, ServiceDiff, Text}
-import java.util.UUID
 
+import java.util.UUID
 import org.joda.time.DateTime
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
@@ -38,7 +39,7 @@ class TaskActor @javax.inject.Inject() (
   watchesDao: WatchesDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  private[this] implicit val ec = system.dispatchers.lookup("task-actor-context")
+  private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("task-actor-context")
 
   private[this] val NumberDaysBeforePurge = 30
   private[this] case class Process(guid: UUID)
