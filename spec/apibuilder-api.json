@@ -429,7 +429,8 @@
     "diff_non_breaking": {
       "description": "Represents a single NON breaking diff of an application version.",
       "fields": [
-        { "name": "description", "type": "string", "example": "name diffd from foo to bar" }
+        { "name": "description", "type": "string", "example": "model: user optional field 'name' added" },
+        { "name": "is_material", "type": "boolean", "example": "True if this is a material change (eg something important). False otherwise. This is used to drive the publication 'versions.meaningful_change'" }
       ]
     },
 
