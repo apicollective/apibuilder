@@ -1,13 +1,14 @@
 package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
-import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
+import io.apibuilder.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Organization, Publication, Version}
 import io.apibuilder.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao, WatchesDao}
 import lib.{AppConfig, ServiceDiff, Text}
 
 import java.util.UUID
 import org.joda.time.DateTime
+import play.twirl.api.Html
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -48,7 +49,7 @@ class TaskActor @javax.inject.Inject() (
   system.scheduler.scheduleAtFixedRate(1.day, 1.day, self, TaskActor.Messages.NotifyFailed)
   system.scheduler.scheduleAtFixedRate(1.day, 1.day, self, TaskActor.Messages.PurgeOldTasks)
   
-  def receive = {
+  def receive: Receive = {
 
     case m @ TaskActor.Messages.Created(guid) => withVerboseErrorHandler(m) {
       self ! Process(guid)
@@ -131,6 +132,7 @@ class TaskActor @javax.inject.Inject() (
               differences = diffs
             )
             versionUpdated(newVersion, diffs)
+            versionUpdatedMaterialOnly(newVersion, diffs)
           }
         }
       }
@@ -139,39 +141,77 @@ class TaskActor @javax.inject.Inject() (
 
   private[this] def versionUpdated(
     version: Version,
-    diffs: Seq[Diff]
+    diffs: Seq[Diff],
   ): Unit = {
-    // Only send email if something has actually changed
     if (diffs.nonEmpty) {
-      val (breakingDiffs, nonBreakingDiffs) = diffs.partition {
-        case _: DiffBreaking => true
-        case _: DiffNonBreaking => false
-        case _: DiffUndefinedType => true
+      sendVersionUpsertedEmail(
+        publication = Publication.VersionsCreate,
+        version = version,
+        diffs = diffs,
+      ) { (org, application, breakingDiffs, nonBreakingDiffs) =>
+        views.html.emails.versionUpserted(
+          appConfig,
+          org,
+          application,
+          version,
+          breakingDiffs = breakingDiffs,
+          nonBreakingDiffs = nonBreakingDiffs
+        )
       }
+    }
+  }
 
-      applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).foreach { application =>
-        organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).foreach { org =>
-          emails.deliver(
-            context = Emails.Context.Application(application),
-            org = org,
-            publication = Publication.VersionsCreate,
-            subject = s"${org.name}/${application.name}:${version.version} Uploaded",
-            body = views.html.emails.versionCreated(
-              appConfig,
-              org,
-              application,
-              version,
-              breakingDiffs = breakingDiffs,
-              nonBreakingDiffs = nonBreakingDiffs
-            ).toString
-          ) { subscription =>
-            watchesDao.findAll(
-              Authorization.All,
-              application = Some(application),
-              userGuid = Some(subscription.user.guid),
-              limit = 1
-            ).nonEmpty
-          }
+  private[this] def versionUpdatedMaterialOnly(
+    version: Version,
+    diffs: Seq[Diff],
+  ): Unit = {
+    val filtered = diffs.filter(_.isMaterial)
+    if (filtered.nonEmpty) {
+      sendVersionUpsertedEmail(
+        publication = Publication.VersionsMaterialChange,
+        version = version,
+        diffs = filtered,
+      ) { (org, application, breakingDiffs, nonBreakingDiffs) =>
+        views.html.emails.versionUpserted(
+          appConfig,
+          org,
+          application,
+          version,
+          breakingDiffs = breakingDiffs,
+          nonBreakingDiffs = nonBreakingDiffs
+        )
+      }
+    }
+  }
+
+  private[this] def sendVersionUpsertedEmail(
+    publication: Publication,
+    version: Version,
+    diffs: Seq[Diff],
+  )(
+    generateBody: (Organization, Application, Seq[Diff], Seq[Diff]) => Html,
+  ): Unit = {
+    val (breakingDiffs, nonBreakingDiffs) = diffs.partition {
+      case _: DiffBreaking => true
+      case _: DiffNonBreaking => false
+      case _: DiffUndefinedType => true
+    }
+
+    applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).foreach { application =>
+      organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).foreach { org =>
+        emails.deliver(
+          context = Emails.Context.Application(application),
+          org = org,
+          publication = publication,
+          subject = s"${org.name}/${application.name}:${version.version} Updated",
+          body = generateBody(org, application, breakingDiffs, nonBreakingDiffs).toString
+        ) { subscription =>
+          watchesDao.findAll(
+            Authorization.All,
+            application = Some(application),
+            userGuid = Some(subscription.user.guid),
+            limit = 1
+          ).nonEmpty
         }
       }
     }

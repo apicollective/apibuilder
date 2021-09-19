@@ -739,11 +739,11 @@ package io.apibuilder.api.v0.models {
      */
     case object VersionsCreate extends Publication { override def toString = "versions.create" }
     /**
-     * For applications that I watch, email me whenever there is a meaningful change.
+     * For applications that I watch, email me whenever there is a material change.
      * Generally, this means avoiding email for simple changes (like only a version
      * change).
      */
-    case object VersionsMeaningfulChange extends Publication { override def toString = "versions.meaningful_change" }
+    case object VersionsMaterialChange extends Publication { override def toString = "versions.material_change" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -761,7 +761,7 @@ package io.apibuilder.api.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: scala.List[Publication] = scala.List(MembershipRequestsCreate, MembershipsCreate, ApplicationsCreate, VersionsCreate, VersionsMeaningfulChange)
+    val all: scala.List[Publication] = scala.List(MembershipRequestsCreate, MembershipsCreate, ApplicationsCreate, VersionsCreate, VersionsMaterialChange)
 
     private[this]
     val byName: Map[String, Publication] = all.map(x => x.toString.toLowerCase -> x).toMap
