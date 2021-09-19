@@ -65,7 +65,7 @@ case class ServiceDiff(
   ).flatten
 
   private[this] def diffApidoc(): Seq[Diff] = {
-    Helpers.diffStringNonBreaking("apidoc/version", a.apidoc.version, b.apidoc.version)
+    Helpers.diffStringNonBreakingNotMaterial("apidoc/version", a.apidoc.version, b.apidoc.version)
   }
 
   private[this] def diffInfo(): Seq[Diff] = {
