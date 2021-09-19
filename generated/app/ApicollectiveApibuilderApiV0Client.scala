@@ -8,7 +8,10 @@ package io.apibuilder.api.v0.models {
   /**
    * Represents a single diff in an application
    */
-  sealed trait Diff extends _root_.scala.Product with _root_.scala.Serializable
+  sealed trait Diff extends _root_.scala.Product with _root_.scala.Serializable {
+    def description: String
+    def isMaterial: Boolean
+  }
 
   /**
    * Defines the valid type values for the type Diff
@@ -248,14 +251,16 @@ package io.apibuilder.api.v0.models {
    * or invalid data due to the diff.
    */
   final case class DiffBreaking(
-    description: String
+    override val description: String,
+    override val isMaterial: Boolean
   ) extends Diff
 
   /**
    * Represents a single NON breaking diff of an application version.
    */
   final case class DiffNonBreaking(
-    description: String
+    override val description: String,
+    override val isMaterial: Boolean
   ) extends Diff
 
   /**
@@ -599,12 +604,15 @@ package io.apibuilder.api.v0.models {
    * to the union Diff, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
    *
-   * @param description Information about the type that we received that is undefined in this version of
+   * @param typeDescription Information about the type that we received that is undefined in this version of
    *        the client.
    */
   final case class DiffUndefinedType(
-    description: String
-  ) extends Diff
+    typeDescription: String
+  ) extends Diff {
+    override def description: String = ???
+    override def isMaterial: Boolean = ???
+  }
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
@@ -1505,12 +1513,16 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiDiffBreaking: play.api.libs.json.Reads[DiffBreaking] = {
-      (__ \ "description").read[String].map { x => new DiffBreaking(description = x) }
+      for {
+        description <- (__ \ "description").read[String]
+        isMaterial <- (__ \ "is_material").read[Boolean]
+      } yield DiffBreaking(description, isMaterial)
     }
 
     def jsObjectDiffBreaking(obj: io.apibuilder.api.v0.models.DiffBreaking): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.JsString(obj.description)
+        "description" -> play.api.libs.json.JsString(obj.description),
+        "is_material" -> play.api.libs.json.JsBoolean(obj.isMaterial)
       ) ++ play.api.libs.json.Json.obj("type" -> "diff_breaking")
     }
 
@@ -1523,12 +1535,16 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiDiffNonBreaking: play.api.libs.json.Reads[DiffNonBreaking] = {
-      (__ \ "description").read[String].map { x => new DiffNonBreaking(description = x) }
+      for {
+        description <- (__ \ "description").read[String]
+        isMaterial <- (__ \ "is_material").read[Boolean]
+      } yield DiffNonBreaking(description, isMaterial)
     }
 
     def jsObjectDiffNonBreaking(obj: io.apibuilder.api.v0.models.DiffNonBreaking): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.JsString(obj.description)
+        "description" -> play.api.libs.json.JsString(obj.description),
+        "is_material" -> play.api.libs.json.JsBoolean(obj.isMaterial)
       ) ++ play.api.libs.json.Json.obj("type" -> "diff_non_breaking")
     }
 

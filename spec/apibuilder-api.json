@@ -17,6 +17,7 @@
 
   "unions": {
     "diff": {
+      "interfaces": ["diff"],
       "description": "Represents a single diff in an application",
       "discriminator": "type",
       "types": [
@@ -40,6 +41,16 @@
     { "uri": "https://app.apibuilder.io/apicollective/apibuilder-common/latest/service.json" },
     { "uri": "https://app.apibuilder.io/apicollective/apibuilder-generator/latest/service.json" }
   ],
+
+  "interfaces": {
+    "diff": {
+      "description": "Represents a single breaking diff of an application version. A breaking diff indicates that it is possible for an existing client to now experience an error or invalid data due to the diff.",
+      "fields": [
+        { "name": "description", "type": "string", "example": "model removed: user" },
+        { "name": "is_material", "type": "boolean", "example": "True if this is a material change (eg something important). False otherwise. This is used to drive the publication 'versions.meaningful_change'" }
+      ]
+    }
+  },
 
   "enums": {
     "visibility": {
@@ -422,7 +433,8 @@
     "diff_breaking": {
       "description": "Represents a single breaking diff of an application version. A breaking diff indicates that it is possible for an existing client to now experience an error or invalid data due to the diff.",
       "fields": [
-        { "name": "description", "type": "string", "example": "model removed: user" }
+        { "name": "description", "type": "string", "example": "model removed: user" },
+        { "name": "is_material", "type": "boolean", "example": "True if this is a material change (eg something important). False otherwise. This is used to drive the publication 'versions.meaningful_change'" }
       ]
     },
 

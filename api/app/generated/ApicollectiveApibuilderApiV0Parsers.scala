@@ -543,12 +543,15 @@ package io.apibuilder.api.v0.anorm.parsers {
 
     def parser(
       description: String = "description",
+      isMaterial: String = "is_material",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.api.v0.models.DiffBreaking] = {
-      SqlParser.str(prefixOpt.getOrElse("") + description) map {
-        case description => {
+      SqlParser.str(prefixOpt.getOrElse("") + description) ~
+      SqlParser.bool(prefixOpt.getOrElse("") + isMaterial) map {
+        case description ~ isMaterial => {
           io.apibuilder.api.v0.models.DiffBreaking(
-            description = description
+            description = description,
+            isMaterial = isMaterial
           )
         }
       }
@@ -562,12 +565,15 @@ package io.apibuilder.api.v0.anorm.parsers {
 
     def parser(
       description: String = "description",
+      isMaterial: String = "is_material",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.api.v0.models.DiffNonBreaking] = {
-      SqlParser.str(prefixOpt.getOrElse("") + description) map {
-        case description => {
+      SqlParser.str(prefixOpt.getOrElse("") + description) ~
+      SqlParser.bool(prefixOpt.getOrElse("") + isMaterial) map {
+        case description ~ isMaterial => {
           io.apibuilder.api.v0.models.DiffNonBreaking(
-            description = description
+            description = description,
+            isMaterial = isMaterial
           )
         }
       }
