@@ -5,17 +5,8 @@ import play.api.libs.json.Json
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 
-/**
-  * Takes two service descriptions. Returns a list of changes from
-  * service a to service b. The list of changes is intended to be
-  * legible by a human.
-  */
-case class ServiceDiff(
-  a: Service,
-  b: Service
-) {
-
-  private[this] object Material {
+object DiffFactories {
+  object Material {
     def breaking(description: String): Diff = {
       DiffBreaking(
         description = description,
@@ -30,7 +21,7 @@ case class ServiceDiff(
     }
   }
 
-  private[this] object NotMaterial {
+  object NotMaterial {
     def nonBreaking(description: String): Diff = {
       DiffNonBreaking(
         description = description,
@@ -38,6 +29,19 @@ case class ServiceDiff(
       )
     }
   }
+}
+
+/**
+  * Takes two service descriptions. Returns a list of changes from
+  * service a to service b. The list of changes is intended to be
+  * legible by a human.
+  */
+case class ServiceDiff(
+  a: Service,
+  b: Service
+) {
+
+  import DiffFactories._
 
   val differences: Seq[Diff] = Seq(
     diffApidoc(),
@@ -69,9 +73,9 @@ case class ServiceDiff(
   }
 
   private[this] def diffContact(): Seq[Diff] = {
-    Helpers.diffOptionalStringNonBreaking("contact/name", a.info.contact.flatMap(_.name), b.info.contact.flatMap(_.name)) ++
-    Helpers.diffOptionalStringNonBreaking("contact/url", a.info.contact.flatMap(_.url), b.info.contact.flatMap(_.url)) ++
-    Helpers.diffOptionalStringNonBreaking("contact/email", a.info.contact.flatMap(_.email), b.info.contact.flatMap(_.email))
+    Helpers.diffOptionalStringNonBreakingNotMaterial("contact/name", a.info.contact.flatMap(_.name), b.info.contact.flatMap(_.name)) ++
+    Helpers.diffOptionalStringNonBreakingNotMaterial("contact/url", a.info.contact.flatMap(_.url), b.info.contact.flatMap(_.url)) ++
+    Helpers.diffOptionalStringNonBreakingNotMaterial("contact/email", a.info.contact.flatMap(_.email), b.info.contact.flatMap(_.email))
   }
 
   private[this] def diffLicense(): Seq[Diff] = {
@@ -653,6 +657,14 @@ case class ServiceDiff(
       b: Option[String]
     ): Seq[Diff] = {
       diffOptionalString(label, a, b).map(Material.nonBreaking)
+    }
+
+    def diffOptionalStringNonBreakingNotMaterial(
+      label: String,
+      a: Option[String],
+      b: Option[String]
+    ): Seq[Diff] = {
+      diffOptionalString(label, a, b).map(NotMaterial.nonBreaking)
     }
 
     def diffDeprecation(prefix: String, a: Option[Deprecation], b: Option[Deprecation]): Seq[Diff] = {

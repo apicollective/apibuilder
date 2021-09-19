@@ -1,12 +1,13 @@
 package lib
 
-import io.apibuilder.api.v0.models.{DiffBreaking, DiffNonBreaking}
 import io.apibuilder.spec.v0.models._
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsObject, Json}
 
 class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with TestHelper {
+
+  import DiffFactories._
 
   private lazy val service = readService("../spec/apibuilder-spec.json")
 
@@ -17,7 +18,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
   "apidoc version" in {
     ServiceDiff(service, service.copy(apidoc = Apidoc(version = "0.0.1"))).differences must be(
       Seq(
-        DiffNonBreaking(s"apidoc/version changed from ${service.apidoc.version} to 0.0.1")
+        NotMaterial.nonBreaking(s"apidoc/version changed from ${service.apidoc.version} to 0.0.1")
       )
     )
   }
@@ -34,9 +35,9 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(base, base.copy(info = Info(contact = Some(contact)))).differences must be(
         Seq(
-          DiffNonBreaking(s"contact/name added: Mike"),
-          DiffNonBreaking(s"contact/url added: http://foo.com"),
-          DiffNonBreaking(s"contact/email added: mbryzek@mailinator.com")
+          NotMaterial.nonBreaking(s"contact/name added: Mike"),
+          NotMaterial.nonBreaking(s"contact/url added: http://foo.com"),
+          NotMaterial.nonBreaking(s"contact/email added: mbryzek@mailinator.com")
         )
       )
     }
@@ -49,8 +50,8 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(base, base.copy(info = Info(license = Some(license)))).differences must be(
         Seq(
-          DiffNonBreaking(s"license/name added: MIT"),
-          DiffNonBreaking(s"license/url added: http://opensource.org/licenses/MIT")
+          Material.nonBreaking(s"license/name added: MIT"),
+          Material.nonBreaking(s"license/url added: http://opensource.org/licenses/MIT")
         )
       )
     }
@@ -60,7 +61,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
   "name" in {
     ServiceDiff(service, service.copy(name = "test")).differences must be(
       Seq(
-        DiffNonBreaking(s"name changed from ${service.name} to test")
+        Material.nonBreaking(s"name changed from ${service.name} to test")
       )
     )
   }
@@ -68,7 +69,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
   "organization key" in {
     ServiceDiff(service, service.copy(organization = Organization(key = "foo"))).differences must be(
       Seq(
-        DiffNonBreaking(s"organization/key changed from ${service.organization.key} to foo")
+        Material.nonBreaking(s"organization/key changed from ${service.organization.key} to foo")
       )
     )
   }
@@ -76,7 +77,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
   "application key" in {
     ServiceDiff(service, service.copy(application = Application(key = "foo"))).differences must be(
       Seq(
-        DiffNonBreaking(s"application/key changed from ${service.application.key} to foo")
+        Material.nonBreaking(s"application/key changed from ${service.application.key} to foo")
       )
     )
   }
@@ -84,7 +85,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
   "namespace" in {
     ServiceDiff(service, service.copy(namespace = "test")).differences must be(
       Seq(
-        DiffBreaking(s"namespace changed from ${service.namespace} to test")
+        Material.breaking(s"namespace changed from ${service.namespace} to test")
       )
     )
   }
@@ -92,7 +93,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
   "version" in {
     ServiceDiff(service, service.copy(version = "0.0.1")).differences must be(
       Seq(
-        DiffNonBreaking(s"version changed from ${service.version} to 0.0.1")
+        Material.nonBreaking(s"version changed from ${service.version} to 0.0.1")
       )
     )
   }
@@ -104,13 +105,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
     ServiceDiff(base, base.copy(baseUrl = Some("http://foo.com"))).differences must be(
       Seq(
-        DiffNonBreaking(s"base_url added: http://foo.com")
+        Material.nonBreaking(s"base_url added: http://foo.com")
       )
     )
 
     ServiceDiff(base.copy(baseUrl = Some("http://foo.com")), base).differences must be(
       Seq(
-        DiffNonBreaking(s"base_url removed: http://foo.com")
+        Material.nonBreaking(s"base_url removed: http://foo.com")
       )
     )
 
@@ -119,7 +120,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       base.copy(baseUrl = Some("http://foobar.com"))
     ).differences must be(
       Seq(
-        DiffNonBreaking(s"base_url changed from http://foo.com to http://foobar.com")
+        Material.nonBreaking(s"base_url changed from http://foo.com to http://foobar.com")
       )
     )
   }
@@ -131,13 +132,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
     ServiceDiff(base, base.copy(description = Some("foo"))).differences must be(
       Seq(
-        DiffNonBreaking(s"description added: foo")
+        Material.nonBreaking(s"description added: foo")
       )
     )
 
     ServiceDiff(base.copy(description = Some("foo")), base).differences must be(
       Seq(
-        DiffNonBreaking(s"description removed: foo")
+        Material.nonBreaking(s"description removed: foo")
       )
     )
 
@@ -146,7 +147,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       base.copy(description = Some("foobar"))
     ).differences must be(
       Seq(
-        DiffNonBreaking(s"description changed from foo to foobar")
+        Material.nonBreaking(s"description changed from foo to foobar")
       )
     )
   }
@@ -171,7 +172,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove header" in {
       ServiceDiff(serviceWithHeader, base).differences must be(
         Seq(
-          DiffNonBreaking("header removed: x-test")
+          Material.nonBreaking("header removed: x-test")
         )
       )
     }
@@ -179,7 +180,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add optional header" in {
       ServiceDiff(base, serviceWithHeader).differences must be(
         Seq(
-          DiffNonBreaking("optional header added: x-test")
+          Material.nonBreaking("optional header added: x-test")
         )
       )
     }
@@ -188,7 +189,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       val serviceWithRequiredHeader = base.copy(headers = Seq(header.copy(required = true)))
       ServiceDiff(base, serviceWithRequiredHeader).differences must be(
         Seq(
-          DiffBreaking("required header added: x-test")
+          Material.breaking("required header added: x-test")
         )
       )
     }
@@ -197,7 +198,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       val serviceWithHeader2 = base.copy(headers = Seq(header.copy(`type` = "long")))
       ServiceDiff(serviceWithHeader, serviceWithHeader2).differences must be(
         Seq(
-          DiffBreaking("header x-test type changed from string to long")
+          Material.breaking("header x-test type changed from string to long")
         )
       )
     }
@@ -208,7 +209,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences must be(
           Seq(
-            DiffNonBreaking("header x-test description added: foo")
+            Material.nonBreaking("header x-test description added: foo")
           )
         )
       }
@@ -217,7 +218,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences must be(
           Seq(
-            DiffNonBreaking("header x-test description removed: foo")
+            Material.nonBreaking("header x-test description removed: foo")
           )
         )
       }
@@ -227,7 +228,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("bar"))))
         ServiceDiff(serviceWithHeader1, serviceWithHeader2).differences must be(
           Seq(
-            DiffNonBreaking("header x-test description changed from foo to bar")
+            Material.nonBreaking("header x-test description changed from foo to bar")
           )
         )
       }
@@ -239,7 +240,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation()))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences must be(
           Seq(
-            DiffNonBreaking("header x-test deprecated")
+            Material.nonBreaking("header x-test deprecated")
           )
         )
       }
@@ -248,7 +249,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation(description = Some("test"))))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences must be(
           Seq(
-            DiffNonBreaking("header x-test deprecated: test")
+            Material.nonBreaking("header x-test deprecated: test")
           )
         )
       }
@@ -257,7 +258,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation()))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences must be(
           Seq(
-            DiffNonBreaking("header x-test removed: deprecation")
+            Material.nonBreaking("header x-test removed: deprecation")
           )
         )
       }
@@ -269,7 +270,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences must be(
           Seq(
-            DiffNonBreaking("header x-test default added: test")
+            Material.nonBreaking("header x-test default added: test")
           )
         )
       }
@@ -278,7 +279,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences must be(
           Seq(
-            DiffBreaking("header x-test default removed: test")
+            Material.breaking("header x-test default removed: test")
           )
         )
       }
@@ -288,7 +289,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         val serviceWithHeader3 = base.copy(headers = Seq(header.copy(default = Some("bar"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader3).differences must be(
           Seq(
-            DiffNonBreaking("header x-test default changed from foo to bar")
+            Material.nonBreaking("header x-test default changed from foo to bar")
           )
         )
       }
@@ -319,7 +320,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove import" in {
       ServiceDiff(serviceWithImport, base).differences must be(
         Seq(
-          DiffNonBreaking("import removed: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
+          Material.nonBreaking("import removed: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
         )
       )
     }
@@ -327,7 +328,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add import" in {
       ServiceDiff(base, serviceWithImport).differences must be(
         Seq(
-          DiffNonBreaking("import added: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
+          Material.nonBreaking("import added: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
         )
       )
     }
@@ -348,43 +349,43 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(namespace = imp2.namespace)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix namespace changed from io.apibuilder.spec.v0 to io.apibuilder.spec.v1")
+          Material.nonBreaking(s"$prefix namespace changed from io.apibuilder.spec.v0 to io.apibuilder.spec.v1")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(organization = imp2.organization)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix organization/key changed from gilt to gilt2")
+          Material.nonBreaking(s"$prefix organization/key changed from gilt to gilt2")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(application = imp2.application)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
+          Material.nonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(version = imp2.version)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
+          Material.nonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(enums = imp2.enums)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
+          Material.nonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(unions = imp2.unions)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix unions changed from [response_code] to [bar]")
+          Material.nonBreaking(s"$prefix unions changed from [response_code] to [bar]")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(models = imp2.models)))).differences must be(
         Seq(
-          DiffNonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
+          Material.nonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
         )
       )
 
@@ -418,7 +419,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add enum" in {
       ServiceDiff(base, serviceWithEnum).differences must be(
         Seq(
-          DiffNonBreaking("enum added: age_group")
+          Material.nonBreaking("enum added: age_group")
         )
       )
     }
@@ -426,7 +427,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove enum" in {
       ServiceDiff(serviceWithEnum, base).differences must be(
         Seq(
-          DiffBreaking("enum removed: age_group")
+          Material.breaking("enum removed: age_group")
         )
       )
     }
@@ -434,32 +435,32 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change enum" in {
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(plural = "groups")))).differences must be(
         Seq(
-          DiffNonBreaking("enum age_group plural changed from age_groups to groups")
+          Material.nonBreaking("enum age_group plural changed from age_groups to groups")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(description = Some("test"))))).differences must be(
         Seq(
-          DiffNonBreaking("enum age_group description added: test")
+          Material.nonBreaking("enum age_group description added: test")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
-          DiffNonBreaking("enum age_group deprecated")
+          Material.nonBreaking("enum age_group deprecated")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Nil)))).differences must be(
         Seq(
-          DiffBreaking("enum age_group value removed: 18-25")
+          Material.breaking("enum age_group value removed: 18-25")
         )
       )
 
       val value2 = value.copy(name = "26-35")
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value, value2))))).differences must be(
         Seq(
-          DiffNonBreaking("enum age_group value added: 26-35")
+          Material.nonBreaking("enum age_group value added: 26-35")
         )
       )
     }
@@ -467,13 +468,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change enumValues" in {
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value.copy(description = Some("test"))))))).differences must be(
         Seq(
-          DiffNonBreaking("enum age_group value 18-25 description added: test")
+          Material.nonBreaking("enum age_group value 18-25 description added: test")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value.copy(deprecation = Some(Deprecation()))))))).differences must be(
         Seq(
-          DiffNonBreaking("enum age_group value 18-25 deprecated")
+          Material.nonBreaking("enum age_group value 18-25 deprecated")
         )
       )
     }
@@ -507,7 +508,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add union" in {
       ServiceDiff(base, serviceWithUnion).differences must be(
         Seq(
-          DiffNonBreaking("union added: user")
+          Material.nonBreaking("union added: user")
         )
       )
     }
@@ -515,7 +516,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove union" in {
       ServiceDiff(serviceWithUnion, base).differences must be(
         Seq(
-          DiffBreaking("union removed: user")
+          Material.breaking("union removed: user")
         )
       )
     }
@@ -523,57 +524,57 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change union" in {
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(plural = "all_users")))).differences must be(
         Seq(
-          DiffNonBreaking("union user plural changed from users to all_users")
+          Material.nonBreaking("union user plural changed from users to all_users")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(description = Some("test"))))).differences must be(
         Seq(
-          DiffNonBreaking("union user description added: test")
+          Material.nonBreaking("union user description added: test")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
-          DiffNonBreaking("union user deprecated")
+          Material.nonBreaking("union user deprecated")
         )
       )
 
       val serviceWithFooInterface = base.copy(unions = Seq(union.copy(interfaces = Seq("foo"))))
       ServiceDiff(serviceWithUnion, serviceWithFooInterface).differences must be(
         Seq(
-          DiffBreaking("union user interface added: foo")
+          Material.breaking("union user interface added: foo")
         )
       )
 
       ServiceDiff(serviceWithFooInterface, serviceWithUnion).differences must be(
         Seq(
-          DiffBreaking("union user interface removed: foo")
+          Material.breaking("union user interface removed: foo")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Nil)))).differences must be(
         Seq(
-          DiffBreaking("union user type removed: registered")
+          Material.breaking("union user type removed: registered")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(discriminator = Some("type_identifier"))))).differences must be(
         Seq(
-          DiffBreaking("union user discriminator added: type_identifier")
+          Material.breaking("union user discriminator added: type_identifier")
         )
       )
 
       ServiceDiff(base.copy(unions = Seq(union.copy(discriminator = Some("type_identifier")))), serviceWithUnion).differences must be(
         Seq(
-          DiffBreaking("union user discriminator removed: type_identifier")
+          Material.breaking("union user discriminator removed: type_identifier")
         )
       )
 
       val unionType2 = unionType.copy(`type` = "guest")
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType, unionType2))))).differences must be(
         Seq(
-          DiffNonBreaking("union user type added: guest")
+          Material.nonBreaking("union user type added: guest")
         )
       )
     }
@@ -581,13 +582,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change unionTypes" in {
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(description = Some("test"))))))).differences must be(
         Seq(
-          DiffNonBreaking("union user type registered description added: test")
+          Material.nonBreaking("union user type registered description added: test")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(deprecation = Some(Deprecation()))))))).differences must be(
         Seq(
-          DiffNonBreaking("union user type registered deprecated")
+          Material.nonBreaking("union user type registered deprecated")
         )
       )
     }
@@ -609,13 +610,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(serviceNoDefault, serviceWithDefault).differences must be(
         Seq(
-          DiffNonBreaking("union user default type added: registered")
+          Material.nonBreaking("union user default type added: registered")
         )
       )
 
       ServiceDiff(serviceWithDefault, serviceNoDefault).differences must be(
         Seq(
-          DiffBreaking("union user default type removed: registered")
+          Material.breaking("union user default type removed: registered")
         )
       )
     }
@@ -656,7 +657,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add model" in {
       ServiceDiff(base, serviceWithModel).differences must be(
         Seq(
-          DiffNonBreaking("model added: user")
+          Material.nonBreaking("model added: user")
         )
       )
     }
@@ -664,7 +665,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove model" in {
       ServiceDiff(serviceWithModel, base).differences must be(
         Seq(
-          DiffBreaking("model removed: user")
+          Material.breaking("model removed: user")
         )
       )
     }
@@ -672,66 +673,66 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change model" in {
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(plural = "all_users")))).differences must be(
         Seq(
-          DiffNonBreaking("model user plural changed from users to all_users")
+          Material.nonBreaking("model user plural changed from users to all_users")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(description = Some("test"))))).differences must be(
         Seq(
-          DiffNonBreaking("model user description added: test")
+          Material.nonBreaking("model user description added: test")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
-          DiffNonBreaking("model user deprecated")
+          Material.nonBreaking("model user deprecated")
         )
       )
 
       val serviceWithFooInterface = base.copy(models = Seq(model.copy(interfaces = Seq("foo"))))
       ServiceDiff(serviceWithModel, serviceWithFooInterface).differences must be(
         Seq(
-          DiffBreaking("model user interface added: foo")
+          Material.breaking("model user interface added: foo")
         )
       )
 
       ServiceDiff(serviceWithFooInterface, serviceWithModel).differences must be(
         Seq(
-          DiffBreaking("model user interface removed: foo")
+          Material.breaking("model user interface removed: foo")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Nil)))).differences must be(
         Seq(
-          DiffBreaking("model user field removed: id")
+          Material.breaking("model user field removed: id")
         )
       )
 
       val field2 = field.copy(name = "name")
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2))))).differences must be(
         Seq(
-          DiffNonBreaking("model user optional field added: name")
+          Material.nonBreaking("model user optional field added: name")
         )
       )
 
       val field2WithDefault = field.copy(name = "name", default = Some("test"))
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2WithDefault))))).differences must be(
         Seq(
-          DiffNonBreaking("model user optional field added: name, defaults to test")
+          Material.nonBreaking("model user optional field added: name, defaults to test")
         )
       )
 
       val field2Required = field.copy(name = "name", required = true)
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2Required))))).differences must be(
         Seq(
-          DiffBreaking("model user required field added: name")
+          Material.breaking("model user required field added: name")
         )
       )
 
       val field2RequiredWithDefault = field.copy(name = "name", required = true, default = Some("test"))
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2RequiredWithDefault))))).differences must be(
         Seq(
-          DiffNonBreaking("model user required field added: name, defaults to test")
+          Material.nonBreaking("model user required field added: name, defaults to test")
         )
       )
 
@@ -746,26 +747,26 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(fieldWithAttribute))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user field id attribute added: attribute1")
+          Material.nonBreaking("model user field id attribute added: attribute1")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(attributes = Seq(attribute1))))).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute added: attribute1")
+          Material.nonBreaking("model user attribute added: attribute1")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(attributes = Seq(attribute1, attribute2))))).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute added: attribute1"),
-          DiffNonBreaking("model user attribute added: attribute2")
+          Material.nonBreaking("model user attribute added: attribute1"),
+          Material.nonBreaking("model user attribute added: attribute2")
         )
       )
 
       ServiceDiff(base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))), serviceWithModel).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute removed: attribute1")
+          Material.nonBreaking("model user attribute removed: attribute1")
         )
       )
 
@@ -774,8 +775,8 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(attributes = Seq(attribute2))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute removed: attribute1"),
-          DiffNonBreaking("model user attribute added: attribute2")
+          Material.nonBreaking("model user attribute removed: attribute1"),
+          Material.nonBreaking("model user attribute added: attribute2")
         )
       )
 
@@ -784,7 +785,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1ValueUpdated))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("""model user attribute 'attribute1' value changed from {"name":"value1"} to {"name":"value updated"}""")
+          Material.nonBreaking("""model user attribute 'attribute1' value changed from {"name":"value1"} to {"name":"value updated"}""")
         )
       )
 
@@ -793,7 +794,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionUpdated))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute 'attribute1' description changed from Description 1 to Description updated")
+          Material.nonBreaking("model user attribute 'attribute1' description changed from Description 1 to Description updated")
         )
       )
 
@@ -802,7 +803,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionRemoved))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute 'attribute1' description removed: Description 1")
+          Material.nonBreaking("model user attribute 'attribute1' description removed: Description 1")
         )
       )
 
@@ -811,7 +812,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute 'attribute1' description added: Description 1")
+          Material.nonBreaking("model user attribute 'attribute1' description added: Description 1")
         )
       )
 
@@ -820,7 +821,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1.copy(deprecation = Some(Deprecation()))))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user attribute 'attribute1' deprecated")
+          Material.nonBreaking("model user attribute 'attribute1' deprecated")
         )
       )
     }
@@ -829,44 +830,44 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change fields" in {
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(`type` = "uuid")))))).differences must be(
         Seq(
-          DiffBreaking("model user field id type changed from long to uuid")
+          Material.breaking("model user field id type changed from long to uuid")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(description = Some("test"))))))).differences must be(
         Seq(
-          DiffNonBreaking("model user field id description added: test")
+          Material.nonBreaking("model user field id description added: test")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(deprecation = Some(Deprecation()))))))).differences must be(
         Seq(
-          DiffNonBreaking("model user field id deprecated")
+          Material.nonBreaking("model user field id deprecated")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(default = Some("1"))))))).differences must be(
         Seq(
-          DiffNonBreaking("model user field id default added: 1")
+          Material.nonBreaking("model user field id default added: 1")
         )
       )
 
       val requiredField = field.copy(required = true)
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(requiredField))))).differences must be(
         Seq(
-          DiffBreaking("model user field id is now required")
+          Material.breaking("model user field id is now required")
         )
       )
 
       ServiceDiff(base.copy(models = Seq(model.copy(fields = Seq(requiredField)))), serviceWithModel).differences must be(
         Seq(
-          DiffNonBreaking("model user field id is no longer required")
+          Material.nonBreaking("model user field id is no longer required")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))).differences must be(
         Seq(
-          DiffBreaking("model user field id minimum added: 1")
+          Material.breaking("model user field id minimum added: 1")
         )
       )
 
@@ -880,7 +881,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(0))))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user field id minimum changed from 1 to 0")
+          Material.nonBreaking("model user field id minimum changed from 1 to 0")
         )
       )
 
@@ -889,7 +890,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))
       ).differences must be(
         Seq(
-          DiffBreaking("model user field id minimum changed from 0 to 1")
+          Material.breaking("model user field id minimum changed from 0 to 1")
         )
       )
 
@@ -898,13 +899,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(fields = Seq(field))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user field id minimum removed: 0")
+          Material.nonBreaking("model user field id minimum removed: 0")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))).differences must be(
         Seq(
-          DiffBreaking("model user field id maximum added: 1")
+          Material.breaking("model user field id maximum added: 1")
         )
       )
 
@@ -918,7 +919,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(0))))))
       ).differences must be(
         Seq(
-          DiffBreaking("model user field id maximum changed from 1 to 0")
+          Material.breaking("model user field id maximum changed from 1 to 0")
         )
       )
 
@@ -927,7 +928,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user field id maximum changed from 0 to 1")
+          Material.nonBreaking("model user field id maximum changed from 0 to 1")
         )
       )
 
@@ -936,13 +937,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         base.copy(models = Seq(model.copy(fields = Seq(field))))
       ).differences must be(
         Seq(
-          DiffNonBreaking("model user field id maximum removed: 0")
+          Material.nonBreaking("model user field id maximum removed: 0")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(example = Some("foo"))))))).differences must be(
         Seq(
-          DiffNonBreaking("model user field id example added: foo")
+          Material.nonBreaking("model user field id example added: foo")
         )
       )
     }
@@ -968,7 +969,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add annotation" in {
       ServiceDiff(base, withAnnotation).differences must be(
         Seq(
-          DiffNonBreaking("annotation added: red")
+          Material.nonBreaking("annotation added: red")
         )
       )
     }
@@ -976,7 +977,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove annotation" in {
       ServiceDiff(withAnnotation, base).differences must be(
         Seq(
-          DiffNonBreaking("annotation removed: red")
+          Material.nonBreaking("annotation removed: red")
         )
       )
     }
@@ -984,13 +985,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change resource" in {
       ServiceDiff(withAnnotation, base.copy(annotations = Seq(annot.copy(description = None)))).differences must be(
         Seq(
-          DiffNonBreaking("annotation red description removed: Field interests the red team")
+          Material.nonBreaking("annotation red description removed: Field interests the red team")
         )
       )
 
       ServiceDiff(withAnnotation, base.copy(annotations = Seq(annot.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
-          DiffNonBreaking("annotation red deprecated")
+          Material.nonBreaking("annotation red deprecated")
         )
       )
     }
@@ -1016,7 +1017,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add resource" in {
       ServiceDiff(base, serviceWithResource).differences must be(
         Seq(
-          DiffNonBreaking("resource added: user")
+          Material.nonBreaking("resource added: user")
         )
       )
     }
@@ -1024,7 +1025,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove resource" in {
       ServiceDiff(serviceWithResource, base).differences must be(
         Seq(
-          DiffBreaking("resource removed: user")
+          Material.breaking("resource removed: user")
         )
       )
     }
@@ -1032,19 +1033,19 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "change resource" in {
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(plural = "all_users")))).differences must be(
         Seq(
-          DiffNonBreaking("resource user plural changed from users to all_users")
+          Material.nonBreaking("resource user plural changed from users to all_users")
         )
       )
 
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(description = Some("test"))))).differences must be(
         Seq(
-          DiffNonBreaking("resource user description added: test")
+          Material.nonBreaking("resource user description added: test")
         )
       )
 
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
-          DiffNonBreaking("resource user deprecated")
+          Material.nonBreaking("resource user deprecated")
         )
       )
 
@@ -1055,13 +1056,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(operations = Seq(op))))).differences must be(
         Seq(
-          DiffNonBreaking("resource user operation added: GET /users")
+          Material.nonBreaking("resource user operation added: GET /users")
         )
       )
 
       ServiceDiff(base.copy(resources = Seq(resource.copy(operations = Seq(op)))), serviceWithResource).differences must be(
         Seq(
-          DiffBreaking("resource user operation removed: GET /users")
+          Material.breaking("resource user operation removed: GET /users")
         )
       )
     }
@@ -1092,7 +1093,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       "add operation" in {
         ServiceDiff(base, serviceWithOperation).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation added: GET /users/:guid")
+            Material.nonBreaking("resource user operation added: GET /users/:guid")
           )
         )
       }
@@ -1100,7 +1101,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       "remove operation" in {
         ServiceDiff(serviceWithOperation, base).differences must be(
           Seq(
-            DiffBreaking("resource user operation removed: GET /users/:guid")
+            Material.breaking("resource user operation removed: GET /users/:guid")
           )
         )
       }
@@ -1108,34 +1109,34 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       "change operation" in {
         ServiceDiff(serviceWithOperation, withOp(operation.copy(method = Method.Post))).differences must be(
           Seq(
-            DiffBreaking("resource user operation removed: GET /users/:guid"),
-            DiffNonBreaking("resource user operation added: POST /users/:guid")
+            Material.breaking("resource user operation removed: GET /users/:guid"),
+            Material.nonBreaking("resource user operation added: POST /users/:guid")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(path = "/users/:id"))).differences must be(
           Seq(
-            DiffBreaking("resource user operation removed: GET /users/:guid"),
-            DiffNonBreaking("resource user operation added: GET /users/:id")
+            Material.breaking("resource user operation removed: GET /users/:guid"),
+            Material.nonBreaking("resource user operation added: GET /users/:id")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(description = Some("test")))).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid description added: test")
+            Material.nonBreaking("resource user operation GET /users/:guid description added: test")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(deprecation = Some(Deprecation())))).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid deprecated")
+            Material.nonBreaking("resource user operation GET /users/:guid deprecated")
           )
         )
 
         val body = Body(`type` = "user_form")
         ServiceDiff(serviceWithOperation, withOp(operation.copy(body = Some(body)))).differences must be(
           Seq(
-            DiffBreaking("resource user operation GET /users/:guid added: body")
+            Material.breaking("resource user operation GET /users/:guid added: body")
           )
         )
 
@@ -1144,7 +1145,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
           withOp(operation.copy(body = Some(body.copy(`type` = "string"))))
         ).differences must be(
           Seq(
-            DiffBreaking("resource user operation GET /users/:guid body type changed from user_form to string")
+            Material.breaking("resource user operation GET /users/:guid body type changed from user_form to string")
           )
         )
 
@@ -1153,7 +1154,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
           withOp(operation.copy(body = Some(body.copy(description = Some("test")))))
         ).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid body description added: test")
+            Material.nonBreaking("resource user operation GET /users/:guid body description added: test")
           )
         )
 
@@ -1162,13 +1163,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
           withOp(operation.copy(body = Some(body.copy(deprecation = Some(Deprecation())))))
         ).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid body deprecated")
+            Material.nonBreaking("resource user operation GET /users/:guid body deprecated")
           )
         )
 
         ServiceDiff(withOp(operation.copy(body = Some(body))), serviceWithOperation).differences must be(
           Seq(
-            DiffBreaking("resource user operation GET /users/:guid removed: body")
+            Material.breaking("resource user operation GET /users/:guid removed: body")
           )
         )
 
@@ -1202,7 +1203,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add optional parameter" in {
           ServiceDiff(serviceWithOperation, serviceWithOpParam).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid optional parameter added: id")
+              Material.nonBreaking("resource user operation GET /users/:guid optional parameter added: id")
             )
           )
         }
@@ -1210,7 +1211,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add required parameter" in {
           ServiceDiff(serviceWithOperation, withParam(parameter.copy(required = true))).differences must be(
             Seq(
-              DiffBreaking("resource user operation GET /users/:guid required parameter added: id")
+              Material.breaking("resource user operation GET /users/:guid required parameter added: id")
             )
           )
         }
@@ -1218,7 +1219,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "remove parameter" in {
           ServiceDiff(serviceWithOpParam, serviceWithOperation).differences must be(
             Seq(
-              DiffBreaking("resource user operation GET /users/:guid parameter removed: id")
+              Material.breaking("resource user operation GET /users/:guid parameter removed: id")
             )
           )
         }
@@ -1226,7 +1227,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "change type" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(`type` = "string"))).differences must be(
             Seq(
-              DiffBreaking("resource user operation GET /users/:guid parameter id type changed from long to string")
+              Material.breaking("resource user operation GET /users/:guid parameter id type changed from long to string")
             )
           )
         }
@@ -1234,7 +1235,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "change location" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(location = ParameterLocation.Form))).differences must be(
             Seq(
-              DiffBreaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
+              Material.breaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
             )
           )
         }
@@ -1242,7 +1243,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add description" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(description = Some("test")))).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid parameter id description added: test")
+              Material.nonBreaking("resource user operation GET /users/:guid parameter id description added: test")
             )
           )
         }
@@ -1250,7 +1251,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add deprecation" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(deprecation = Some(Deprecation())))).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid parameter id deprecated")
+              Material.nonBreaking("resource user operation GET /users/:guid parameter id deprecated")
             )
           )
         }
@@ -1258,7 +1259,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add default" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(default = Some("5")))).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
+              Material.nonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
             )
           )
         }
@@ -1266,7 +1267,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add minimum" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(minimum = Some(1)))).differences must be(
             Seq(
-              DiffBreaking("resource user operation GET /users/:guid parameter id minimum added: 1")
+              Material.breaking("resource user operation GET /users/:guid parameter id minimum added: 1")
             )
           )
         }
@@ -1274,7 +1275,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add maximum" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(maximum = Some(1)))).differences must be(
             Seq(
-              DiffBreaking("resource user operation GET /users/:guid parameter id maximum added: 1")
+              Material.breaking("resource user operation GET /users/:guid parameter id maximum added: 1")
             )
           )
         }
@@ -1282,7 +1283,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add example" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(example = Some("1")))).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
+              Material.nonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
             )
           )
         }
@@ -1293,7 +1294,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "add attribute" in {
           ServiceDiff(serviceWithOpParam, withParam(parameter.copy(attributes = Some(Seq(attribute1))))).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid attribute added: attribute1")
+              Material.nonBreaking("resource user operation GET /users/:guid attribute added: attribute1")
             )
           )
         }
@@ -1301,7 +1302,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "update attribute" in {
           ServiceDiff(withParam(parameter.copy(attributes = Some(Seq(attribute1)))), withParam(parameter.copy(attributes = Some(Seq(attribute1ValueUpdated))))).differences must be(
             Seq(
-              DiffNonBreaking("""resource user operation GET /users/:guid attribute 'attribute1' value changed from {"name":"value1"} to {"name":"value updated"}""")
+              Material.nonBreaking("""resource user operation GET /users/:guid attribute 'attribute1' value changed from {"name":"value1"} to {"name":"value updated"}""")
             )
           )
         }
@@ -1309,7 +1310,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
         "remove attribute" in {
           ServiceDiff(withParam(parameter.copy(attributes = Some(Seq(attribute1)))), serviceWithOpParam).differences must be(
             Seq(
-              DiffNonBreaking("resource user operation GET /users/:guid attribute removed: attribute1")
+              Material.nonBreaking("resource user operation GET /users/:guid attribute removed: attribute1")
             )
           )
         }
@@ -1326,31 +1327,31 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(responses = Seq(success)))).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid response added: 200")
+            Material.nonBreaking("resource user operation GET /users/:guid response added: 200")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), serviceWithOperation).differences must be(
           Seq(
-            DiffBreaking("resource user operation GET /users/:guid response removed: 200")
+            Material.breaking("resource user operation GET /users/:guid response removed: 200")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(`type` = "string"))))).differences must be(
           Seq(
-            DiffBreaking("resource user operation GET /users/:guid response 200 type changed from user to string")
+            Material.breaking("resource user operation GET /users/:guid response 200 type changed from user to string")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(description = Some("test")))))).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid response 200 description added: test")
+            Material.nonBreaking("resource user operation GET /users/:guid response 200 description added: test")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(deprecation = Some(Deprecation())))))).differences must be(
           Seq(
-            DiffNonBreaking("resource user operation GET /users/:guid response 200 deprecated")
+            Material.nonBreaking("resource user operation GET /users/:guid response 200 deprecated")
           )
         )
 
