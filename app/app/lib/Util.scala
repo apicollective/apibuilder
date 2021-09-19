@@ -33,19 +33,19 @@ object  Labels {
   val OrgAttributesText = "Org Attributes"
   val ServiceJsonText = "service.json"
 
-  val ApibuilderApi: ExampleService = ExampleService("apicollective", "apibuilder-api")
-  val ApibuilderApiJson: ExampleService = ExampleService("apicollective", "apibuilder-api-json")
-  val ApibuilderExample: ExampleService = ApibuilderApi
-  val ApibuilderExampleWithVersionNumber: ExampleService = ExampleService("apicollective", "apibuilder-api", "0.13.29")
-  val ApibuilderGeneratorExample: ExampleService = ExampleService("apicollective", "apibuilder-generator")
-  val ApibuilderSpecExample: ExampleService = ExampleService("apicollective", "apibuilder-spec")
-  val Examples: List[ExampleService] = List(ApibuilderExample, ApibuilderGeneratorExample, ApibuilderSpecExample)
+  val ApiBuilderApi: ExampleService = ExampleService("apicollective", "apibuilder-api")
+  val ApiBuilderApiJson: ExampleService = ExampleService("apicollective", "apibuilder-api-json")
+  val ApiBuilderExample: ExampleService = ApiBuilderApi
+  val ApiBuilderExampleWithVersionNumber: ExampleService = ExampleService("apicollective", "apibuilder-api", "0.13.29")
+  val ApiBuilderGeneratorExample: ExampleService = ExampleService("apicollective", "apibuilder-generator")
+  val ApiBuilderSpecExample: ExampleService = ExampleService("apicollective", "apibuilder-spec")
+  val Examples: List[ExampleService] = List(ApiBuilderExample, ApiBuilderGeneratorExample, ApiBuilderSpecExample)
 
   private val gitHub = "https://github.com/apicollective"
-  val ApibuilderGitHubUrl = s"$gitHub/apibuilder"
-  val ApibuilderCliGitHubUrl = s"$gitHub/apibuilder-cli"
-  val ApibuilderGeneratorGitHubUrl = s"$gitHub/apibuilder-generator"
-  val ApibuilderSwaggerGeneratorGitHubUrl = s"$gitHub/apibuilder-swagger-generator"
+  val ApiBuilderGitHubUrl = s"$gitHub/apibuilder"
+  val ApiBuilderCliGitHubUrl = s"$gitHub/apibuilder-cli"
+  val ApiBuilderGeneratorGitHubUrl = s"$gitHub/apibuilder-generator"
+  val ApiBuilderSwaggerGeneratorGitHubUrl = s"$gitHub/apibuilder-swagger-generator"
 }
 
 class Util @Inject() (
@@ -66,7 +66,7 @@ class Util @Inject() (
     }
   }
 
-  private[this] val WhiteListedDomains = Seq(
+  private[this] val ApprovedDomains = Seq(
     "http://apidoc.me", "http://www.apidoc.me",
     "https://apidoc.me", "https://www.apidoc.me",
     "http://apibuilder.io", "http://www.apibuilder.io", "http://app.apibuilder.io", "http://ui.apibuilder.io",
@@ -77,7 +77,7 @@ class Util @Inject() (
     if (value.startsWith("/")) {
       Right(value)
     } else {
-      WhiteListedDomains.find(value.startsWith) match {
+      ApprovedDomains.find(value.startsWith) match {
         case None => Left(Seq(s"Redirect URL[$value] must start with / or a known domain"))
         case Some(d) => Right(
           value.substring(d.length).trim match {

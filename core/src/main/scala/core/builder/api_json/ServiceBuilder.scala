@@ -193,7 +193,7 @@ case class ServiceBuilder(
   object OperationBuilder {
 
     /**
-      * Historically apibuilder placed parameters by default for GET and DELETE in
+      * Historically ApiBuilder placed parameters by default for GET and DELETE in
       * the query parameters. Maintain this convention to avoid breaking APIs
       */
     private[this] def defaultParameterLocation(verb: String): ParameterLocation = {

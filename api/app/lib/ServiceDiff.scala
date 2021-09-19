@@ -467,7 +467,7 @@ case class ServiceDiff(
   }
 
   private[this] def diffResponses(prefix: String, a: Seq[Response], b: Seq[Response]): Seq[Diff] = {
-    val added = b.map(_.code).filter(code => a.find(_.code == code).isEmpty)
+    val added = b.map(_.code).filterNot(code => a.exists(_.code == code))
 
     a.flatMap { responseA =>
       b.find(_.code == responseA.code) match {
@@ -497,7 +497,7 @@ case class ServiceDiff(
     def changed(label: String, from: String, to: String) = s"$label changed from ${Text.truncate(from)} to ${Text.truncate(to)}"
 
     def findNew(prefix: String, a: Seq[String], b: Seq[String]): Seq[Diff] = {
-      b.filterNot(n => a.exists(_ == n)).map { name =>
+      b.filterNot(a.contains).map { name =>
         Material.nonBreaking(Helpers.added(prefix, name))
       }
     }
@@ -621,7 +621,7 @@ case class ServiceDiff(
       a: Seq[String],
       b: Seq[String]
     ): Seq[Diff] = {
-      diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map { Material.nonBreaking(_) }
+      diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map(Material.nonBreaking)
     }
 
     def diffOptionalString(

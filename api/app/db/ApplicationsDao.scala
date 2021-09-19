@@ -1,15 +1,14 @@
 package db
 
+import anorm._
 import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
-import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.internal.v0.models.TaskDataIndexApplication
 import io.flow.postgresql.Query
-import javax.inject.{Inject, Named, Singleton}
 import lib.{UrlKey, Validation}
-import anorm._
 import play.api.db._
-import play.api.libs.json._
+
 import java.util.UUID
+import javax.inject.{Inject, Named, Singleton}
 
 @Singleton
 class ApplicationsDao @Inject() (
@@ -91,7 +90,7 @@ class ApplicationsDao @Inject() (
   ): Seq[Error] = {
     val orgErrors = organizationsDao.findByKey(authorization, form.orgKey) match {
       case None => Seq(s"Organization[${form.orgKey}] not found")
-      case Some(newOrg) => Nil
+      case Some(_) => Nil
     }
 
     val appErrors = findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
@@ -116,7 +115,7 @@ class ApplicationsDao @Inject() (
     val nameErrors = findByOrganizationAndName(Authorization.All, org, form.name) match {
       case None => Nil
       case Some(application: Application) => {
-        if (existing.map(_.guid) == Some(application.guid)) {
+        if (existing.map(_.guid).contains(application.guid)) {
           Nil
         } else {
           Seq("Application with this name already exists")
@@ -132,7 +131,7 @@ class ApplicationsDao @Inject() (
             findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) match {
               case None => Nil
               case Some(application: Application) => {
-                if (existing.map(_.guid) == Some(application.guid)) {
+                if (existing.map(_.guid).contains(application.guid)) {
                   Nil
                 } else {
                   Seq("Application with this key already exists")
