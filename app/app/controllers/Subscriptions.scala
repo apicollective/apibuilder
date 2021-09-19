@@ -13,7 +13,7 @@ object Subscriptions {
       case Publication.MembershipsCreate => "Email me when a user joins the org."
       case Publication.ApplicationsCreate => "Email me when an application is created."
       case Publication.VersionsCreate => Labels.SubscriptionsVersionsCreateText
-      case Publication.VersionsMeaningfulChange => Labels.SubscriptionsVersionsCreateText
+      case Publication.VersionsMaterialChange => Labels.SubscriptionsVersionsMaterialChangeText
       case Publication.UNDEFINED(key) => key
     }
   }
@@ -32,7 +32,7 @@ class Subscriptions @Inject() (
       case Publication.MembershipsCreate => isAdmin
       case Publication.ApplicationsCreate => true
       case Publication.VersionsCreate => true
-      case Publication.VersionsMeaningfulChange => true
+      case Publication.VersionsMaterialChange => true
       case Publication.UNDEFINED(_) => isAdmin
     }
   }

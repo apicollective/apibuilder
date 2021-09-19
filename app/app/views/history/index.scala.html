@@ -42,13 +42,7 @@
            <td>@change.changedBy.nickname</td>
            <td>@change.organization.key/@change.application.key:<a href="@routes.Versions.show(change.organization.key, change.application.key, change.toVersion.version)">@change.toVersion.version</a>
            </td>
-           <td>
-             @{change.diff match {
-               case io.apibuilder.api.v0.models.DiffBreaking(desc) => Html(s"<span class='label label-warning'>Breaking</span> $desc")
-               case io.apibuilder.api.v0.models.DiffNonBreaking(desc) => desc
-               case io.apibuilder.api.v0.models.DiffUndefinedType(desc) => desc
-             }}
-           </td>
+           <td>@change.diff.description</td>
            <td>
            </td>
          </tr>
