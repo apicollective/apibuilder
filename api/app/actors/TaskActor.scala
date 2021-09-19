@@ -144,9 +144,9 @@ class TaskActor @javax.inject.Inject() (
     // Only send email if something has actually changed
     if (diffs.nonEmpty) {
       val (breakingDiffs, nonBreakingDiffs) = diffs.partition {
-        case d: DiffBreaking => true
+        case _: DiffBreaking => true
         case _: DiffNonBreaking => false
-        case d: DiffUndefinedType => true
+        case _: DiffUndefinedType => true
       }
 
       applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).foreach { application =>
