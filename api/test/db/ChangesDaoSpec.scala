@@ -1,8 +1,8 @@
 package db
 
 import java.util.UUID
-
 import io.apibuilder.api.v0.models._
+import lib.DiffFactories
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -21,7 +21,7 @@ class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
     val app = createApplication(org = org)
     val fromVersion = createVersion(application = app, version = "1.0.0")
     val toVersion = createVersion(application = app, version = "1.0.1")
-    val diff = DiffBreaking(description)
+    val diff = DiffFactories.Material.breaking(description)
     changesDao.upsert(testUser, fromVersion, toVersion, Seq(diff))
 
     changesDao.findAll(
@@ -47,8 +47,8 @@ class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       val fromVersion = createVersion(version = "1.0.0")
       val toVersion = createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
-      val breaking = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
-      val nonBreaking = DiffNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
+      val breaking = DiffFactories.Material.breaking("Breaking difference - " + UUID.randomUUID.toString)
+      val nonBreaking = DiffFactories.Material.nonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
 
       changesDao.upsert(testUser, fromVersion, toVersion, Seq(breaking, nonBreaking))
 
@@ -66,7 +66,7 @@ class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       val fromVersion = createVersion(version = "1.0.0")
       val toVersion = createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
-      val diff = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
+      val diff = DiffFactories.Material.breaking("Breaking difference - " + UUID.randomUUID.toString)
       changesDao.upsert(testUser, fromVersion, toVersion, Seq(diff, diff))
       changesDao.upsert(testUser, fromVersion, toVersion, Seq(diff))
 

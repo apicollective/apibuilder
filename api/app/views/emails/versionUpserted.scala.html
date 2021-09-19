@@ -1,0 +1,33 @@
+@(
+  appConfig: lib.AppConfig,
+  org: io.apibuilder.api.v0.models.Organization,
+  application: io.apibuilder.api.v0.models.Application,
+  version: io.apibuilder.api.v0.models.Version,
+  breakingDiffs: Seq[io.apibuilder.api.v0.models.Diff],
+  nonBreakingDiffs: Seq[io.apibuilder.api.v0.models.Diff],
+)
+
+<p><b>Breaking changes</b></p>
+@if(breakingDiffs.isEmpty) {
+  <em>None</em>
+} else {
+  @Html(breakingDiffs.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+}
+
+<p><b>Other material changes</b></p>
+@if(nonBreakingDiffs.filter(_.isMaterial).isEmpty) {
+  <em>None</em>
+} else {
+  @Html(nonBreakingDiffs.filter(_.isMaterial).map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+}
+
+<p><b>Other changes</b></p>
+@if(nonBreakingDiffs.filterNot(_.isMaterial).isEmpty) {
+  <em>None</em>
+} else {
+  @Html(nonBreakingDiffs.filterNot(_.isMaterial).map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+}
+
+<p>
+  <a href="@appConfig.apibuilderWwwHost/@org.key/@application.key/@version.version">View version</a>
+</p>

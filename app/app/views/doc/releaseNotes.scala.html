@@ -5,6 +5,33 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>Sep 19, 2021</h3>
+
+<ul>
+
+  <li> New publication named 'versions.material_change' allows you to receive notification of only material changes to an API. At release, this filters out updates to version numbers or contact information.
+  </li>
+
+</ul>
+
+<h3>Sep 18, 2021</h3>
+
+<ul>
+
+  <li> Fix: Scala - Fix bug with unions and interfaces with field named 'description'.
+    See <a href='@lib.Labels.ApibuilderGeneratorGitHubUrl/pull/649'>PR 649</a>
+  </li>
+
+</ul>
+
+<h3>May 14, 2020</h3>
+
+<ul>
+
+  <li> Add support for interfaces</li>
+
+</ul>
+
 <h3>0.12.1 - June 25 2017</h3>
 
 <ul>
@@ -14,9 +41,7 @@
 
 </ul>
 
-<h3>Feb 28 2016 - June 19 2017</h3>
-
-<ul>
+  <ul>
 
     <li> Release full Swagger compatibility = upload swagger or generate a swagger file. See <a href='@lib.Labels.ApibuilderSwaggerGeneratorGitHubUrl'>apibuilder-swagger-generator</a></li>
     <li> Android: implemented imports, fixed enum values, fixed union types. See <a href='@lib.Labels.ApibuilderGeneratorGitHubUrl/pull/217'>PR 217</a></li>
@@ -155,7 +180,7 @@
     validate that the default is not outside min or max.</li>
 
     <li> Email notifications on version changes are now only sent if
-    there is an actual diff. Also fixed bug that prevented notifcation
+    there is an actual diff. Also fixed bug that prevented notification
     when version number was incremented.</li>
 
   </ul>

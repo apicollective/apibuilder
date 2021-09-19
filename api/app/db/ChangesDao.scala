@@ -26,6 +26,7 @@ class ChangesDao @Inject() (
     select changes.guid,
            changes.type,
            changes.description,
+           changes.is_material,
            changes.changed_at,
            changes.changed_by_guid::uuid,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("changes")},
@@ -50,9 +51,9 @@ class ChangesDao @Inject() (
   private[this] val InsertQuery =
     """
     insert into changes
-    (guid, application_guid, from_version_guid, to_version_guid, type, description, changed_at, changed_by_guid, created_by_guid)
+    (guid, application_guid, from_version_guid, to_version_guid, type, description, is_material, changed_at, changed_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {application_guid}::uuid, {from_version_guid}::uuid, {to_version_guid}::uuid, {type}, {description}, {changed_at}, {changed_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {from_version_guid}::uuid, {to_version_guid}::uuid, {type}, {description}, {is_material}::boolean, {changed_at}, {changed_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(
@@ -72,15 +73,12 @@ class ChangesDao @Inject() (
     )
 
     db.withTransaction { implicit c =>
-
       differences.map {
-        case DiffBreaking(desc) => ("breaking", desc)
-        case DiffNonBreaking(desc) => ("non_breaking", desc)
-        case DiffUndefinedType(desc) => {
-          sys.error(s"Unrecognized difference type: $desc")
-        }
+        case d: DiffBreaking => ("breaking", d)
+        case d: DiffNonBreaking => ("non_breaking", d)
+        case DiffUndefinedType(desc) => sys.error(s"Unrecognized difference type: $desc")
       }.distinct.foreach {
-        case (differenceType, description) => {
+        case (differenceType, diff) => {
           Try(
             SQL(InsertQuery).on(
               Symbol("guid") -> UUID.randomUUID,
@@ -88,7 +86,8 @@ class ChangesDao @Inject() (
               Symbol("from_version_guid") -> fromVersion.guid,
               Symbol("to_version_guid") -> toVersion.guid,
               Symbol("type") -> differenceType,
-              Symbol("description") -> description,
+              Symbol("description") -> diff.description,
+              Symbol("is_material") -> diff.isMaterial,
               Symbol("changed_at") -> toVersion.audit.createdAt,
               Symbol("changed_by_guid") -> toVersion.audit.createdBy.guid,
               Symbol("created_by_guid") -> createdBy.guid
@@ -101,7 +100,7 @@ class ChangesDao @Inject() (
                   Authorization.All,
                   fromVersionGuid = Some(fromVersion.guid),
                   toVersionGuid = Some(toVersion.guid),
-                  description = Some(description)
+                  description = Some(diff.description)
                 ).headOption.getOrElse {
                   sys.error("Failed to create change: " + e)
                 }
@@ -167,10 +166,11 @@ class ChangesDao @Inject() (
       io.apibuilder.api.v0.anorm.parsers.ChangeVersion.parserWithPrefix("to_version") ~
       SqlParser.str("type") ~
       SqlParser.str("description") ~
+      SqlParser.bool("is_material") ~
       SqlParser.get[DateTime]("changed_at") ~
       io.apibuilder.api.v0.anorm.parsers.UserSummary.parserWithPrefix("changed_by") ~
       io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
-      case guid ~ organization ~ application ~ fromVersion ~ toVersion ~ diffType ~ diffDescription ~ changedAt ~ changedBy ~ audit => {
+      case guid ~ organization ~ application ~ fromVersion ~ toVersion ~ diffType ~ diffDescription ~ diffIsMaterial ~ changedAt ~ changedBy ~ audit => {
         io.apibuilder.api.v0.models.Change(
           guid = guid,
           organization = organization,
@@ -178,8 +178,8 @@ class ChangesDao @Inject() (
           fromVersion = fromVersion,
           toVersion = toVersion,
           diff = diffType match {
-            case "breaking" => DiffBreaking(description = diffDescription)
-            case "non_breaking" => DiffNonBreaking(description = diffDescription)
+            case "breaking" => DiffBreaking(description = diffDescription, isMaterial = diffIsMaterial)
+            case "non_breaking" => DiffNonBreaking(description = diffDescription, isMaterial = diffIsMaterial)
             case other => sys.error(s"Unknown diff type[$other] for guid[$guid]")
           },
           changedAt = changedAt,

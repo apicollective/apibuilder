@@ -5,6 +5,32 @@ import play.api.libs.json.Json
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 
+object DiffFactories {
+  object Material {
+    def breaking(description: String): Diff = {
+      DiffBreaking(
+        description = description,
+        isMaterial = true,
+      )
+    }
+    def nonBreaking(description: String): Diff = {
+      DiffNonBreaking(
+        description = description,
+        isMaterial = true,
+      )
+    }
+  }
+
+  object NotMaterial {
+    def nonBreaking(description: String): Diff = {
+      DiffNonBreaking(
+        description = description,
+        isMaterial = false,
+      )
+    }
+  }
+}
+
 /**
   * Takes two service descriptions. Returns a list of changes from
   * service a to service b. The list of changes is intended to be
@@ -14,6 +40,8 @@ case class ServiceDiff(
   a: Service,
   b: Service
 ) {
+
+  import DiffFactories._
 
   val differences: Seq[Diff] = Seq(
     diffApidoc(),
@@ -37,7 +65,7 @@ case class ServiceDiff(
   ).flatten
 
   private[this] def diffApidoc(): Seq[Diff] = {
-    Helpers.diffStringNonBreaking("apidoc/version", a.apidoc.version, b.apidoc.version)
+    Helpers.diffStringNonBreakingNotMaterial("apidoc/version", a.apidoc.version, b.apidoc.version)
   }
 
   private[this] def diffInfo(): Seq[Diff] = {
@@ -45,9 +73,9 @@ case class ServiceDiff(
   }
 
   private[this] def diffContact(): Seq[Diff] = {
-    Helpers.diffOptionalStringNonBreaking("contact/name", a.info.contact.flatMap(_.name), b.info.contact.flatMap(_.name)) ++
-    Helpers.diffOptionalStringNonBreaking("contact/url", a.info.contact.flatMap(_.url), b.info.contact.flatMap(_.url)) ++
-    Helpers.diffOptionalStringNonBreaking("contact/email", a.info.contact.flatMap(_.email), b.info.contact.flatMap(_.email))
+    Helpers.diffOptionalStringNonBreakingNotMaterial("contact/name", a.info.contact.flatMap(_.name), b.info.contact.flatMap(_.name)) ++
+    Helpers.diffOptionalStringNonBreakingNotMaterial("contact/url", a.info.contact.flatMap(_.url), b.info.contact.flatMap(_.url)) ++
+    Helpers.diffOptionalStringNonBreakingNotMaterial("contact/email", a.info.contact.flatMap(_.email), b.info.contact.flatMap(_.email))
   }
 
   private[this] def diffLicense(): Seq[Diff] = {
@@ -72,7 +100,7 @@ case class ServiceDiff(
   }
 
   private[this] def diffVersion(): Seq[Diff] = {
-    Helpers.diffStringNonBreaking("version", a.version, b.version)
+    Helpers.diffStringNonBreakingNotMaterial("version", a.version, b.version)
   }
 
   private[this] def diffBaseUrl(): Seq[Diff] = {
@@ -92,14 +120,14 @@ case class ServiceDiff(
 
     a.headers.flatMap { headerA =>
       b.headers.find(_.name == headerA.name) match {
-        case None => Some(DiffNonBreaking(Helpers.removed("header", headerA.name)))
+        case None => Some(Material.nonBreaking(Helpers.removed("header", headerA.name)))
         case Some(headerB) => diffHeader(headerA, headerB)
       }
     } ++ b.headers.find( h => added.contains(h.name) ).map { h =>
       if (h.required) {
-        DiffBreaking(Helpers.added("required header", h.name))
+        Material.breaking(Helpers.added("required header", h.name))
       } else {
-        DiffNonBreaking(Helpers.added("optional header", h.name))
+        Material.nonBreaking(Helpers.added("optional header", h.name))
       }
     }
   }
@@ -119,7 +147,7 @@ case class ServiceDiff(
   private[this] def diffImports(): Seq[Diff] = {
     a.imports.flatMap { importA =>
       b.imports.find(_.uri == importA.uri) match {
-        case None => Some(DiffNonBreaking(Helpers.removed("import", importA.uri)))
+        case None => Some(Material.nonBreaking(Helpers.removed("import", importA.uri)))
         case Some(importB) => diffImport(importA, importB)
       }
     } ++ Helpers.findNew("import", a.imports.map(_.uri), b.imports.map(_.uri))
@@ -141,7 +169,7 @@ case class ServiceDiff(
   private[this] def diffEnums(): Seq[Diff] = {
     a.enums.flatMap { enumA =>
       b.enums.find(_.name == enumA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed("enum", enumA.name)))
+        case None => Some(Material.breaking(Helpers.removed("enum", enumA.name)))
         case Some(enumB) => diffEnum(enumA, enumB)
       }
     } ++ Helpers.findNew("enum", a.enums.map(_.name), b.enums.map(_.name))
@@ -163,7 +191,7 @@ case class ServiceDiff(
 
     a.flatMap { valueA =>
       b.find(_.name == valueA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed(prefix, valueA.name)))
+        case None => Some(Material.breaking(Helpers.removed(prefix, valueA.name)))
         case Some(valueB) => diffEnumValue(enumName, valueA, valueB)
       }
     } ++ Helpers.findNew(prefix, a.map(_.name), b.map(_.name))
@@ -181,7 +209,7 @@ case class ServiceDiff(
   private[this] def diffUnions(): Seq[Diff] = {
     a.unions.flatMap { unionA =>
       b.unions.find(_.name == unionA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed("union", unionA.name)))
+        case None => Some(Material.breaking(Helpers.removed("union", unionA.name)))
         case Some(unionB) => diffUnion(unionA, unionB)
       }
     } ++ Helpers.findNew("union", a.unions.map(_.name), b.unions.map(_.name))
@@ -209,10 +237,10 @@ case class ServiceDiff(
 
     (defaultTypeA, defaultTypeB) match {
       case (None, None) => Nil
-      case (None, Some(typeNameB)) => Seq(DiffNonBreaking(Helpers.added(prefix, typeNameB)))
+      case (None, Some(typeNameB)) => Seq(Material.nonBreaking(Helpers.added(prefix, typeNameB)))
       case (Some(typeNameA), Some(typeNameB)) if typeNameA == typeNameB => Nil
-      case (Some(typeNameA), Some(typeNameB)) => Seq(DiffBreaking(Helpers.changed(prefix, typeNameA, typeNameB)))
-      case (Some(typeNameA), None) => Seq(DiffBreaking(Helpers.removed(prefix, typeNameA)))
+      case (Some(typeNameA), Some(typeNameB)) => Seq(Material.breaking(Helpers.changed(prefix, typeNameA, typeNameB)))
+      case (Some(typeNameA), None) => Seq(Material.breaking(Helpers.removed(prefix, typeNameA)))
     }
   }
 
@@ -221,7 +249,7 @@ case class ServiceDiff(
 
     a.flatMap { typeA =>
       b.find(_.`type` == typeA.`type`) match {
-        case None => Some(DiffBreaking(Helpers.removed(prefix, typeA.`type`)))
+        case None => Some(Material.breaking(Helpers.removed(prefix, typeA.`type`)))
         case Some(typeB) => diffUnionType(unionName, typeA, typeB)
       }
     } ++ Helpers.findNew(prefix, a.map(_.`type`), b.map(_.`type`))
@@ -239,7 +267,7 @@ case class ServiceDiff(
   private[this] def diffInterfaces(): Seq[Diff] = {
     a.interfaces.flatMap { interfaceA =>
       b.interfaces.find(_.name == interfaceA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed("interface", interfaceA.name)))
+        case None => Some(Material.breaking(Helpers.removed("interface", interfaceA.name)))
         case Some(interfaceB) => diffInterface(interfaceA, interfaceB)
       }
     } ++ Helpers.findNew("interface", a.interfaces.map(_.name), b.interfaces.map(_.name))
@@ -259,7 +287,7 @@ case class ServiceDiff(
   private[this] def diffModels(): Seq[Diff] = {
     a.models.flatMap { modelA =>
       b.models.find(_.name == modelA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed("model", modelA.name)))
+        case None => Some(Material.breaking(Helpers.removed("model", modelA.name)))
         case Some(modelB) => diffModel(modelA, modelB)
       }
     } ++ Helpers.findNew("model", a.models.map(_.name), b.models.map(_.name))
@@ -282,15 +310,15 @@ case class ServiceDiff(
 
     a.flatMap { fieldA =>
       b.find(_.name == fieldA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed(s"$prefix field", fieldA.name)))
+        case None => Some(Material.breaking(Helpers.removed(s"$prefix field", fieldA.name)))
         case Some(fieldB) => diffField(s"$prefix field ${fieldA.name}", fieldA, fieldB)
       }
     } ++ b.filter( f => added.contains(f.name) ).map { f =>
       (f.required, f.default) match {
-        case (false, None) => DiffNonBreaking(Helpers.added(s"$prefix optional field", f.name))
-        case (false, Some(default)) => DiffNonBreaking(Helpers.added(s"$prefix optional field", s"${f.name}, defaults to ${Text.truncate(default)}"))
-        case (true, None) => DiffBreaking(Helpers.added(s"$prefix required field", f.name))
-        case (true, Some(default)) => DiffNonBreaking(Helpers.added(s"$prefix required field", s"${f.name}, defaults to ${Text.truncate(default)}"))
+        case (false, None) => Material.nonBreaking(Helpers.added(s"$prefix optional field", f.name))
+        case (false, Some(default)) => Material.nonBreaking(Helpers.added(s"$prefix optional field", s"${f.name}, defaults to ${Text.truncate(default)}"))
+        case (true, None) => Material.breaking(Helpers.added(s"$prefix required field", f.name))
+        case (true, Some(default)) => Material.nonBreaking(Helpers.added(s"$prefix required field", s"${f.name}, defaults to ${Text.truncate(default)}"))
       }
     }
   }
@@ -312,7 +340,7 @@ case class ServiceDiff(
   private[this] def diffResources(): Seq[Diff] = {
     a.resources.flatMap { resourceA =>
       b.resources.find(_.`type` == resourceA.`type`) match {
-        case None => Some(DiffBreaking(Helpers.removed("resource", resourceA.`type`)))
+        case None => Some(Material.breaking(Helpers.removed("resource", resourceA.`type`)))
         case Some(resourceB) => diffResource(resourceA, resourceB)
       }
     } ++ Helpers.findNew("resource", a.resources.map(_.`type`), b.resources.map(_.`type`))
@@ -333,7 +361,7 @@ case class ServiceDiff(
   private[this] def diffAnnotations(): Seq[Diff] = {
     a.annotations.flatMap { annotA =>
       b.annotations.find(_.name == annotA.name) match {
-        case None => Some(DiffNonBreaking(Helpers.removed("annotation", annotA.name)))
+        case None => Some(Material.nonBreaking(Helpers.removed("annotation", annotA.name)))
         case Some(annotB) => diffAnnotation(annotA, annotB)
       }
     } ++ Helpers.findNew("annotation", a.annotations.map(_.name), b.annotations.map(_.name))
@@ -357,11 +385,11 @@ case class ServiceDiff(
 
     a.flatMap { opA =>
       b.find(opB => operationKey(opB) == operationKey(opA)) match {
-        case None => Some(DiffBreaking(Helpers.removed(s"$prefix operation", operationKey(opA))))
+        case None => Some(Material.breaking(Helpers.removed(s"$prefix operation", operationKey(opA))))
         case Some(opB) => diffOperation(resourceType, opA, opB)
       }
     } ++ added.map { op =>
-      DiffNonBreaking(Helpers.added(s"$prefix operation", operationKey(op)))
+      Material.nonBreaking(Helpers.added(s"$prefix operation", operationKey(op)))
     }
   }
 
@@ -381,8 +409,8 @@ case class ServiceDiff(
   private[this] def diffBody(prefix: String, a: Option[Body], b: Option[Body]): Seq[Diff] = {
     (a, b) match {
       case (None, None) => Nil
-      case (None, Some(_)) => Seq(DiffBreaking(Helpers.added(prefix, "body")))
-      case (Some(_), None) => Seq(DiffBreaking(Helpers.removed(prefix, "body")))
+      case (None, Some(_)) => Seq(Material.breaking(Helpers.added(prefix, "body")))
+      case (Some(_), None) => Seq(Material.breaking(Helpers.removed(prefix, "body")))
       case (Some(bodyA), Some(bodyB)) => {
         Helpers.diffStringBreaking(s"$prefix body type", bodyA.`type`, bodyB.`type`) ++
         Helpers.diffOptionalStringNonBreaking(s"$prefix body description", bodyA.description, bodyB.description) ++
@@ -397,15 +425,15 @@ case class ServiceDiff(
 
     a.flatMap { parameterA =>
       b.find(_.name == parameterA.name) match {
-        case None => Some(DiffBreaking(Helpers.removed(s"$prefix parameter", parameterA.name)))
+        case None => Some(Material.breaking(Helpers.removed(s"$prefix parameter", parameterA.name)))
         case Some(parameterB) => diffParameter(prefix, parameterA, parameterB)
       }
     } ++ b.filter( p => added.contains(p.name) ).map { p =>
       (p.required, p.default) match {
-        case (false, None) => DiffNonBreaking(Helpers.added(s"$prefix optional parameter", p.name))
-        case (false, Some(default)) => DiffNonBreaking(Helpers.added(s"$prefix optional parameter", s"${p.name}, defaults to ${Text.truncate(default)}"))
-        case (true, None) => DiffBreaking(Helpers.added(s"$prefix required parameter", p.name))
-        case (true, Some(default)) => DiffNonBreaking(Helpers.added(s"$prefix required parameter", s"${p.name}, defaults to ${Text.truncate(default)}"))
+        case (false, None) => Material.nonBreaking(Helpers.added(s"$prefix optional parameter", p.name))
+        case (false, Some(default)) => Material.nonBreaking(Helpers.added(s"$prefix optional parameter", s"${p.name}, defaults to ${Text.truncate(default)}"))
+        case (true, None) => Material.breaking(Helpers.added(s"$prefix required parameter", p.name))
+        case (true, Some(default)) => Material.nonBreaking(Helpers.added(s"$prefix required parameter", s"${p.name}, defaults to ${Text.truncate(default)}"))
       }
     }
   }
@@ -443,11 +471,11 @@ case class ServiceDiff(
 
     a.flatMap { responseA =>
       b.find(_.code == responseA.code) match {
-        case None => Some(DiffBreaking(Helpers.removed(s"$prefix response", responseCode(responseA))))
+        case None => Some(Material.breaking(Helpers.removed(s"$prefix response", responseCode(responseA))))
         case Some(responseB) => diffResponse(prefix, responseA, responseB)
       }
     } ++ b.filter( r => added.contains(r.code) ).map { r =>
-      DiffNonBreaking(Helpers.added(s"$prefix response", responseCode(r)))
+      Material.nonBreaking(Helpers.added(s"$prefix response", responseCode(r)))
     }
   }
 
@@ -470,7 +498,7 @@ case class ServiceDiff(
 
     def findNew(prefix: String, a: Seq[String], b: Seq[String]): Seq[Diff] = {
       b.filterNot(n => a.exists(_ == n)).map { name =>
-        DiffNonBreaking(Helpers.added(prefix, name))
+        Material.nonBreaking(Helpers.added(prefix, name))
       }
     }
 
@@ -478,8 +506,8 @@ case class ServiceDiff(
       (a, b) match {
         case (true, true) => Nil
         case (false, false) => Nil
-        case (true, false) => Seq(DiffNonBreaking(s"$label is no longer required"))
-        case (false, true) => Seq(DiffBreaking(s"$label is now required"))
+        case (true, false) => Seq(Material.nonBreaking(s"$label is no longer required"))
+        case (false, true) => Seq(Material.breaking(s"$label is now required"))
       }
     }
 
@@ -495,17 +523,17 @@ case class ServiceDiff(
           } else {
             val desc = s"$label minimum changed from $from to $to"
             if (from < to) {
-              Seq(DiffBreaking(desc))
+              Seq(Material.breaking(desc))
             } else {
-              Seq(DiffNonBreaking(desc))
+              Seq(Material.nonBreaking(desc))
             }
           }
         }
         case (None, Some(min)) => {
-          Seq(DiffBreaking(s"$label minimum added: $min"))
+          Seq(Material.breaking(s"$label minimum added: $min"))
         }
         case (Some(min), None) => {
-          Seq(DiffNonBreaking(s"$label minimum removed: $min"))
+          Seq(Material.nonBreaking(s"$label minimum removed: $min"))
         }
       }
     }
@@ -522,17 +550,17 @@ case class ServiceDiff(
           } else {
             val desc = s"$label maximum changed from $from to $to"
             if (from < to) {
-              Seq(DiffNonBreaking(desc))
+              Seq(Material.nonBreaking(desc))
             } else {
-              Seq(DiffBreaking(desc))
+              Seq(Material.breaking(desc))
             }
           }
         }
         case (None, Some(max)) => {
-          Seq(DiffBreaking(s"$label maximum added: $max"))
+          Seq(Material.breaking(s"$label maximum added: $max"))
         }
         case (Some(max), None) => {
-          Seq(DiffNonBreaking(s"$label maximum removed: $max"))
+          Seq(Material.nonBreaking(s"$label maximum removed: $max"))
         }
       }
     }
@@ -544,14 +572,14 @@ case class ServiceDiff(
           if (from == to) {
             Nil
           } else {
-            Seq(DiffNonBreaking(s"$label default changed from ${Text.truncate(from)} to ${Text.truncate(to)}"))
+            Seq(Material.nonBreaking(s"$label default changed from ${Text.truncate(from)} to ${Text.truncate(to)}"))
           }
         }
         case (None, Some(default)) => {
-          Seq(DiffNonBreaking(s"$label default added: ${Text.truncate(default)}"))
+          Seq(Material.nonBreaking(s"$label default added: ${Text.truncate(default)}"))
         }
         case (Some(default), None) => {
-          Seq(DiffBreaking(s"$label default removed: ${Text.truncate(default)}"))
+          Seq(Material.breaking(s"$label default removed: ${Text.truncate(default)}"))
         }
       }
     }
@@ -569,15 +597,23 @@ case class ServiceDiff(
       a: String,
       b: String
     ): Seq[Diff] = {
-      diffString(label, a, b).map(DiffBreaking)
+      diffString(label, a, b).map(Material.breaking)
     }
 
     def diffStringNonBreaking(
       label: String,
       a: String,
-      b: String
+      b: String,
     ): Seq[Diff] = {
-      diffString(label, a, b).map(DiffNonBreaking)
+      diffString(label, a, b).map(Material.nonBreaking)
+    }
+
+    def diffStringNonBreakingNotMaterial(
+      label: String,
+      a: String,
+      b: String,
+    ): Seq[Diff] = {
+      diffString(label, a, b).map(NotMaterial.nonBreaking)
     }
 
     def diffArrayNonBreaking(
@@ -585,7 +621,7 @@ case class ServiceDiff(
       a: Seq[String],
       b: Seq[String]
     ): Seq[Diff] = {
-      diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map { DiffNonBreaking(_) }
+      diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map { Material.nonBreaking(_) }
     }
 
     def diffOptionalString(
@@ -612,7 +648,7 @@ case class ServiceDiff(
       a: Option[String],
       b: Option[String]
     ): Seq[Diff] = {
-      diffOptionalString(label, a, b).map (DiffBreaking)
+      diffOptionalString(label, a, b).map(Material.breaking)
     }
 
     def diffOptionalStringNonBreaking(
@@ -620,18 +656,26 @@ case class ServiceDiff(
       a: Option[String],
       b: Option[String]
     ): Seq[Diff] = {
-      diffOptionalString(label, a, b).map { DiffNonBreaking(_) }
+      diffOptionalString(label, a, b).map(Material.nonBreaking)
+    }
+
+    def diffOptionalStringNonBreakingNotMaterial(
+      label: String,
+      a: Option[String],
+      b: Option[String]
+    ): Seq[Diff] = {
+      diffOptionalString(label, a, b).map(NotMaterial.nonBreaking)
     }
 
     def diffDeprecation(prefix: String, a: Option[Deprecation], b: Option[Deprecation]): Seq[Diff] = {
       (a, b) match {
         case (None, None) => Nil
         case (Some(_), Some(_)) => Nil
-        case (Some(_), None) => Seq(DiffNonBreaking(Helpers.removed(prefix, "deprecation")))
+        case (Some(_), None) => Seq(Material.nonBreaking(Helpers.removed(prefix, "deprecation")))
         case (None, Some(d)) => {
           d.description match {
-            case None => Seq(DiffNonBreaking(s"$prefix deprecated"))
-            case Some(desc) => Seq(DiffNonBreaking(s"$prefix deprecated: $desc"))
+            case None => Seq(Material.nonBreaking(s"$prefix deprecated"))
+            case Some(desc) => Seq(Material.nonBreaking(s"$prefix deprecated: $desc"))
           }
         }
       }
@@ -646,7 +690,7 @@ case class ServiceDiff(
         if (elements.isEmpty) {
           Nil
         } else {
-          Seq(DiffBreaking(s"$message: ${elements.mkString(", ")}"))
+          Seq(Material.breaking(s"$message: ${elements.mkString(", ")}"))
         }
       }
 
@@ -663,11 +707,11 @@ case class ServiceDiff(
 
       // Removed
       val removedNames = aNames diff bNames
-      val removedDiffs = removedNames map (name => DiffNonBreaking(s"$prefix attribute removed: $name"))
+      val removedDiffs = removedNames map (name => Material.nonBreaking(s"$prefix attribute removed: $name"))
 
       // Added
       val addedNames = bNames diff aNames
-      val addedDiffs = addedNames map (name => DiffNonBreaking(s"$prefix attribute added: $name"))
+      val addedDiffs = addedNames map (name => Material.nonBreaking(s"$prefix attribute added: $name"))
 
       // Changed
       val namesInBoth = aNames intersect bNames

@@ -17,6 +17,7 @@
 
   "unions": {
     "diff": {
+      "interfaces": ["diff"],
       "description": "Represents a single diff in an application",
       "discriminator": "type",
       "types": [
@@ -41,6 +42,16 @@
     { "uri": "https://app.apibuilder.io/apicollective/apibuilder-generator/latest/service.json" }
   ],
 
+  "interfaces": {
+    "diff": {
+      "description": "Represents a single breaking diff of an application version. A breaking diff indicates that it is possible for an existing client to now experience an error or invalid data due to the diff.",
+      "fields": [
+        { "name": "description", "type": "string", "example": "model removed: user" },
+        { "name": "is_material", "type": "boolean", "example": "True if this is a material change (eg something important). False otherwise. This is used to drive the publication 'versions.material_change'" }
+      ]
+    }
+  },
+
   "enums": {
     "visibility": {
       "description": "Controls who is able to view this version",
@@ -57,7 +68,8 @@
         { "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
         { "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user joins the org." },
         { "name": "applications.create", "description": "For organizations for which I am a member, email me whenever an application is created." },
-        { "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
+        { "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." },
+        { "name": "versions.material_change", "description": "For applications that I watch, email me whenever there is a material change. Generally, this means avoiding email for simple changes (like only a version change)." }
       ]
     },
 
@@ -421,14 +433,16 @@
     "diff_breaking": {
       "description": "Represents a single breaking diff of an application version. A breaking diff indicates that it is possible for an existing client to now experience an error or invalid data due to the diff.",
       "fields": [
-        { "name": "description", "type": "string", "example": "model removed: user" }
+        { "name": "description", "type": "string", "example": "model removed: user" },
+        { "name": "is_material", "type": "boolean", "example": "True if this is a material change (eg something important). False otherwise. This is used to drive the publication 'versions.material_change'" }
       ]
     },
 
     "diff_non_breaking": {
       "description": "Represents a single NON breaking diff of an application version.",
       "fields": [
-        { "name": "description", "type": "string", "example": "name diffd from foo to bar" }
+        { "name": "description", "type": "string", "example": "model: user optional field 'name' added" },
+        { "name": "is_material", "type": "boolean", "example": "True if this is a material change (eg something important). False otherwise. This is used to drive the publication 'versions.material_change'" }
       ]
     },
 

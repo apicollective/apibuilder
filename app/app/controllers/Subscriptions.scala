@@ -1,20 +1,19 @@
 package controllers
 
-import lib.{ApiClientProvider, Labels}
+import lib.Labels
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 
-//import scala.concurrent.Await
-//import scala.concurrent.duration._
 import javax.inject.Inject
 
 object Subscriptions {
 
   case class UserPublication(publication: Publication, isSubscribed: Boolean) {
-    val label = publication match {
+    val label: String = publication match {
       case Publication.MembershipRequestsCreate => "Email me when a user applies to join the org."
       case Publication.MembershipsCreate => "Email me when a user joins the org."
       case Publication.ApplicationsCreate => "Email me when an application is created."
       case Publication.VersionsCreate => Labels.SubscriptionsVersionsCreateText
+      case Publication.VersionsMaterialChange => Labels.SubscriptionsVersionsMaterialChangeText
       case Publication.UNDEFINED(key) => key
     }
   }
@@ -23,7 +22,6 @@ object Subscriptions {
 
 class Subscriptions @Inject() (
   val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider
 ) extends ApibuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,6 +32,7 @@ class Subscriptions @Inject() (
       case Publication.MembershipsCreate => isAdmin
       case Publication.ApplicationsCreate => true
       case Publication.VersionsCreate => true
+      case Publication.VersionsMaterialChange => true
       case Publication.UNDEFINED(_) => isAdmin
     }
   }

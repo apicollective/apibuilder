@@ -1,7 +1,6 @@
 package lib
 
 import helpers.ServiceHelpers
-import io.apibuilder.api.v0.models.{DiffBreaking, DiffNonBreaking}
 import io.apibuilder.spec.v0.models.{Attribute, Deprecation, Interface}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -25,13 +24,13 @@ class ServiceInterfaceDiffSpec extends PlaySpec
     )
     ServiceDiff(svc1, svc2).differences must be(
       Seq(
-        DiffNonBreaking("interface added: person")
+        DiffFactories.Material.nonBreaking("interface added: person")
       )
     )
 
     ServiceDiff(svc2, svc1).differences must be(
       Seq(
-        DiffBreaking("interface removed: person")
+        DiffFactories.Material.breaking("interface removed: person")
       )
     )
   }
@@ -53,19 +52,19 @@ class ServiceInterfaceDiffSpec extends PlaySpec
 
     test(_.copy(plural = "persons")) must be(
       Seq(
-        DiffNonBreaking("interface person plural changed from people to persons")
+        DiffFactories.Material.nonBreaking("interface person plural changed from people to persons")
       )
     )
 
     test(_.copy(description = Some("test"))) must be(
       Seq(
-        DiffNonBreaking("interface person description added: test")
+        DiffFactories.Material.nonBreaking("interface person description added: test")
       )
     )
 
     test(_.copy(deprecation = Some(Deprecation()))) must be(
       Seq(
-        DiffNonBreaking("interface person deprecated")
+        DiffFactories.Material.nonBreaking("interface person deprecated")
       )
     )
   }
@@ -87,31 +86,31 @@ class ServiceInterfaceDiffSpec extends PlaySpec
 
     test(_.copy(fields = Nil)) must be(
       Seq(
-        DiffBreaking("interface person field removed: id")
+        DiffFactories.Material.breaking("interface person field removed: id")
       )
     )
 
     test { i => i.copy(fields = i.fields ++ Seq(makeField(name = "name", required = false))) } must be(
       Seq(
-        DiffNonBreaking("interface person optional field added: name")
+        DiffFactories.Material.nonBreaking("interface person optional field added: name")
       )
     )
 
     test { i => i.copy(fields = i.fields ++ Seq(makeField(name = "name", required = false, default = Some("test")))) } must be(
       Seq(
-        DiffNonBreaking("interface person optional field added: name, defaults to test")
+        DiffFactories.Material.nonBreaking("interface person optional field added: name, defaults to test")
       )
     )
 
     test { i => i.copy(fields = i.fields ++ Seq(makeField(name = "name", required = true))) } must be(
       Seq(
-        DiffBreaking("interface person required field added: name")
+        DiffFactories.Material.breaking("interface person required field added: name")
       )
     )
 
     test { i => i.copy(fields = i.fields ++ Seq(makeField(name = "name", required = true, default = Some("test")))) } must be(
       Seq(
-        DiffNonBreaking("interface person required field added: name, defaults to test")
+        DiffFactories.Material.nonBreaking("interface person required field added: name, defaults to test")
       )
     )
   }
@@ -135,19 +134,19 @@ class ServiceInterfaceDiffSpec extends PlaySpec
 
     test { _ => Nil } must be(
       Seq(
-        DiffNonBreaking("interface person attribute removed: test")
+        DiffFactories.Material.nonBreaking("interface person attribute removed: test")
       )
     )
 
     test { a => a ++ Seq(makeAttribute(name = "foo")) } must be(
       Seq(
-        DiffNonBreaking("interface person attribute added: foo")
+        DiffFactories.Material.nonBreaking("interface person attribute added: foo")
       )
     )
 
     test { a => a.map(_.copy(value = Json.obj())) } must be(
       Seq(
-        DiffNonBreaking("""interface person attribute 'test' value changed from {"a":"b"} to {}""")
+        DiffFactories.Material.nonBreaking("""interface person attribute 'test' value changed from {"a":"b"} to {}""")
       )
     )
 
