@@ -160,7 +160,7 @@ case class ServiceDiff(
     Helpers.diffStringNonBreaking(s"$prefix namespace", a.namespace, b.namespace) ++
     Helpers.diffStringNonBreaking(s"$prefix organization/key", a.organization.key, b.organization.key) ++
     Helpers.diffStringNonBreaking(s"$prefix application/key", a.application.key, b.application.key) ++
-    Helpers.diffStringNonBreaking(s"$prefix version", a.version, b.version) ++
+    Helpers.diffStringNonBreakingNotMaterial(s"$prefix version", a.version, b.version) ++
     Helpers.diffArrayNonBreaking(s"$prefix enums", a.enums, b.enums) ++
     Helpers.diffArrayNonBreaking(s"$prefix unions", a.unions, b.unions) ++
     Helpers.diffArrayNonBreaking(s"$prefix models", a.models, b.models)

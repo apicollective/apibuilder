@@ -367,7 +367,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(version = imp2.version)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
+          NotMaterial.nonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
         )
       )
 
