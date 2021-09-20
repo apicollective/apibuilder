@@ -320,7 +320,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "remove import" in {
       ServiceDiff(serviceWithImport, base).differences must be(
         Seq(
-          Material.nonBreaking("import removed: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
+          NotMaterial.nonBreaking("import removed: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
         )
       )
     }
@@ -328,7 +328,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     "add import" in {
       ServiceDiff(base, serviceWithImport).differences must be(
         Seq(
-          Material.nonBreaking("import added: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
+          NotMaterial.nonBreaking("import added: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
         )
       )
     }
@@ -349,19 +349,19 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(namespace = imp2.namespace)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix namespace changed from io.apibuilder.spec.v0 to io.apibuilder.spec.v1")
+          NotMaterial.nonBreaking(s"$prefix namespace changed from io.apibuilder.spec.v0 to io.apibuilder.spec.v1")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(organization = imp2.organization)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix organization/key changed from gilt to gilt2")
+          NotMaterial.nonBreaking(s"$prefix organization/key changed from gilt to gilt2")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(application = imp2.application)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
+          NotMaterial.nonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
         )
       )
 
@@ -373,22 +373,21 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(enums = imp2.enums)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
+          NotMaterial.nonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(unions = imp2.unions)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix unions changed from [response_code] to [bar]")
+          NotMaterial.nonBreaking(s"$prefix unions changed from [response_code] to [bar]")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(models = imp2.models)))).differences must be(
         Seq(
-          Material.nonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
+          NotMaterial.nonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
         )
       )
-
     }
 
   }

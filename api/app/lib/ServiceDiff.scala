@@ -147,23 +147,23 @@ case class ServiceDiff(
   private[this] def diffImports(): Seq[Diff] = {
     a.imports.flatMap { importA =>
       b.imports.find(_.uri == importA.uri) match {
-        case None => Some(Material.nonBreaking(Helpers.removed("import", importA.uri)))
+        case None => Some(NotMaterial.nonBreaking(Helpers.removed("import", importA.uri)))
         case Some(importB) => diffImport(importA, importB)
       }
-    } ++ Helpers.findNew("import", a.imports.map(_.uri), b.imports.map(_.uri))
+    } ++ Helpers.findNewNotMaterial("import", a.imports.map(_.uri), b.imports.map(_.uri))
   }
 
   private[this] def diffImport(a: Import, b: Import): Seq[Diff] = {
     assert(a.uri == b.uri, "Import uri's must be the same")
     val prefix = s"import ${a.uri}"
 
-    Helpers.diffStringNonBreaking(s"$prefix namespace", a.namespace, b.namespace) ++
-    Helpers.diffStringNonBreaking(s"$prefix organization/key", a.organization.key, b.organization.key) ++
-    Helpers.diffStringNonBreaking(s"$prefix application/key", a.application.key, b.application.key) ++
+    Helpers.diffStringNonBreakingNotMaterial(s"$prefix namespace", a.namespace, b.namespace) ++
+    Helpers.diffStringNonBreakingNotMaterial(s"$prefix organization/key", a.organization.key, b.organization.key) ++
+    Helpers.diffStringNonBreakingNotMaterial(s"$prefix application/key", a.application.key, b.application.key) ++
     Helpers.diffStringNonBreakingNotMaterial(s"$prefix version", a.version, b.version) ++
-    Helpers.diffArrayNonBreaking(s"$prefix enums", a.enums, b.enums) ++
-    Helpers.diffArrayNonBreaking(s"$prefix unions", a.unions, b.unions) ++
-    Helpers.diffArrayNonBreaking(s"$prefix models", a.models, b.models)
+    Helpers.diffArrayNonBreakingNotMaterial(s"$prefix enums", a.enums, b.enums) ++
+    Helpers.diffArrayNonBreakingNotMaterial(s"$prefix unions", a.unions, b.unions) ++
+    Helpers.diffArrayNonBreakingNotMaterial(s"$prefix models", a.models, b.models)
   }
 
   private[this] def diffEnums(): Seq[Diff] = {
@@ -502,6 +502,12 @@ case class ServiceDiff(
       }
     }
 
+    def findNewNotMaterial(prefix: String, a: Seq[String], b: Seq[String]): Seq[Diff] = {
+      b.filterNot(a.contains).map { name =>
+        NotMaterial.nonBreaking(Helpers.added(prefix, name))
+      }
+    }
+
     def diffRequired(label: String, a: Boolean, b: Boolean): Seq[Diff] = {
       (a, b) match {
         case (true, true) => Nil
@@ -622,6 +628,14 @@ case class ServiceDiff(
       b: Seq[String]
     ): Seq[Diff] = {
       diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map(Material.nonBreaking)
+    }
+
+    def diffArrayNonBreakingNotMaterial(
+      label: String,
+      a: Seq[String],
+      b: Seq[String]
+    ): Seq[Diff] = {
+      diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map(NotMaterial.nonBreaking)
     }
 
     def diffOptionalString(
