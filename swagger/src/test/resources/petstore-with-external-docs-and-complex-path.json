@@ -12,7 +12,7 @@
     },
     "license": {
       "name": "MIT",
-      "url": "http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT"
+      "url": "http://github.com/gruntjs/grunt/blob/main/LICENSE-MIT"
     }
   },
   "externalDocs": {

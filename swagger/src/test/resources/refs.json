@@ -17,12 +17,12 @@
         "/inventory/product/{product_code}": {
             "get": {
                 "summary": "Product Inventory",
-                "description": "This end point takes a master product code and returns back the inventory for all variations of the master product.",
+                "description": "This end point takes a primary product code and returns back the inventory for all variations of the primary product.",
                 "parameters": [
                     {
                         "name": "product_code",
                         "in": "path",
-                        "description": "The product code for the master product.",
+                        "description": "The product code for the primary product.",
                         "required": true,
                         "type": "string"
                     }
@@ -32,7 +32,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "An Object with request, response, and error information. If successful the response will contain a body with inventory information for each of the variations for the master product.",
+                        "description": "An Object with request, response, and error information. If successful the response will contain a body with inventory information for each of the variations for the primary product.",
                         "schema": {
                             "$ref": "#/definitions/Response"
                         }

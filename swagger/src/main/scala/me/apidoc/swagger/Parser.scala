@@ -129,7 +129,7 @@ case class Parser(config: ServiceConfiguration) {
             newEnums ++= translated._2
             translated._1
           }
-          case am: ArrayModel => sys.error(s"Unsupported definition for name[$name]. Array models are not supported - please see https://github.com/apicollective/apibuilder/blob/master/SWAGGER.md")
+          case am: ArrayModel => sys.error(s"Unsupported definition for name[$name]. Array models are not supported - please see https://github.com/apicollective/apibuilder/blob/main/SWAGGER.md")
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
