@@ -178,12 +178,7 @@ case class Parser(config: ServiceConfiguration) {
       (url, p)  <- swagger.getPaths.asScala
       operation <- p.getOperations.asScala
       response  <- selectSuccessfulResponse(operation.getResponses.asScala.toMap)
-      model     <- {
-        println(s"response: $response")
-        println(s"model: ${retrieveModel(response.getSchema)}")
-        retrieveModel(response.getSchema)
-      }
-      if Option(model).isDefined
+      model <- Some(response.getResponseSchema).filter(_ != null)
     } yield {
       val paramStringEnums =
         model match {
