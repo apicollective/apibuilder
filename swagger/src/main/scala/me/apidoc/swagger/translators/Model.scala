@@ -7,6 +7,13 @@ import lib.Text
 import me.apidoc.swagger.{SwaggerData, Util}
 
 object Model {
+   val Placeholder: apidoc.Model = apidoc.Model(
+     name = "placeholder",
+     plural = "placeholders",
+     fields = Seq(
+       apidoc.Field(name = "placeholder", `type` = "string", required=false)
+     )
+   )
 
   def apply(
     resolver: Resolver,

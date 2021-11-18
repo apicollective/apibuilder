@@ -2,6 +2,8 @@ package me.apidoc.swagger
 
 import helpers.ServiceConfigurationHelpers
 import org.scalatest.{FunSpec, Matchers}
+import play.api.libs.json.Json
+import io.apibuilder.spec.v0.models.json._
 
 class SwaggerParserExample1Spec extends FunSpec
   with Matchers
@@ -41,10 +43,10 @@ class SwaggerParserExample1Spec extends FunSpec
       |""".stripMargin
 
   it("example") {
-    val requests = Parser(
+    val svc = Parser(
       makeServiceConfiguration()
     ).parseString(example)
-    requests.models.map(_.name) shouldBe Seq("TestRequest")
-    requests.resources.map(_.`type`) shouldBe Seq("TestRequest")
+    svc.models.map(_.name).sorted shouldBe Seq("TestRequest", "placeholder")
+    svc.resources.map(_.`type`) shouldBe Seq("placeholder")
   }
 }

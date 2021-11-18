@@ -34,7 +34,8 @@ case class Parser(config: ServiceConfiguration) {
     val specModels = specModelsAndEnums._1
     val specEnums = specModelsAndEnums._2
     val resolver = Resolver(models = specModels, enums = specEnums)
-    val resourcesAndParamEnums = parseResources(swagger, resolver)
+    val (resources, paramEnums) = parseResources(swagger, resolver)
+    val finalModels = specModels ++ findPlaceholder(resources).toSeq
 
     Service(
       apidoc = Apidoc(version = io.apibuilder.spec.v0.Constants.Version),
@@ -49,12 +50,12 @@ case class Parser(config: ServiceConfiguration) {
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
       version = config.version,
-      enums = (specEnums ++ resourcesAndParamEnums._2).distinct,
+      enums = (specEnums ++ paramEnums).distinct,
       unions = Nil,
-      models = specModels,
+      models = finalModels,
       imports = Nil,
       headers = Nil,
-      resources = translators.Resource.mergeAll(resourcesAndParamEnums._1),
+      resources = translators.Resource.mergeAll(resources),
       attributes =
         Seq(
           SwaggerData(
@@ -67,6 +68,16 @@ case class Parser(config: ServiceConfiguration) {
           ).toAttribute
         ).flatten ++ Util.vendorExtensionsToAttributes(swagger.getVendorExtensions)
     )
+  }
+
+  def findPlaceholder(resources: Seq[Resource]): Option[Model] = {
+    if (resources.exists { r =>
+      r.`type` == translators.Model.Placeholder.name
+    }) {
+      Some(translators.Model.Placeholder)
+    } else {
+      None
+    }
   }
 
   private def parseDefinitions(swagger: Swagger): (Seq[Model], Seq[Enum]) = {
@@ -178,13 +189,13 @@ case class Parser(config: ServiceConfiguration) {
       (url, p)  <- swagger.getPaths.asScala
       operation <- p.getOperations.asScala
       response  <- selectSuccessfulResponse(operation.getResponses.asScala.toMap)
-      model <- Some(response.getResponseSchema).filter(_ != null)
     } yield {
+      val model = Some(response.getResponseSchema).filter(_ != null) // None indicates Unit
       val paramStringEnums =
         model match {
-          case ref: RefProperty =>
+          case Some(ref: RefProperty) => {
             //Search for param enums among all operations (even the ones with no 200 response) of this resource
-            for{
+            for {
               resourceOp  <- p.getOperations.asScala
               param       <- resourceOp.getParameters.asScala
               if Util.hasStringEnum(param)
@@ -201,12 +212,13 @@ case class Parser(config: ServiceConfiguration) {
                 }.toSeq,
                 attributes = Seq())
             }
+          }
           case _ => Seq()
         }
 
       val resource = model match {
-        case ref: RefProperty =>
-          println(s"ref.getSimpleRef: ${ref.getSimpleRef}")
+        case None => translators.Resource(resolver.copy(enums = resolver.enums ++ paramStringEnums), translators.Model.Placeholder, url, p)
+        case Some(ref: RefProperty) =>
           resolver.findModelByOkResponseSchema(ref.getSimpleRef) match {
             case Some(model) => translators.Resource(resolver.copy(enums = resolver.enums ++ paramStringEnums), model, url, p)
             case None => sys.error(s"Could not find model at url[$url]")
