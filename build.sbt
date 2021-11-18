@@ -41,7 +41,7 @@ lazy val avro = project
 
 lazy val swagger = project
   .in(file("swagger"))
-  .dependsOn(generated, lib)
+  .dependsOn(generated, lib % "compile->compile;test->test")
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(

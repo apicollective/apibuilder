@@ -1,19 +1,14 @@
 package lib
 
+import helpers.ServiceConfigurationHelpers
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceConfigurationSpec extends FunSpec with Matchers {
-
-  def createServiceConfiguration(orgNamespace: String) = {
-    ServiceConfiguration(
-      orgKey = "apidoc",
-      orgNamespace = orgNamespace,
-      version = "1.0"
-    )
-  }
+class ServiceConfigurationSpec extends FunSpec with Matchers
+  with ServiceConfigurationHelpers
+{
 
   it("applicationNamespace") {
-    val config = createServiceConfiguration("me.apidoc")
+    val config = makeServiceConfiguration("me.apidoc")
     config.applicationNamespace("api") should be("me.apidoc.api.v1")
     config.applicationNamespace("spec") should be("me.apidoc.spec.v1")
     config.applicationNamespace("fooBar") should be("me.apidoc.foo.bar.v1")
@@ -24,17 +19,17 @@ class ServiceConfigurationSpec extends FunSpec with Matchers {
   }
 
   it("applicationNamespace is in lower case") {
-    val config = createServiceConfiguration("ME.APIDOC")
+    val config = makeServiceConfiguration("ME.APIDOC")
     config.applicationNamespace("API") should be("ME.APIDOC.api.v1")
   }
 
   it("applicationNamespace is trimmed") {
-    val config = createServiceConfiguration("me.apidoc")
+    val config = makeServiceConfiguration("me.apidoc")
     config.applicationNamespace("  api  ") should be("me.apidoc.api.v1")
   }
 
   it("applicationNamespace with numbers") {
-    val config = createServiceConfiguration("io.apibuilder")
+    val config = makeServiceConfiguration("io.apibuilder")
     config.applicationNamespace("mercury-3pl") should be("io.apibuilder.mercury3pl.v1")
   }
 
