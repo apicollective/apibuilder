@@ -34,7 +34,9 @@ case class Parser(config: ServiceConfiguration) {
     val specModels = specModelsAndEnums._1
     val specEnums = specModelsAndEnums._2
     val resolver = Resolver(models = specModels, enums = specEnums)
-    val (resources, paramEnums) = parseResources(swagger, resolver)
+    val resourceAndEnums = parseResources(swagger, resolver)
+    val resources = resourceAndEnums.map(_.resource)
+    val paramEnums = resourceAndEnums.flatMap(_.`enum`).distinct
     val finalModels = specModels ++ findPlaceholder(resources).toSeq
 
     Service(
@@ -70,7 +72,7 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  def findPlaceholder(resources: Seq[Resource]): Option[Model] = {
+  private def findPlaceholder(resources: Seq[Resource]): Option[Model] = {
     if (resources.exists { r =>
       r.`type` == translators.Model.Placeholder.name
     }) {
@@ -181,60 +183,66 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
+  private case class SwaggerResponse(path: swagger.Path, url: String, operation: swagger.Operation, response: swagger.Response)
+  private case class ResourceWithEnums(resource: Resource, enum: Seq[Enum])
+
   private def parseResources(
     swagger: Swagger,
     resolver: Resolver
-  ): (Seq[Resource], Seq[Enum]) = {
-    val resourceAndParamEnums = (for {
-      (url, p)  <- swagger.getPaths.asScala
-      operation <- p.getOperations.asScala
-      response  <- selectSuccessfulResponse(operation.getResponses.asScala.toMap)
-    } yield {
-      val model = Some(response.getResponseSchema).filter(_ != null) // None indicates Unit
-      val paramStringEnums =
-        model match {
-          case Some(ref: RefProperty) => {
-            //Search for param enums among all operations (even the ones with no 200 response) of this resource
-            for {
-              resourceOp  <- p.getOperations.asScala
-              param       <- resourceOp.getParameters.asScala
-              if Util.hasStringEnum(param)
-            } yield {
-              val httpMethod = Util.retrieveMethod(resourceOp, p).get
-              val enumTypeName = Util.buildParamEnumTypeName(ref.getSimpleRef, param, httpMethod.toString)
-              Enum(
-                name = enumTypeName,
-                plural = Text.pluralize(enumTypeName),
-                description = None,
-                deprecation = None,
-                values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.asScala.map { value =>
-                  EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
-                }.toSeq,
-                attributes = Seq())
-            }
-          }
-          case _ => Seq()
+  ): Seq[ResourceWithEnums] = {
+    swagger.getPaths.asScala.flatMap { case (url, p) =>
+      p.getOperations.asScala.flatMap { op =>
+        selectSuccessfulResponse(op.getResponses.asScala.toMap).map { r =>
+          SwaggerResponse(p, url, op, r)
         }
-
-      val resource = model match {
-        case None => translators.Resource(resolver.copy(enums = resolver.enums ++ paramStringEnums), translators.Model.Placeholder, url, p)
-        case Some(ref: RefProperty) =>
-          resolver.findModelByOkResponseSchema(ref.getSimpleRef) match {
-            case Some(model) => translators.Resource(resolver.copy(enums = resolver.enums ++ paramStringEnums), model, url, p)
-            case None => sys.error(s"Could not find model at url[$url]")
-          }
-        case _ => sys.error(s"Unexpected resource model type: $model. Operation: $operation; Response: $response")
       }
+    }.groupBy(_.path).map { case (path, responses) =>
+      val model = responses.flatMap { resp =>
+        retrieveModel(resp.response.getSchema).filter(_ != null)
+      }.toList.distinct match {
+        case Nil => None
+        case one :: Nil => Some(one)
+        case mult => sys.error(s"Multiple models found for path: $path: ${mult.mkString(", ")}")
+      }
+      val enums = buildEnums(path, model)
+      val apiBuilderModel = findModelForResource(resolver, model).getOrElse(translators.Model.Placeholder)
+      val resource = translators.Resource(resolver.copy(enums = resolver.enums ++ enums), apiBuilderModel, responses.head.url, path)
+      ResourceWithEnums(resource, enums)
+    }.toSeq
+  }
 
-      (resource, paramStringEnums)
-    }).toSeq
+  def buildEnums(path: swagger.Path, model: Option[swagger.properties.Property]): Seq[Enum] = {
+    model match {
+      case Some(ref: RefProperty) => {
+        //Search for param enums among all operations (even the ones with no 200 response) of this resource
+        path.getOperations.asScala.map { op =>
+          op.getParameters.asScala.filter(Util.hasStringEnum).map { param =>
+            val httpMethod = Util.retrieveMethod(op, path).get
+            val enumTypeName = Util.buildParamEnumTypeName(ref.getSimpleRef, param, httpMethod.toString)
+            Enum(
+              name = enumTypeName,
+              plural = Text.pluralize(enumTypeName),
+              description = None,
+              deprecation = None,
+              values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.asScala.map { value =>
+                EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
+              }.toSeq,
+              attributes = Seq(),
+            )
+          }
+        }
+      }
+      case _ => Nil
+    }
+  }
 
-    val allResources = resourceAndParamEnums.map(_._1)
-
-    // remove duplicates (in case same param with same enum values is on several paths/operations with same method for same resource)
-    val allParamEnums = resourceAndParamEnums.flatten { case (_, seqEnums) => seqEnums }.distinct
-
-    (allResources, allParamEnums)
+  private def findModelForResource(resolver: Resolver, model: Option[swagger.properties.Property]) = {
+    model match {
+      case Some(ref: RefProperty) => {
+        resolver.findModelByOkResponseSchema(ref.getSimpleRef)
+      }
+      case _ => None
+    }
   }
 
 }

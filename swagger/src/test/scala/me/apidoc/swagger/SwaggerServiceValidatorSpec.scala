@@ -2,16 +2,22 @@ package me.apidoc.swagger
 
 import io.apibuilder.spec.v0.models.Method.{Delete, Get}
 import io.apibuilder.spec.v0.models.ParameterLocation.{Path, Query}
-import io.apibuilder.spec.v0.models.{EnumValue, _}
+import io.apibuilder.spec.v0.models._
+import io.apibuilder.spec.v0.models.json._
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
-import play.api.libs.json.{JsArray, JsNull, JsObject, JsString}
+import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json}
 
 class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   private val resourcesDir = "swagger/src/test/resources/"
 
   private def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
+    val source = scala.io.Source.fromFile(path)
+    try {
+      source.getLines.mkString("\n")
+    } finally {
+      source.close()
+    }
   }
 
   private def printRequired(value: Boolean): String = {
@@ -74,7 +80,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     value = JsObject(Seq(("bar", JsString("service"))))
                   )))
 
-              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
+              println(Json.prettyPrint(Json.toJson(service)))
+              service.models.map(_.name).sorted should be(Seq("Error", "Pet", "placeholder"))
               checkModel(
                 service.models.find(_.name == "Pet").get,
                 Model(
