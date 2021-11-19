@@ -1087,7 +1087,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
             }
             case Right(service) => {
-              service.resources.map(_.`type`) should be(Seq())
+              service.resources.map(_.`type`) should be (Seq("placeholder"))
               service.models.map(_.name) should be (Seq("placeholder"))
             }
           }
