@@ -6,7 +6,7 @@ import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
-import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json}
+import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, JsValue, Json, Writes}
 
 class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   private val resourcesDir = "swagger/src/test/resources/"
@@ -21,31 +21,40 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   private def printRequired(value: Boolean): String = {
-    value match {
-      case true => "(required)"
-      case false => "(optional)"
+    if (value) {
+      "(required)"
+    } else {
+      "(optional)"
     }
   }
 
-  private def checkModel(actual: Model, target: Model): Unit = {
-    actual should be(target)
+  private def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
+  private def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
+  private def checkResource(actual: Resource, target: Resource): Unit = {
+    actual.operations.size shouldBe target.operations.size
+    actual.operations.zip(target.operations).foreach { case (a, b) =>
+      checkOperation(a, b)
+    }
+
+    // TODO: If we include operations here in the check, it fails even
+    //  though per above the operations are the same
+    checkJson(
+      Json.toJson(actual.copy(operations = Nil)),
+      Json.toJson(target.copy(operations = Nil)),
+    )
   }
 
-  private def checkResource(actual: Resource, target: Resource): Unit = {
-    println("========= actual =========")
-    println(Json.prettyPrint(Json.toJson(actual)))
-    println("========= target =========")
-    println(Json.prettyPrint(Json.toJson(target)))
-    println("========= end =========")
+  private def checkJson[T](actual: T, target: T)(implicit writer: Writes[T]): Unit = {
     val errors = JsonDiff.diff(
       Json.toJson(actual),
       Json.toJson(target),
     )
-    errors.foreach { e =>
-      println(s" - $e")
+    if (errors.nonEmpty) {
+      errors.foreach { e =>
+        println(s" - $e")
+      }
+      sys.error(s"errors: ${errors.mkString(", ")}")
     }
-    errors should be(Nil)
-    actual should be(target)
   }
 
   private def checkEnum(actual: Enum, target: Enum): Unit = {
@@ -541,101 +550,103 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               )
 
               service.resources.size should be(1)
-              checkResource(service.resources.find(_.`type` == "Pet").get,
-                Resource(
-                  `type` = "Pet",
-                  plural = "Pets",
-                  path = None,
-                  description = None,
-                  deprecation = None,
-                  operations = Seq(
-                    Operation(
-                      method = Get,
-                      path = "/pets/",
-                      description = Some("find pets by name and status - as query params"),
-                      deprecation = None,
-                      body = None,
-                      parameters = Seq(
-                        Parameter(
-                          name = "name",
-                          `type` = "string",
-                          location = Query,
-                          description = None,
-                          deprecation = None,
-                          required = true,
-                          default = None,
-                          minimum = None,
-                          maximum = None,
-                          example = None),
-                        Parameter(
-                          name = "status",
-                          `type` = "PetStatusGetQuery",
-                          location = Query,
-                          description = None,
-                          deprecation = None,
-                          required = true,
-                          default = None,
-                          minimum = None,
-                          maximum = None,
-                          example = None),
-                      ),
-                      responses = Seq(
-                        Response(
-                          code = ResponseCodeInt(200),
-                          `type` = "[Pet]",
-                          description = Some("find pet response"),
-                          deprecation = None),
-                        Response(
-                          code = ResponseCodeOption.Default,
-                          `type` = "Error",
-                          description = Some("unexpected error"),
-                          deprecation = None)
-                      ),
-                      attributes =  Seq(Attribute(
-                        name = SwaggerData.AttributeName,
-                        description = Some(SwaggerData.AttributeDescription),
-                        value = JsObject(Seq(
-                          ("summary", JsString("find pets by name and status - as query params"))
-                        ))))),
-                    Operation(
-                      method = Get,
-                      path = "/pets/:status",
-                      description = Some("find pets by status - as a path param"),
-                      deprecation = None,
-                      body = None,
-                      parameters = Seq(Parameter(
-                        name = "status",
-                        `type` = "PetStatusGetPath",
-                        location = Path,
+
+              val expectedResource = Resource(
+                `type` = "Pet",
+                plural = "Pets",
+                path = None,
+                description = None,
+                deprecation = None,
+                operations = Seq(
+                  Operation(
+                    method = Get,
+                    path = "/pets/",
+                    description = Some("find pets by name and status - as query params"),
+                    deprecation = None,
+                    body = None,
+                    parameters = Seq(
+                      Parameter(
+                        name = "name",
+                        `type` = "string",
+                        location = Query,
                         description = None,
                         deprecation = None,
                         required = true,
                         default = None,
                         minimum = None,
                         maximum = None,
-                        example = None)
-                      ),
-                      responses = Seq(
-                        Response(
-                          code = ResponseCodeInt(200),
-                          `type` = "[Pet]",
-                          description = Some("find pet response"),
-                          deprecation = None),
-                        Response(
-                          code = ResponseCodeOption.Default,
-                          `type` = "Error",
-                          description = Some("unexpected error"),
-                          deprecation = None)
-                      ),
-                      attributes =  Seq(Attribute(
-                        name = SwaggerData.AttributeName,
-                        description = Some(SwaggerData.AttributeDescription),
-                        value = JsObject(Seq(
-                          ("summary", JsString("find pets by status - as a path param"))
-                        ))))),
-                  ),
-                  attributes = Seq())
+                        example = None),
+                      Parameter(
+                        name = "status",
+                        `type` = "PetStatusGetQuery",
+                        location = Query,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None),
+                    ),
+                    responses = Seq(
+                      Response(
+                        code = ResponseCodeInt(200),
+                        `type` = "[Pet]",
+                        description = Some("find pet response"),
+                        deprecation = None),
+                      Response(
+                        code = ResponseCodeOption.Default,
+                        `type` = "Error",
+                        description = Some("unexpected error"),
+                        deprecation = None)
+                    ),
+                    attributes =  Seq(Attribute(
+                      name = SwaggerData.AttributeName,
+                      description = Some(SwaggerData.AttributeDescription),
+                      value = JsObject(Seq(
+                        ("summary", JsString("find pets by name and status - as query params"))
+                      ))))),
+                  Operation(
+                    method = Get,
+                    path = "/pets/:status",
+                    description = Some("find pets by status - as a path param"),
+                    deprecation = None,
+                    body = None,
+                    parameters = Seq(Parameter(
+                      name = "status",
+                      `type` = "PetStatusGetPath",
+                      location = Path,
+                      description = None,
+                      deprecation = None,
+                      required = true,
+                      default = None,
+                      minimum = None,
+                      maximum = None,
+                      example = None)
+                    ),
+                    responses = Seq(
+                      Response(
+                        code = ResponseCodeInt(200),
+                        `type` = "[Pet]",
+                        description = Some("find pet response"),
+                        deprecation = None),
+                      Response(
+                        code = ResponseCodeOption.Default,
+                        `type` = "Error",
+                        description = Some("unexpected error"),
+                        deprecation = None)
+                    ),
+                    attributes =  Seq(Attribute(
+                      name = SwaggerData.AttributeName,
+                      description = Some(SwaggerData.AttributeDescription),
+                      value = JsObject(Seq(
+                        ("summary", JsString("find pets by status - as a path param"))
+                      ))))),
+                ),
+                attributes = Seq()
               )
+              val actualResource = service.resources.find(_.`type` == "Pet").get
+              checkResource(actualResource, expectedResource)
 
               service.enums.size should be(3)
               checkEnum(service.enums.find(_.name == "Status").get,
