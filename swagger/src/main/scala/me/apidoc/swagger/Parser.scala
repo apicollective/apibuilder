@@ -215,7 +215,7 @@ case class Parser(config: ServiceConfiguration) {
     model match {
       case Some(ref: RefProperty) => {
         //Search for param enums among all operations (even the ones with no 200 response) of this resource
-        path.getOperations.asScala.map { op =>
+        path.getOperations.asScala.toSeq.flatMap { op =>
           op.getParameters.asScala.filter(Util.hasStringEnum).map { param =>
             val httpMethod = Util.retrieveMethod(op, path).get
             val enumTypeName = Util.buildParamEnumTypeName(ref.getSimpleRef, param, httpMethod.toString)
