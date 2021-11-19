@@ -27,11 +27,24 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
     }
   }
 
-  private def checkModel(actual: Model, target: Model) {
+  private def checkModel(actual: Model, target: Model): Unit = {
     actual should be(target)
   }
 
   private def checkResource(actual: Resource, target: Resource): Unit = {
+    println("========= actual =========")
+    println(Json.prettyPrint(Json.toJson(actual)))
+    println("========= target =========")
+    println(Json.prettyPrint(Json.toJson(target)))
+    println("========= end =========")
+    val errors = JsonDiff.diff(
+      Json.toJson(actual),
+      Json.toJson(target),
+    )
+    errors.foreach { e =>
+      println(s" - $e")
+    }
+    errors should be(Nil)
     actual should be(target)
   }
 
@@ -39,9 +52,9 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
     actual should be(target)
   }
 
-  val config = ServiceConfiguration(
-    orgKey = "apidoc",
-    orgNamespace = "me.apidoc",
+  val config: ServiceConfiguration = ServiceConfiguration(
+    orgKey = "apibuilder",
+    orgNamespace = "me.apibuilder",
     version = "0.0.2-dev"
   )
 
@@ -59,8 +72,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -80,8 +93,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     value = JsObject(Seq(("bar", JsString("service"))))
                   )))
 
-              println(Json.prettyPrint(Json.toJson(service)))
-              service.models.map(_.name).sorted should be(Seq("Error", "Pet", "placeholder"))
+              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
               checkModel(
                 service.models.find(_.name == "Pet").get,
                 Model(
@@ -431,8 +443,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -679,8 +691,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -892,8 +904,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -1070,13 +1082,13 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate match {
+          SwaggerServiceValidator(config, readFile(path)).validate() match {
             case Left(errors) => {
               fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
             }
             case Right(service) => {
-              service.resources should be(Seq())
-              service.models should be (Seq())
+              service.resources.map(_.`type`) should be(Seq())
+              service.models.map(_.name) should be (Seq("placeholder"))
             }
           }
       }
@@ -1090,8 +1102,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       }
       case Right(service) => {
         service.name should be("Inventory API")
-        service.namespace should be("me.apidoc.inventory.api.v0")
-        service.organization.key should be("apidoc")
+        service.namespace should be("me.apibuilder.inventory.api.v0")
+        service.organization.key should be("apibuilder")
         service.application.key should be("inventory-api")
         service.version should be("0.0.2-dev")
         service.baseUrl should be(Some("https://api.company.com/v3"))

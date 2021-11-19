@@ -158,13 +158,10 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  @tailrec
-  private def retrieveModel(schema: Property): Option[Property] = {
-    schema match {
-      case array: ArrayProperty =>
-        retrieveModel(array.getItems)
-      case ref: RefProperty =>
-        Some(ref)
+  private def retrieveModelProperty(schema: Property): Option[Property] = {
+    Option(schema).flatMap {
+      case array: ArrayProperty => retrieveModelProperty(array.getItems)
+      case ref: RefProperty => Some(ref)
       case _ => None
     }
   }
@@ -197,21 +194,24 @@ case class Parser(config: ServiceConfiguration) {
         }
       }
     }.groupBy(_.path).map { case (path, responses) =>
-      val model = responses.flatMap { resp =>
-        retrieveModel(resp.response.getSchema).filter(_ != null)
+      val commonModel = responses.flatMap { resp =>
+        retrieveModelProperty(resp.response.getSchema).filter(_ != null)
       }.toList.distinct match {
         case Nil => None
         case one :: Nil => Some(one)
         case mult => sys.error(s"Multiple models found for path: $path: ${mult.mkString(", ")}")
       }
-      val enums = buildEnums(path, model)
-      val apiBuilderModel = findModelForResource(resolver, model).getOrElse(translators.Model.Placeholder)
-      val resource = translators.Resource(resolver.copy(enums = resolver.enums ++ enums), apiBuilderModel, responses.head.url, path)
+
+      val enums = buildEnums(path, commonModel)
+      val apiBuilderModel = findModelForResource(resolver, commonModel).getOrElse(translators.Model.Placeholder)
+      val resource = translators.Resource(
+        resolver.copy(enums = resolver.enums ++ enums), apiBuilderModel, responses.head.url, path,
+      )
       ResourceWithEnums(resource, enums)
     }.toSeq
   }
 
-  def buildEnums(path: swagger.Path, model: Option[swagger.properties.Property]): Seq[Enum] = {
+  private def buildEnums(path: swagger.Path, model: Option[swagger.properties.Property]): Seq[Enum] = {
     model match {
       case Some(ref: RefProperty) => {
         //Search for param enums among all operations (even the ones with no 200 response) of this resource
