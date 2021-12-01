@@ -31,6 +31,7 @@ lazy val avro = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .settings(
+    scalacOptions ++= allScalacOptions,
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
@@ -41,9 +42,10 @@ lazy val avro = project
 
 lazy val swagger = project
   .in(file("swagger"))
-  .dependsOn(generated, lib)
+  .dependsOn(generated, lib % "compile->compile;test->test")
   .aggregate(generated, lib)
   .settings(
+    scalacOptions ++= allScalacOptions,
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.50",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
