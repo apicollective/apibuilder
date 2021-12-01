@@ -180,23 +180,29 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  private case class SwaggerResponse(path: swagger.Path, url: String, operation: swagger.Operation, response: swagger.Response)
+  private case class PathWithUrl(path: Path, url: String)
+  private case class SwaggerResponse(pathWithUrl: PathWithUrl, url: String, operation: swagger.Operation, response: swagger.Response)
   private case class ResourceWithEnums(resource: Resource, enum: Seq[Enum])
 
   private def parseResources(
     swagger: Swagger,
     resolver: Resolver
   ): Seq[ResourceWithEnums] = {
-    swagger.getPaths.asScala.flatMap { case (url, p) =>
+    val allPaths = swagger.getPaths.asScala
+    val withResponse = allPaths.keys.toList.sortBy(_.length).flatMap { url =>
+      val p = allPaths(url)
       p.getOperations.asScala.flatMap { op =>
         selectSuccessfulResponse(op.getResponses.asScala.toMap).map { r =>
-          SwaggerResponse(p, url, op, r)
+          SwaggerResponse(PathWithUrl(p, url), url, op, r)
         }
       }
-    }.groupBy(_.path).map { case (path, responses) =>
+    }.groupBy(_.pathWithUrl)
+    withResponse.keys.toList.sortBy(_.url.length).map { pathWithUrl =>
+      val path = pathWithUrl.path
+      val responses = withResponse(pathWithUrl)
       val commonModel = responses.flatMap { resp =>
         retrieveModelProperty(resp.response.getSchema).filter(_ != null)
-      }.toList.distinct match {
+      }.distinct match {
         case Nil => None
         case one :: Nil => Some(one)
         case mult => sys.error(s"Multiple models found for path: $path: ${mult.mkString(", ")}")
@@ -208,7 +214,7 @@ case class Parser(config: ServiceConfiguration) {
         resolver.copy(enums = resolver.enums ++ enums), apiBuilderModel, responses.head.url, path,
       )
       ResourceWithEnums(resource, enums)
-    }.toSeq
+    }
   }
 
   private def buildEnums(path: swagger.Path, model: Option[swagger.properties.Property]): Seq[Enum] = {

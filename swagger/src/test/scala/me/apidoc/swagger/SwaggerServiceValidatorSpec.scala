@@ -6,7 +6,7 @@ import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
-import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, JsValue, Json, Writes}
+import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
 
 class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   private val resourcesDir = "swagger/src/test/resources/"
@@ -31,7 +31,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   private def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
   private def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
   private def checkResource(actual: Resource, target: Resource): Unit = {
-    actual.operations.size shouldBe target.operations.size
+    // first test ordering of operations
+    actual.operations.map(_.path) shouldBe target.operations.map(_.path)
+    actual.operations.map(_.method) shouldBe target.operations.map(_.method)
+
+    // now validate operations
     actual.operations.zip(target.operations).foreach { case (a, b) =>
       checkOperation(a, b)
     }
@@ -75,7 +79,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate match {
+          SwaggerServiceValidator(config, readFile(path)).validate() match {
             case Left(errors) => {
               fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
             }

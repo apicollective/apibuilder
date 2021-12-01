@@ -109,7 +109,6 @@ case class Parser(config: ServiceConfiguration) {
   def parse(
     path: File
   ): Service = {
-    println(s"parse($path)")
     parse(parseFile(path))
   }
 
@@ -130,8 +129,6 @@ case class Parser(config: ServiceConfiguration) {
   def parse(
     protocol: Protocol
   ): Service = {
-    println(s"protocol name[${protocol.getName}] namespace[${protocol.getNamespace}]")
-
     protocol.getTypes.asScala.foreach { schema =>
       parseSchema(schema)
     }
