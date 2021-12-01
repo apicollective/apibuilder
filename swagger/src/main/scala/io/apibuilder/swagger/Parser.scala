@@ -1,7 +1,6 @@
 package io.apibuilder.swagger
 
 import java.io.File
-
 import io.apibuilder.spec.v0.models._
 import io.swagger.models.parameters.AbstractSerializableParameter
 import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
@@ -11,7 +10,7 @@ import io.swagger.parser.SwaggerParser
 import lib.{ServiceConfiguration, Text, UrlKey}
 import io.apibuilder.swagger.translators.Resolver
 
-import scala.annotation.tailrec
+import scala.annotation.{nowarn, tailrec}
 import scala.jdk.CollectionConverters._
 
 case class Parser(config: ServiceConfiguration) {
@@ -184,6 +183,7 @@ case class Parser(config: ServiceConfiguration) {
   private case class SwaggerResponse(pathWithUrl: PathWithUrl, url: String, operation: swagger.Operation, response: swagger.Response)
   private case class ResourceWithEnums(resource: Resource, enum: Seq[Enum])
 
+  @nowarn
   private def parseResources(
     swagger: Swagger,
     resolver: Resolver

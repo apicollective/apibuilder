@@ -42,7 +42,8 @@ class UtilSpec extends FunSpec with Matchers {
   }
 
   it("swaggerAnyToJsValue") {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
+
     case class Unsupported(foo: String)
     Util.swaggerAnyToJsValue("foo") should be(JsString("foo"))
     Util.swaggerAnyToJsValue(false) should be(JsFalse)
@@ -83,7 +84,12 @@ class UtilSpec extends FunSpec with Matchers {
 
   it("writeToTempFile") {
     val path = Util.writeToTempFile("testing")
-    scala.io.Source.fromFile(path).getLines.mkString("\n") should be("testing")
+    val source = scala.io.Source.fromFile(path)
+    try {
+      source.getLines().mkString("\n") should be("testing")
+    } finally {
+      source.close()
+    }
   }
 
 }
