@@ -33,7 +33,7 @@ object Resource {
 
   def mergeAll(resources: Seq[apidoc.Resource]): Seq[apidoc.Resource] = {
     resources.groupBy(_.`type`).flatMap {
-      case (resourceType, resources) => {
+      case (_, resources) => {
         resources.toList match {
           case Nil => Nil
           case resource :: Nil => Seq(resource)

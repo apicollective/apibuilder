@@ -7,18 +7,18 @@ import me.apidoc.swagger.SwaggerData._
 import play.api.libs.json.JsObject
 
 case class SwaggerData(
-                        externalDocs: ExternalDocs = null,
-                        schemes: java.util.List[Scheme] = null,
-                        host: String = null,
-                        basePath: String = null,
-                        serviceSecurity: java.util.List[SecurityRequirement]  = null,
-                        operationSecurity: java.util.List[java.util.Map[String, java.util.List[String]]] = null,
-                        securityDefinitions: java.util.Map[String, SecuritySchemeDefinition] = null,
-                        example: Object = null,
-                        operationId: String = null,
-                        tags: java.util.List[String] = null,
-                        summary: String = null
-                      ) {
+  externalDocs: ExternalDocs = null,
+  schemes: java.util.List[Scheme] = null,
+  host: String = null,
+  basePath: String = null,
+  serviceSecurity: java.util.List[SecurityRequirement]  = null,
+  operationSecurity: java.util.List[java.util.Map[String, java.util.List[String]]] = null,
+  securityDefinitions: java.util.Map[String, SecuritySchemeDefinition] = null,
+  example: Object = null,
+  operationId: String = null,
+  tags: java.util.List[String] = null,
+  summary: String = null
+) {
 
   def toAttribute: Option[Attribute] = {
     val jsObjFields =

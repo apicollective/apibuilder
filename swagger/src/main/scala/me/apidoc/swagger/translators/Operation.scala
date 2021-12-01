@@ -2,10 +2,7 @@ package me.apidoc.swagger.translators
 
 import io.apibuilder.spec.v0.{models => apidoc}
 import io.swagger.models.parameters.BodyParameter
-import io.swagger.{models => swagger}
 import me.apidoc.swagger.{SwaggerData, Util}
-
-import scala.jdk.CollectionConverters._
 
 object Operation {
 
@@ -16,12 +13,12 @@ object Operation {
     url: String,
     op: io.swagger.models.Operation
   ): apidoc.Operation = {
-    val summary = Option(op.getSummary())
-    val description = Option(op.getDescription())
+    val summary = Option(op.getSummary)
+    val description = Option(op.getDescription)
 
     val parameters = Util.toArray(op.getParameters).flatMap { param =>
       param match {
-        case p: BodyParameter => None
+        case _: BodyParameter => None
         case _ => Some(Parameter(resolver, modelName, method, param))
       }
     }
@@ -53,7 +50,7 @@ object Operation {
         case Nil => None
         case body :: Nil => Some(body)
         case multiple => {
-          sys.error("Multiple body parameters specified for operation at url[$url]")
+          sys.error(s"Multiple (#${multiple.length}) body parameters specified for operation at url[$url]")
         }
       },
       parameters = parameters,

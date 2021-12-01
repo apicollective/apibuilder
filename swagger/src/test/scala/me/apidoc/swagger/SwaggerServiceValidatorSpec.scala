@@ -2,40 +2,72 @@ package me.apidoc.swagger
 
 import io.apibuilder.spec.v0.models.Method.{Delete, Get}
 import io.apibuilder.spec.v0.models.ParameterLocation.{Path, Query}
-import io.apibuilder.spec.v0.models.{EnumValue, _}
+import io.apibuilder.spec.v0.models._
+import io.apibuilder.spec.v0.models.json._
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
-import play.api.libs.json.{JsArray, JsNull, JsObject, JsString}
+import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
 
 class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   private val resourcesDir = "swagger/src/test/resources/"
 
   private def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
-
-  private def printRequired(value: Boolean): String = {
-    value match {
-      case true => "(required)"
-      case false => "(optional)"
+    val source = scala.io.Source.fromFile(path)
+    try {
+      source.getLines.mkString("\n")
+    } finally {
+      source.close()
     }
   }
 
-  private def checkModel(actual: Model, target: Model) {
-    actual should be(target)
+  private def printRequired(value: Boolean): String = {
+    if (value) {
+      "(required)"
+    } else {
+      "(optional)"
+    }
   }
 
+  private def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
+  private def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
   private def checkResource(actual: Resource, target: Resource): Unit = {
-    actual should be(target)
+    // first test ordering of operations
+    actual.operations.map(_.path) shouldBe target.operations.map(_.path)
+    actual.operations.map(_.method) shouldBe target.operations.map(_.method)
+
+    // now validate operations
+    actual.operations.zip(target.operations).foreach { case (a, b) =>
+      checkOperation(a, b)
+    }
+
+    // TODO: If we include operations here in the check, it fails even
+    //  though per above the operations are the same
+    checkJson(
+      Json.toJson(actual.copy(operations = Nil)),
+      Json.toJson(target.copy(operations = Nil)),
+    )
+  }
+
+  private def checkJson[T](actual: T, target: T)(implicit writer: Writes[T]): Unit = {
+    val errors = JsonDiff.diff(
+      Json.toJson(actual),
+      Json.toJson(target),
+    )
+    if (errors.nonEmpty) {
+      errors.foreach { e =>
+        println(s" - $e")
+      }
+      sys.error(s"errors: ${errors.mkString(", ")}")
+    }
   }
 
   private def checkEnum(actual: Enum, target: Enum): Unit = {
     actual should be(target)
   }
 
-  val config = ServiceConfiguration(
-    orgKey = "apidoc",
-    orgNamespace = "me.apidoc",
+  val config: ServiceConfiguration = ServiceConfiguration(
+    orgKey = "apibuilder",
+    orgNamespace = "me.apibuilder",
     version = "0.0.2-dev"
   )
 
@@ -47,14 +79,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate match {
+          SwaggerServiceValidator(config, readFile(path)).validate() match {
             case Left(errors) => {
               fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -418,14 +450,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate match {
+          SwaggerServiceValidator(config, readFile(path)).validate() match {
             case Left(errors) => {
               fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -522,101 +554,103 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               )
 
               service.resources.size should be(1)
-              checkResource(service.resources.find(_.`type` == "Pet").get,
-                Resource(
-                  `type` = "Pet",
-                  plural = "Pets",
-                  path = None,
-                  description = None,
-                  deprecation = None,
-                  operations = Seq(
-                    Operation(
-                      method = Get,
-                      path = "/pets/",
-                      description = Some("find pets by name and status - as query params"),
-                      deprecation = None,
-                      body = None,
-                      parameters = Seq(
-                        Parameter(
-                          name = "name",
-                          `type` = "string",
-                          location = Query,
-                          description = None,
-                          deprecation = None,
-                          required = true,
-                          default = None,
-                          minimum = None,
-                          maximum = None,
-                          example = None),
-                        Parameter(
-                          name = "status",
-                          `type` = "PetStatusGetQuery",
-                          location = Query,
-                          description = None,
-                          deprecation = None,
-                          required = true,
-                          default = None,
-                          minimum = None,
-                          maximum = None,
-                          example = None),
-                      ),
-                      responses = Seq(
-                        Response(
-                          code = ResponseCodeInt(200),
-                          `type` = "[Pet]",
-                          description = Some("find pet response"),
-                          deprecation = None),
-                        Response(
-                          code = ResponseCodeOption.Default,
-                          `type` = "Error",
-                          description = Some("unexpected error"),
-                          deprecation = None)
-                      ),
-                      attributes =  Seq(Attribute(
-                        name = SwaggerData.AttributeName,
-                        description = Some(SwaggerData.AttributeDescription),
-                        value = JsObject(Seq(
-                          ("summary", JsString("find pets by name and status - as query params"))
-                        ))))),
-                    Operation(
-                      method = Get,
-                      path = "/pets/:status",
-                      description = Some("find pets by status - as a path param"),
-                      deprecation = None,
-                      body = None,
-                      parameters = Seq(Parameter(
-                        name = "status",
-                        `type` = "PetStatusGetPath",
-                        location = Path,
+
+              val expectedResource = Resource(
+                `type` = "Pet",
+                plural = "Pets",
+                path = None,
+                description = None,
+                deprecation = None,
+                operations = Seq(
+                  Operation(
+                    method = Get,
+                    path = "/pets/",
+                    description = Some("find pets by name and status - as query params"),
+                    deprecation = None,
+                    body = None,
+                    parameters = Seq(
+                      Parameter(
+                        name = "name",
+                        `type` = "string",
+                        location = Query,
                         description = None,
                         deprecation = None,
                         required = true,
                         default = None,
                         minimum = None,
                         maximum = None,
-                        example = None)
-                      ),
-                      responses = Seq(
-                        Response(
-                          code = ResponseCodeInt(200),
-                          `type` = "[Pet]",
-                          description = Some("find pet response"),
-                          deprecation = None),
-                        Response(
-                          code = ResponseCodeOption.Default,
-                          `type` = "Error",
-                          description = Some("unexpected error"),
-                          deprecation = None)
-                      ),
-                      attributes =  Seq(Attribute(
-                        name = SwaggerData.AttributeName,
-                        description = Some(SwaggerData.AttributeDescription),
-                        value = JsObject(Seq(
-                          ("summary", JsString("find pets by status - as a path param"))
-                        ))))),
-                  ),
-                  attributes = Seq())
+                        example = None),
+                      Parameter(
+                        name = "status",
+                        `type` = "PetStatusGetQuery",
+                        location = Query,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None),
+                    ),
+                    responses = Seq(
+                      Response(
+                        code = ResponseCodeInt(200),
+                        `type` = "[Pet]",
+                        description = Some("find pet response"),
+                        deprecation = None),
+                      Response(
+                        code = ResponseCodeOption.Default,
+                        `type` = "Error",
+                        description = Some("unexpected error"),
+                        deprecation = None)
+                    ),
+                    attributes =  Seq(Attribute(
+                      name = SwaggerData.AttributeName,
+                      description = Some(SwaggerData.AttributeDescription),
+                      value = JsObject(Seq(
+                        ("summary", JsString("find pets by name and status - as query params"))
+                      ))))),
+                  Operation(
+                    method = Get,
+                    path = "/pets/:status",
+                    description = Some("find pets by status - as a path param"),
+                    deprecation = None,
+                    body = None,
+                    parameters = Seq(Parameter(
+                      name = "status",
+                      `type` = "PetStatusGetPath",
+                      location = Path,
+                      description = None,
+                      deprecation = None,
+                      required = true,
+                      default = None,
+                      minimum = None,
+                      maximum = None,
+                      example = None)
+                    ),
+                    responses = Seq(
+                      Response(
+                        code = ResponseCodeInt(200),
+                        `type` = "[Pet]",
+                        description = Some("find pet response"),
+                        deprecation = None),
+                      Response(
+                        code = ResponseCodeOption.Default,
+                        `type` = "Error",
+                        description = Some("unexpected error"),
+                        deprecation = None)
+                    ),
+                    attributes =  Seq(Attribute(
+                      name = SwaggerData.AttributeName,
+                      description = Some(SwaggerData.AttributeDescription),
+                      value = JsObject(Seq(
+                        ("summary", JsString("find pets by status - as a path param"))
+                      ))))),
+                ),
+                attributes = Seq()
               )
+              val actualResource = service.resources.find(_.`type` == "Pet").get
+              checkResource(actualResource, expectedResource)
 
               service.enums.size should be(3)
               checkEnum(service.enums.find(_.name == "Status").get,
@@ -672,8 +706,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -885,8 +919,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
-              service.namespace should be("me.apidoc.swagger.petstore.v0")
-              service.organization.key should be("apidoc")
+              service.namespace should be("me.apibuilder.swagger.petstore.v0")
+              service.organization.key should be("apibuilder")
               service.application.key should be("swagger-petstore")
               service.version should be("0.0.2-dev")
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
@@ -1063,13 +1097,13 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate match {
+          SwaggerServiceValidator(config, readFile(path)).validate() match {
             case Left(errors) => {
               fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
             }
             case Right(service) => {
-              service.resources should be(Seq())
-              service.models should be (Seq())
+              service.resources.map(_.`type`) should be (Seq("placeholder"))
+              service.models.map(_.name) should be (Seq("placeholder"))
             }
           }
       }
@@ -1083,8 +1117,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       }
       case Right(service) => {
         service.name should be("Inventory API")
-        service.namespace should be("me.apidoc.inventory.api.v0")
-        service.organization.key should be("apidoc")
+        service.namespace should be("me.apibuilder.inventory.api.v0")
+        service.organization.key should be("apibuilder")
         service.application.key should be("inventory-api")
         service.version should be("0.0.2-dev")
         service.baseUrl should be(Some("https://api.company.com/v3"))
