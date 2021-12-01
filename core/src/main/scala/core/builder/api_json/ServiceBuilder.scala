@@ -81,11 +81,11 @@ case class ServiceBuilder(
   object ResourceBuilder {
 
     private[api_json] case class Resolution(
-      enum: Option[TypesProviderEnum] = None,
+      `enum`: Option[TypesProviderEnum] = None,
       model: Option[TypesProviderModel] = None,
       union: Option[TypesProviderUnion] = None
     ) {
-      private[this] val all = Seq(enum, model, union).flatten
+      private[this] val all = Seq(`enum`, model, union).flatten
       assert(all.size <= 1, s"Cannot have more than 1 resolved item: $all")
 
       def isEmpty: Boolean = all.isEmpty

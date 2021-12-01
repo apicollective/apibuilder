@@ -4,7 +4,7 @@ import org.apache.avro.Schema
 import scala.jdk.CollectionConverters._
 import io.apibuilder.spec.v0.models._
 
-object Apidoc {
+object ApiBuilder {
 
   sealed trait Type {
     def name: String
@@ -21,18 +21,18 @@ object Apidoc {
     required: Boolean
   ) extends Type {
 
-    override val name = names.mkString("_or_")
+    override val name: String = names.mkString("_or_")
 
   }
 
   object Field {
     def apply(field: Schema.Field): Field = {
-      val t = Apidoc.getType(field.schema)
+      val t = ApiBuilder.getType(field.schema)
 
-      val default = if (field.defaultValue() == null || field.defaultValue().isNull()) {
+      val default = if (field.defaultVal() == null || field.defaultVal() == null) {
         None
       } else {
-        Some(field.defaultValue().toString())
+        Some(field.defaultVal().toString)
       }
 
       io.apibuilder.spec.v0.models.Field(
@@ -84,7 +84,7 @@ object Apidoc {
   }
 
   private def isNullType(t: Schema.Type): Boolean = {
-    SchemaType.fromAvro(t) == Some(SchemaType.Null)
+    SchemaType.fromAvro(t).contains(SchemaType.Null)
   }
 
 }

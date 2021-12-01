@@ -3,7 +3,7 @@ package core
 import lib.VersionTag
 import org.scalatest.{FunSpec, Matchers}
 
-class ApidocVersionSpec extends FunSpec with Matchers {
+class ApiBuilderVersionSpec extends FunSpec with Matchers {
 
   describe("json documenent with no apidoc node") {
 

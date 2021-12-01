@@ -20,14 +20,14 @@ object ServiceBuilder {
 
     def withEnum(name: String,
                  enumTailor: Enum => Enum = identity): Service = {
-      val enum = Enum(
+      val `enum` = Enum(
         name = name,
         plural = s"${name}s",
         values = Nil
       )
 
       service.copy(
-        enums = service.enums ++ Seq(enumTailor(enum))
+        enums = service.enums ++ Seq(enumTailor(`enum`))
       )
     }
 
@@ -61,15 +61,11 @@ object ServiceBuilder {
 
   }
 
-  implicit class EnumBuilder(val enum: Enum) extends AnyVal {
+  implicit class EnumBuilder(val `enum`: Enum) extends AnyVal {
     def withValue(name: String,
                   value: Option[String] = None): Enum = {
-      val enumValue = EnumValue(
-        name = name,
-        value = value
-      )
-      enum.copy(
-        values = enum.values ++ Seq(enumValue)
+      `enum`.copy(
+        values = `enum`.values ++ Seq(EnumValue(name = name, value = value))
       )
     }
 

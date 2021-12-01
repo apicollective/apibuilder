@@ -118,10 +118,10 @@ class InlineModelsSpec extends FunSpec with Matchers {
       case _ => sys.error("Expected one field")
     }
 
-    val enum = service.enums.find(_.name == "user_post_error_code").getOrElse {
+    val `enum` = service.enums.find(_.name == "user_post_error_code").getOrElse {
       sys.error("No user_post_error_code enum created")
     }
-    enum.values.map(_.name) should equal(
+    `enum`.values.map(_.name) should equal(
       Seq("invalid_email_address", "name_cannot_be_empty")
     )
 

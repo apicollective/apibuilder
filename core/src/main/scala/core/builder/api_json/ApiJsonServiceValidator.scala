@@ -199,22 +199,20 @@ case class ApiJsonServiceValidator(
       validateAttributes(s"Enum[${enum.name}]", enum.attributes)
     }
 
-    val valueErrors = internalService.get.enums.flatMap { enum =>
-      validateEnumValues(enum)
-    }
+    val valueErrors = internalService.get.enums.flatMap(validateEnumValues)
 
     warnings ++ attributeErrors ++ valueErrors
   }
 
-  private def validateEnumValues(enum: InternalEnumForm): Seq[String] = {
-    val attributeErrors = enum.values.zipWithIndex.flatMap { case (value, i) =>
+  private def validateEnumValues(`enum`: InternalEnumForm): Seq[String] = {
+    val attributeErrors = `enum`.values.zipWithIndex.flatMap { case (value, i) =>
       value.name match {
-        case None => Seq(s"Enum[${enum.name}] value[$i]: Missing name")
-        case Some(name) => validateAttributes(s"Enum[${enum.name}] value[$name]", value.attributes)
+        case None => Seq(s"Enum[${`enum`.name}] value[$i]: Missing name")
+        case Some(name) => validateAttributes(s"Enum[${`enum`.name}] value[$name]", value.attributes)
       }
     }
 
-    enum.values.flatMap(_.warnings) ++ attributeErrors
+    `enum`.values.flatMap(_.warnings) ++ attributeErrors
   }
 
   private def validateInterfaces(): Seq[String] = {

@@ -34,11 +34,11 @@ class InlineEnumInModelFieldsSpec extends FunSpec with Matchers {
 
   it("supports an inline model field") {
     val service = TestHelper.serviceValidatorFromApiJson(buildJson(required = true)).service()
-    val enum = service.enums.headOption.getOrElse {
+    val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
-    enum.name should equal("user_type")
-    enum.values.map(_.name) should equal(
+    `enum`.name should equal("user_type")
+    `enum`.values.map(_.name) should equal(
       Seq("guest", "registered")
     )
 

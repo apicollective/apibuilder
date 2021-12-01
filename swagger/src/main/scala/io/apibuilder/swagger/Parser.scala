@@ -181,7 +181,7 @@ case class Parser(config: ServiceConfiguration) {
 
   private case class PathWithUrl(path: Path, url: String)
   private case class SwaggerResponse(pathWithUrl: PathWithUrl, url: String, operation: swagger.Operation, response: swagger.Response)
-  private case class ResourceWithEnums(resource: Resource, enum: Seq[Enum])
+  private case class ResourceWithEnums(resource: Resource, `enum`: Seq[Enum])
 
   @nowarn
   private def parseResources(

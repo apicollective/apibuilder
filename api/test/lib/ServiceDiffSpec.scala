@@ -400,7 +400,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
       deprecation = None
     )
 
-    val enum = Enum(
+    val `enum` = Enum(
       name = "age_group",
       plural = "age_groups",
       description = None,
@@ -409,7 +409,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     )
 
     val base = service.copy(enums = Nil)
-    val serviceWithEnum = base.copy(enums = Seq(enum))
+    val serviceWithEnum = base.copy(enums = Seq(`enum`))
 
     "no change" in {
       ServiceDiff(serviceWithEnum, serviceWithEnum).differences must be(Nil)
@@ -432,32 +432,32 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     }
 
     "change enum" in {
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(plural = "groups")))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(plural = "groups")))).differences must be(
         Seq(
           Material.nonBreaking("enum age_group plural changed from age_groups to groups")
         )
       )
 
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(description = Some("test"))))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(description = Some("test"))))).differences must be(
         Seq(
           Material.nonBreaking("enum age_group description added: test")
         )
       )
 
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(deprecation = Some(Deprecation()))))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(deprecation = Some(Deprecation()))))).differences must be(
         Seq(
           Material.nonBreaking("enum age_group deprecated")
         )
       )
 
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Nil)))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(values = Nil)))).differences must be(
         Seq(
           Material.breaking("enum age_group value removed: 18-25")
         )
       )
 
       val value2 = value.copy(name = "26-35")
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value, value2))))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(values = Seq(value, value2))))).differences must be(
         Seq(
           Material.nonBreaking("enum age_group value added: 26-35")
         )
@@ -465,13 +465,13 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     }
 
     "change enumValues" in {
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value.copy(description = Some("test"))))))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(values = Seq(value.copy(description = Some("test"))))))).differences must be(
         Seq(
           Material.nonBreaking("enum age_group value 18-25 description added: test")
         )
       )
 
-      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value.copy(deprecation = Some(Deprecation()))))))).differences must be(
+      ServiceDiff(serviceWithEnum, base.copy(enums = Seq(`enum`.copy(values = Seq(value.copy(deprecation = Some(Deprecation()))))))).differences must be(
         Seq(
           Material.nonBreaking("enum age_group value 18-25 deprecated")
         )

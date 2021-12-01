@@ -90,12 +90,12 @@ $extras
 
   it("supports an inline enum") {
     val service = TestHelper.serviceValidatorFromApiJson(buildJson()).service()
-    val enum = service.enums.headOption.getOrElse {
+    val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
-    enum.name should equal("user_post_error_code")
-    enum.description should equal(Some("A test enum"))
-    enum.values.map(_.name) should equal(Seq("invalid_email"))
+    `enum`.name should equal("user_post_error_code")
+    `enum`.description should equal(Some("A test enum"))
+    `enum`.values.map(_.name) should equal(Seq("invalid_email"))
 
     val response = service.resources.head.operations.head.responses.head
     response.`type` should equal("user_post_error_code")
@@ -114,11 +114,11 @@ $extras
         |}
       """.stripMargin.trim
     )).service()
-    val enum = service.enums.headOption.getOrElse {
+    val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
-    enum.name should equal("user_post_error_code")
-    enum.values.map(_.name) should equal(Seq("invalid_email"))
+    `enum`.name should equal("user_post_error_code")
+    `enum`.values.map(_.name) should equal(Seq("invalid_email"))
 
     val response = service.resources.head.operations.head.responses.head
     response.`type` should equal("[user_post_error_code]")
@@ -137,11 +137,11 @@ $extras
         |}
       """.stripMargin.trim
     )).service()
-    val enum = service.enums.headOption.getOrElse {
+    val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
-    enum.name should equal("user_post_error_code")
-    enum.values.map(_.name) should equal(Seq("invalid_email"))
+    `enum`.name should equal("user_post_error_code")
+    `enum`.values.map(_.name) should equal(Seq("invalid_email"))
 
     val response = service.resources.head.operations.head.responses.head
     response.`type` should equal("map[user_post_error_code]")
