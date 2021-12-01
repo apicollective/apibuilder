@@ -39,14 +39,14 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def makeEnum(enum: Enum, parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private[this] def makeEnum(`enum`: Enum, parentUnion: Option[(Union, UnionType)]): JsValue = {
     val value: JsValue = JsString(
-      enum.values.headOption.map(ev => ev.value.getOrElse(ev.name)).getOrElse("undefined")
+      `enum`.values.headOption.map(ev => ev.value.getOrElse(ev.name)).getOrElse("undefined")
     )
 
     parentUnion.fold(value) { case (union, unionType) =>
       // strip any namespace prefix from model name
-      val name = enum.name.reverse.takeWhile(_ != '.').reverse
+      val name = `enum`.name.reverse.takeWhile(_ != '.').reverse
       val discrVal = unionType.discriminatorValue.getOrElse(name)
       union.discriminator.fold {
         Json.obj(discrVal -> value)

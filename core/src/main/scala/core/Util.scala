@@ -22,8 +22,8 @@ object Util {
     }
   }
 
-  def isValidEnumValue(enum: Enum, value: String): Boolean = {
-    enum.values.map(_.name).contains(value)
+  def isValidEnumValue(`enum`: Enum, value: String): Boolean = {
+    `enum`.values.map(_.name).contains(value)
   }
 
   def isValidUri(value: String): Boolean = {

@@ -47,7 +47,7 @@ private[avro] case class Builder() {
     name: String,
     description: Option[String],
     fields: Seq[Field]
-  ) {
+  ): Unit = {
     modelsBuilder += Model(
       name = Util.formatName(name),
       plural = Text.pluralize(name),
@@ -56,7 +56,7 @@ private[avro] case class Builder() {
     )
   }
 
-  def addUnion(name: String, description: Option[String], types: Seq[UnionType]) {
+  def addUnion(name: String, description: Option[String], types: Seq[UnionType]): Unit = {
     unionsBuilder += Union(
       name = Util.formatName(name),
       plural = Text.pluralize(name),
@@ -67,11 +67,11 @@ private[avro] case class Builder() {
 
   /**
     * Avro supports fixed types in the schema which is a way of
-    * extending the type system. apidoc doesn't have support for that;
+    * extending the type system. API Builder doesn't have support for that;
     * the best we can do is to create a model representing the fixed
     * element.
     */
-  def addFixed(name: String, description: Option[String], size: Int) {
+  def addFixed(name: String, description: Option[String], size: Int): Unit = {
     addModel(
       name = Util.formatName(name),
       description = description,
@@ -87,7 +87,7 @@ private[avro] case class Builder() {
     )
   }
 
-  def addEnum(name: String, description: Option[String], values: Seq[String]) {
+  def addEnum(name: String, description: Option[String], values: Seq[String]): Unit = {
     enumsBuilder += Enum(
       name = Util.formatName(name),
       plural = Text.pluralize(name),
@@ -104,7 +104,7 @@ private[avro] case class Builder() {
 
 case class Parser(config: ServiceConfiguration) {
 
-  val builder = Builder()
+  private[this] val builder: Builder = Builder()
 
   def parse(
     path: File
@@ -120,7 +120,7 @@ case class Parser(config: ServiceConfiguration) {
     parse(new File(tmpPath))
   }
 
-  private def writeToFile(path: String, contents: String) {
+  private def writeToFile(path: String, contents: String): Unit = {
     val outputPath = Paths.get(path)
     val bytes = contents.getBytes(StandardCharsets.UTF_8)
     Files.write(outputPath, bytes)
@@ -143,7 +143,7 @@ case class Parser(config: ServiceConfiguration) {
   }
 
 
-  private def parseSchema(schema: Schema) {
+  private def parseSchema(schema: Schema): Unit = {
     SchemaType.fromAvro(schema.getType) match {
       case None => sys.error(s"Unsupported schema type[${schema.getType}]")
       case Some(st) => {
@@ -162,15 +162,15 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  private def parseFixed(schema: Schema) {
+  private def parseFixed(schema: Schema): Unit = {
     builder.addFixed(
       name = schema.getName,
       description = Util.toOption(schema.getDoc),
-      size = schema.getFixedSize()
+      size = schema.getFixedSize
     )
   }
 
-  private def parseEnum(schema: Schema) {
+  private def parseEnum(schema: Schema): Unit = {
     builder.addEnum(
       name = schema.getName,
       description = Util.toOption(schema.getDoc),
@@ -178,17 +178,17 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  private def parseRecord(schema: Schema) {
+  private def parseRecord(schema: Schema): Unit = {
     builder.addModel(
       name = Util.formatName(schema.getName),
       description = Util.toOption(schema.getDoc),
-      fields = schema.getFields.asScala.map(Apidoc.Field.apply).toSeq
+      fields = schema.getFields.asScala.map(ApiBuilder.Field.apply).toSeq
     )
 
     schema.getFields.asScala.foreach { f =>
-      Apidoc.getType(f.schema()) match {
-        case Apidoc.SimpleType(_, _) => {}
-        case u: Apidoc.UnionType => {
+      ApiBuilder.getType(f.schema()) match {
+        case ApiBuilder.SimpleType(_, _) => {}
+        case u: ApiBuilder.UnionType => {
           println(s"UNION[${u.name}: " + u.names.mkString(","))
 
           builder.addUnion(
