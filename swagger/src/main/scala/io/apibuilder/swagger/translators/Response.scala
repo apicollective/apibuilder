@@ -1,12 +1,15 @@
 package io.apibuilder.swagger.translators
 
 import lib.Primitives
-import io.apibuilder.spec.v0.{ models => apidoc }
+import io.apibuilder.spec.v0.{models => apidoc}
 import io.apibuilder.swagger.Util
-import io.swagger.{ models => swagger }
+import io.swagger.{models => swagger}
+
+import scala.annotation.nowarn
 
 object Response {
 
+  @nowarn
   def apply(
     resolver: Resolver,
     code: String,

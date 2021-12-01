@@ -22,7 +22,7 @@ object Util {
     new File(tmpPath)
   }
 
-  def writeToFile(path: String, contents: String) {
+  def writeToFile(path: String, contents: String): Unit = {
     val outputPath = Paths.get(path)
     val bytes = contents.getBytes(StandardCharsets.UTF_8)
     Files.write(outputPath, bytes)
@@ -51,7 +51,7 @@ object Util {
     values: Seq[Option[String]],
     connector: String = "\n\n"
   ): Option[String] = {
-    values.flatten.filter(!_.isEmpty) match {
+    values.flatten.filter(_.nonEmpty) match {
       case Nil => None
       case nonEmptyValues => Some(nonEmptyValues.mkString(connector))
     }
@@ -104,7 +104,7 @@ object Util {
     }
   }
 
-  def isEnum(model: swaggermodels.ModelImpl) = model.getEnum != null && !model.getEnum.isEmpty
+  def isEnum(model: swaggermodels.ModelImpl): Boolean = model.getEnum != null && !model.getEnum.isEmpty
 
   /**
     * Checks if the swagger parameter is a query or path parameter and if it has string enum values.
@@ -128,7 +128,7 @@ object Util {
       stringProperty.getEnum!=null && !stringProperty.getEnum.isEmpty
   }
 
-  def buildPropertyEnumTypeName(modelName: String, enumName: String) = {
+  def buildPropertyEnumTypeName(modelName: String, enumName: String): String = {
     List(modelName, enumName).map(_.capitalize).mkString
   }
 
@@ -143,7 +143,7 @@ object Util {
     }
   }
 
-  def formatName(resourceName: String, paramName: String, method: String, location: String) = {
+  def formatName(resourceName: String, paramName: String, method: String, location: String): String = {
     List(
       resourceName,
       paramName.capitalize,
@@ -162,7 +162,18 @@ object Util {
     case v: Double => JsNumber(BigDecimal(v))
     case v: Float => JsNumber(BigDecimal(v))
     case v: Int => JsNumber(BigDecimal(v))
-    case v: java.util.Map[String, _] => JsObject(v.asScala.map { case (k, v) => (k, swaggerAnyToJsValue(v)) })
+    case v: java.util.Map[_, _] => {
+      val m: Map[Any, Any] = v.asScala.toMap
+      JsObject(
+        m.keys.flatMap {
+          case key: String => {
+            val value = m(key)
+            Some((key, swaggerAnyToJsValue(value)))
+          }
+          case _ => None
+        }.toMap
+      )
+    }
     case v: java.util.List[_] => JsArray(v.asScala.map(swaggerAnyToJsValue))
     case v: String => JsString(v)
     case _ => JsNull // Would be ideal to warn here
