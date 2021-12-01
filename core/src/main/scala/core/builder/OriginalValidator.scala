@@ -5,8 +5,8 @@ import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models.Service
 import core.{ServiceFetcher, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator}
-import me.apidoc.avro.AvroIdlServiceValidator
-import me.apidoc.swagger.SwaggerServiceValidator
+import io.apibuilder.avro.AvroIdlServiceValidator
+import io.apibuilder.swagger.SwaggerServiceValidator
 
 object OriginalValidator {
 
