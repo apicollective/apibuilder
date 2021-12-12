@@ -64,12 +64,8 @@ class OpenApi3PetStoreExampleSpec extends FunSpec with Matchers
   }
 
   it("models") {
-    def model[T](name: String)(f: Model => T): T = {
-      f(svc.models.find(_.name == name).get)
-    }
-    def field[T](model: Model, name: String)(f: Field => T): T = {
-      f(model.fields.find(_.name == name).get)
-    }
+    def model[T](name: String)(f: Model => T): T = f(svc.models.find(_.name == name).get)
+    def field[T](model: Model, name: String)(f: Field => T): T = f(model.fields.find(_.name == name).get)
 
     svc.models.map(_.name).sorted shouldBe Seq("Error", "NewPet", "Pet").sorted
 
