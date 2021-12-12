@@ -30,7 +30,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
   private[this] def validateSchemas(components: swagger.Components): ValidatedNec[String, Seq[ReferenceType[Model]]] = {
     Option(components.getSchemas).map(_.asScala).getOrElse(Nil).map { case (ref, schema) =>
       validateSchema(ref, schema)
-    }.toList.sequence
+    }.toList.traverse(identity)
   }
 
   private[this] def validateSchema[T](ref: String, schema: swagger.media.Schema[T]): ValidatedNec[String, ReferenceType[Model]] = {
