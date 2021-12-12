@@ -53,6 +53,10 @@ case class V2Parser(config: ServiceConfiguration) {
         baseUrl = baseUrl,
         info = info,
         description = description,
+        headers = Nil, // Not currently supported
+        imports = Nil, // Not currently supported
+        attributes = Nil, // Not currently supported
+        annotations = Nil, // Not currently supported
       )
     }
   }
