@@ -4,7 +4,7 @@ import cats.data.ValidatedNec
 import cats.implicits._
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.swagger.SchemaType
-import io.swagger.v3.oas.models.{OpenAPI, info}
+import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.{models => swagger}
 import lib.Text
 
@@ -38,8 +38,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     (
       validateSchemaDescription(schema),
       validateSchemaFields(schema),
-      validateSchemaDeprecation(schema)
-      ).mapN { case (description, fields, deprecation) =>
+    ).mapN { case (description, fields) =>
       println(s"REFERENCE: #/components/schemas/$name")
       println(s"FIELDS: ${fields}")
       ReferenceType(
@@ -49,7 +48,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
           plural = Text.pluralize(name),
           description = description,
           fields = fields,
-          deprecation = deprecation,
+          deprecation = deprecation(schema.getDeprecated),
           attributes = Nil, // not supported
           interfaces = Nil  // not supported
         )
@@ -90,19 +89,30 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     props: swagger.media.Schema[_],
     required: Boolean,
   ): ValidatedNec[String, Field] = {
-    validateType(props).map { typ =>
+    (
+      validateType(props),
+      validateDefault(props.getDefault),
+    ).mapN { case (typ, default) =>
       Field(
         name = name,
         `type` = typ,
         required = required,
-//        description: _root_.scala.Option[String] = None,
-//      deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
-//      default: _root_.scala.Option[String] = None,
-//      minimum: _root_.scala.Option[Long] = None,
-//      maximum: _root_.scala.Option[Long] = None,
-//      example: _root_.scala.Option[String] = None,
-//      attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil,
-//      annotations: Seq[String] = Nil
+        description = trimmedString(props.getDescription),
+        deprecation = deprecation(props.getDeprecated),
+        default = default,
+        minimum = optionalLong(props.getMinimum).orElse {
+          optionalLong(props.getMinItems).orElse {
+            optionalLong(props.getMinLength)
+          }
+        },
+        maximum = optionalLong(props.getMaximum).orElse {
+          optionalLong(props.getMaxItems).orElse {
+            optionalLong(props.getMaxLength)
+          }
+        },
+        example = None, // TODO: Add support
+        attributes = Nil, // Not supported
+        annotations = Nil, // Not supported
       )
     }
   }
@@ -111,12 +121,10 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     SchemaType.validateFromSwagger(props.getType, Option(props.getFormat))
   }
 
-  private[this] def validateSchemaDeprecation[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Option[Deprecation]] = {
-    Option(schema.getDeprecated) match {
-      case Some(v) if v => Some(Deprecation()).validNec
-      case _ => None.validNec
-    }
+  private[this] def validateDefault(value: Any): ValidatedNec[String, Option[String]] = {
+    Option(value).map(_.toString).validNec
   }
+
 }
 
 case class Components(models: Seq[ReferenceType[Model]]) {
