@@ -38,15 +38,16 @@ case class V2Parser(config: ServiceConfiguration) {
   private[this] def parseOpenApi(api: OpenAPI): ValidatedNec[String, Service] = {
     (
       validateName(api),
+      validateVersion(api),
       validateInfo(api)
-    ).mapN { case (name, info) =>
+    ).mapN { case (name, version, info) =>
       Service(
         apidoc = ApiDocConstant,
         name = name,
         organization = Organization(key = config.orgKey),
         application = applicationFromName(name),
         namespace = config.orgNamespace,
-        version = config.version,
+        version = version,
         info = info,
       )
     }
@@ -69,6 +70,13 @@ case class V2Parser(config: ServiceConfiguration) {
         license = license,
         contact = contact,
       )
+    }
+  }
+
+  private[this] def validateVersion(api: OpenAPI): ValidatedNec[String, String] = {
+    Option(api.getInfo).flatMap { info => Option(info.getVersion) } match {
+      case None => "info/version is required".invalidNec
+      case Some(v) => v.validNec
     }
   }
 

@@ -43,15 +43,15 @@ class OpenApi3PetStoreExampleSpec extends FunSpec with Matchers
 
   it("info.contact") {
     val c = svc.info.contact.get
-    c.name shouldBe "Swagger API Team"
-    c.email shouldBe "apiteam@swagger.io"
-    c.url shouldBe "http://swagger.io"
+    c.name.get shouldBe "Swagger API Team"
+    c.email.get shouldBe "apiteam@swagger.io"
+    c.url.get shouldBe "http://swagger.io"
   }
 
   it("info.license") {
     val c = svc.info.license.get
     c.name shouldBe "Apache 2.0"
-    c.url shouldBe "https://www.apache.org/licenses/LICENSE-2.0.html"
+    c.url.get shouldBe "https://www.apache.org/licenses/LICENSE-2.0.html"
   }
 
 }
