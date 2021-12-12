@@ -8,10 +8,13 @@ import io.swagger.v3.parser.OpenAPIV3Parser
 import lib.{ServiceConfiguration, UrlKey}
 import scala.jdk.CollectionConverters._
 
-case class V2Parser(config: ServiceConfiguration) {
-
+object V2ParserConstants {
   // Set to the version of API Builder at which we built the parser
-  private[this] val ApiDocConstant = Apidoc(version = "0.15.58")
+  val ApiDocConstant: Apidoc = Apidoc(version = "0.15.58")
+}
+
+case class V2Parser(config: ServiceConfiguration) {
+  import V2ParserConstants._
 
   def parse(contents: String): ValidatedNec[String, Service] = {
     parseContents(contents).andThen { openApi =>
