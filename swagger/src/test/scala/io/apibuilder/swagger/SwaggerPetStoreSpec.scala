@@ -1,17 +1,14 @@
 package io.apibuilder.swagger
 
-import helpers.ServiceConfigurationHelpers
+import io.apibuilder.swagger.helpers.FileHelpers
 import org.scalatest.{FunSpec, Matchers}
 
 class SwaggerPetStoreSpec extends FunSpec
   with Matchers
-  with ServiceConfigurationHelpers
+  with FileHelpers
 {
 
-  private[this] val example =
-    """
-
-      |""".stripMargin
+  private[this] val example = readResource("petstore-20211212.yml")
 
   it("example") {
     val svc = Parser(
