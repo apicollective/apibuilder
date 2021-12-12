@@ -437,7 +437,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers with FileHelpers
       val files = Seq("petstore-enums-ref.json")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
           println(s"Reading resource[$filename]")
           SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
@@ -899,7 +898,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers with FileHelpers
       val files = Seq("petstore-with-external-docs-and-complex-path.json")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
           println(s"Reading resource[$filename]")
           SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
@@ -1073,9 +1071,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers with FileHelpers
       val files = Seq("refs.json", "refs.yaml")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
           println(s"Reading resource[$filename]")
-          assertRefsSpec(path)
+          assertRefsSpec(filename)
       }
     }
 
@@ -1083,7 +1080,6 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers with FileHelpers
       val files = Seq("no-resources.json")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
           println(s"Reading resource[$filename]")
           SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
@@ -1098,7 +1094,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers with FileHelpers
     }
   }
 
-  def assertRefsSpec(path: String) = {
+  def assertRefsSpec(filename: String): Unit = {
     SwaggerServiceValidator(config, readResource(filename)).validate() match {
       case Left(errors) => {
         fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
