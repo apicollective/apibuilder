@@ -4,21 +4,12 @@ import io.apibuilder.spec.v0.models.Method.{Delete, Get}
 import io.apibuilder.spec.v0.models.ParameterLocation.{Path, Query}
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.swagger.helpers.FileHelpers
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
 
-class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
-  private val resourcesDir = "swagger/src/test/resources/"
-
-  private def readFile(path: String): String = {
-    val source = scala.io.Source.fromFile(path)
-    try {
-      source.getLines().mkString("\n")
-    } finally {
-      source.close()
-    }
-  }
+class SwaggerServiceValidatorSpec extends FunSpec with Matchers with FileHelpers {
 
   private def printRequired(value: Boolean): String = {
     if (value) {
@@ -77,11 +68,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("petstore-enums.json")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
-          println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          println(s"Reading resource[$filename]")
+          SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+              fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
@@ -383,11 +373,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("recursive-and-circular-dependencies.json")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
-          println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          println(s"Reading resource[$filename]")
+          SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+              fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.models.map(_.name).sorted should be(Seq("ModelA", "ModelB"))
@@ -449,10 +438,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       files.foreach {
         filename =>
           val path = resourcesDir + filename
-          println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          println(s"Reading resource[$filename]")
+          SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+              fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
@@ -698,11 +687,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("petstore-external-docs-example-security.json")
       files.foreach {
         filename =>
-          val path = resourcesDir + filename
-          println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          println(s"Reading resource[$filename]")
+          SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+              fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
@@ -912,10 +900,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       files.foreach {
         filename =>
           val path = resourcesDir + filename
-          println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          println(s"Reading resource[$filename]")
+          SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+              fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.name should be("Swagger Petstore")
@@ -1086,7 +1074,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       files.foreach {
         filename =>
           val path = resourcesDir + filename
-          println(s"Reading file[$path]")
+          println(s"Reading resource[$filename]")
           assertRefsSpec(path)
       }
     }
@@ -1096,10 +1084,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       files.foreach {
         filename =>
           val path = resourcesDir + filename
-          println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          println(s"Reading resource[$filename]")
+          SwaggerServiceValidator(config, readResource(filename)).validate() match {
             case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+              fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
             }
             case Right(service) => {
               service.resources.map(_.`type`) should be (Seq("placeholder"))
@@ -1111,9 +1099,9 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   def assertRefsSpec(path: String) = {
-    SwaggerServiceValidator(config, readFile(path)).validate() match {
+    SwaggerServiceValidator(config, readResource(filename)).validate() match {
       case Left(errors) => {
-        fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+        fail(s"Service validation failed for resource[$filename]: " + errors.mkString(", "))
       }
       case Right(service) => {
         service.name should be("Inventory API")

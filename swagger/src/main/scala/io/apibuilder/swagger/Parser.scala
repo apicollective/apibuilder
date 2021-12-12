@@ -197,6 +197,7 @@ case class Parser(config: ServiceConfiguration) {
         }
       }
     }.groupBy(_.pathWithUrl)
+
     withResponse.keys.toList.sortBy(_.url.length).map { pathWithUrl =>
       val path = pathWithUrl.path
       val responses = withResponse(pathWithUrl)
@@ -205,13 +206,16 @@ case class Parser(config: ServiceConfiguration) {
       }.distinct match {
         case Nil => None
         case one :: Nil => Some(one)
-        case mult => sys.error(s"Multiple models found for path: $path: ${mult.mkString(", ")}")
+        case _ => None // this path has multiple models returned. We can't identify a common model with 100% certainty
       }
 
       val enums = buildEnums(path, commonModel)
       val apiBuilderModel = findModelForResource(resolver, commonModel).getOrElse(translators.Model.Placeholder)
       val resource = translators.Resource(
-        resolver.copy(enums = resolver.enums ++ enums), apiBuilderModel, responses.head.url, path,
+        resolver.copy(enums = resolver.enums ++ enums),
+        apiBuilderModel,
+        pathWithUrl.url,
+        path,
       )
       ResourceWithEnums(resource, enums)
     }

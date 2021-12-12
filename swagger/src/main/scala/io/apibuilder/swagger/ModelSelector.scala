@@ -3,6 +3,8 @@ package io.apibuilder.swagger
 import io.swagger.{models => swagger}
 import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 
+import scala.annotation.tailrec
+
 private[swagger] case class MyDefinition(name: String, definition: swagger.Model) {
 
   /**
@@ -18,7 +20,7 @@ private[swagger] case class MyDefinition(name: String, definition: swagger.Model
   private def modelDependencies(swaggerModel: swagger.Model): Seq[String] = {
     swaggerModel match {
       case m: swagger.ComposedModel => {
-        Util.toArray(m.getAllOf).flatMap { modelDependencies(_) }
+        Util.toArray(m.getAllOf).flatMap { modelDependencies }
       }
 
       case m: swagger.RefModel => {
@@ -26,7 +28,7 @@ private[swagger] case class MyDefinition(name: String, definition: swagger.Model
       }
 
       case m: swagger.ModelImpl => {
-        Util.toMap(m.getProperties).values.flatMap { schemaType(_) }.toSeq
+        Util.toMap(m.getProperties).values.flatMap { schemaType }.toSeq
       }
 
       case _ => {
@@ -39,6 +41,7 @@ private[swagger] case class MyDefinition(name: String, definition: swagger.Model
     * If the type of this property is a primitive, returns
     * None. Otherwise returns the name of the type.
     */
+  @tailrec
   private def schemaType(prop: Property): Option[String] = {
     prop match {
       case p: ArrayProperty => {
@@ -66,7 +69,7 @@ private[swagger] case class ModelSelector(
     case (name, definition) => MyDefinition(name, definition)
   }.toSeq
 
-  private var completed = scala.collection.mutable.ListBuffer[String]()
+  private val completed = scala.collection.mutable.ListBuffer[String]()
 
   def remaining(): Seq[MyDefinition] = {
     definitions.filter( md => !completed.contains(md.name) )
