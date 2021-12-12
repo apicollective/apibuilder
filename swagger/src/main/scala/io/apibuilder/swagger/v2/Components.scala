@@ -5,6 +5,7 @@ import cats.implicits._
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.swagger.SchemaType
 import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.{models => swagger}
 import lib.Text
 
@@ -68,10 +69,29 @@ object ComponentsValidator extends OpenAPIParseHelpers {
           case Some(t) if t == "object" => validateSchemaFieldsObject(schema)
           case Some(t) => s"API Builder does not yet support components/schema of type '$t".invalidNec
           case None => {
-            "TODO".invalidNec
+            schema match {
+              case c: ComposedSchema => validateComposedSchema(c)
+              case other => s"TODO: support ${schema.getClass.getName}".invalidNec
+            }
           }
         }
       }
+    }
+  }
+
+  private[this] def validateComposedSchema[T](schema: swagger.media.Schema[T] with ComposedSchema): ValidatedNec[String, Seq[Field]] = {
+    (listOfValues(schema.getAllOf), listOfValues(schema.getOneOf), listOfValues(schema.getAnyOf)) match {
+      case (allOf, Nil, Nil) => validateAllOf(allOf)
+      case (Nil, oneOf, Nil) => validateOneOf(oneOf)
+      case (Nil, Nil, anyOf) => validateAnyOf(anyOf)
+      case (Nil, Nil, Nil) => s"component could not be identified. Expected to see allOf, oneOf, or anyOf but found none of those".invalidNec
+      case (_, _, _) => s"component specified more than 1 value of allOf, oneOf, or anyOf. Expected to see exactly 1 of these".invalidNec
+    }
+  }
+
+  private[this] def validateAllOf[T](types: Seq[swagger.media.Schema[T]]): ValidatedNec[String, Field] = {
+    types.map {
+
     }
   }
 
