@@ -39,8 +39,10 @@ case class V2Parser(config: ServiceConfiguration) {
     (
       validateName(api),
       validateVersion(api),
-      validateInfo(api)
-    ).mapN { case (name, version, info) =>
+      validateInfo(api),
+      validateBaseUrl(api),
+      validateDescription(api),
+    ).mapN { case (name, version, info, baseUrl, description) =>
       Service(
         apidoc = ApiDocConstant,
         name = name,
@@ -48,7 +50,9 @@ case class V2Parser(config: ServiceConfiguration) {
         application = applicationFromName(name),
         namespace = config.orgNamespace,
         version = version,
+        baseUrl = baseUrl,
         info = info,
+        description = description,
       )
     }
   }
@@ -78,6 +82,18 @@ case class V2Parser(config: ServiceConfiguration) {
       case None => "info/version is required".invalidNec
       case Some(v) => v.validNec
     }
+  }
+
+  private[this] def validateBaseUrl(api: OpenAPI): ValidatedNec[String, Option[String]] = {
+    Option(api.getServers).map(_.asScala).getOrElse(Nil).flatMap(s => Option(s.getUrl)).toList.distinct match {
+      case Nil => None.validNec
+      case one :: Nil => Some(one).validNec
+      case _ => "API Builder requires at most 1 distinct server url".invalidNec
+    }
+  }
+
+  private[this] def validateDescription(api: OpenAPI): ValidatedNec[String, Option[String]] = {
+    Option(api.getInfo).flatMap { info => trimmedString(info.getDescription) }.validNec
   }
 
   private[this] def validateLicense(api: OpenAPI): ValidatedNec[String, Option[License]] = {

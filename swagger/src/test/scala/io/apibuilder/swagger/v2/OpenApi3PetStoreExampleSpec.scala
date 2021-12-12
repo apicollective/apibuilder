@@ -54,4 +54,11 @@ class OpenApi3PetStoreExampleSpec extends FunSpec with Matchers
     c.url.get shouldBe "https://www.apache.org/licenses/LICENSE-2.0.html"
   }
 
+  it("baseUrl") {
+    svc.baseUrl.get shouldBe "http://petstore.swagger.io/api"
+  }
+
+  it("description") {
+    svc.description.get shouldBe "A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification"
+  }
 }
