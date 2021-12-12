@@ -13,7 +13,7 @@ object V2ParserConstants {
   val ApiDocConstant: Apidoc = Apidoc(version = "0.15.58")
 }
 
-case class V2Parser(config: ServiceConfiguration) {
+case class V2Parser(config: ServiceConfiguration) extends OpenAPIParseHelpers {
   import V2ParserConstants._
 
   def parse(contents: String): ValidatedNec[String, Service] = {
@@ -42,7 +42,7 @@ case class V2Parser(config: ServiceConfiguration) {
       validateInfo(api),
       validateBaseUrl(api),
       validateDescription(api),
-      Components.validate(api)
+      ComponentsValidator.validate(api)
     ).mapN { case (name, version, info, baseUrl, description, components) =>
       Service(
         apidoc = ApiDocConstant,
@@ -133,5 +133,4 @@ case class V2Parser(config: ServiceConfiguration) {
     }.validNec
   }
 
-  private[this] def trimmedString(value: String): Option[String] = Option(value).map(_.trim).filter(_.nonEmpty)
 }
