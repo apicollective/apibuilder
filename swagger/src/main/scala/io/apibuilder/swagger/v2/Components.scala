@@ -151,22 +151,36 @@ object ComponentsValidator extends OpenAPIParseHelpers {
   }
 
   private[this] def validateAllOf(builder: ResolvedSchemaBuilder, types: List[Schema[_]]): ValidatedNec[String, Seq[Field]] = {
-    types.flatMap { t => Option(t.get$ref()).map { r => (t,r) } }.map { case (t, ref) =>
-      builder.findModelByRef(ref) match {
-        case None => s"Could not find ref: '${ref}'".invalidNec
-        case Some(resolvedType) => {
-          val fields = resolvedType.value.fields
-          validateSchemaFieldsObject(t) match {
-            case Invalid(e) => e.toList.mkString(", ").invalidNec
-            case Valid(addlFields) => {
-              println(s"fields: $fields")
-              println(s"addlFields: $addlFields")
-              (fields ++ addlFields).validNec
+    types.map { t =>
+      Option(t.get$ref()) match {
+        case None => validateSchemaFieldsObject(t)
+        case Some(ref) => {
+          builder.findModelByRef(ref) match {
+            case None => s"Could not find ref: '${ref}'".invalidNec
+            case Some(resolvedType) => {
+              println(s"RESOLVED Fields: ${resolvedType.value.fields}")
+              resolvedType.value.fields.validNec
             }
           }
         }
       }
-    }.sequence.map(_.flatten)
+    }.sequence.map { allFields =>
+      mergeFields(allFields.flatten, Nil)
+    }
+  }
+
+  /**
+   * If multiple definitions exist for a field name, take the last one
+   */
+  @tailrec
+  private[this] def mergeFields(remaining: List[Field], completed: List[Field]): List[Field] = {
+    remaining match {
+      case Nil => completed
+      case one :: rest => {
+        mergeFields(rest, completed ++ List(rest.find(_.name == one.name).getOrElse(one)))
+      }
+    }
+
   }
 
   private[this] def validateOneOf(types: List[Schema[_]]): ValidatedNec[String, Seq[Field]] = {
@@ -185,6 +199,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     val properties = Option(schema.getProperties).map(_.asScala).getOrElse(Map.empty[String, Schema[T]])
     properties.keys.toList.sorted.map { name =>
       val props = properties(name)
+      println(s"validateSchemaFieldsObject field name '$name'")
       validateField(name, props, required.contains(name))
     }.traverse(identity)
   }
