@@ -21,14 +21,13 @@ case class V2Parser(config: ServiceConfiguration) {
 
   private[this] def parseContents(contents: String): ValidatedNec[String, OpenAPI] = {
     val result = new OpenAPIV3Parser().readContents(contents, null, null)
-    if (result.getMessages != null) {
-      result.getMessages.asScala.mkString(", ").invalidNec
+    val errors = Option(result.getMessages).map(_.asScala).getOrElse(Nil)
+    if (errors.nonEmpty) {
+      errors.mkString(", ").invalidNec
     } else {
-      val openAPI = result.getOpenAPI
-      if (openAPI == null) {
-        "Unknown error parsing contents".invalidNec
-      } else {
-        openAPI.validNec
+      Option(result.getOpenAPI) match {
+        case None => "Unknown error parsing contents".invalidNec
+        case Some(openApi) => openApi.validNec
       }
     }
   }
