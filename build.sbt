@@ -21,10 +21,16 @@ lazy val allScalacOptions = Seq(
 lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings: _*)
+  .settings(
+    scalacOptions ++= allScalacOptions,
+    libraryDependencies ++= Seq(
+      "org.typelevel"     %% "cats-core" % "2.2.0",
+    )
+  )
 
 val avroVersion = "1.8.2"
 
-val playJsonVersion = "2.8.1"
+val playJsonVersion = "2.8.2"
 
 lazy val avro = project
   .in(file("avro"))
@@ -47,7 +53,7 @@ lazy val swagger = project
   .settings(
     scalacOptions ++= allScalacOptions,
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.50",
+      "io.swagger.parser.v3" % "swagger-parser" % "2.0.28",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
    )
@@ -103,7 +109,6 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
-      "org.typelevel"     %% "cats-core" % "2.2.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.20.0" % Test
     )
