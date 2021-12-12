@@ -42,7 +42,8 @@ case class V2Parser(config: ServiceConfiguration) {
       validateInfo(api),
       validateBaseUrl(api),
       validateDescription(api),
-    ).mapN { case (name, version, info, baseUrl, description) =>
+      Components.validate(api)
+    ).mapN { case (name, version, info, baseUrl, description, components) =>
       Service(
         apidoc = ApiDocConstant,
         name = name,
