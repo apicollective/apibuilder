@@ -96,7 +96,7 @@ object Parameter {
       }
       case t => {
         SchemaDetails(
-          `type` = SchemaType.fromSwaggerWithError(t, Option(param.getFormat))
+          `type` = SchemaType.mustConvert(t, Option(param.getFormat))
         )
       }
     }

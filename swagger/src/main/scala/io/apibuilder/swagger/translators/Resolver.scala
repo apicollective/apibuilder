@@ -59,7 +59,7 @@ case class Resolver(
         if (prop.getType == null) {
           sys.error(s"Property[${prop}] has no type")
         }
-        SchemaType.fromSwaggerWithError(prop.getType, Option(prop.getFormat))
+        SchemaType.mustConvert(prop.getType, Option(prop.getFormat))
       }
     }
   }

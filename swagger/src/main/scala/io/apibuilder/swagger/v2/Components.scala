@@ -3,6 +3,7 @@ package io.apibuilder.swagger.v2
 import cats.data.ValidatedNec
 import cats.implicits._
 import io.apibuilder.spec.v0.models._
+import io.apibuilder.swagger.SchemaType
 import io.swagger.v3.oas.models.{OpenAPI, info}
 import io.swagger.v3.oas.{models => swagger}
 import lib.Text
@@ -33,15 +34,16 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     }.toList.traverse(identity)
   }
 
-  private[this] def validateSchema[T](ref: String, schema: swagger.media.Schema[T]): ValidatedNec[String, ReferenceType[Model]] = {
+  private[this] def validateSchema[T](name: String, schema: swagger.media.Schema[T]): ValidatedNec[String, ReferenceType[Model]] = {
     (
-      validateSchemaName(schema),
       validateSchemaDescription(schema),
       validateSchemaFields(schema),
       validateSchemaDeprecation(schema)
-      ).mapN { case (name, description, fields, deprecation) =>
+      ).mapN { case (description, fields, deprecation) =>
+      println(s"REFERENCE: #/components/schemas/$name")
+      println(s"FIELDS: ${fields}")
       ReferenceType(
-        ref,
+        s"#/components/schemas/$name",
         Model(
           name = name,
           plural = Text.pluralize(name),
@@ -55,20 +57,58 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     }
   }
 
-  private[this] def validateSchemaName[T](schema: swagger.media.Schema[T]): ValidatedNec[String, String] = {
-    trimmedString(schema.getName) match {
-      case None => s"components/schema name must be non blank".invalidNec
-      case Some(n) => n.validNec
-    }
-  }
-
   private[this] def validateSchemaDescription[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Option[String]] = {
     trimmedString(schema.getDescription).validNec
   }
 
   private[this] def validateSchemaFields[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Seq[Field]] = {
-    println(s"DISCRIMINATOR: ${schema.getDiscriminator}")
-    "TODO".invalidNec
+    Option(schema.getDiscriminator) match {
+      case Some(disc) => s"API Builder does not yet support schema discriminators ('$disc')'".invalidNec
+      case None => {
+        trimmedString(schema.getType) match {
+          case Some(t) if t == "object" => validateSchemaFieldsObject(schema)
+          case Some(t) => s"API Builder does not yet support components/schema of type '$t".invalidNec
+          case None => {
+            "TODO".invalidNec
+          }
+        }
+      }
+    }
+  }
+
+  private[this] def validateSchemaFieldsObject[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Seq[Field]] = {
+    val required = Option(schema.getRequired).map(_.asScala).getOrElse(Nil)
+    val properties = Option(schema.getProperties).map(_.asScala).getOrElse(Map.empty[String, swagger.media.Schema[T]])
+    properties.keys.toList.sorted.map { name =>
+      val props = properties(name)
+      validateField(name, props, required.contains(name))
+    }.traverse(identity)
+  }
+
+  private[this] def validateField(
+    name: String,
+    props: swagger.media.Schema[_],
+    required: Boolean,
+  ): ValidatedNec[String, Field] = {
+    validateType(props).map { typ =>
+      Field(
+        name = name,
+        `type` = typ,
+        required = required,
+//        description: _root_.scala.Option[String] = None,
+//      deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
+//      default: _root_.scala.Option[String] = None,
+//      minimum: _root_.scala.Option[Long] = None,
+//      maximum: _root_.scala.Option[Long] = None,
+//      example: _root_.scala.Option[String] = None,
+//      attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil,
+//      annotations: Seq[String] = Nil
+      )
+    }
+  }
+
+  private[this] def validateType(props: swagger.media.Schema[_]): ValidatedNec[String, String] = {
+    SchemaType.validateFromSwagger(props.getType, Option(props.getFormat))
   }
 
   private[this] def validateSchemaDeprecation[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Option[Deprecation]] = {

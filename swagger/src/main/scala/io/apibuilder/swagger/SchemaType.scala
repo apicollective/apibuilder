@@ -1,9 +1,13 @@
 package io.apibuilder.swagger
 
+import cats.data.Validated.{Invalid, Valid}
+import cats.implicits._
+import cats.data.ValidatedNec
+
 case class SchemaType(
   swaggerType: String,
   swaggerFormat: Option[String],
-  apidoc: String
+  apiBuilderType: String
 )
 
 object SchemaType {
@@ -18,7 +22,7 @@ object SchemaType {
     SchemaType("number", Some("double"), "double"),
     SchemaType("string", None, "string"),
     SchemaType("string", Some("string"), "string"),
-    SchemaType("string", Some("byte"), "string"), // TODO: apidoc needs support for byte
+    SchemaType("string", Some("byte"), "string"), // TODO: API Builder needs support for byte
     SchemaType("string", Some("binary"), "string"),
     SchemaType("boolean", None, "boolean"),
     SchemaType("string", Some("date"), "date-iso8601"),
@@ -27,13 +31,23 @@ object SchemaType {
     SchemaType("object", None, "object")
   )
 
+  def validateFromSwagger(
+    swaggerType: String,
+    format: Option[String]
+  ): ValidatedNec[String, String] = {
+    fromSwagger(swaggerType, format) match {
+      case None => s"Unable to convert swagger type '$swaggerType' with format '$format' to API Builder type".invalidNec
+      case Some(t) => t.validNec
+    }
+  }
+
   def fromSwagger(
     swaggerType: String,
     format: Option[String]
   ): Option[String] = {
     all
       .find(schemaType => schemaType.swaggerFormat == format && schemaType.swaggerType == swaggerType)
-      .map(_.apidoc)
+      .map(_.apiBuilderType)
       .orElse {
         swaggerType match {
           /*
@@ -46,12 +60,13 @@ object SchemaType {
       }
   }
 
-  def fromSwaggerWithError(
+  def mustConvert(
     swaggerType: String,
     format: Option[String]
   ): String = {
-    fromSwagger(swaggerType, format).getOrElse {
-      sys.error(s"Could not resolve swagger type[$swaggerType] format[${format.getOrElse("")}]")
+    validateFromSwagger(swaggerType, format) match {
+      case Invalid(e) => sys.error(e.toList.mkString(", "))
+      case Valid(t) => t
     }
   }
 
