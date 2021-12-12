@@ -4,7 +4,6 @@ import cats.data.ValidatedNec
 import cats.implicits._
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.swagger.SchemaType
-import io.apibuilder.swagger.v2.ComponentsValidator.ComponentSchema
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.media.{ComposedSchema, Schema}
 import io.swagger.v3.oas.{models => swagger}
@@ -36,17 +35,25 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     val all: List[ComponentSchema[_]] = Option(components.getSchemas).map(_.asScala).getOrElse(Nil).toList.map { case (name, schema) =>
       ComponentSchema(name, schema)
     }
-    validateSchemasRecursively(all, Nil)
+    resolveOrder(all, Nil).map { s =>
+      validateSchema(s)
+    }.traverse(identity)
   }
 
   @tailrec
-  private[this] def validateSchemasRecursively(pending: List[ComponentSchema[_]], completed: List[ValidatedNec[String, ReferenceType[Model]]]): ValidatedNec[String, Seq[ReferenceType[Model]]] = {
-    pending match {
-      case Nil => completed.traverse(identity)
-      case one :: rest => {
-        validateSchemasRecursively(rest, completed ++ List(validateSchema(one)))
-      }
+  private[this] def resolveOrder(pending: List[ComponentSchema[_]], completed: List[ComponentSchema[_]]): List[ComponentSchema[_]] = {
+    val (ready, notReady) = pending.partition { c =>
+      allTypesResolved(c, completed)
     }
+    if (ready.isEmpty) {
+      completed ++ pending
+    } else {
+      resolveOrder(notReady, completed ++ ready)
+    }
+  }
+
+  private[this] def allTypesResolved(t: ComponentSchema[_], completed: List[ComponentSchema[_]]): Boolean = {
+    true // TODO
   }
 
   private[this] def validateSchema[T](c: ComponentSchema[T]): ValidatedNec[String, ReferenceType[Model]] = {
@@ -72,42 +79,52 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     }
   }
 
-  private[this] def validateSchemaDescription[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Option[String]] = {
+  private[this] def validateSchemaDescription[T](schema: Schema[T]): ValidatedNec[String, Option[String]] = {
     trimmedString(schema.getDescription).validNec
   }
 
-  private[this] def validateSchemaFields[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Seq[Field]] = {
+  private[this] def validateSchemaFields[T](schema: Schema[T]): ValidatedNec[String, Seq[Field]] = {
     trimmedString(schema.getType) match {
       case Some(t) if t == "object" => validateSchemaFieldsObject(schema)
       case Some(t) => s"API Builder does not yet support components/schema of type '$t".invalidNec
       case None => {
         schema match {
           case c: ComposedSchema => validateComposedSchema(c)
-          case other => s"TODO: support ${schema.getClass.getName}".invalidNec
+          case other => s"TODO: support ${other.getClass.getName}".invalidNec
         }
       }
     }
   }
 
-  private[this] def validateComposedSchema[T](schema: swagger.media.Schema[T] with ComposedSchema): ValidatedNec[String, Seq[Field]] = {
+  private[this] def validateComposedSchema(schema: swagger.media.ComposedSchema): ValidatedNec[String, Seq[Field]] = {
     (listOfValues(schema.getAllOf), listOfValues(schema.getOneOf), listOfValues(schema.getAnyOf)) match {
+      case (Nil, Nil, Nil) => s"component could not be identified. Expected to see allOf, oneOf, or anyOf but found none of those".invalidNec
       case (allOf, Nil, Nil) => validateAllOf(allOf)
       case (Nil, oneOf, Nil) => validateOneOf(oneOf)
       case (Nil, Nil, anyOf) => validateAnyOf(anyOf)
-      case (Nil, Nil, Nil) => s"component could not be identified. Expected to see allOf, oneOf, or anyOf but found none of those".invalidNec
       case (_, _, _) => s"component specified more than 1 value of allOf, oneOf, or anyOf. Expected to see exactly 1 of these".invalidNec
     }
   }
 
-  private[this] def validateAllOf[T](types: Seq[swagger.media.Schema[T]]): ValidatedNec[String, Field] = {
-    types.map {
-
-    }
+  private[this] def validateAllOf(types: List[Schema[_]]): ValidatedNec[String, Seq[Field]] = {
+    println(s"validateAllOf types: ${types}")
+    "allOf is not yet supported".invalidNec
   }
 
-  private[this] def validateSchemaFieldsObject[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Seq[Field]] = {
+  private[this] def validateOneOf(types: List[Schema[_]]): ValidatedNec[String, Seq[Field]] = {
+    println(s"validateOneOf types: ${types}")
+    "oneOf is not yet supported".invalidNec
+  }
+
+  private[this] def validateAnyOf(types: List[Schema[_]]): ValidatedNec[String, Seq[Field]] = {
+    println(s"validateAnyOf types: ${types}")
+    "oneOf is not yet supported".invalidNec
+  }
+
+
+  private[this] def validateSchemaFieldsObject[T](schema: Schema[T]): ValidatedNec[String, Seq[Field]] = {
     val required = Option(schema.getRequired).map(_.asScala).getOrElse(Nil)
-    val properties = Option(schema.getProperties).map(_.asScala).getOrElse(Map.empty[String, swagger.media.Schema[T]])
+    val properties = Option(schema.getProperties).map(_.asScala).getOrElse(Map.empty[String, Schema[T]])
     properties.keys.toList.sorted.map { name =>
       val props = properties(name)
       validateField(name, props, required.contains(name))
@@ -116,7 +133,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
 
   private[this] def validateField(
     name: String,
-    props: swagger.media.Schema[_],
+    props: Schema[_],
     required: Boolean,
   ): ValidatedNec[String, Field] = {
     (
@@ -147,7 +164,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     }
   }
 
-  private[this] def validateType(props: swagger.media.Schema[_]): ValidatedNec[String, String] = {
+  private[this] def validateType(props: Schema[_]): ValidatedNec[String, String] = {
     SchemaType.validateFromSwagger(props.getType, Option(props.getFormat))
   }
 
