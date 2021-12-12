@@ -157,10 +157,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
         case Some(ref) => {
           builder.findModelByRef(ref) match {
             case None => s"Could not find ref: '${ref}'".invalidNec
-            case Some(resolvedType) => {
-              println(s"RESOLVED Fields: ${resolvedType.value.fields}")
-              resolvedType.value.fields.validNec
-            }
+            case Some(resolvedType) => resolvedType.value.fields.validNec
           }
         }
       }
@@ -199,7 +196,6 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     val properties = Option(schema.getProperties).map(_.asScala).getOrElse(Map.empty[String, Schema[T]])
     properties.keys.toList.sorted.map { name =>
       val props = properties(name)
-      println(s"validateSchemaFieldsObject field name '$name'")
       validateField(name, props, required.contains(name))
     }.traverse(identity)
   }
