@@ -4,11 +4,13 @@ import cats.data.ValidatedNec
 import cats.implicits._
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.swagger.SchemaType
+import io.apibuilder.swagger.v2.ComponentsValidator.ComponentSchema
 import io.swagger.v3.oas.models.OpenAPI
-import io.swagger.v3.oas.models.media.ComposedSchema
+import io.swagger.v3.oas.models.media.{ComposedSchema, Schema}
 import io.swagger.v3.oas.{models => swagger}
 import lib.Text
 
+import scala.annotation.tailrec
 import scala.jdk.CollectionConverters._
 
 case class ReferenceType[T](ref: String, value: T)
@@ -29,17 +31,30 @@ object ComponentsValidator extends OpenAPIParseHelpers {
     }
   }
 
+  case class ComponentSchema[T](name: String, schema: Schema[T])
   private[this] def validateSchemas(components: swagger.Components): ValidatedNec[String, Seq[ReferenceType[Model]]] = {
-    Option(components.getSchemas).map(_.asScala).getOrElse(Nil).map { case (ref, schema) =>
-      validateSchema(ref, schema)
-    }.toList.traverse(identity)
+    val all: List[ComponentSchema[_]] = Option(components.getSchemas).map(_.asScala).getOrElse(Nil).toList.map { case (name, schema) =>
+      ComponentSchema(name, schema)
+    }
+    validateSchemasRecursively(all, Nil)
   }
 
-  private[this] def validateSchema[T](name: String, schema: swagger.media.Schema[T]): ValidatedNec[String, ReferenceType[Model]] = {
+  @tailrec
+  private[this] def validateSchemasRecursively(pending: List[ComponentSchema[_]], completed: List[ValidatedNec[String, ReferenceType[Model]]]): ValidatedNec[String, Seq[ReferenceType[Model]]] = {
+    pending match {
+      case Nil => completed.traverse(identity)
+      case one :: rest => {
+        validateSchemasRecursively(rest, completed ++ List(validateSchema(one)))
+      }
+    }
+  }
+
+  private[this] def validateSchema[T](c: ComponentSchema[T]): ValidatedNec[String, ReferenceType[Model]] = {
     (
-      validateSchemaDescription(schema),
-      validateSchemaFields(schema),
+      validateSchemaDescription(c.schema),
+      validateSchemaFields(c.schema),
     ).mapN { case (description, fields) =>
+      val name = c.name
       println(s"REFERENCE: #/components/schemas/$name")
       println(s"FIELDS: ${fields}")
       ReferenceType(
@@ -49,7 +64,7 @@ object ComponentsValidator extends OpenAPIParseHelpers {
           plural = Text.pluralize(name),
           description = description,
           fields = fields,
-          deprecation = deprecation(schema.getDeprecated),
+          deprecation = deprecation(c.schema.getDeprecated),
           attributes = Nil, // not supported
           interfaces = Nil  // not supported
         )
@@ -62,18 +77,13 @@ object ComponentsValidator extends OpenAPIParseHelpers {
   }
 
   private[this] def validateSchemaFields[T](schema: swagger.media.Schema[T]): ValidatedNec[String, Seq[Field]] = {
-    Option(schema.getDiscriminator) match {
-      case Some(disc) => s"API Builder does not yet support schema discriminators ('$disc')'".invalidNec
+    trimmedString(schema.getType) match {
+      case Some(t) if t == "object" => validateSchemaFieldsObject(schema)
+      case Some(t) => s"API Builder does not yet support components/schema of type '$t".invalidNec
       case None => {
-        trimmedString(schema.getType) match {
-          case Some(t) if t == "object" => validateSchemaFieldsObject(schema)
-          case Some(t) => s"API Builder does not yet support components/schema of type '$t".invalidNec
-          case None => {
-            schema match {
-              case c: ComposedSchema => validateComposedSchema(c)
-              case other => s"TODO: support ${schema.getClass.getName}".invalidNec
-            }
-          }
+        schema match {
+          case c: ComposedSchema => validateComposedSchema(c)
+          case other => s"TODO: support ${schema.getClass.getName}".invalidNec
         }
       }
     }
