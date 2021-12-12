@@ -1,6 +1,6 @@
 package io.apibuilder.swagger
 
-import helpers.ServiceConfigurationHelpers
+import _root_.helpers.ServiceConfigurationHelpers
 import org.scalatest.{FunSpec, Matchers}
 import play.api.libs.json.Json
 import io.apibuilder.spec.v0.models.json._
