@@ -58,6 +58,7 @@ case class V2Parser(config: ServiceConfiguration) extends OpenAPIParseHelpers {
         imports = Nil, // Not currently supported
         attributes = Nil, // Not currently supported
         annotations = Nil, // Not currently supported
+        models = components.models.map(_.value)
       )
     }
   }
