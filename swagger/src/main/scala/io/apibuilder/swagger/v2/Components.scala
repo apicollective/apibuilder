@@ -177,7 +177,6 @@ object ComponentsValidator extends OpenAPIParseHelpers {
         mergeFields(rest, completed ++ List(rest.find(_.name == one.name).getOrElse(one)))
       }
     }
-
   }
 
   private[this] def validateOneOf(types: List[Schema[_]]): ValidatedNec[String, Seq[Field]] = {

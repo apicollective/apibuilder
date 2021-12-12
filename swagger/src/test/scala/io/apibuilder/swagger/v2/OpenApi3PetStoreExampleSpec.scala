@@ -112,5 +112,31 @@ class OpenApi3PetStoreExampleSpec extends FunSpec with Matchers
       }
     }
 
+
+    model("Pet") { m =>
+      m.plural shouldBe "Pets"
+      m.description shouldBe None
+      m.deprecation shouldBe None
+      m.fields.map(_.name) shouldBe Seq("name", "tag", "id")
+
+      field(m, "name") { f =>
+        f.required shouldBe true
+        f.`type` shouldBe "string"
+        f.description shouldBe None
+      }
+
+      field(m, "tag") { f =>
+        f.required shouldBe false
+        f.`type` shouldBe "string"
+        f.description shouldBe None
+      }
+
+      field(m, "id") { f =>
+        f.required shouldBe true
+        f.`type` shouldBe "long"
+        f.description shouldBe None
+      }
+    }
+
   }
 }
