@@ -18,9 +18,7 @@ case class ReferenceType[T](ref: String, value: T)
 object ComponentsValidator extends OpenAPIParseHelpers {
   def validate(api: OpenAPI): ValidatedNec[String, Components] = {
     Option(api.getComponents) match {
-      case None => Components(
-        models = Nil
-      ).validNec
+      case None => Components().validNec
       case Some(c) => {
         validateSchemas(c).map { models =>
           Components(
@@ -157,7 +155,10 @@ object ComponentsValidator extends OpenAPIParseHelpers {
         case Some(ref) => {
           builder.findModelByRef(ref) match {
             case None => s"Could not find ref: '${ref}'".invalidNec
-            case Some(resolvedType) => resolvedType.value.fields.validNec
+            case Some(resolvedType) => {
+              // TODO: Consider making this type an interface as it is now used in two places
+              resolvedType.value.fields.validNec
+            }
           }
         }
       }
@@ -242,8 +243,19 @@ object ComponentsValidator extends OpenAPIParseHelpers {
 
 }
 
-case class Components(models: Seq[ReferenceType[Model]]) {
+case class Components(
+  enums: Seq[ReferenceType[Enum]] = Nil,
+  models: Seq[ReferenceType[Model]] = Nil,
+  unions: Seq[ReferenceType[Union]] = Nil,
+  interfaces: Seq[ReferenceType[Interface]] = Nil,
+) {
+  private[this] val enumsByRef: Map[String, Enum] = enums.map { m => m.ref -> m.value }.toMap
   private[this] val modelsByRef: Map[String, Model] = models.map { m => m.ref -> m.value }.toMap
+  private[this] val unionsByRef: Map[String, Union] = unions.map { m => m.ref -> m.value }.toMap
+  private[this] val interfacesByRef: Map[String, Interface] = interfaces.map { m => m.ref -> m.value }.toMap
 
+  def findEnum(ref: String): Option[Enum] = enumsByRef.get(ref)
   def findModel(ref: String): Option[Model] = modelsByRef.get(ref)
+  def findUnion(ref: String): Option[Union] = unionsByRef.get(ref)
+  def findInterface(ref: String): Option[Interface] = interfacesByRef.get(ref)
 }

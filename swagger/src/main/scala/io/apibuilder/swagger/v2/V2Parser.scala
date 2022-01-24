@@ -42,8 +42,12 @@ case class V2Parser(config: ServiceConfiguration) extends OpenAPIParseHelpers {
       validateInfo(api),
       validateBaseUrl(api),
       validateDescription(api),
-      ComponentsValidator.validate(api)
-    ).mapN { case (name, version, info, baseUrl, description, components) =>
+      ComponentsValidator.validate(api).andThen { components =>
+        ResourcesValidator.validate(api, components).map { r =>
+          (components, r)
+        }
+      }
+    ).mapN { case (name, version, info, baseUrl, description, (components, resources)) =>
       Service(
         apidoc = ApiDocConstant,
         name = name,
@@ -58,7 +62,11 @@ case class V2Parser(config: ServiceConfiguration) extends OpenAPIParseHelpers {
         imports = Nil, // Not currently supported
         attributes = Nil, // Not currently supported
         annotations = Nil, // Not currently supported
-        models = components.models.map(_.value)
+        models = components.models.map(_.value),
+        enums = components.enums.map(_.value),
+        unions = components.unions.map(_.value),
+        interfaces = components.interfaces.map(_.value),
+        resources = resources,
       )
     }
   }
