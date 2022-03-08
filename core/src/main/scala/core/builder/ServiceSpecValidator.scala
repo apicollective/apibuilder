@@ -142,7 +142,15 @@ case class ServiceSpecValidator(
 
   def validateField(prefix: String, field: Field): Seq[String] = {
     validateName(prefix, field.name) ++
-      validateType(prefix, field.`type`) ++
+      validateType(prefix, field.`type`) {
+        case _: Kind.Interface => Some(s"$prefix type[${field.`type`}] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type")
+        case _: Kind.Primitive => None
+        case _: Kind.Enum => None
+        case _: Kind.Model => None
+        case _: Kind.Union => None
+        case _: Kind.List => None
+        case _: Kind.Map => None
+      } ++
       validateRange(prefix, field.minimum, field.maximum) ++
       validateInRange(prefix, field.minimum, field.maximum, field.default) ++
       field.default.toSeq.flatMap { d => validateDefault(prefix, field.`type`, d) } ++
@@ -985,18 +993,15 @@ case class ServiceSpecValidator(
     invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes ++ invalidHeaders.flatten
   }
 
-  private def validateType(prefix: String, `type`: String): Seq[String] = {
+  private def validateType(prefix: String, `type`: String)(
+    implicit validateType: Kind => Option[String] = {_ => None}
+  ): Seq[String] = {
     typeResolver.parse(`type`) match {
       case None => Seq(s"$prefix type[${`type`}] not found")
       case Some(t) => {
-        t match {
-          case _: Kind.Interface => Seq(s"$prefix type[${`type`}] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type")
-          case _: Kind.Primitive => Nil
-          case _: Kind.Enum => Nil
-          case _: Kind.Model => Nil
-          case _: Kind.Union => Nil
-          case _: Kind.List => Nil
-          case _: Kind.Map => Nil
+        validateType(t) match {
+          case None => Nil
+          case Some(error) => Seq(error)
         }
       }
     }
