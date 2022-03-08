@@ -988,7 +988,17 @@ case class ServiceSpecValidator(
   private def validateType(prefix: String, `type`: String): Seq[String] = {
     typeResolver.parse(`type`) match {
       case None => Seq(s"$prefix type[${`type`}] not found")
-      case Some(_) => Nil
+      case Some(t) => {
+        t match {
+          case _: Kind.Interface => Seq(s"$prefix type[${`type`}] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type")
+          case _: Kind.Primitive => Nil
+          case _: Kind.Enum => Nil
+          case _: Kind.Model => Nil
+          case _: Kind.Union => Nil
+          case _: Kind.List => Nil
+          case _: Kind.Map => Nil
+        }
+      }
     }
   }
 
