@@ -32,19 +32,14 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] def servicePersonUnionAndInterface(
     interfaces: Seq[String],
-    modelInterfaces: Option[Seq[String]] = None
+    userModel: Model = makeModel()
   ): ApiJson = makeApiJson(
     interfaces = Map("person" -> person),
     unions = Map("person" -> makeUnion(
       interfaces = Some(interfaces),
       types = Seq(makeUnionType("user")))
     ),
-    models = Map("user" -> makeModel(
-      interfaces = modelInterfaces,
-      fields = Seq(
-        makeField(name = "name")
-      )
-    )),
+    models = Map("user" -> userModel),
   )
 
   it("validates interface name") {
@@ -153,7 +148,13 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
 
   it("model fields can reference a union w /interface") {
     val svc = expectValid {
-      servicePersonUnionAndInterface(Seq("person"), modelInterfaces = Some(Seq("person")))
+      servicePersonUnionAndInterface(
+        interfaces = Seq("person"),
+        userModel = makeModel(
+          interfaces = Some(Seq("person")),
+          fields = person.fields.getOrElse(Nil)
+        )
+      )
     }
     svc.models.head.interfaces shouldBe Seq("person")
   }
