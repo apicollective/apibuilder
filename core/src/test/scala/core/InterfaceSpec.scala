@@ -1,8 +1,6 @@
 package core
 
 import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
-import io.apibuilder.spec.v0.models.Service
-import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
 
 class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
@@ -20,17 +18,6 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     )
   )
 
-  private[this] val guest: Model = makeModel(
-    interfaces = Some(Seq("person")),
-    fields = Seq(
-      makeField(name = "age")
-    )
-  )
-
-  private[this] def model(service: spec.Service, name: String): spec.Model = service.models.find(_.name == name).getOrElse {
-    sys.error(s"Cannot find model: $name")
-  }
-
   private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
     TestHelper.serviceValidator(apiJson).errors()
   }
@@ -43,13 +30,16 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     validator.service()
   }
 
-  private[this] def servicePersonUnionAndInterface(interfaces: Seq[String]): ApiJson = makeApiJson(
+  private[this] def servicePersonUnionAndInterface(
+    interfaces: Seq[String],
+    userModel: Model = makeModel()
+  ): ApiJson = makeApiJson(
     interfaces = Map("person" -> person),
     unions = Map("person" -> makeUnion(
       interfaces = Some(interfaces),
       types = Seq(makeUnionType("user")))
     ),
-    models = Map("user" -> makeModel()),
+    models = Map("user" -> userModel),
   )
 
   it("validates interface name") {
@@ -111,6 +101,21 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     )
   }
 
+  it("validates field type is not an interface") {
+    expectErrors(
+      makeApiJson(
+        interfaces = Map("person" -> person),
+        models = Map("user" -> makeModel(
+          fields = Seq(
+            makeField(name = "id", `type` = "person")
+          )
+        ))
+      )
+    ) should be(
+      Seq("Model[user] Field[id] type[person] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type")
+    )
+  }
+
   it("validates field 'required' if declared is consistent") {
     expectErrors(
       makeApiJson(
@@ -139,6 +144,19 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     } should be(
       Seq("'person' is defined as both a union and an interface. You must either make the names unique, or document in the union interfaces field that the type extends the 'person' interface.")
     )
+  }
+
+  it("model fields can reference a union w /interface") {
+    val svc = expectValid {
+      servicePersonUnionAndInterface(
+        interfaces = Seq("person"),
+        userModel = makeModel(
+          interfaces = Some(Seq("person")),
+          fields = person.fields.getOrElse(Nil)
+        )
+      )
+    }
+    svc.models.head.interfaces shouldBe Seq("person")
   }
 
   it("model and interface cannot have the same name") {
