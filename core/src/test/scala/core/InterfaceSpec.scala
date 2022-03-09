@@ -30,13 +30,16 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     validator.service()
   }
 
-  private[this] def servicePersonUnionAndInterface(interfaces: Seq[String]): ApiJson = makeApiJson(
+  private[this] def servicePersonUnionAndInterface(
+    interfaces: Seq[String],
+    modelInterfaces: Option[Seq[String]] = None
+  ): ApiJson = makeApiJson(
     interfaces = Map("person" -> person),
     unions = Map("person" -> makeUnion(
       interfaces = Some(interfaces),
       types = Seq(makeUnionType("user")))
     ),
-    models = Map("user" -> makeModel()),
+    models = Map("user" -> makeModel(interfaces = modelInterfaces)),
   )
 
   it("validates interface name") {
@@ -141,6 +144,13 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
     } should be(
       Seq("'person' is defined as both a union and an interface. You must either make the names unique, or document in the union interfaces field that the type extends the 'person' interface.")
     )
+  }
+
+  it("model fields can reference a union w /interface") {
+    val svc = expectValid {
+      servicePersonUnionAndInterface(Seq("person"), modelInterfaces = Some(Seq("person")))
+    }
+    svc.models.head.fields.head.`type` should be("person")
   }
 
   it("model and interface cannot have the same name") {
