@@ -1,6 +1,8 @@
 package core
 
 import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
+import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.{models => spec}
 import org.scalatest.{FunSpec, Matchers}
 
 class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
@@ -17,6 +19,17 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
       makeField(name = "id")
     )
   )
+
+  private[this] val guest: Model = makeModel(
+    interfaces = Some(Seq("person")),
+    fields = Seq(
+      makeField(name = "age")
+    )
+  )
+
+  private[this] def model(service: spec.Service, name: String): spec.Model = service.models.find(_.name == name).getOrElse {
+    sys.error(s"Cannot find model: $name")
+  }
 
   private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
     TestHelper.serviceValidator(apiJson).errors()
@@ -95,21 +108,6 @@ class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
       )
     ) should be(
       Seq(s"Model[user] field 'name' type 'long' is invalid. Must match the 'person' interface which defines this field as type 'string'")
-    )
-  }
-
-  it("validates field type is not an interface") {
-    expectErrors(
-      makeApiJson(
-        interfaces = Map("person" -> person),
-        models = Map("user" -> makeModel(
-          fields = Seq(
-            makeField(name = "id", `type` = "person")
-          )
-        ))
-      )
-    ) should be(
-      Seq("Model[user] Field[id] type[person] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type")
     )
   }
 

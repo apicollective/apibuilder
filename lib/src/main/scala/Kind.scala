@@ -50,16 +50,14 @@ case class DatatypeResolver(
         enumNames.find(_ == name) match {
           case Some(_) => Some(Kind.Enum(name))
           case None => {
-            modelNames.find(_ == name) match {
-              case Some(_) => Some(Kind.Model(name))
-              case None => {
-                unionNames.find(_ == name) match {
-                  case Some(_) => Some(Kind.Union(name))
-                  case None => {
-                    interfaceNames.find(_ == name) match {
-                      case Some(_) => Some(Kind.Interface(name))
-                      case None => None
-                    }
+            interfaceNames.find(_ == name) match {
+              case Some(_) => Some(Kind.Interface(name))
+              case None => modelNames.find(_ == name) match {
+                case Some(_) => Some(Kind.Model(name))
+                case None => {
+                  unionNames.find(_ == name) match {
+                    case Some(_) => Some(Kind.Union(name))
+                    case None => None
                   }
                 }
               }

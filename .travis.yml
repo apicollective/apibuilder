@@ -6,18 +6,16 @@ jdk:
 cache:
   directories:
     - $HOME/.ivy2/cache
-    - $HOME/.sbt
-    - $HOME/.cache/coursier
+    - $HOME/.sbt/boot/
 services:
   - docker
 before_script:
   - docker run -d -p 127.0.0.1:7659:5432 flowcommerce/apibuilder-postgresql:latest
-script:
+script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs | rm -f
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs | rm -f
 branches:
   only:
     - main
-before_cache:
-  - rm -fv $HOME/.ivy2/.sbt.ivy.lock
-  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
-  - find $HOME/.sbt        -name "*.lock"               -print -delete
