@@ -160,7 +160,7 @@ case class ServiceSpecValidator(
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): Seq[String] = {
     typeResolver.parse(interfaceName) {
       case _: Kind.Interface => true
-      case _ => true
+      case _ => false
     } match {
       case Some(_: Kind.Interface) => {
         service.interfaces.find(_.name == interfaceName) match {
