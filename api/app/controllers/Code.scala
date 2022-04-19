@@ -8,10 +8,11 @@ import io.apibuilder.generator.v0.models.InvocationForm
 import io.apibuilder.generator.v0.models.json._
 import db.generators.{GeneratorsDao, ServicesDao}
 import db.VersionsDao
-import lib.{OrgAttributeUtil, Validation}
+import lib.{Constants, OrgAttributeUtil, Validation}
 import play.api.libs.json._
 import _root_.util.UserAgent
 import _root_.util.ApiBuilderServiceImportResolver
+import db.generated.{GeneratorInvocationForm, GeneratorInvocationsDao}
 import io.apibuilder.spec.v0.models.Service
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, AnyContent, Result}
@@ -25,6 +26,7 @@ class Code @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   wSClient: WSClient,
   apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
+  generatorInvocationsDao: GeneratorInvocationsDao,
   orgAttributeUtil: OrgAttributeUtil,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
@@ -159,7 +161,7 @@ class Code @Inject() (
               println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
 
-            println(s"Code.generator.invoked key: ${gws.generator.key}")
+            recordInvocation(gws.generator.key)
 
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
@@ -220,5 +222,12 @@ class Code @Inject() (
 
   private[this] def conflict(messages: Seq[String]): Result = {
     Conflict(Json.toJson(Validation.errors(messages)))
+  }
+
+  private[this] def recordInvocation(generatorKey: String): Unit = {
+    generatorInvocationsDao.insert(Constants.DefaultUserGuid, GeneratorInvocationForm(
+      key = generatorKey
+    ))
+    ()
   }
 }

@@ -1,3 +1,5 @@
+hack_dao/psql
+hack_dao/scala
 run
 target/
 logs/
