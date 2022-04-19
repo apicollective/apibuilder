@@ -159,6 +159,8 @@ class Code @Inject() (
               println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
 
+            println(s"Code.generator.invoked key: ${gws.generator.key}")
+
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
               invocationForm = data.invocationForm,
