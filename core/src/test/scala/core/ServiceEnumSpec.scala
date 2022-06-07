@@ -88,7 +88,7 @@ class ServiceEnumSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers 
       twentiesEnumValue = twentiesEnumValue.copy(name = "1")
     ) { v =>
       v.errors() should be(
-        Seq("Enum[age_group] value[1] is invalid: must start with a letter")
+        Seq("Enum[age_group] name[1] is invalid: Name must start with a letter")
       )
     }
   }

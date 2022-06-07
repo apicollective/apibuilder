@@ -224,10 +224,17 @@ case class ServiceSpecValidator(
       s"Enum[${enum.name}] must have at least one value"
     }
 
-    val valuesWithInvalidNames = service.enums.flatMap { enum =>
-      enum.values.filter(v => v.name.nonEmpty && !Text.startsWithLetter(v.name)).map { value =>
-        s"Enum[${enum.name}] value[${value.name}] is invalid: must start with a letter"
+    val valuesWithInvalidNames = if (nameErrors.isEmpty) {
+      service.enums.flatMap { enum =>
+        enum.values.flatMap { value =>
+          Text.validateName(value.name).toList match {
+            case Nil => None
+            case errors => Some(s"Enum[${enum.name}] name[${value.name}] is invalid: ${errors.mkString(", ")}")
+          }
+        }
       }
+    } else {
+      Nil
     }
 
     val duplicateValues = service.enums.flatMap { enum =>
@@ -246,7 +253,7 @@ case class ServiceSpecValidator(
       case errs => errs
     }
 
-    nameErrors ++ duplicates ++ valueErrors ++ validateEnumValues() ++ valuesWithInvalidNames ++ duplicateValues
+    nameErrors ++ duplicates ++ valueErrors ++ valuesWithInvalidNames ++ duplicateValues
   }
 
   private def validateAnnotations(prefix: String, annotations: Seq[String]): Seq[String] = {
@@ -268,20 +275,6 @@ case class ServiceSpecValidator(
     val duplicates = dupsError("Annotation", service.annotations.map(_.name))
 
     nameErrors ++ duplicates
-  }
-
-  private[this] def validateEnumValues(): Seq[String] = {
-    service.enums.flatMap { enum =>
-      enum.values.flatMap { enumValue =>
-        enumValue.value match {
-          case None => Nil
-          case Some(v) => Text.validateName(v) match {
-            case Nil => Nil
-            case errors => Seq(s"Enum[${enum.name}] value[$v] is invalid: ${errors.mkString(" and ")}")
-          }
-        }
-      }
-    }
   }
 
   private def validateUnions(): Seq[String] = {
