@@ -17,15 +17,15 @@ class DeprecationSpec extends FunSpec with Matchers {
         "old_content_type": {
           "deprecation": { "description": "blah" },
           "values": [
-            { "name": "application/json" },
-            { "name": "application/xml" }
+            { "name": "application_json" },
+            { "name": "application_xml" }
           ]
         },
 
         "content_type": {
           "values": [
-            { "name": "application/json" },
-            { "name": "application/xml" }
+            { "name": "application_json" },
+            { "name": "application_xml" }
           ]
         }
       }
@@ -47,8 +47,8 @@ class DeprecationSpec extends FunSpec with Matchers {
       "enums": {
         "content_type": {
           "values": [
-            { "name": "application/json", "deprecation": { "description": "blah" } },
-            { "name": "application/xml" }
+            { "name": "application_json", "deprecation": { "description": "blah" } },
+            { "name": "application_xml" }
           ]
         }
       }
@@ -59,8 +59,8 @@ class DeprecationSpec extends FunSpec with Matchers {
     validator.errors().mkString("") should be("")
     val ct = validator.service().enums.find(_.name == "content_type").get
 
-    ct.values.find(_.name == "application/json").get.deprecation.flatMap(_.description) should be(Some("blah"))
-    ct.values.find(_.name == "application/xml").get.deprecation.flatMap(_.description) should be(None)
+    ct.values.find(_.name == "application_json").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    ct.values.find(_.name == "application_xml").get.deprecation.flatMap(_.description) should be(None)
   }
 
   it("union") {

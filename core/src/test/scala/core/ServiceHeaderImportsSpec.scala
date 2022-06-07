@@ -151,8 +151,8 @@ class ServiceHeaderImportsSpec extends FunSpec with Matchers {
       "enums": {
         "content_type": {
           "values": [
-            { "name": "application/json" },
-            { "name": "application/xml" }
+            { "name": "application_json" },
+            { "name": "application_xml" }
           ]
         }
       }
