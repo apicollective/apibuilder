@@ -1,15 +1,12 @@
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "apibuilder-api"
+fullnameOverride: "apibuilder-api"
 
-service:
-  port: 9000
-  metricsEndpoint:
-    enabled: false
+team: foundation
 
 iamRole: ecsInstanceRole
 image:
   repository: flowcommerce/apibuilder-api
-  pullPolicy: IfNotPresent
+
 resources:
   limits:
     memory: "4Gi"
@@ -18,25 +15,25 @@ resources:
     memory: "4Gi"
     cpu: .05
 
-jvmMemory: 3072
+jvmOpts:
+  memory: 3072m
 
-nodeSelector: {} 
-affinity: {}
-tolerations: {} 
 
-ingress:
+istioIngress:
   enabled: true
   gateways:
     - key: api-apibuilder-io
       tld: apibuilder.io
+      dns: true
       hosts:
         - api.apibuilder.io
     - key: apibuilder-api-flow-pub
       tld: flo.pub
+      dns: true
       hosts:
         - apibuilder-api.flo.pub
 
-services:
+istioService:
   live:
     hosts:
       - apibuilder
@@ -55,7 +52,9 @@ deployments:
     minReplicas: 2
     maxReplicas: 2
     maxUnavailable: 1
-    disruptionBudgetEnabled: true
-    targetCPUUtilizationPercentage: 80
-    version: #from commandline
-    strategy: RollingUpdate
+
+rolloutResource:
+  enabled: false
+
+canary:
+  enabled: false
