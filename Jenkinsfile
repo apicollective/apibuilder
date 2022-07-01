@@ -73,7 +73,7 @@ pipeline {
           steps {
             script {
               container('helm') {
-                new helmCommonDeploy().deploy('apibuilder-api', 'apicollective', VERSION.printable(), 300, 'apicollective')
+                new helmCommonDeploy().deploy('apibuilder-api', 'apicollective', VERSION.printable(), 300)
               }
             }
           }
@@ -83,7 +83,7 @@ pipeline {
           steps {
             script {
               container('helm') {
-                new helmCommonDeploy().deploy('apibuilder-app', 'apicollective', VERSION.printable(), 300, 'apicollective')
+                new helmCommonDeploy().deploy('apibuilder-app', 'apicollective', VERSION.printable(), 300)
               }
             }
           }
