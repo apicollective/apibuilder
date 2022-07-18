@@ -13,7 +13,7 @@ pipeline {
       inheritFrom 'default'
 
       containerTemplates([
-        containerTemplate(name: 'helm', image: "lachlanevenson/k8s-helm:v2.17.0", command: 'cat', ttyEnabled: true),
+        containerTemplate(name: 'helm', image: "flowcommerce/k8s-build-helm2:0.0.50", command: 'cat', ttyEnabled: true),
         containerTemplate(name: 'docker', image: 'docker:18', resourceRequestCpu: '1', resourceRequestMemory: '2Gi', command: 'cat', ttyEnabled: true)
       ])
     }
@@ -60,6 +60,30 @@ pipeline {
               db.push()
             }
             
+          }
+        }
+      }
+    }
+
+    stage('Display Helm Diff') {
+      when {
+        allOf {
+          not {branch 'main'}
+          changeRequest()
+          expression {
+            return changesCheck.hasChangesInDir('deploy')
+          }
+        }
+      }
+      steps {
+        script {
+          container('helm') {
+            if(changesCheck.hasChangesInDir('deploy/apibuilder-api')){
+              new helmDiff().diff('apibuilder-api')
+            }
+            if(changesCheck.hasChangesInDir('deploy/apibuilder-app')){
+              new helmDiff().diff('apibuilder-app')
+            }
           }
         }
       }

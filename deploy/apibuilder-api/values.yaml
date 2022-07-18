@@ -58,3 +58,4 @@ rolloutResource:
 
 canary:
   enabled: false
+  
