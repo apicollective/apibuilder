@@ -65,6 +65,30 @@ pipeline {
       }
     }
 
+    stage('Display Helm Diff') {
+      when {
+        allOf {
+          not {branch 'main'}
+          changeRequest()
+          expression {
+            return changesCheck.hasChangesInDir('deploy')
+          }
+        }
+      }
+      steps {
+        script {
+          container('helm') {
+            if(changesCheck.hasChangesInDir('deploy/apibuilder-api')){
+              new helmDiff().diff('apibuilder-api')
+            }
+            if(changesCheck.hasChangesInDir('deploy/apibuilder-app')){
+              new helmDiff().diff('apibuilder-app')
+            }
+          }
+        }
+      }
+    }
+
     stage('Deploy Helm chart') {
       when { branch 'main' }
       parallel {
