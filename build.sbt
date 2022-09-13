@@ -53,6 +53,7 @@ lazy val swagger = project
    )
   )
 
+val circeVersion = "0.14.2"
 lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)
@@ -61,7 +62,10 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "https://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion
     )
   )
 
