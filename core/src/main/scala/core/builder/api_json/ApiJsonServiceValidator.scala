@@ -1,7 +1,7 @@
 package builder.api_json
 
 import builder.JsonUtil
-import core.{Importer, ServiceFetcher, Util, VersionMigration}
+import core.{DuplicateJsonParser, Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
 import io.apibuilder.spec.v0.models.Service
 import play.api.libs.json.{JsObject, Json}
@@ -84,7 +84,8 @@ case class ApiJsonServiceValidator(
             validateModels() ++
             validateFields() ++
             validateEnums() ++
-            validateAnnotations()
+            validateAnnotations() ++
+            validateDuplicates()
           }
 
           case errs => {
@@ -190,6 +191,10 @@ case class ApiJsonServiceValidator(
     )
 
     warnings ++ missingNames
+  }
+
+  private def validateDuplicates(): Seq[String] = {
+    DuplicateJsonParser.foo(apiJson)
   }
 
   private def validateEnums(): Seq[String] = {

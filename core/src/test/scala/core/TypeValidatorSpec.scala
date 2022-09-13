@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, Matchers}
 
 class TypeValidatorSpec extends FunSpec with Matchers {
 
-  val validator = TypeValidator(
+  private[this] val validator: TypeValidator = TypeValidator(
     defaultNamespace = None,
     enums = Seq(
       TypesProviderEnum("me.apidoc.test", "age_group", "age_groups", Seq("youth", "adult"))
