@@ -1,22 +1,19 @@
 package core
 
+import io.circe.ParsingFailure
 import io.circe.jawn.JawnParser
+
 
 //  scala> parser.decode[Map[String, Int]]("""{"a":1,"a":2}""")
 
 object DuplicateJsonParser {
 
   def foo(value: String): Seq[String] = {
-    val parser = JawnParser(allowDuplicateKeys = false)
-    parser.decode(value) match {
-      case Left(er) => {
-        println(s"ERR: $er")
-        Nil
-      }
-      case Right(js) => {
-        println(s"JS: $js")
-        Nil
-      }
+    val parser = new JawnParser(maxValueSize = None, allowDuplicateKeys = false)
+
+    parser.parse(value) match {
+      case Left(er: ParsingFailure) => Seq(er.message)
+      case _ => Nil
     }
   }
 }
