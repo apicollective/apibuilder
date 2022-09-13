@@ -52,6 +52,8 @@ class ExampleJsonSpec  extends PlaySpec
 
   "uses default when present" in {
     val js = exampleMinimal.sample("service").get
+    println(s"JSON:")
+    println(js)
     val service = Json.parse(js.toString()).as[Service]
     service.headers must be(Nil)
   }

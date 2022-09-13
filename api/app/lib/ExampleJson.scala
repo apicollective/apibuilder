@@ -8,8 +8,8 @@ import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
   
 case object ExampleJson {
-  val TrueStrings = Seq("t", "true", "y", "yes", "on", "1", "trueclass")
-  val FalseStrings = Seq("f", "false", "n", "no", "off", "0", "falseclass")
+  val TrueStrings: Seq[String] = Seq("t", "true", "y", "yes", "on", "1", "trueclass")
+  val FalseStrings: Seq[String] = Seq("f", "false", "n", "no", "off", "0", "falseclass")
 
   def allFields(service: Service): ExampleJson = ExampleJson(service, Selection.All)
   def requiredFieldsOnly(service: Service): ExampleJson = ExampleJson(service, Selection.RequiredFieldsOnly)

@@ -36,7 +36,7 @@ lazy val avro = project
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json"        % playJsonVersion,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     )
   )
 
@@ -49,7 +49,7 @@ lazy val swagger = project
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.61",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
    )
   )
 
@@ -108,7 +108,7 @@ lazy val api = project
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
       "org.typelevel"     %% "cats-core" % "2.8.0",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test,
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.0" % Test
     )
   )
@@ -137,7 +137,7 @@ lazy val app = project
       "org.webjars" %% "webjars-play" % "2.8.13",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars" % "bootstrap-social" % "5.0.0",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     )
   )
 
@@ -148,7 +148,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     )
   )
 
