@@ -1,8 +1,9 @@
 package lib
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class KindSpec extends FunSpec with Matchers {
+class KindSpec extends AnyFunSpec with Matchers {
 
   private[this] val resolver = DatatypeResolver(
     enumNames = Nil,

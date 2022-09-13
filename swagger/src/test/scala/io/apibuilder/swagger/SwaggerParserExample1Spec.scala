@@ -1,11 +1,12 @@
 package io.apibuilder.swagger
 
 import helpers.ServiceConfigurationHelpers
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 import io.apibuilder.spec.v0.models.json._
 
-class SwaggerParserExample1Spec extends FunSpec
+class SwaggerParserExample1Spec extends AnyFunSpec
   with Matchers
   with ServiceConfigurationHelpers
 {

@@ -5,10 +5,11 @@ import java.util
 import io.apibuilder.spec.v0.models.Attribute
 import io.swagger.models.SecurityRequirement
 import io.swagger.models.auth.SecuritySchemeDefinition
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsObject, JsString}
 
-class SwaggerDataSpec extends FunSpec with Matchers {
+class SwaggerDataSpec extends AnyFunSpec with Matchers {
 
   it("all data points empty/null") {
     SwaggerData().toAttribute should be (None)

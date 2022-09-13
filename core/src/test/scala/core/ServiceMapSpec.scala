@@ -2,10 +2,12 @@ package core
 
 import core.TestHelper.ServiceValidatorForSpecs
 import io.apibuilder.api.json.v0.models.Field
-import org.scalatest.{Assertion, FunSpec, Matchers}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+import play.api.libs.json.{JsValue, Json}
 
-class ServiceMapSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   def setup[T](field: Field)(f: ServiceValidatorForSpecs => T): T = {
     f(

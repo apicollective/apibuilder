@@ -1,9 +1,11 @@
 package lib
 
 import lib.VersionTag.VersionTagType
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class VersionTagSpec extends FunSpec with Matchers {
+class VersionTagSpec extends AnyFunSpec with Matchers {
 
   private def assertSorted(versions: Seq[String], target: String): Assertion = {
     val versionObjects = versions.map( VersionTag(_) )

@@ -1,9 +1,10 @@
 package io.apibuilder.swagger
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
 
-class UtilSpec extends FunSpec with Matchers {
+class UtilSpec extends AnyFunSpec with Matchers {
 
   it("formatName") {
     Util.formatName("pet") should be("pet")

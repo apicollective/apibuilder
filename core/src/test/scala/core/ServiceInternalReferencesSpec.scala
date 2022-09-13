@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceInternalReferencesSpec extends FunSpec with Matchers {
+class ServiceInternalReferencesSpec extends AnyFunSpec with Matchers {
 
   it("Validates circular reference") {
     val json = """

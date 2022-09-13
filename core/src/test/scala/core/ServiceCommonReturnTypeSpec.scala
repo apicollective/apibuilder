@@ -1,9 +1,9 @@
 package core
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, AnyFunSpec}
 import org.scalatest.Matchers
 
-class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
+class ServiceCommonReturnTypeSpec extends AnyFunSpec with Matchers {
 
   it("all 2xx return types must share a common types") {
     val json = """

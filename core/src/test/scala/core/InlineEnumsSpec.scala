@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class InlineEnumsSpec extends FunSpec with Matchers {
+class InlineEnumsSpec extends AnyFunSpec with Matchers {
 
   def buildJson(
     typ: String =

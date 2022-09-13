@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class UtilSpec extends FunSpec with Matchers {
+class UtilSpec extends AnyFunSpec with Matchers {
 
   it("namedParametersInPath") {
     Util.namedParametersInPath("/users") should be(Seq.empty)

@@ -5,10 +5,11 @@ import io.apibuilder.spec.v0.models.ParameterLocation.{Path, Query}
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
 import lib.ServiceConfiguration
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
 
-class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
+class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
   private val resourcesDir = "swagger/src/test/resources/"
 
   private def readFile(path: String): String = {

@@ -1,8 +1,9 @@
 package lib
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class UrlKeySpec extends FunSpec with Matchers {
+class UrlKeySpec extends AnyFunSpec with Matchers {
 
   describe("generate") {
 

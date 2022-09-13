@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.spec.v0.models.Method
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class DeprecationSpec extends FunSpec with Matchers {
+class DeprecationSpec extends AnyFunSpec with Matchers {
 
   private val userModel = """{ "fields": [{ "name": "id", "type": "long" }] }"""
 

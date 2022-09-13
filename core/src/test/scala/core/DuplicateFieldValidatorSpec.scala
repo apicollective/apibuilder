@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class DuplicateFieldValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class DuplicateFieldValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
     it("detects duplicate fields") {
       def setup(name1: String, name2: String) = {

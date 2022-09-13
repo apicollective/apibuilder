@@ -1,9 +1,10 @@
 package io.apibuilder.avro
 
 import lib.ServiceConfiguration
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class AvroIdlServiceValidatorSpec extends FunSpec with Matchers {
+class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers {
 
   private def readFile(path: String): String = {
     val source = scala.io.Source.fromFile(path)

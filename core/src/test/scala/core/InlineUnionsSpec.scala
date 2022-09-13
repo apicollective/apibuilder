@@ -1,9 +1,10 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
-class InlineUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class InlineUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
 
 

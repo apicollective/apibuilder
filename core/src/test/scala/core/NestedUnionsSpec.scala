@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class NestedUnionsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class NestedUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
     it("validates discriminator values are unique") {
       def setup(

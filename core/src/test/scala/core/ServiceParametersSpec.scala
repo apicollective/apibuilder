@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceParametersSpec extends FunSpec with Matchers {
+class ServiceParametersSpec extends AnyFunSpec with Matchers {
   it("fails object type path parameters") {
     val baseJson = """
     {

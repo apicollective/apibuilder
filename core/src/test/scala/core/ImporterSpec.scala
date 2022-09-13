@@ -2,10 +2,11 @@ package core
 
 import io.apibuilder.spec.v0.models.{Application, Organization}
 import io.apibuilder.spec.v0.models.json._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
-class ImporterSpec extends FunSpec with Matchers with helpers.ServiceHelpers {
+class ImporterSpec extends AnyFunSpec with Matchers with helpers.ServiceHelpers {
 
   describe("with an invalid service") {
     val json = """

@@ -1,9 +1,10 @@
 package io.apibuilder.swagger.translators
 
 import lib.ServiceConfiguration
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class BaseUrlSpec extends FunSpec with Matchers {
+class BaseUrlSpec extends AnyFunSpec with Matchers {
 
   it("apply") {
     BaseUrl(Nil, "localhost", None) should be(Nil)

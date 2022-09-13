@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.spec.v0.models.ParameterLocation
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ApiJsonStructureSpec extends FunSpec with Matchers {
+class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
 
   it("name is required") {
     val json = """

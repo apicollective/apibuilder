@@ -2,9 +2,10 @@ package io.apibuilder.avro
 
 import java.io.File
 import lib.ServiceConfiguration
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ParserSpec extends FunSpec with Matchers {
+class ParserSpec extends AnyFunSpec with Matchers {
 
   val dir = "avro/src/test/resources/me/apidoc/avro"
   val config = ServiceConfiguration(

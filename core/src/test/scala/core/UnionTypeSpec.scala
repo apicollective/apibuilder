@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class UnionTypeSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class UnionTypeSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
     val baseJson = """
     {

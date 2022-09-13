@@ -1,9 +1,10 @@
 package builder
 
 import play.api.libs.json.{Json, JsUndefined}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class JsonUtilSpec extends FunSpec with Matchers {
+class JsonUtilSpec extends AnyFunSpec with Matchers {
 
   it("asOptString") {
     JsonUtil.asOptString(Json.toJson("")) should be(None)

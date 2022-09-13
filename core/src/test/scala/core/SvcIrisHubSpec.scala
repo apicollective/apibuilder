@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.spec.v0.models.Method
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class SvcIrisHubSpec extends FunSpec with Matchers {
+class SvcIrisHubSpec extends AnyFunSpec with Matchers {
 
   val Filenames = Seq("svc-iris-hub-0-0-1.json")
   val Dir = "core/src/test/resources"
