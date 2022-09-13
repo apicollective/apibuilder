@@ -21,8 +21,8 @@ object Subscriptions {
 }
 
 class Subscriptions @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-) extends ApibuilderController {
+                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+) extends ApiBuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

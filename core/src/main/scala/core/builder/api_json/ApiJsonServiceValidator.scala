@@ -85,7 +85,7 @@ case class ApiJsonServiceValidator(
             validateFields() ++
             validateEnums() ++
             validateAnnotations() ++
-            validateDuplicates()
+            DuplicateJsonParser.validateDuplicates(apiJson)
           }
 
           case errs => {
@@ -191,10 +191,6 @@ case class ApiJsonServiceValidator(
     )
 
     warnings ++ missingNames
-  }
-
-  private def validateDuplicates(): Seq[String] = {
-    DuplicateJsonParser.foo(apiJson)
   }
 
   private def validateEnums(): Seq[String] = {
@@ -385,7 +381,7 @@ case class ApiJsonServiceValidator(
         op.path
       ).flatten.mkString(""),
       message
-    ).map(_.trim).filter(!_.isEmpty).mkString(" ")
+    ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
 }

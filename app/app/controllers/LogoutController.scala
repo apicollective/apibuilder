@@ -4,8 +4,8 @@ import models.MainTemplate
 import javax.inject.Inject
 
 class LogoutController @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents
-) extends ApibuilderController {
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents
+) extends ApiBuilderController {
 
 
   def logged_out = Action { implicit request =>

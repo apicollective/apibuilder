@@ -13,9 +13,9 @@ import java.util.UUID
 import javax.inject.Inject
 
 class Members @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider
-) extends ApibuilderController {
+                          val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                          apiClientProvider: ApiClientProvider
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

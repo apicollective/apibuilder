@@ -10,9 +10,9 @@ import scala.concurrent.Future
 import javax.inject.Inject
 
 class Domains @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider
-) extends ApibuilderController {
+                          val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                          apiClientProvider: ApiClientProvider
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

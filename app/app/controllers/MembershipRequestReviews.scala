@@ -4,8 +4,8 @@ import java.util.UUID
 import javax.inject.Inject
 
 class MembershipRequestReviews @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents
-) extends ApibuilderController {
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

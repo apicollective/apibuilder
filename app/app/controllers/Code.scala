@@ -10,9 +10,9 @@ import lib.ApiClientProvider
 import play.api.mvc.Result
 
 class Code @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider
-) extends ApibuilderController {
+                       val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                       apiClientProvider: ApiClientProvider
+) extends ApiBuilderController {
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     apiClientProvider.callWith404(

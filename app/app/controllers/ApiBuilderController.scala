@@ -1,10 +1,11 @@
 package controllers
 
 import javax.inject.Inject
-
 import com.google.inject.ImplementedBy
+import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import lib.{ApibuilderRequestData, RequestAuthenticationUtil}
+import models.MainTemplate
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 
@@ -16,21 +17,21 @@ import scala.concurrent.{ExecutionContext, Future}
   *   - anonymous / api key / session based access
   *   - utilities to check for organization role
   */
-trait ApibuilderController extends BaseController with I18nSupport {
+trait ApiBuilderController extends BaseController with I18nSupport {
 
-  protected def apibuilderControllerComponents: ApibuilderControllerComponents
+  protected def apiBuilderControllerComponents: ApiBuilderControllerComponents
 
-  def Anonymous: AnonymousActionBuilder = apibuilderControllerComponents.anonymousActionBuilder
-  def AnonymousOrg: AnonymousOrgActionBuilder = apibuilderControllerComponents.anonymousOrgActionBuilder
-  def Identified: IdentifiedActionBuilder = apibuilderControllerComponents.identifiedActionBuilder
-  def IdentifiedOrg: IdentifiedOrgActionBuilder = apibuilderControllerComponents.identifiedOrgActionBuilder
+  def Anonymous: AnonymousActionBuilder = apiBuilderControllerComponents.anonymousActionBuilder
+  def AnonymousOrg: AnonymousOrgActionBuilder = apiBuilderControllerComponents.anonymousOrgActionBuilder
+  def Identified: IdentifiedActionBuilder = apiBuilderControllerComponents.identifiedActionBuilder
+  def IdentifiedOrg: IdentifiedOrgActionBuilder = apiBuilderControllerComponents.identifiedOrgActionBuilder
 
-  def controllerComponents: ControllerComponents = apibuilderControllerComponents.controllerComponents
-  override def messagesApi: MessagesApi = apibuilderControllerComponents.messagesApi
+  def controllerComponents: ControllerComponents = apiBuilderControllerComponents.controllerComponents
+  override def messagesApi: MessagesApi = apiBuilderControllerComponents.messagesApi
 }
 
-@ImplementedBy(classOf[ApibuilderDefaultControllerComponents])
-trait ApibuilderControllerComponents {
+@ImplementedBy(classOf[ApiBuilderDefaultControllerComponents])
+trait ApiBuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def anonymousOrgActionBuilder: AnonymousOrgActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
@@ -39,14 +40,14 @@ trait ApibuilderControllerComponents {
   def messagesApi: MessagesApi
 }
 
-class ApibuilderDefaultControllerComponents @Inject() (
+class ApiBuilderDefaultControllerComponents @Inject()(
   val controllerComponents: ControllerComponents,
   val anonymousActionBuilder: AnonymousActionBuilder,
   val anonymousOrgActionBuilder: AnonymousOrgActionBuilder,
   val identifiedActionBuilder: IdentifiedActionBuilder,
   val identifiedOrgActionBuilder: IdentifiedOrgActionBuilder,
   val messagesApi: MessagesApi
-) extends ApibuilderControllerComponents
+) extends ApiBuilderControllerComponents
 
 case class AnonymousRequest[A](
   requestData: ApibuilderRequestData,
@@ -55,9 +56,9 @@ case class AnonymousRequest[A](
   val user: Option[User] = requestData.user
   val org: Option[Organization] = requestData.org
   val memberships: Seq[Membership] = requestData.memberships
-  val api = requestData.api
+  val api: Client = requestData.api
 
-  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None): MainTemplate = requestData.mainTemplate(title)
 }
 
 class AnonymousActionBuilder @Inject()(
@@ -69,8 +70,7 @@ class AnonymousActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (AnonymousRequest[A]
-  ) => Future[Result]): Future[Result] = {
+    block: AnonymousRequest[A] => Future[Result]): Future[Result] = {
     val data = requestAuthenticationUtil.data(
       requestPath = request.path,
       sessionId = request.session.get("session_id")
@@ -89,9 +89,9 @@ case class IdentifiedRequest[A](
   }
   val org: Option[Organization] = requestData.org
   val memberships: Seq[Membership] = requestData.memberships
-  val api = requestData.api
+  val api: Client = requestData.api
 
-  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None): MainTemplate = requestData.mainTemplate(title)
 }
 
 class IdentifiedActionBuilder @Inject()(
@@ -103,8 +103,7 @@ class IdentifiedActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (IdentifiedRequest[A]
-  ) => Future[Result]): Future[Result] = {
+    block: IdentifiedRequest[A] => Future[Result]): Future[Result] = {
     val data = requestAuthenticationUtil.data(
       requestPath = request.path,
       sessionId = request.session.get("session_id")
@@ -126,9 +125,9 @@ case class AnonymousOrgRequest[A](
     sys.error("IdentifiedOrg request must have an organization")
   }
   val memberships: Seq[Membership] = requestData.memberships
-  val api = requestData.api
+  val api: Client = requestData.api
 
-  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None): MainTemplate = requestData.mainTemplate(title)
 }
 
 class AnonymousOrgActionBuilder @Inject()(
@@ -140,8 +139,7 @@ class AnonymousOrgActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (AnonymousOrgRequest[A]
-      ) => Future[Result]): Future[Result] = {
+    block: AnonymousOrgRequest[A] => Future[Result]): Future[Result] = {
     val data = requestAuthenticationUtil.data(
       requestPath = request.path,
       sessionId = request.session.get("session_id")
@@ -170,11 +168,11 @@ case class IdentifiedOrgRequest[A](
     sys.error("IdentifiedOrg request must have an organization")
   }
   val memberships: Seq[Membership] = requestData.memberships
-  val api = requestData.api
+  val api: Client = requestData.api
 
-  def mainTemplate(title: Option[String] = None) = requestData.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None): MainTemplate = requestData.mainTemplate(title)
 
-  def withMember[T](f: => T) = {
+  def withMember[T](f: => T): T = {
     if (requestData.isMember) {
       f
     } else {
@@ -182,7 +180,7 @@ case class IdentifiedOrgRequest[A](
     }
   }
 
-  def withAdmin[T](f: => T) = {
+  def withAdmin[T](f: => T): T = {
     if (requestData.isAdmin) {
       f
     } else {
@@ -201,8 +199,7 @@ class IdentifiedOrgActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (IdentifiedOrgRequest[A]
-      ) => Future[Result]): Future[Result] = {
+    block: IdentifiedOrgRequest[A] => Future[Result]): Future[Result] = {
     val data = requestAuthenticationUtil.data(
       requestPath = request.path,
       sessionId = request.session.get("session_id")

@@ -6,9 +6,9 @@ import javax.inject.Inject
 import lib.ApiClientProvider
 
 class Healthchecks @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider
-) extends ApibuilderController {
+                               val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                               apiClientProvider: ApiClientProvider
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

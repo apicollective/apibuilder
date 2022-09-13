@@ -8,7 +8,7 @@ import io.circe.jawn.JawnParser
 
 object DuplicateJsonParser {
 
-  def foo(value: String): Seq[String] = {
+  def validateDuplicates(value: String): Seq[String] = {
     val parser = new JawnParser(maxValueSize = None, allowDuplicateKeys = false)
 
     parser.parse(value) match {

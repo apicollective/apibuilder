@@ -13,10 +13,10 @@ import io.apibuilder.api.v0.Client
 import play.api.mvc.{Action, AnyContent}
 
 class Organizations @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider,
-  config: Config
-) extends ApibuilderController {
+                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                apiClientProvider: ApiClientProvider,
+                                config: Config
+) extends ApiBuilderController {
 
   private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 

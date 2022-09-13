@@ -12,11 +12,11 @@ import javax.inject.Inject
 import play.api.Logger
 
 class LoginController @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider,
-  github: Github,
-  util: Util
-) extends ApibuilderController {
+                                  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                  apiClientProvider: ApiClientProvider,
+                                  github: Github,
+                                  util: Util
+) extends ApiBuilderController {
 
   private[this] val logger: Logger = Logger(this.getClass())
 

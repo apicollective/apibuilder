@@ -9,8 +9,8 @@ import play.api.data.Forms._
 import scala.concurrent.Future
 
 class AccountProfileController @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents
-) extends ApibuilderController {
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
