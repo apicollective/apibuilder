@@ -1,7 +1,7 @@
 package core
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, AnyFunSpec}
-import org.scalatest.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
 class ServiceCommonReturnTypeSpec extends AnyFunSpec with Matchers {
 
