@@ -10,7 +10,6 @@ package io.apibuilder.generator.v0.models {
    * additional instructions / data to the code generator. An example could be an
    * attribute to specify the root import path for a go client..
    */
-
   final case class Attribute(
     name: String,
     value: String
@@ -20,7 +19,6 @@ package io.apibuilder.generator.v0.models {
    * @param code Machine readable code for this specific error message
    * @param message Description of the error
    */
-
   final case class Error(
     code: String,
     message: String
@@ -33,7 +31,6 @@ package io.apibuilder.generator.v0.models {
    * @param dir The recommended directory path for the file where appropriate.
    * @param contents The actual source code.
    */
-
   final case class File(
     name: String,
     dir: _root_.scala.Option[String] = None,
@@ -50,7 +47,6 @@ package io.apibuilder.generator.v0.models {
    *        list of available attributes and their descriptions at
    *        http://apibuilder.io/doc/attributes
    */
-
   final case class Generator(
     key: String,
     name: String,
@@ -69,7 +65,6 @@ package io.apibuilder.generator.v0.models {
    * @param source The actual source code.
    * @param files A collection of source files
    */
-
   final case class Invocation(
     @deprecated("Use files instead") source: String,
     files: Seq[io.apibuilder.generator.v0.models.File]
@@ -79,13 +74,13 @@ package io.apibuilder.generator.v0.models {
    * The invocation form is the payload send to the code generators when requesting
    * generation of client code.
    */
-
   final case class InvocationForm(
     service: io.apibuilder.spec.v0.models.Service,
     attributes: Seq[io.apibuilder.generator.v0.models.Attribute] = Nil,
     userAgent: _root_.scala.Option[String] = None,
     importedServices: _root_.scala.Option[Seq[io.apibuilder.spec.v0.models.Service]] = None
   )
+
   /**
    * Allows generator authors to flag files with special characteristics. It is up to
    * the client (i.e. the cli) to decide how to interpret them.
@@ -100,9 +95,8 @@ package io.apibuilder.generator.v0.models {
      * https://stackoverflow.com/questions/235018/what-is-scaffolding-is-it-a-term-for-a-particular-platform).
      * Consider not overwriting these files when code is re-generated.
      */
-    case object Scaffolding extends FileFlag {
-      override def toString = "scaffolding"
-    }
+    case object Scaffolding extends FileFlag { override def toString = "scaffolding" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -143,29 +137,35 @@ package io.apibuilder.generator.v0.models {
     import io.apibuilder.generator.v0.models.json._
     import io.apibuilder.spec.v0.models.json._
 
-    private[v0] implicit val jsonReadsUUID: play.api.libs.json.Reads[_root_.java.util.UUID] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsUUID = __.read[String].map { str =>
       _root_.java.util.UUID.fromString(str)
     }
 
-    private[v0] implicit val jsonWritesUUID: play.api.libs.json.Writes[_root_.java.util.UUID] = (x: _root_.java.util.UUID) => play.api.libs.json.JsString(x.toString)
+    private[v0] implicit val jsonWritesUUID = new Writes[_root_.java.util.UUID] {
+      def writes(x: _root_.java.util.UUID) = JsString(x.toString)
+    }
 
-    private[v0] implicit val jsonReadsJodaDateTime: play.api.libs.json.Reads[_root_.org.joda.time.DateTime] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseDateTime(str)
     }
 
-    private[v0] implicit val jsonWritesJodaDateTime: play.api.libs.json.Writes[_root_.org.joda.time.DateTime] = (x: _root_.org.joda.time.DateTime) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+    private[v0] implicit val jsonWritesJodaDateTime = new Writes[_root_.org.joda.time.DateTime] {
+      def writes(x: _root_.org.joda.time.DateTime) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+      }
     }
 
-    private[v0] implicit val jsonReadsJodaLocalDate: play.api.libs.json.Reads[_root_.org.joda.time.LocalDate] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaLocalDate = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseLocalDate(str)
     }
 
-    private[v0] implicit val jsonWritesJodaLocalDate: play.api.libs.json.Writes[_root_.org.joda.time.LocalDate] = (x: _root_.org.joda.time.LocalDate) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+    private[v0] implicit val jsonWritesJodaLocalDate = new Writes[_root_.org.joda.time.LocalDate] {
+      def writes(x: _root_.org.joda.time.LocalDate) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+      }
     }
 
-    implicit val jsonReadsApibuilderGeneratorFileFlag: play.api.libs.json.Reads[io.apibuilder.generator.v0.models.FileFlag] = new play.api.libs.json.Reads[io.apibuilder.generator.v0.models.FileFlag] {
+    implicit val jsonReadsApibuilderGeneratorFileFlag = new play.api.libs.json.Reads[io.apibuilder.generator.v0.models.FileFlag] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.generator.v0.models.FileFlag] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.generator.v0.models.FileFlag(v.value))
@@ -192,8 +192,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorFileFlag: play.api.libs.json.Writes[FileFlag] = {
-      (obj: io.apibuilder.generator.v0.models.FileFlag) => {
-        jsonWritesApibuilderGeneratorFileFlag(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.FileFlag] {
+        def writes(obj: io.apibuilder.generator.v0.models.FileFlag) = {
+          jsonWritesApibuilderGeneratorFileFlag(obj)
+        }
       }
     }
 
@@ -212,8 +214,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorAttribute: play.api.libs.json.Writes[Attribute] = {
-      (obj: io.apibuilder.generator.v0.models.Attribute) => {
-        jsObjectAttribute(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Attribute] {
+        def writes(obj: io.apibuilder.generator.v0.models.Attribute) = {
+          jsObjectAttribute(obj)
+        }
       }
     }
 
@@ -232,8 +236,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorError: play.api.libs.json.Writes[Error] = {
-      (obj: io.apibuilder.generator.v0.models.Error) => {
-        jsObjectError(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Error] {
+        def writes(obj: io.apibuilder.generator.v0.models.Error) = {
+          jsObjectError(obj)
+        }
       }
     }
 
@@ -261,8 +267,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorFile: play.api.libs.json.Writes[File] = {
-      (obj: io.apibuilder.generator.v0.models.File) => {
-        jsObjectFile(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.File] {
+        def writes(obj: io.apibuilder.generator.v0.models.File) = {
+          jsObjectFile(obj)
+        }
       }
     }
 
@@ -292,8 +300,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorGenerator: play.api.libs.json.Writes[Generator] = {
-      (obj: io.apibuilder.generator.v0.models.Generator) => {
-        jsObjectGenerator(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Generator] {
+        def writes(obj: io.apibuilder.generator.v0.models.Generator) = {
+          jsObjectGenerator(obj)
+        }
       }
     }
 
@@ -308,8 +318,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
-      (obj: io.apibuilder.generator.v0.models.Healthcheck) => {
-        jsObjectHealthcheck(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Healthcheck] {
+        def writes(obj: io.apibuilder.generator.v0.models.Healthcheck) = {
+          jsObjectHealthcheck(obj)
+        }
       }
     }
 
@@ -328,8 +340,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorInvocation: play.api.libs.json.Writes[Invocation] = {
-      (obj: io.apibuilder.generator.v0.models.Invocation) => {
-        jsObjectInvocation(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.Invocation] {
+        def writes(obj: io.apibuilder.generator.v0.models.Invocation) = {
+          jsObjectInvocation(obj)
+        }
       }
     }
 
@@ -357,8 +371,10 @@ package io.apibuilder.generator.v0.models {
     }
 
     implicit def jsonWritesApibuilderGeneratorInvocationForm: play.api.libs.json.Writes[InvocationForm] = {
-      (obj: io.apibuilder.generator.v0.models.InvocationForm) => {
-        jsObjectInvocationForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.InvocationForm] {
+        def writes(obj: io.apibuilder.generator.v0.models.InvocationForm) = {
+          jsObjectInvocationForm(obj)
+        }
       }
     }
   }
@@ -636,7 +652,7 @@ package io.apibuilder.generator.v0 {
      */
     def _withJsonContentType(headers: Seq[(String, String)]): Seq[(String, String)] = {
       headers.find { _._1.toUpperCase == "CONTENT-TYPE" } match {
-        case None => headers ++ Seq("Content-Type" -> "application/json; charset=UTF-8")
+        case None => headers ++ Seq(("Content-Type" -> "application/json; charset=UTF-8"))
         case Some(_) => headers
       }
     }

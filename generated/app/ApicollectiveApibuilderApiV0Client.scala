@@ -9,10 +9,8 @@ package io.apibuilder.api.v0.models {
    * Represents a single diff in an application
    */
   sealed trait Diff extends _root_.scala.Product with _root_.scala.Serializable {
-    def diffType: DiffType
     def description: String
     def isMaterial: Boolean
-
   }
 
   /**
@@ -40,10 +38,7 @@ package io.apibuilder.api.v0.models {
   /**
    * Identifies the specific type of item that was indexed by search
    */
-  sealed trait ItemDetail extends _root_.scala.Product with _root_.scala.Serializable {
-    def itemDetailType: ItemDetailType
-
-  }
+  sealed trait ItemDetail extends _root_.scala.Product with _root_.scala.Serializable
 
   /**
    * Defines the valid type values for the type ItemDetail
@@ -68,6 +63,7 @@ package io.apibuilder.api.v0.models {
     def fromString(value: String): _root_.scala.Option[ItemDetailType] = byName.get(value.toLowerCase)
 
   }
+
   /**
    * An application has a name and multiple versions of its API.
    *
@@ -78,7 +74,6 @@ package io.apibuilder.api.v0.models {
    * @param visibility Controls who is able to view this application
    * @param lastUpdatedAt The updated_at of this application or created_at of it's latest version
    */
-
   final case class Application(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
@@ -93,7 +88,6 @@ package io.apibuilder.api.v0.models {
   /**
    * @param key Defaults to a key generated from the application name
    */
-
   final case class ApplicationForm(
     name: String,
     key: _root_.scala.Option[String] = None,
@@ -106,7 +100,6 @@ package io.apibuilder.api.v0.models {
    * @param key Used as a unique key in the URL path. Key is automatically derived from the
    *        application name.
    */
-
   final case class ApplicationMetadata(
     guid: _root_.java.util.UUID,
     key: String
@@ -115,7 +108,6 @@ package io.apibuilder.api.v0.models {
   /**
    * Describes the versions associated with a given application
    */
-
   final case class ApplicationMetadataVersion(
     version: String
   )
@@ -123,14 +115,11 @@ package io.apibuilder.api.v0.models {
   /**
    * Summary of an application sufficient for display and links
    */
-
   final case class ApplicationSummary(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
     key: String
-  ) extends ItemDetail {
-    override val itemDetailType: ItemDetailType = ItemDetailType.ApplicationSummary
-  }
+  ) extends ItemDetail
 
   /**
    * Attributes are globally unique key which allow users to specify additional
@@ -142,7 +131,6 @@ package io.apibuilder.api.v0.models {
    * @param description Optional description - a good description here will indicate which code
    *        generators it applies to and what effect it will have on those code generators.
    */
-
   final case class Attribute(
     guid: _root_.java.util.UUID,
     name: String,
@@ -160,7 +148,6 @@ package io.apibuilder.api.v0.models {
    * @param name The name of the attribute. Globally unique and an 'identifier' (lower case, url
    *        safe, etc.)
    */
-
   final case class AttributeSummary(
     guid: _root_.java.util.UUID,
     name: String
@@ -173,7 +160,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param guid Internal unique identifier for this attribute value.
    */
-
   final case class AttributeValue(
     guid: _root_.java.util.UUID,
     attribute: io.apibuilder.api.v0.models.AttributeSummary,
@@ -188,7 +174,6 @@ package io.apibuilder.api.v0.models {
   /**
    * Represents the result of a successful authorization
    */
-
   final case class Authentication(
     user: io.apibuilder.api.v0.models.User,
     session: io.apibuilder.api.v0.models.Session
@@ -214,7 +199,6 @@ package io.apibuilder.api.v0.models {
    *        the changed record)
    * @param changedBy Records who made the actual change
    */
-
   final case class Change(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
@@ -231,7 +215,6 @@ package io.apibuilder.api.v0.models {
    * Represents a simpler model of a version specifically for the use case of
    * displaying changes
    */
-
   final case class ChangeVersion(
     guid: _root_.java.util.UUID,
     version: String
@@ -242,7 +225,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param token The actual token. Guaranteed to be globally unique.
    */
-
   final case class CleartextToken(
     token: String
   )
@@ -253,7 +235,6 @@ package io.apibuilder.api.v0.models {
    * @param source The actual source code.
    * @param files A collection of source files
    */
-
   final case class Code(
     generator: io.apibuilder.api.v0.models.GeneratorWithService,
     @deprecated("Use files instead") source: String,
@@ -269,24 +250,18 @@ package io.apibuilder.api.v0.models {
    * indicates that it is possible for an existing client to now experience an error
    * or invalid data due to the diff.
    */
-
   final case class DiffBreaking(
     override val description: String,
     override val isMaterial: Boolean
-  ) extends Diff {
-    override val diffType: DiffType = DiffType.DiffBreaking
-  }
+  ) extends Diff
 
   /**
    * Represents a single NON breaking diff of an application version.
    */
-
   final case class DiffNonBreaking(
     override val description: String,
     override val isMaterial: Boolean
-  ) extends Diff {
-    override val diffType: DiffType = DiffType.DiffNonBreaking
-  }
+  ) extends Diff
 
   /**
    * Represents a single domain name (e.g. www.apibuilder.io). When a new user
@@ -298,7 +273,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param name The domain name
    */
-
   final case class Domain(
     name: String
   )
@@ -308,7 +282,6 @@ package io.apibuilder.api.v0.models {
    * identifier used to lookup the specific email address and user account for which
    * we sent an email verification email.
    */
-
   final case class EmailVerificationConfirmationForm(
     token: String
   )
@@ -317,7 +290,6 @@ package io.apibuilder.api.v0.models {
    * @param code Machine readable code for this specific error message
    * @param message Description of the error
    */
-
   final case class Error(
     code: String,
     message: String
@@ -331,7 +303,6 @@ package io.apibuilder.api.v0.models {
   /**
    * Defines a service that provides one or more code generators
    */
-
   final case class GeneratorService(
     guid: _root_.java.util.UUID,
     uri: String,
@@ -345,7 +316,6 @@ package io.apibuilder.api.v0.models {
   /**
    * Wraps a service and a generator providing easier access for applications.
    */
-
   final case class GeneratorWithService(
     service: io.apibuilder.api.v0.models.GeneratorService,
     generator: io.apibuilder.generator.v0.models.Generator
@@ -359,7 +329,6 @@ package io.apibuilder.api.v0.models {
    * @param guid Unique identifer for this item. By using a UUID, you can combine with the type
    *        to figure out the URI for the resource
    */
-
   final case class Item(
     guid: _root_.java.util.UUID,
     detail: io.apibuilder.api.v0.models.ItemDetail,
@@ -375,7 +344,6 @@ package io.apibuilder.api.v0.models {
    * @param guid Internal unique identifier for this membership.
    * @param role The role this user plays for this organization. Typically member or admin.
    */
-
   final case class Membership(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
@@ -394,7 +362,6 @@ package io.apibuilder.api.v0.models {
    * @param role The requested role for membership to this organization. Typically member or
    *        admin.
    */
-
   final case class MembershipRequest(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
@@ -406,7 +373,6 @@ package io.apibuilder.api.v0.models {
   /**
    * @param orgKey The key of the organization to which we are moving this item
    */
-
   final case class MoveForm(
     orgKey: String
   )
@@ -420,7 +386,6 @@ package io.apibuilder.api.v0.models {
    * @param name The name of this organization.
    * @param namespace Global namespace for this organization.
    */
-
   final case class Organization(
     guid: _root_.java.util.UUID,
     key: String,
@@ -437,7 +402,6 @@ package io.apibuilder.api.v0.models {
    * @param visibility Public organizations will be listed in apibuilder directory. Organizations with
    *        visibility organization will only be visible to members of that org.
    */
-
   final case class OrganizationForm(
     name: String,
     key: _root_.scala.Option[String] = None,
@@ -449,7 +413,6 @@ package io.apibuilder.api.v0.models {
   /**
    * Represents the original input used to create an application version
    */
-
   final case class Original(
     `type`: io.apibuilder.api.v0.models.OriginalType,
     data: String
@@ -458,7 +421,6 @@ package io.apibuilder.api.v0.models {
   /**
    * @param `type` If not specified, we set the type by inspecting the data
    */
-
   final case class OriginalForm(
     `type`: _root_.scala.Option[io.apibuilder.api.v0.models.OriginalType] = None,
     data: String
@@ -469,7 +431,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param token Unique one time use token to change a password
    */
-
   final case class PasswordReset(
     token: String,
     password: String
@@ -481,7 +442,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param email The email address for which we generate the password reset.
    */
-
   final case class PasswordResetRequest(
     email: String
   )
@@ -491,7 +451,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param id Cryptographically secure session id
    */
-
   final case class Session(
     id: String,
     expiresAt: _root_.org.joda.time.DateTime
@@ -502,7 +461,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param guid Internal unique identifier for this subscription record
    */
-
   final case class Subscription(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.api.v0.models.Organization,
@@ -525,7 +483,6 @@ package io.apibuilder.api.v0.models {
    * @param maskedToken The masked from of the token.
    * @param description optional description to help the user manage the token.
    */
-
   final case class Token(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
@@ -537,7 +494,6 @@ package io.apibuilder.api.v0.models {
   /**
    * @param userGuid The user for which we are creating the token.
    */
-
   final case class TokenForm(
     userGuid: _root_.java.util.UUID,
     description: _root_.scala.Option[String] = None
@@ -549,7 +505,6 @@ package io.apibuilder.api.v0.models {
    * @param guid Internal unique identifier for this user.
    * @param nickname Public unique identifier for this user.
    */
-
   final case class User(
     guid: _root_.java.util.UUID,
     email: String,
@@ -561,7 +516,6 @@ package io.apibuilder.api.v0.models {
   /**
    * @param nickname Defaults to a unique identifier based on email address
    */
-
   final case class UserForm(
     email: String,
     password: String,
@@ -572,7 +526,6 @@ package io.apibuilder.api.v0.models {
   /**
    * Summary of a user sufficient for display
    */
-
   final case class UserSummary(
     guid: _root_.java.util.UUID,
     nickname: String
@@ -593,7 +546,6 @@ package io.apibuilder.api.v0.models {
    * @param errors Contains any validation errors that result from parsing the json document. If
    *        empty, the document is valid.
    */
-
   final case class Validation(
     valid: Boolean,
     errors: Seq[String] = Nil
@@ -609,7 +561,6 @@ package io.apibuilder.api.v0.models {
    * @param original The original uploaded file describing this version, if available
    * @param service spec/spec.json description of this API
    */
-
   final case class Version(
     guid: _root_.java.util.UUID,
     organization: io.apibuilder.common.v0.models.Reference,
@@ -623,7 +574,6 @@ package io.apibuilder.api.v0.models {
   /**
    * @param visibility If provided, updates the visibility for all versions of this application
    */
-
   final case class VersionForm(
     originalForm: io.apibuilder.api.v0.models.OriginalForm,
     visibility: _root_.scala.Option[io.apibuilder.api.v0.models.Visibility] = None
@@ -635,7 +585,6 @@ package io.apibuilder.api.v0.models {
    *
    * @param guid Internal unique identifier for this watch
    */
-
   final case class Watch(
     guid: _root_.java.util.UUID,
     user: io.apibuilder.api.v0.models.User,
@@ -658,11 +607,9 @@ package io.apibuilder.api.v0.models {
    * @param typeDescription Information about the type that we received that is undefined in this version of
    *        the client.
    */
-
   final case class DiffUndefinedType(
     typeDescription: String
   ) extends Diff {
-    override val diffType: DiffType = DiffType.UNDEFINED(typeDescription)
     override def description: String = ???
     override def isMaterial: Boolean = ???
   }
@@ -675,12 +622,9 @@ package io.apibuilder.api.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-
   final case class ItemDetailUndefinedType(
     description: String
-  ) extends ItemDetail {
-    override val itemDetailType: ItemDetailType = ItemDetailType.UNDEFINED(description)
-  }
+  ) extends ItemDetail
   sealed trait AppSortBy extends _root_.scala.Product with _root_.scala.Serializable
 
   object AppSortBy {
@@ -689,6 +633,7 @@ package io.apibuilder.api.v0.models {
     case object CreatedAt extends AppSortBy { override def toString = "created_at" }
     case object UpdatedAt extends AppSortBy { override def toString = "updated_at" }
     case object Visibility extends AppSortBy { override def toString = "visibility" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -723,28 +668,21 @@ package io.apibuilder.api.v0.models {
     /**
      * The original is in the api.json format
      */
-    case object ApiJson extends OriginalType {
-      override def toString = "api_json"
-    }
+    case object ApiJson extends OriginalType { override def toString = "api_json" }
     /**
      * The original is in Avro Idl format
      */
-    case object AvroIdl extends OriginalType {
-      override def toString = "avro_idl"
-    }
+    case object AvroIdl extends OriginalType { override def toString = "avro_idl" }
     /**
      * This is the canonical service spec for apibuilder itself. See
      * https://www.apibuilder.io/apicollective/apibuilder-spec/latest#model-service
      */
-    case object ServiceJson extends OriginalType {
-      override def toString = "service_json"
-    }
+    case object ServiceJson extends OriginalType { override def toString = "service_json" }
     /**
      * The original in the Swagger JSON or YAML format
      */
-    case object Swagger extends OriginalType {
-      override def toString = "swagger"
-    }
+    case object Swagger extends OriginalType { override def toString = "swagger" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -785,37 +723,28 @@ package io.apibuilder.api.v0.models {
      * For organizations for which I am an administrator, email me whenever a user
      * applies to join the org.
      */
-    case object MembershipRequestsCreate extends Publication {
-      override def toString = "membership_requests.create"
-    }
+    case object MembershipRequestsCreate extends Publication { override def toString = "membership_requests.create" }
     /**
      * For organizations for which I am a member, email me whenever a user joins the
      * org.
      */
-    case object MembershipsCreate extends Publication {
-      override def toString = "memberships.create"
-    }
+    case object MembershipsCreate extends Publication { override def toString = "memberships.create" }
     /**
      * For organizations for which I am a member, email me whenever an application is
      * created.
      */
-    case object ApplicationsCreate extends Publication {
-      override def toString = "applications.create"
-    }
+    case object ApplicationsCreate extends Publication { override def toString = "applications.create" }
     /**
      * For applications that I watch, email me whenever a version is created.
      */
-    case object VersionsCreate extends Publication {
-      override def toString = "versions.create"
-    }
+    case object VersionsCreate extends Publication { override def toString = "versions.create" }
     /**
      * For applications that I watch, email me whenever there is a material change.
      * Generally, this means avoiding email for simple changes (like only a version
      * change).
      */
-    case object VersionsMaterialChange extends Publication {
-      override def toString = "versions.material_change"
-    }
+    case object VersionsMaterialChange extends Publication { override def toString = "versions.material_change" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -849,6 +778,7 @@ package io.apibuilder.api.v0.models {
 
     case object Asc extends SortOrder { override def toString = "asc" }
     case object Desc extends SortOrder { override def toString = "desc" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -886,21 +816,16 @@ package io.apibuilder.api.v0.models {
     /**
      * Only the creator can view this application
      */
-    case object User extends Visibility {
-      override def toString = "user"
-    }
+    case object User extends Visibility { override def toString = "user" }
     /**
      * Any member of the organization can view this application
      */
-    case object Organization extends Visibility {
-      override def toString = "organization"
-    }
+    case object Organization extends Visibility { override def toString = "organization" }
     /**
      * Anybody, including non logged in users, can view this application
      */
-    case object Public extends Visibility {
-      override def toString = "public"
-    }
+    case object Public extends Visibility { override def toString = "public" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -942,29 +867,35 @@ package io.apibuilder.api.v0.models {
     import io.apibuilder.generator.v0.models.json._
     import io.apibuilder.spec.v0.models.json._
 
-    private[v0] implicit val jsonReadsUUID: play.api.libs.json.Reads[_root_.java.util.UUID] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsUUID = __.read[String].map { str =>
       _root_.java.util.UUID.fromString(str)
     }
 
-    private[v0] implicit val jsonWritesUUID: play.api.libs.json.Writes[_root_.java.util.UUID] = (x: _root_.java.util.UUID) => play.api.libs.json.JsString(x.toString)
+    private[v0] implicit val jsonWritesUUID = new Writes[_root_.java.util.UUID] {
+      def writes(x: _root_.java.util.UUID) = JsString(x.toString)
+    }
 
-    private[v0] implicit val jsonReadsJodaDateTime: play.api.libs.json.Reads[_root_.org.joda.time.DateTime] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseDateTime(str)
     }
 
-    private[v0] implicit val jsonWritesJodaDateTime: play.api.libs.json.Writes[_root_.org.joda.time.DateTime] = (x: _root_.org.joda.time.DateTime) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+    private[v0] implicit val jsonWritesJodaDateTime = new Writes[_root_.org.joda.time.DateTime] {
+      def writes(x: _root_.org.joda.time.DateTime) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+      }
     }
 
-    private[v0] implicit val jsonReadsJodaLocalDate: play.api.libs.json.Reads[_root_.org.joda.time.LocalDate] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaLocalDate = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseLocalDate(str)
     }
 
-    private[v0] implicit val jsonWritesJodaLocalDate: play.api.libs.json.Writes[_root_.org.joda.time.LocalDate] = (x: _root_.org.joda.time.LocalDate) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+    private[v0] implicit val jsonWritesJodaLocalDate = new Writes[_root_.org.joda.time.LocalDate] {
+      def writes(x: _root_.org.joda.time.LocalDate) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+      }
     }
 
-    implicit val jsonReadsApibuilderApiAppSortBy: play.api.libs.json.Reads[io.apibuilder.api.v0.models.AppSortBy] = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.AppSortBy] {
+    implicit val jsonReadsApibuilderApiAppSortBy = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.AppSortBy] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.AppSortBy] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.AppSortBy(v.value))
@@ -991,12 +922,14 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAppSortBy: play.api.libs.json.Writes[AppSortBy] = {
-      (obj: io.apibuilder.api.v0.models.AppSortBy) => {
-        jsonWritesApibuilderApiAppSortBy(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.AppSortBy] {
+        def writes(obj: io.apibuilder.api.v0.models.AppSortBy) = {
+          jsonWritesApibuilderApiAppSortBy(obj)
+        }
       }
     }
 
-    implicit val jsonReadsApibuilderApiOriginalType: play.api.libs.json.Reads[io.apibuilder.api.v0.models.OriginalType] = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.OriginalType] {
+    implicit val jsonReadsApibuilderApiOriginalType = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.OriginalType] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.OriginalType] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.OriginalType(v.value))
@@ -1023,12 +956,14 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiOriginalType: play.api.libs.json.Writes[OriginalType] = {
-      (obj: io.apibuilder.api.v0.models.OriginalType) => {
-        jsonWritesApibuilderApiOriginalType(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.OriginalType] {
+        def writes(obj: io.apibuilder.api.v0.models.OriginalType) = {
+          jsonWritesApibuilderApiOriginalType(obj)
+        }
       }
     }
 
-    implicit val jsonReadsApibuilderApiPublication: play.api.libs.json.Reads[io.apibuilder.api.v0.models.Publication] = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.Publication] {
+    implicit val jsonReadsApibuilderApiPublication = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.Publication] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.Publication] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.Publication(v.value))
@@ -1055,12 +990,14 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiPublication: play.api.libs.json.Writes[Publication] = {
-      (obj: io.apibuilder.api.v0.models.Publication) => {
-        jsonWritesApibuilderApiPublication(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Publication] {
+        def writes(obj: io.apibuilder.api.v0.models.Publication) = {
+          jsonWritesApibuilderApiPublication(obj)
+        }
       }
     }
 
-    implicit val jsonReadsApibuilderApiSortOrder: play.api.libs.json.Reads[io.apibuilder.api.v0.models.SortOrder] = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.SortOrder] {
+    implicit val jsonReadsApibuilderApiSortOrder = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.SortOrder] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.SortOrder] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.SortOrder(v.value))
@@ -1087,12 +1024,14 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiSortOrder: play.api.libs.json.Writes[SortOrder] = {
-      (obj: io.apibuilder.api.v0.models.SortOrder) => {
-        jsonWritesApibuilderApiSortOrder(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.SortOrder] {
+        def writes(obj: io.apibuilder.api.v0.models.SortOrder) = {
+          jsonWritesApibuilderApiSortOrder(obj)
+        }
       }
     }
 
-    implicit val jsonReadsApibuilderApiVisibility: play.api.libs.json.Reads[io.apibuilder.api.v0.models.Visibility] = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.Visibility] {
+    implicit val jsonReadsApibuilderApiVisibility = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.Visibility] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.Visibility] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.Visibility(v.value))
@@ -1119,8 +1058,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiVisibility: play.api.libs.json.Writes[Visibility] = {
-      (obj: io.apibuilder.api.v0.models.Visibility) => {
-        jsonWritesApibuilderApiVisibility(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Visibility] {
+        def writes(obj: io.apibuilder.api.v0.models.Visibility) = {
+          jsonWritesApibuilderApiVisibility(obj)
+        }
       }
     }
 
@@ -1153,8 +1094,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiApplication: play.api.libs.json.Writes[Application] = {
-      (obj: io.apibuilder.api.v0.models.Application) => {
-        jsObjectApplication(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Application] {
+        def writes(obj: io.apibuilder.api.v0.models.Application) = {
+          jsObjectApplication(obj)
+        }
       }
     }
 
@@ -1182,8 +1125,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiApplicationForm: play.api.libs.json.Writes[ApplicationForm] = {
-      (obj: io.apibuilder.api.v0.models.ApplicationForm) => {
-        jsObjectApplicationForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.ApplicationForm] {
+        def writes(obj: io.apibuilder.api.v0.models.ApplicationForm) = {
+          jsObjectApplicationForm(obj)
+        }
       }
     }
 
@@ -1202,8 +1147,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiApplicationMetadata: play.api.libs.json.Writes[ApplicationMetadata] = {
-      (obj: io.apibuilder.api.v0.models.ApplicationMetadata) => {
-        jsObjectApplicationMetadata(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.ApplicationMetadata] {
+        def writes(obj: io.apibuilder.api.v0.models.ApplicationMetadata) = {
+          jsObjectApplicationMetadata(obj)
+        }
       }
     }
 
@@ -1218,8 +1165,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiApplicationMetadataVersion: play.api.libs.json.Writes[ApplicationMetadataVersion] = {
-      (obj: io.apibuilder.api.v0.models.ApplicationMetadataVersion) => {
-        jsObjectApplicationMetadataVersion(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.ApplicationMetadataVersion] {
+        def writes(obj: io.apibuilder.api.v0.models.ApplicationMetadataVersion) = {
+          jsObjectApplicationMetadataVersion(obj)
+        }
       }
     }
 
@@ -1240,8 +1189,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiApplicationSummary: play.api.libs.json.Writes[ApplicationSummary] = {
-      (obj: io.apibuilder.api.v0.models.ApplicationSummary) => {
-        jsObjectApplicationSummary(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.ApplicationSummary] {
+        def writes(obj: io.apibuilder.api.v0.models.ApplicationSummary) = {
+          jsObjectApplicationSummary(obj)
+        }
       }
     }
 
@@ -1266,8 +1217,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAttribute: play.api.libs.json.Writes[Attribute] = {
-      (obj: io.apibuilder.api.v0.models.Attribute) => {
-        jsObjectAttribute(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Attribute] {
+        def writes(obj: io.apibuilder.api.v0.models.Attribute) = {
+          jsObjectAttribute(obj)
+        }
       }
     }
 
@@ -1288,8 +1241,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAttributeForm: play.api.libs.json.Writes[AttributeForm] = {
-      (obj: io.apibuilder.api.v0.models.AttributeForm) => {
-        jsObjectAttributeForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.AttributeForm] {
+        def writes(obj: io.apibuilder.api.v0.models.AttributeForm) = {
+          jsObjectAttributeForm(obj)
+        }
       }
     }
 
@@ -1308,8 +1263,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAttributeSummary: play.api.libs.json.Writes[AttributeSummary] = {
-      (obj: io.apibuilder.api.v0.models.AttributeSummary) => {
-        jsObjectAttributeSummary(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.AttributeSummary] {
+        def writes(obj: io.apibuilder.api.v0.models.AttributeSummary) = {
+          jsObjectAttributeSummary(obj)
+        }
       }
     }
 
@@ -1332,8 +1289,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAttributeValue: play.api.libs.json.Writes[AttributeValue] = {
-      (obj: io.apibuilder.api.v0.models.AttributeValue) => {
-        jsObjectAttributeValue(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.AttributeValue] {
+        def writes(obj: io.apibuilder.api.v0.models.AttributeValue) = {
+          jsObjectAttributeValue(obj)
+        }
       }
     }
 
@@ -1348,8 +1307,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAttributeValueForm: play.api.libs.json.Writes[AttributeValueForm] = {
-      (obj: io.apibuilder.api.v0.models.AttributeValueForm) => {
-        jsObjectAttributeValueForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.AttributeValueForm] {
+        def writes(obj: io.apibuilder.api.v0.models.AttributeValueForm) = {
+          jsObjectAttributeValueForm(obj)
+        }
       }
     }
 
@@ -1368,15 +1329,17 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiAuthentication: play.api.libs.json.Writes[Authentication] = {
-      (obj: io.apibuilder.api.v0.models.Authentication) => {
-        jsObjectAuthentication(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Authentication] {
+        def writes(obj: io.apibuilder.api.v0.models.Authentication) = {
+          jsObjectAuthentication(obj)
+        }
       }
     }
 
     implicit def jsonReadsApibuilderApiBatchDownloadApplicationForm: play.api.libs.json.Reads[BatchDownloadApplicationForm] = {
       for {
         applicationKey <- (__ \ "application_key").read[String]
-        version <- (__ \ "version").read[String]
+        version <- (__ \ "version").readWithDefault[String]("latest")
       } yield BatchDownloadApplicationForm(applicationKey, version)
     }
 
@@ -1388,8 +1351,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiBatchDownloadApplicationForm: play.api.libs.json.Writes[BatchDownloadApplicationForm] = {
-      (obj: io.apibuilder.api.v0.models.BatchDownloadApplicationForm) => {
-        jsObjectBatchDownloadApplicationForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.BatchDownloadApplicationForm] {
+        def writes(obj: io.apibuilder.api.v0.models.BatchDownloadApplicationForm) = {
+          jsObjectBatchDownloadApplicationForm(obj)
+        }
       }
     }
 
@@ -1404,8 +1369,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiBatchDownloadApplications: play.api.libs.json.Writes[BatchDownloadApplications] = {
-      (obj: io.apibuilder.api.v0.models.BatchDownloadApplications) => {
-        jsObjectBatchDownloadApplications(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.BatchDownloadApplications] {
+        def writes(obj: io.apibuilder.api.v0.models.BatchDownloadApplications) = {
+          jsObjectBatchDownloadApplications(obj)
+        }
       }
     }
 
@@ -1420,8 +1387,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiBatchDownloadApplicationsForm: play.api.libs.json.Writes[BatchDownloadApplicationsForm] = {
-      (obj: io.apibuilder.api.v0.models.BatchDownloadApplicationsForm) => {
-        jsObjectBatchDownloadApplicationsForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.BatchDownloadApplicationsForm] {
+        def writes(obj: io.apibuilder.api.v0.models.BatchDownloadApplicationsForm) = {
+          jsObjectBatchDownloadApplicationsForm(obj)
+        }
       }
     }
 
@@ -1454,8 +1423,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiChange: play.api.libs.json.Writes[Change] = {
-      (obj: io.apibuilder.api.v0.models.Change) => {
-        jsObjectChange(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Change] {
+        def writes(obj: io.apibuilder.api.v0.models.Change) = {
+          jsObjectChange(obj)
+        }
       }
     }
 
@@ -1474,8 +1445,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiChangeVersion: play.api.libs.json.Writes[ChangeVersion] = {
-      (obj: io.apibuilder.api.v0.models.ChangeVersion) => {
-        jsObjectChangeVersion(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.ChangeVersion] {
+        def writes(obj: io.apibuilder.api.v0.models.ChangeVersion) = {
+          jsObjectChangeVersion(obj)
+        }
       }
     }
 
@@ -1490,8 +1463,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiCleartextToken: play.api.libs.json.Writes[CleartextToken] = {
-      (obj: io.apibuilder.api.v0.models.CleartextToken) => {
-        jsObjectCleartextToken(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.CleartextToken] {
+        def writes(obj: io.apibuilder.api.v0.models.CleartextToken) = {
+          jsObjectCleartextToken(obj)
+        }
       }
     }
 
@@ -1512,8 +1487,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiCode: play.api.libs.json.Writes[Code] = {
-      (obj: io.apibuilder.api.v0.models.Code) => {
-        jsObjectCode(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Code] {
+        def writes(obj: io.apibuilder.api.v0.models.Code) = {
+          jsObjectCode(obj)
+        }
       }
     }
 
@@ -1528,8 +1505,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiCodeForm: play.api.libs.json.Writes[CodeForm] = {
-      (obj: io.apibuilder.api.v0.models.CodeForm) => {
-        jsObjectCodeForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.CodeForm] {
+        def writes(obj: io.apibuilder.api.v0.models.CodeForm) = {
+          jsObjectCodeForm(obj)
+        }
       }
     }
 
@@ -1548,8 +1527,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiDiffBreaking: play.api.libs.json.Writes[DiffBreaking] = {
-      (obj: io.apibuilder.api.v0.models.DiffBreaking) => {
-        jsObjectDiffBreaking(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.DiffBreaking] {
+        def writes(obj: io.apibuilder.api.v0.models.DiffBreaking) = {
+          jsObjectDiffBreaking(obj)
+        }
       }
     }
 
@@ -1568,8 +1549,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiDiffNonBreaking: play.api.libs.json.Writes[DiffNonBreaking] = {
-      (obj: io.apibuilder.api.v0.models.DiffNonBreaking) => {
-        jsObjectDiffNonBreaking(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.DiffNonBreaking] {
+        def writes(obj: io.apibuilder.api.v0.models.DiffNonBreaking) = {
+          jsObjectDiffNonBreaking(obj)
+        }
       }
     }
 
@@ -1584,8 +1567,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiDomain: play.api.libs.json.Writes[Domain] = {
-      (obj: io.apibuilder.api.v0.models.Domain) => {
-        jsObjectDomain(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Domain] {
+        def writes(obj: io.apibuilder.api.v0.models.Domain) = {
+          jsObjectDomain(obj)
+        }
       }
     }
 
@@ -1600,8 +1585,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiEmailVerificationConfirmationForm: play.api.libs.json.Writes[EmailVerificationConfirmationForm] = {
-      (obj: io.apibuilder.api.v0.models.EmailVerificationConfirmationForm) => {
-        jsObjectEmailVerificationConfirmationForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.EmailVerificationConfirmationForm] {
+        def writes(obj: io.apibuilder.api.v0.models.EmailVerificationConfirmationForm) = {
+          jsObjectEmailVerificationConfirmationForm(obj)
+        }
       }
     }
 
@@ -1620,8 +1607,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiError: play.api.libs.json.Writes[Error] = {
-      (obj: io.apibuilder.api.v0.models.Error) => {
-        jsObjectError(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Error] {
+        def writes(obj: io.apibuilder.api.v0.models.Error) = {
+          jsObjectError(obj)
+        }
       }
     }
 
@@ -1640,8 +1629,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiGeneratorForm: play.api.libs.json.Writes[GeneratorForm] = {
-      (obj: io.apibuilder.api.v0.models.GeneratorForm) => {
-        jsObjectGeneratorForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.GeneratorForm] {
+        def writes(obj: io.apibuilder.api.v0.models.GeneratorForm) = {
+          jsObjectGeneratorForm(obj)
+        }
       }
     }
 
@@ -1662,8 +1653,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiGeneratorService: play.api.libs.json.Writes[GeneratorService] = {
-      (obj: io.apibuilder.api.v0.models.GeneratorService) => {
-        jsObjectGeneratorService(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.GeneratorService] {
+        def writes(obj: io.apibuilder.api.v0.models.GeneratorService) = {
+          jsObjectGeneratorService(obj)
+        }
       }
     }
 
@@ -1678,8 +1671,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiGeneratorServiceForm: play.api.libs.json.Writes[GeneratorServiceForm] = {
-      (obj: io.apibuilder.api.v0.models.GeneratorServiceForm) => {
-        jsObjectGeneratorServiceForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.GeneratorServiceForm] {
+        def writes(obj: io.apibuilder.api.v0.models.GeneratorServiceForm) = {
+          jsObjectGeneratorServiceForm(obj)
+        }
       }
     }
 
@@ -1698,8 +1693,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiGeneratorWithService: play.api.libs.json.Writes[GeneratorWithService] = {
-      (obj: io.apibuilder.api.v0.models.GeneratorWithService) => {
-        jsObjectGeneratorWithService(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.GeneratorWithService] {
+        def writes(obj: io.apibuilder.api.v0.models.GeneratorWithService) = {
+          jsObjectGeneratorWithService(obj)
+        }
       }
     }
 
@@ -1724,8 +1721,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiItem: play.api.libs.json.Writes[Item] = {
-      (obj: io.apibuilder.api.v0.models.Item) => {
-        jsObjectItem(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Item] {
+        def writes(obj: io.apibuilder.api.v0.models.Item) = {
+          jsObjectItem(obj)
+        }
       }
     }
 
@@ -1750,8 +1749,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiMembership: play.api.libs.json.Writes[Membership] = {
-      (obj: io.apibuilder.api.v0.models.Membership) => {
-        jsObjectMembership(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Membership] {
+        def writes(obj: io.apibuilder.api.v0.models.Membership) = {
+          jsObjectMembership(obj)
+        }
       }
     }
 
@@ -1776,8 +1777,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
-      (obj: io.apibuilder.api.v0.models.MembershipRequest) => {
-        jsObjectMembershipRequest(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.MembershipRequest] {
+        def writes(obj: io.apibuilder.api.v0.models.MembershipRequest) = {
+          jsObjectMembershipRequest(obj)
+        }
       }
     }
 
@@ -1792,8 +1795,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiMoveForm: play.api.libs.json.Writes[MoveForm] = {
-      (obj: io.apibuilder.api.v0.models.MoveForm) => {
-        jsObjectMoveForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.MoveForm] {
+        def writes(obj: io.apibuilder.api.v0.models.MoveForm) = {
+          jsObjectMoveForm(obj)
+        }
       }
     }
 
@@ -1822,8 +1827,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiOrganization: play.api.libs.json.Writes[Organization] = {
-      (obj: io.apibuilder.api.v0.models.Organization) => {
-        jsObjectOrganization(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Organization] {
+        def writes(obj: io.apibuilder.api.v0.models.Organization) = {
+          jsObjectOrganization(obj)
+        }
       }
     }
 
@@ -1853,8 +1860,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiOrganizationForm: play.api.libs.json.Writes[OrganizationForm] = {
-      (obj: io.apibuilder.api.v0.models.OrganizationForm) => {
-        jsObjectOrganizationForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.OrganizationForm] {
+        def writes(obj: io.apibuilder.api.v0.models.OrganizationForm) = {
+          jsObjectOrganizationForm(obj)
+        }
       }
     }
 
@@ -1873,8 +1882,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiOriginal: play.api.libs.json.Writes[Original] = {
-      (obj: io.apibuilder.api.v0.models.Original) => {
-        jsObjectOriginal(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Original] {
+        def writes(obj: io.apibuilder.api.v0.models.Original) = {
+          jsObjectOriginal(obj)
+        }
       }
     }
 
@@ -1895,8 +1906,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiOriginalForm: play.api.libs.json.Writes[OriginalForm] = {
-      (obj: io.apibuilder.api.v0.models.OriginalForm) => {
-        jsObjectOriginalForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.OriginalForm] {
+        def writes(obj: io.apibuilder.api.v0.models.OriginalForm) = {
+          jsObjectOriginalForm(obj)
+        }
       }
     }
 
@@ -1915,8 +1928,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiPasswordReset: play.api.libs.json.Writes[PasswordReset] = {
-      (obj: io.apibuilder.api.v0.models.PasswordReset) => {
-        jsObjectPasswordReset(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.PasswordReset] {
+        def writes(obj: io.apibuilder.api.v0.models.PasswordReset) = {
+          jsObjectPasswordReset(obj)
+        }
       }
     }
 
@@ -1931,8 +1946,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiPasswordResetRequest: play.api.libs.json.Writes[PasswordResetRequest] = {
-      (obj: io.apibuilder.api.v0.models.PasswordResetRequest) => {
-        jsObjectPasswordResetRequest(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.PasswordResetRequest] {
+        def writes(obj: io.apibuilder.api.v0.models.PasswordResetRequest) = {
+          jsObjectPasswordResetRequest(obj)
+        }
       }
     }
 
@@ -1951,8 +1968,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiSession: play.api.libs.json.Writes[Session] = {
-      (obj: io.apibuilder.api.v0.models.Session) => {
-        jsObjectSession(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Session] {
+        def writes(obj: io.apibuilder.api.v0.models.Session) = {
+          jsObjectSession(obj)
+        }
       }
     }
 
@@ -1977,8 +1996,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiSubscription: play.api.libs.json.Writes[Subscription] = {
-      (obj: io.apibuilder.api.v0.models.Subscription) => {
-        jsObjectSubscription(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Subscription] {
+        def writes(obj: io.apibuilder.api.v0.models.Subscription) = {
+          jsObjectSubscription(obj)
+        }
       }
     }
 
@@ -1999,8 +2020,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiSubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
-      (obj: io.apibuilder.api.v0.models.SubscriptionForm) => {
-        jsObjectSubscriptionForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.SubscriptionForm] {
+        def writes(obj: io.apibuilder.api.v0.models.SubscriptionForm) = {
+          jsObjectSubscriptionForm(obj)
+        }
       }
     }
 
@@ -2027,8 +2050,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiToken: play.api.libs.json.Writes[Token] = {
-      (obj: io.apibuilder.api.v0.models.Token) => {
-        jsObjectToken(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Token] {
+        def writes(obj: io.apibuilder.api.v0.models.Token) = {
+          jsObjectToken(obj)
+        }
       }
     }
 
@@ -2049,8 +2074,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiTokenForm: play.api.libs.json.Writes[TokenForm] = {
-      (obj: io.apibuilder.api.v0.models.TokenForm) => {
-        jsObjectTokenForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.TokenForm] {
+        def writes(obj: io.apibuilder.api.v0.models.TokenForm) = {
+          jsObjectTokenForm(obj)
+        }
       }
     }
 
@@ -2077,8 +2104,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiUser: play.api.libs.json.Writes[User] = {
-      (obj: io.apibuilder.api.v0.models.User) => {
-        jsObjectUser(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.User] {
+        def writes(obj: io.apibuilder.api.v0.models.User) = {
+          jsObjectUser(obj)
+        }
       }
     }
 
@@ -2106,8 +2135,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiUserForm: play.api.libs.json.Writes[UserForm] = {
-      (obj: io.apibuilder.api.v0.models.UserForm) => {
-        jsObjectUserForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.UserForm] {
+        def writes(obj: io.apibuilder.api.v0.models.UserForm) = {
+          jsObjectUserForm(obj)
+        }
       }
     }
 
@@ -2126,8 +2157,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiUserSummary: play.api.libs.json.Writes[UserSummary] = {
-      (obj: io.apibuilder.api.v0.models.UserSummary) => {
-        jsObjectUserSummary(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.UserSummary] {
+        def writes(obj: io.apibuilder.api.v0.models.UserSummary) = {
+          jsObjectUserSummary(obj)
+        }
       }
     }
 
@@ -2150,8 +2183,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiUserUpdateForm: play.api.libs.json.Writes[UserUpdateForm] = {
-      (obj: io.apibuilder.api.v0.models.UserUpdateForm) => {
-        jsObjectUserUpdateForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.UserUpdateForm] {
+        def writes(obj: io.apibuilder.api.v0.models.UserUpdateForm) = {
+          jsObjectUserUpdateForm(obj)
+        }
       }
     }
 
@@ -2170,8 +2205,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiValidation: play.api.libs.json.Writes[Validation] = {
-      (obj: io.apibuilder.api.v0.models.Validation) => {
-        jsObjectValidation(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Validation] {
+        def writes(obj: io.apibuilder.api.v0.models.Validation) = {
+          jsObjectValidation(obj)
+        }
       }
     }
 
@@ -2202,8 +2239,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiVersion: play.api.libs.json.Writes[Version] = {
-      (obj: io.apibuilder.api.v0.models.Version) => {
-        jsObjectVersion(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Version] {
+        def writes(obj: io.apibuilder.api.v0.models.Version) = {
+          jsObjectVersion(obj)
+        }
       }
     }
 
@@ -2224,8 +2263,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiVersionForm: play.api.libs.json.Writes[VersionForm] = {
-      (obj: io.apibuilder.api.v0.models.VersionForm) => {
-        jsObjectVersionForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.VersionForm] {
+        def writes(obj: io.apibuilder.api.v0.models.VersionForm) = {
+          jsObjectVersionForm(obj)
+        }
       }
     }
 
@@ -2250,8 +2291,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiWatch: play.api.libs.json.Writes[Watch] = {
-      (obj: io.apibuilder.api.v0.models.Watch) => {
-        jsObjectWatch(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Watch] {
+        def writes(obj: io.apibuilder.api.v0.models.Watch) = {
+          jsObjectWatch(obj)
+        }
       }
     }
 
@@ -2272,22 +2315,20 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiWatchForm: play.api.libs.json.Writes[WatchForm] = {
-      (obj: io.apibuilder.api.v0.models.WatchForm) => {
-        jsObjectWatchForm(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.WatchForm] {
+        def writes(obj: io.apibuilder.api.v0.models.WatchForm) = {
+          jsObjectWatchForm(obj)
+        }
       }
     }
 
-    implicit def jsonReadsApibuilderApiDiff: play.api.libs.json.Reads[Diff] = (js: play.api.libs.json.JsValue) => {
-      def readDiscriminator(discriminator: String) = {
-        discriminator match {
+    implicit def jsonReadsApibuilderApiDiff: play.api.libs.json.Reads[Diff] = new play.api.libs.json.Reads[Diff] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[Diff] = {
+        (js \ "type").asOpt[String].getOrElse { sys.error("Union[Diff] requires a discriminator named 'type' - this field was not found in the Json Value") } match {
           case "diff_breaking" => js.validate[io.apibuilder.api.v0.models.DiffBreaking]
           case "diff_non_breaking" => js.validate[io.apibuilder.api.v0.models.DiffNonBreaking]
           case other => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.DiffUndefinedType(other))
         }
-      }
-      (js \ "type").validate[String] match {
-        case e: play.api.libs.json.JsError => e
-        case s: play.api.libs.json.JsSuccess[String] => readDiscriminator(s.value)
       }
     }
 
@@ -2302,21 +2343,19 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiDiff: play.api.libs.json.Writes[Diff] = {
-      (obj: io.apibuilder.api.v0.models.Diff) => {
-        jsObjectDiff(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.Diff] {
+        def writes(obj: io.apibuilder.api.v0.models.Diff) = {
+          jsObjectDiff(obj)
+        }
       }
     }
 
-    implicit def jsonReadsApibuilderApiItemDetail: play.api.libs.json.Reads[ItemDetail] = (js: play.api.libs.json.JsValue) => {
-      def readDiscriminator(discriminator: String) = {
-        discriminator match {
+    implicit def jsonReadsApibuilderApiItemDetail: play.api.libs.json.Reads[ItemDetail] = new play.api.libs.json.Reads[ItemDetail] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[ItemDetail] = {
+        (js \ "type").asOpt[String].getOrElse { sys.error("Union[ItemDetail] requires a discriminator named 'type' - this field was not found in the Json Value") } match {
           case "application_summary" => js.validate[io.apibuilder.api.v0.models.ApplicationSummary]
           case other => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.ItemDetailUndefinedType(other))
         }
-      }
-      (js \ "type").validate[String] match {
-        case e: play.api.libs.json.JsError => e
-        case s: play.api.libs.json.JsSuccess[String] => readDiscriminator(s.value)
       }
     }
 
@@ -2330,8 +2369,10 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonWritesApibuilderApiItemDetail: play.api.libs.json.Writes[ItemDetail] = {
-      (obj: io.apibuilder.api.v0.models.ItemDetail) => {
-        jsObjectItemDetail(obj)
+      new play.api.libs.json.Writes[io.apibuilder.api.v0.models.ItemDetail] {
+        def writes(obj: io.apibuilder.api.v0.models.ItemDetail) = {
+          jsObjectItemDetail(obj)
+        }
       }
     }
   }
@@ -3797,7 +3838,7 @@ package io.apibuilder.api.v0 {
      */
     def _withJsonContentType(headers: Seq[(String, String)]): Seq[(String, String)] = {
       headers.find { _._1.toUpperCase == "CONTENT-TYPE" } match {
-        case None => headers ++ Seq("Content-Type" -> "application/json; charset=UTF-8")
+        case None => headers ++ Seq(("Content-Type" -> "application/json; charset=UTF-8"))
         case Some(_) => headers
       }
     }

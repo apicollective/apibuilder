@@ -19,7 +19,6 @@ package io.apibuilder.common.v0.models {
   /**
    * Represents a reference to another model.
    */
-
   final case class Reference(
     guid: _root_.java.util.UUID,
     key: String
@@ -40,26 +39,32 @@ package io.apibuilder.common.v0.models {
     import play.api.libs.functional.syntax._
     import io.apibuilder.common.v0.models.json._
 
-    private[v0] implicit val jsonReadsUUID: play.api.libs.json.Reads[_root_.java.util.UUID] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsUUID = __.read[String].map { str =>
       _root_.java.util.UUID.fromString(str)
     }
 
-    private[v0] implicit val jsonWritesUUID: play.api.libs.json.Writes[_root_.java.util.UUID] = (x: _root_.java.util.UUID) => play.api.libs.json.JsString(x.toString)
+    private[v0] implicit val jsonWritesUUID = new Writes[_root_.java.util.UUID] {
+      def writes(x: _root_.java.util.UUID) = JsString(x.toString)
+    }
 
-    private[v0] implicit val jsonReadsJodaDateTime: play.api.libs.json.Reads[_root_.org.joda.time.DateTime] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseDateTime(str)
     }
 
-    private[v0] implicit val jsonWritesJodaDateTime: play.api.libs.json.Writes[_root_.org.joda.time.DateTime] = (x: _root_.org.joda.time.DateTime) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+    private[v0] implicit val jsonWritesJodaDateTime = new Writes[_root_.org.joda.time.DateTime] {
+      def writes(x: _root_.org.joda.time.DateTime) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+      }
     }
 
-    private[v0] implicit val jsonReadsJodaLocalDate: play.api.libs.json.Reads[_root_.org.joda.time.LocalDate] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaLocalDate = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseLocalDate(str)
     }
 
-    private[v0] implicit val jsonWritesJodaLocalDate: play.api.libs.json.Writes[_root_.org.joda.time.LocalDate] = (x: _root_.org.joda.time.LocalDate) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+    private[v0] implicit val jsonWritesJodaLocalDate = new Writes[_root_.org.joda.time.LocalDate] {
+      def writes(x: _root_.org.joda.time.LocalDate) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+      }
     }
 
     implicit def jsonReadsApibuilderCommonAudit: play.api.libs.json.Reads[Audit] = {
@@ -81,8 +86,10 @@ package io.apibuilder.common.v0.models {
     }
 
     implicit def jsonWritesApibuilderCommonAudit: play.api.libs.json.Writes[Audit] = {
-      (obj: io.apibuilder.common.v0.models.Audit) => {
-        jsObjectAudit(obj)
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.Audit] {
+        def writes(obj: io.apibuilder.common.v0.models.Audit) = {
+          jsObjectAudit(obj)
+        }
       }
     }
 
@@ -97,8 +104,10 @@ package io.apibuilder.common.v0.models {
     }
 
     implicit def jsonWritesApibuilderCommonHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
-      (obj: io.apibuilder.common.v0.models.Healthcheck) => {
-        jsObjectHealthcheck(obj)
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.Healthcheck] {
+        def writes(obj: io.apibuilder.common.v0.models.Healthcheck) = {
+          jsObjectHealthcheck(obj)
+        }
       }
     }
 
@@ -117,8 +126,10 @@ package io.apibuilder.common.v0.models {
     }
 
     implicit def jsonWritesApibuilderCommonReference: play.api.libs.json.Writes[Reference] = {
-      (obj: io.apibuilder.common.v0.models.Reference) => {
-        jsObjectReference(obj)
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.Reference] {
+        def writes(obj: io.apibuilder.common.v0.models.Reference) = {
+          jsObjectReference(obj)
+        }
       }
     }
 
@@ -133,8 +144,10 @@ package io.apibuilder.common.v0.models {
     }
 
     implicit def jsonWritesApibuilderCommonReferenceGuid: play.api.libs.json.Writes[ReferenceGuid] = {
-      (obj: io.apibuilder.common.v0.models.ReferenceGuid) => {
-        jsObjectReferenceGuid(obj)
+      new play.api.libs.json.Writes[io.apibuilder.common.v0.models.ReferenceGuid] {
+        def writes(obj: io.apibuilder.common.v0.models.ReferenceGuid) = {
+          jsObjectReferenceGuid(obj)
+        }
       }
     }
   }

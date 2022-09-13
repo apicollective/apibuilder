@@ -6,6 +6,7 @@
 package io.apibuilder.spec.v0.models {
 
   sealed trait ResponseCode extends _root_.scala.Product with _root_.scala.Serializable
+
   /**
    * Used to indicate an API concern for a field that is specific to the field's
    * usage but not necessarily its data type. For example, you might use annotations
@@ -14,7 +15,6 @@ package io.apibuilder.spec.v0.models {
    * of an API and may also be used within an implementation or tooling; for example,
    * using static analysis tools to detect logging of sensitive data.
    */
-
   final case class Annotation(
     name: String,
     description: _root_.scala.Option[String] = None,
@@ -28,7 +28,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * @param key Unique key identifying this application
    */
-
   final case class Application(
     key: String
   )
@@ -42,7 +41,6 @@ package io.apibuilder.spec.v0.models {
    * attributes will be applicable only in the context of the specific code
    * generators usings them.
    */
-
   final case class Attribute(
     name: String,
     value: _root_.play.api.libs.json.JsObject,
@@ -60,7 +58,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * Describes the primary contact for this service
    */
-
   final case class Contact(
     name: _root_.scala.Option[String] = None,
     url: _root_.scala.Option[String] = None,
@@ -71,7 +68,6 @@ package io.apibuilder.spec.v0.models {
    * Indicates that this particular element is considered deprecated in the API. See
    * the description for details
    */
-
   final case class Deprecation(
     description: _root_.scala.Option[String] = None
   )
@@ -89,7 +85,6 @@ package io.apibuilder.spec.v0.models {
    * @param value The actual string representation of this value. If not specified, defaults to
    *        'name'
    */
-
   final case class EnumValue(
     name: String,
     description: _root_.scala.Option[String] = None,
@@ -135,7 +130,6 @@ package io.apibuilder.spec.v0.models {
    * @param models Models made available by this import
    * @param annotations Annotations made available by this import
    */
-
   final case class Import(
     uri: String,
     namespace: String,
@@ -152,7 +146,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * General metadata about this service
    */
-
   final case class Info(
     license: _root_.scala.Option[io.apibuilder.spec.v0.models.License] = None,
     contact: _root_.scala.Option[io.apibuilder.spec.v0.models.Contact] = None
@@ -170,7 +163,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * Describes the software license contact for this service
    */
-
   final case class License(
     name: String,
     url: _root_.scala.Option[String] = None
@@ -189,7 +181,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * @param path The full path to this operation, relative to the service's base url.
    */
-
   final case class Operation(
     method: io.apibuilder.spec.v0.models.Method,
     path: String,
@@ -204,7 +195,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * @param key Unique key identifying the organization that owns this service
    */
-
   final case class Organization(
     key: String
   )
@@ -231,7 +221,6 @@ package io.apibuilder.spec.v0.models {
    *        optional as some of our input formats (e.g. swagger) do not explicitly
    *        differentiate resoure paths.
    */
-
   final case class Resource(
     `type`: String,
     plural: String,
@@ -259,7 +248,6 @@ package io.apibuilder.spec.v0.models {
    *        preexisting services.
    * @param namespace Fully qualified namespace for this service
    */
-
   final case class Service(
     apidoc: io.apibuilder.spec.v0.models.Apidoc,
     name: String,
@@ -290,7 +278,6 @@ package io.apibuilder.spec.v0.models {
    *        same name as the discriminator
    * @param types The names of the types that make up this union type
    */
-
   final case class Union(
     name: String,
     plural: String,
@@ -315,7 +302,6 @@ package io.apibuilder.spec.v0.models {
    *        identify this type. If not specified, the discriminator value will default to
    *        the name of the type itself.
    */
-
   final case class UnionType(
     `type`: String,
     description: _root_.scala.Option[String] = None,
@@ -333,7 +319,6 @@ package io.apibuilder.spec.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-
   final case class ResponseCodeUndefinedType(
     description: String
   ) extends ResponseCode
@@ -341,7 +326,6 @@ package io.apibuilder.spec.v0.models {
   /**
    * Wrapper class to support the union types containing the datatype[integer]
    */
-
   final case class ResponseCodeInt(
     value: Int
   ) extends ResponseCode
@@ -359,6 +343,7 @@ package io.apibuilder.spec.v0.models {
     case object Connect extends Method { override def toString = "CONNECT" }
     case object Options extends Method { override def toString = "OPTIONS" }
     case object Trace extends Method { override def toString = "TRACE" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -394,6 +379,7 @@ package io.apibuilder.spec.v0.models {
     case object Query extends ParameterLocation { override def toString = "Query" }
     case object Form extends ParameterLocation { override def toString = "Form" }
     case object Header extends ParameterLocation { override def toString = "Header" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -426,6 +412,7 @@ package io.apibuilder.spec.v0.models {
   object ResponseCodeOption {
 
     case object Default extends ResponseCodeOption { override def toString = "Default" }
+
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -464,29 +451,35 @@ package io.apibuilder.spec.v0.models {
     import play.api.libs.functional.syntax._
     import io.apibuilder.spec.v0.models.json._
 
-    private[v0] implicit val jsonReadsUUID: play.api.libs.json.Reads[_root_.java.util.UUID] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsUUID = __.read[String].map { str =>
       _root_.java.util.UUID.fromString(str)
     }
 
-    private[v0] implicit val jsonWritesUUID: play.api.libs.json.Writes[_root_.java.util.UUID] = (x: _root_.java.util.UUID) => play.api.libs.json.JsString(x.toString)
+    private[v0] implicit val jsonWritesUUID = new Writes[_root_.java.util.UUID] {
+      def writes(x: _root_.java.util.UUID) = JsString(x.toString)
+    }
 
-    private[v0] implicit val jsonReadsJodaDateTime: play.api.libs.json.Reads[_root_.org.joda.time.DateTime] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseDateTime(str)
     }
 
-    private[v0] implicit val jsonWritesJodaDateTime: play.api.libs.json.Writes[_root_.org.joda.time.DateTime] = (x: _root_.org.joda.time.DateTime) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+    private[v0] implicit val jsonWritesJodaDateTime = new Writes[_root_.org.joda.time.DateTime] {
+      def writes(x: _root_.org.joda.time.DateTime) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(x))
+      }
     }
 
-    private[v0] implicit val jsonReadsJodaLocalDate: play.api.libs.json.Reads[_root_.org.joda.time.LocalDate] = __.read[String].map { str =>
+    private[v0] implicit val jsonReadsJodaLocalDate = __.read[String].map { str =>
       _root_.org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseLocalDate(str)
     }
 
-    private[v0] implicit val jsonWritesJodaLocalDate: play.api.libs.json.Writes[_root_.org.joda.time.LocalDate] = (x: _root_.org.joda.time.LocalDate) => {
-      play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+    private[v0] implicit val jsonWritesJodaLocalDate = new Writes[_root_.org.joda.time.LocalDate] {
+      def writes(x: _root_.org.joda.time.LocalDate) = {
+        JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+      }
     }
 
-    implicit val jsonReadsApibuilderSpecMethod: play.api.libs.json.Reads[io.apibuilder.spec.v0.models.Method] = new play.api.libs.json.Reads[io.apibuilder.spec.v0.models.Method] {
+    implicit val jsonReadsApibuilderSpecMethod = new play.api.libs.json.Reads[io.apibuilder.spec.v0.models.Method] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.spec.v0.models.Method] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.spec.v0.models.Method(v.value))
@@ -513,12 +506,14 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecMethod: play.api.libs.json.Writes[Method] = {
-      (obj: io.apibuilder.spec.v0.models.Method) => {
-        jsonWritesApibuilderSpecMethod(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Method] {
+        def writes(obj: io.apibuilder.spec.v0.models.Method) = {
+          jsonWritesApibuilderSpecMethod(obj)
+        }
       }
     }
 
-    implicit val jsonReadsApibuilderSpecParameterLocation: play.api.libs.json.Reads[io.apibuilder.spec.v0.models.ParameterLocation] = new play.api.libs.json.Reads[io.apibuilder.spec.v0.models.ParameterLocation] {
+    implicit val jsonReadsApibuilderSpecParameterLocation = new play.api.libs.json.Reads[io.apibuilder.spec.v0.models.ParameterLocation] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.spec.v0.models.ParameterLocation] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.spec.v0.models.ParameterLocation(v.value))
@@ -545,12 +540,14 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecParameterLocation: play.api.libs.json.Writes[ParameterLocation] = {
-      (obj: io.apibuilder.spec.v0.models.ParameterLocation) => {
-        jsonWritesApibuilderSpecParameterLocation(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.ParameterLocation] {
+        def writes(obj: io.apibuilder.spec.v0.models.ParameterLocation) = {
+          jsonWritesApibuilderSpecParameterLocation(obj)
+        }
       }
     }
 
-    implicit val jsonReadsApibuilderSpecResponseCodeOption: play.api.libs.json.Reads[io.apibuilder.spec.v0.models.ResponseCodeOption] = new play.api.libs.json.Reads[io.apibuilder.spec.v0.models.ResponseCodeOption] {
+    implicit val jsonReadsApibuilderSpecResponseCodeOption = new play.api.libs.json.Reads[io.apibuilder.spec.v0.models.ResponseCodeOption] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.spec.v0.models.ResponseCodeOption] = {
         js match {
           case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.spec.v0.models.ResponseCodeOption(v.value))
@@ -577,8 +574,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecResponseCodeOption: play.api.libs.json.Writes[ResponseCodeOption] = {
-      (obj: io.apibuilder.spec.v0.models.ResponseCodeOption) => {
-        jsonWritesApibuilderSpecResponseCodeOption(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.ResponseCodeOption] {
+        def writes(obj: io.apibuilder.spec.v0.models.ResponseCodeOption) = {
+          jsonWritesApibuilderSpecResponseCodeOption(obj)
+        }
       }
     }
 
@@ -604,8 +603,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecAnnotation: play.api.libs.json.Writes[Annotation] = {
-      (obj: io.apibuilder.spec.v0.models.Annotation) => {
-        jsObjectAnnotation(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Annotation] {
+        def writes(obj: io.apibuilder.spec.v0.models.Annotation) = {
+          jsObjectAnnotation(obj)
+        }
       }
     }
 
@@ -620,8 +621,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecApidoc: play.api.libs.json.Writes[Apidoc] = {
-      (obj: io.apibuilder.spec.v0.models.Apidoc) => {
-        jsObjectApidoc(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Apidoc] {
+        def writes(obj: io.apibuilder.spec.v0.models.Apidoc) = {
+          jsObjectApidoc(obj)
+        }
       }
     }
 
@@ -636,8 +639,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecApplication: play.api.libs.json.Writes[Application] = {
-      (obj: io.apibuilder.spec.v0.models.Application) => {
-        jsObjectApplication(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Application] {
+        def writes(obj: io.apibuilder.spec.v0.models.Application) = {
+          jsObjectApplication(obj)
+        }
       }
     }
 
@@ -665,8 +670,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecAttribute: play.api.libs.json.Writes[Attribute] = {
-      (obj: io.apibuilder.spec.v0.models.Attribute) => {
-        jsObjectAttribute(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Attribute] {
+        def writes(obj: io.apibuilder.spec.v0.models.Attribute) = {
+          jsObjectAttribute(obj)
+        }
       }
     }
 
@@ -694,8 +701,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecBody: play.api.libs.json.Writes[Body] = {
-      (obj: io.apibuilder.spec.v0.models.Body) => {
-        jsObjectBody(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Body] {
+        def writes(obj: io.apibuilder.spec.v0.models.Body) = {
+          jsObjectBody(obj)
+        }
       }
     }
 
@@ -723,8 +732,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecContact: play.api.libs.json.Writes[Contact] = {
-      (obj: io.apibuilder.spec.v0.models.Contact) => {
-        jsObjectContact(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Contact] {
+        def writes(obj: io.apibuilder.spec.v0.models.Contact) = {
+          jsObjectContact(obj)
+        }
       }
     }
 
@@ -740,8 +751,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecDeprecation: play.api.libs.json.Writes[Deprecation] = {
-      (obj: io.apibuilder.spec.v0.models.Deprecation) => {
-        jsObjectDeprecation(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Deprecation] {
+        def writes(obj: io.apibuilder.spec.v0.models.Deprecation) = {
+          jsObjectDeprecation(obj)
+        }
       }
     }
 
@@ -773,8 +786,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecEnum: play.api.libs.json.Writes[Enum] = {
-      (obj: io.apibuilder.spec.v0.models.Enum) => {
-        jsObjectEnum(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Enum] {
+        def writes(obj: io.apibuilder.spec.v0.models.Enum) = {
+          jsObjectEnum(obj)
+        }
       }
     }
 
@@ -807,8 +822,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecEnumValue: play.api.libs.json.Writes[EnumValue] = {
-      (obj: io.apibuilder.spec.v0.models.EnumValue) => {
-        jsObjectEnumValue(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.EnumValue] {
+        def writes(obj: io.apibuilder.spec.v0.models.EnumValue) = {
+          jsObjectEnumValue(obj)
+        }
       }
     }
 
@@ -824,7 +841,7 @@ package io.apibuilder.spec.v0.models {
         maximum <- (__ \ "maximum").readNullable[Long]
         example <- (__ \ "example").readNullable[String]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        annotations <- (__ \ "annotations").read[Seq[String]]
+        annotations <- (__ \ "annotations").readWithDefault[Seq[String]](Nil)
       } yield Field(name, `type`, description, deprecation, default, required, minimum, maximum, example, attributes, annotations)
     }
 
@@ -862,8 +879,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecField: play.api.libs.json.Writes[Field] = {
-      (obj: io.apibuilder.spec.v0.models.Field) => {
-        jsObjectField(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Field] {
+        def writes(obj: io.apibuilder.spec.v0.models.Field) = {
+          jsObjectField(obj)
+        }
       }
     }
 
@@ -900,8 +919,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecHeader: play.api.libs.json.Writes[Header] = {
-      (obj: io.apibuilder.spec.v0.models.Header) => {
-        jsObjectHeader(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Header] {
+        def writes(obj: io.apibuilder.spec.v0.models.Header) = {
+          jsObjectHeader(obj)
+        }
       }
     }
 
@@ -913,10 +934,10 @@ package io.apibuilder.spec.v0.models {
         application <- (__ \ "application").read[io.apibuilder.spec.v0.models.Application]
         version <- (__ \ "version").read[String]
         enums <- (__ \ "enums").read[Seq[String]]
-        interfaces <- (__ \ "interfaces").read[Seq[String]]
+        interfaces <- (__ \ "interfaces").readWithDefault[Seq[String]](Nil)
         unions <- (__ \ "unions").read[Seq[String]]
         models <- (__ \ "models").read[Seq[String]]
-        annotations <- (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
+        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
       } yield Import(uri, namespace, organization, application, version, enums, interfaces, unions, models, annotations)
     }
 
@@ -936,8 +957,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecImport: play.api.libs.json.Writes[Import] = {
-      (obj: io.apibuilder.spec.v0.models.Import) => {
-        jsObjectImport(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Import] {
+        def writes(obj: io.apibuilder.spec.v0.models.Import) = {
+          jsObjectImport(obj)
+        }
       }
     }
 
@@ -960,8 +983,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecInfo: play.api.libs.json.Writes[Info] = {
-      (obj: io.apibuilder.spec.v0.models.Info) => {
-        jsObjectInfo(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Info] {
+        def writes(obj: io.apibuilder.spec.v0.models.Info) = {
+          jsObjectInfo(obj)
+        }
       }
     }
 
@@ -993,8 +1018,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecInterface: play.api.libs.json.Writes[Interface] = {
-      (obj: io.apibuilder.spec.v0.models.Interface) => {
-        jsObjectInterface(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Interface] {
+        def writes(obj: io.apibuilder.spec.v0.models.Interface) = {
+          jsObjectInterface(obj)
+        }
       }
     }
 
@@ -1015,8 +1042,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecLicense: play.api.libs.json.Writes[License] = {
-      (obj: io.apibuilder.spec.v0.models.License) => {
-        jsObjectLicense(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.License] {
+        def writes(obj: io.apibuilder.spec.v0.models.License) = {
+          jsObjectLicense(obj)
+        }
       }
     }
 
@@ -1028,7 +1057,7 @@ package io.apibuilder.spec.v0.models {
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
         fields <- (__ \ "fields").read[Seq[io.apibuilder.spec.v0.models.Field]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        interfaces <- (__ \ "interfaces").read[Seq[String]]
+        interfaces <- (__ \ "interfaces").readWithDefault[Seq[String]](Nil)
       } yield Model(name, plural, description, deprecation, fields, attributes, interfaces)
     }
 
@@ -1050,8 +1079,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecModel: play.api.libs.json.Writes[Model] = {
-      (obj: io.apibuilder.spec.v0.models.Model) => {
-        jsObjectModel(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Model] {
+        def writes(obj: io.apibuilder.spec.v0.models.Model) = {
+          jsObjectModel(obj)
+        }
       }
     }
 
@@ -1090,8 +1121,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecOperation: play.api.libs.json.Writes[Operation] = {
-      (obj: io.apibuilder.spec.v0.models.Operation) => {
-        jsObjectOperation(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Operation] {
+        def writes(obj: io.apibuilder.spec.v0.models.Operation) = {
+          jsObjectOperation(obj)
+        }
       }
     }
 
@@ -1106,8 +1139,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecOrganization: play.api.libs.json.Writes[Organization] = {
-      (obj: io.apibuilder.spec.v0.models.Organization) => {
-        jsObjectOrganization(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Organization] {
+        def writes(obj: io.apibuilder.spec.v0.models.Organization) = {
+          jsObjectOrganization(obj)
+        }
       }
     }
 
@@ -1164,8 +1199,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecParameter: play.api.libs.json.Writes[Parameter] = {
-      (obj: io.apibuilder.spec.v0.models.Parameter) => {
-        jsObjectParameter(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Parameter] {
+        def writes(obj: io.apibuilder.spec.v0.models.Parameter) = {
+          jsObjectParameter(obj)
+        }
       }
     }
 
@@ -1202,8 +1239,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecResource: play.api.libs.json.Writes[Resource] = {
-      (obj: io.apibuilder.spec.v0.models.Resource) => {
-        jsObjectResource(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Resource] {
+        def writes(obj: io.apibuilder.spec.v0.models.Resource) = {
+          jsObjectResource(obj)
+        }
       }
     }
 
@@ -1241,8 +1280,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecResponse: play.api.libs.json.Writes[Response] = {
-      (obj: io.apibuilder.spec.v0.models.Response) => {
-        jsObjectResponse(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Response] {
+        def writes(obj: io.apibuilder.spec.v0.models.Response) = {
+          jsObjectResponse(obj)
+        }
       }
     }
 
@@ -1260,12 +1301,12 @@ package io.apibuilder.spec.v0.models {
         headers <- (__ \ "headers").read[Seq[io.apibuilder.spec.v0.models.Header]]
         imports <- (__ \ "imports").read[Seq[io.apibuilder.spec.v0.models.Import]]
         enums <- (__ \ "enums").read[Seq[io.apibuilder.spec.v0.models.Enum]]
-        interfaces <- (__ \ "interfaces").read[Seq[io.apibuilder.spec.v0.models.Interface]]
+        interfaces <- (__ \ "interfaces").readWithDefault[Seq[io.apibuilder.spec.v0.models.Interface]](Nil)
         unions <- (__ \ "unions").read[Seq[io.apibuilder.spec.v0.models.Union]]
         models <- (__ \ "models").read[Seq[io.apibuilder.spec.v0.models.Model]]
         resources <- (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        annotations <- (__ \ "annotations").read[Seq[io.apibuilder.spec.v0.models.Annotation]]
+        annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
       } yield Service(apidoc, name, organization, application, namespace, version, baseUrl, description, info, headers, imports, enums, interfaces, unions, models, resources, attributes, annotations)
     }
 
@@ -1298,8 +1339,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecService: play.api.libs.json.Writes[Service] = {
-      (obj: io.apibuilder.spec.v0.models.Service) => {
-        jsObjectService(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Service] {
+        def writes(obj: io.apibuilder.spec.v0.models.Service) = {
+          jsObjectService(obj)
+        }
       }
     }
 
@@ -1312,7 +1355,7 @@ package io.apibuilder.spec.v0.models {
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
         types <- (__ \ "types").read[Seq[io.apibuilder.spec.v0.models.UnionType]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
-        interfaces <- (__ \ "interfaces").read[Seq[String]]
+        interfaces <- (__ \ "interfaces").readWithDefault[Seq[String]](Nil)
       } yield Union(name, plural, discriminator, description, deprecation, types, attributes, interfaces)
     }
 
@@ -1338,8 +1381,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecUnion: play.api.libs.json.Writes[Union] = {
-      (obj: io.apibuilder.spec.v0.models.Union) => {
-        jsObjectUnion(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Union] {
+        def writes(obj: io.apibuilder.spec.v0.models.Union) = {
+          jsObjectUnion(obj)
+        }
       }
     }
 
@@ -1377,8 +1422,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecUnionType: play.api.libs.json.Writes[UnionType] = {
-      (obj: io.apibuilder.spec.v0.models.UnionType) => {
-        jsObjectUnionType(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.UnionType] {
+        def writes(obj: io.apibuilder.spec.v0.models.UnionType) = {
+          jsObjectUnionType(obj)
+        }
       }
     }
 
@@ -1392,7 +1439,7 @@ package io.apibuilder.spec.v0.models {
         orElse
         (__ \ "response_code_option").read(jsonReadsApibuilderSpecResponseCodeOption).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
         orElse
-        play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(ResponseCodeUndefinedType(jsValue.toString))).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
+        play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(io.apibuilder.spec.v0.models.ResponseCodeUndefinedType(jsValue.toString))).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
       )
     }
 
@@ -1405,8 +1452,10 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonWritesApibuilderSpecResponseCode: play.api.libs.json.Writes[ResponseCode] = {
-      (obj: io.apibuilder.spec.v0.models.ResponseCode) => {
-        jsObjectResponseCode(obj)
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.ResponseCode] {
+        def writes(obj: io.apibuilder.spec.v0.models.ResponseCode) = {
+          jsObjectResponseCode(obj)
+        }
       }
     }
   }
@@ -1639,7 +1688,7 @@ package io.apibuilder.spec.v0 {
      */
     def _withJsonContentType(headers: Seq[(String, String)]): Seq[(String, String)] = {
       headers.find { _._1.toUpperCase == "CONTENT-TYPE" } match {
-        case None => headers ++ Seq("Content-Type" -> "application/json; charset=UTF-8")
+        case None => headers ++ Seq(("Content-Type" -> "application/json; charset=UTF-8"))
         case Some(_) => headers
       }
     }
