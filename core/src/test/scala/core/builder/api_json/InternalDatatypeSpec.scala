@@ -1,8 +1,9 @@
 package builder.api_json
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class InternalDatatypeSpec extends FunSpec with Matchers {
+class InternalDatatypeSpec extends AnyFunSpec with Matchers {
 
   private[this] val internalDatatypeBuilder = InternalDatatypeBuilder()
 
