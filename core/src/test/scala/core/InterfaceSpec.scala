@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class InterfaceSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class InterfaceSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] val person: Interface = makeInterface(
     fields = Some(Seq(

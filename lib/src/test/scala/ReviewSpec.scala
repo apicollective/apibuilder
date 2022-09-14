@@ -1,9 +1,9 @@
 package lib
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ReviewSpec extends FunSpec with Matchers {
+class ReviewSpec extends AnyFunSpec with Matchers {
 
   it("fromString") {
     Review.fromString(Review.Accept.key) should be(Some(Review.Accept))

@@ -2,9 +2,10 @@ package core
 
 import lib.Methods
 import io.apibuilder.spec.v0.models.ParameterLocation
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class BodyParameterSpec extends FunSpec with Matchers {
+class BodyParameterSpec extends AnyFunSpec with Matchers {
 
   val baseJson = """
     {

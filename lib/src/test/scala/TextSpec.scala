@@ -1,9 +1,9 @@
 package lib
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class TextSpec extends FunSpec with Matchers {
+class TextSpec extends AnyFunSpec with Matchers {
 
   describe("splitIntoWords") {
 

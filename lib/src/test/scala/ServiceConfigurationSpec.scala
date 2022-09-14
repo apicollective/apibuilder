@@ -1,9 +1,10 @@
 package lib
 
 import helpers.ServiceConfigurationHelpers
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceConfigurationSpec extends FunSpec with Matchers
+class ServiceConfigurationSpec extends AnyFunSpec with Matchers
   with ServiceConfigurationHelpers
 {
 

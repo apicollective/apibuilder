@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class UnionTypeDiscriminatorValueSpec extends FunSpec with Matchers {
+class UnionTypeDiscriminatorValueSpec extends AnyFunSpec with Matchers {
 
   private[this] val baseJson =
     """

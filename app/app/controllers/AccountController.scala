@@ -3,8 +3,8 @@ package controllers
 import javax.inject.Inject
 
 class AccountController @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents
-) extends ApibuilderController {
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

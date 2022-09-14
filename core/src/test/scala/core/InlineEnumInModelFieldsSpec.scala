@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class InlineEnumInModelFieldsSpec extends FunSpec with Matchers {
+class InlineEnumInModelFieldsSpec extends AnyFunSpec with Matchers {
 
   def buildJson(
     required: Boolean

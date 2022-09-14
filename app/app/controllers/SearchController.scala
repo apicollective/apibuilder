@@ -4,10 +4,10 @@ import lib.{ApiClientProvider, PaginatedCollection, Pagination, Util}
 import javax.inject.Inject
 
 class SearchController @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider,
-  util: Util
-) extends ApibuilderController {
+                                   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                   apiClientProvider: ApiClientProvider,
+                                   util: Util
+) extends ApiBuilderController {
   
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

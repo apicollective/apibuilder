@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceHeadersSpec extends FunSpec with Matchers
+class ServiceHeadersSpec extends AnyFunSpec with Matchers
   with helpers.ServiceHelpers
 {
 

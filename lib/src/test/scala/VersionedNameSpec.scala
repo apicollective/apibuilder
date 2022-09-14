@@ -1,8 +1,9 @@
 package lib
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class VersionedNameSpec extends FunSpec with Matchers {
+class VersionedNameSpec extends AnyFunSpec with Matchers {
 
   it("label") {
     VersionedName("user").label should be("user")

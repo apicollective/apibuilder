@@ -2,9 +2,10 @@ package core
 
 import io.apibuilder.spec.v0.{models => spec}
 import io.apibuilder.api.json.v0.models.ParameterLocation
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceValidatorSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   it("should detect empty inputs") {
     val validator = TestHelper.serviceValidatorFromApiJson("")

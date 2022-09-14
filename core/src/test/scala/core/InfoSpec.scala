@@ -2,9 +2,10 @@ package core
 
 import io.apibuilder.spec.v0.models.{Contact, Info, License}
 import lib.VersionTag
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class InfoSpec extends FunSpec with Matchers {
+class InfoSpec extends AnyFunSpec with Matchers {
 
   describe("with info") {
 

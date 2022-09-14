@@ -4,9 +4,9 @@ import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import javax.inject.Inject
 
 class HistoryController @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents,
-  apiClientProvider: ApiClientProvider
-) extends ApibuilderController {
+                                    val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                    apiClientProvider: ApiClientProvider
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

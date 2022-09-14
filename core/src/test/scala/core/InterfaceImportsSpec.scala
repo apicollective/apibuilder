@@ -1,13 +1,14 @@
 package core
 
 import io.apibuilder.spec.v0.models.json._
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
 /**
  * Tests that you can use an interface from an imported service
  */
-class InterfaceImportsSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class InterfaceImportsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] val importedServiceFile: String = TestHelper.writeToTempFile(
     Json.toJson(

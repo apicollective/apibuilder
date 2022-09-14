@@ -1,9 +1,9 @@
 package lib
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class RoleSpec extends FunSpec with Matchers {
+class RoleSpec extends AnyFunSpec with Matchers {
 
   it("fromString") {
     Role.fromString(Role.Admin.key) should be(Some(Role.Admin))

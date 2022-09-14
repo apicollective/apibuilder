@@ -5,8 +5,8 @@ import javax.inject.Inject
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
 
 class EmailVerifications @Inject() (
-  val apibuilderControllerComponents: ApibuilderControllerComponents
-) extends ApibuilderController {
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents
+) extends ApiBuilderController {
 
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 

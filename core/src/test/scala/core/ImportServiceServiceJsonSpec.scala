@@ -5,10 +5,11 @@ import io.apibuilder.api.json.v0.models.Model
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.json._
 import io.apibuilder.api.v0.models.{Original, OriginalType}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
-class ImportServiceServiceJsonSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] def makeUserModel(idType: String = "long"): Model = {
     makeModel(

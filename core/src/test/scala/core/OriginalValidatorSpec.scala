@@ -4,10 +4,11 @@ import _root_.builder.OriginalValidator
 import lib.{FileUtils, ServiceConfiguration}
 import io.apibuilder.api.v0.models.Original
 import io.apibuilder.api.v0.models.OriginalType.Swagger
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
 class OriginalValidatorSpec
-  extends FunSpec
+  extends AnyFunSpec
   with Matchers
 {
 

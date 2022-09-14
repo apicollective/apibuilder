@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.spec.v0.models.Method
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class BrokenSpec extends FunSpec with Matchers {
+class BrokenSpec extends AnyFunSpec with Matchers {
 
   it("support arrays as types in fields") {
     val json = """

@@ -2,9 +2,10 @@ package core
 
 import lib.{PrimitiveMetadata, Primitives, Kind}
 import java.util.UUID
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class TypeValidatorSpec extends FunSpec with Matchers {
+class TypeValidatorSpec extends AnyFunSpec with Matchers {
 
   private[this] val validator: TypeValidator = TypeValidator(
     defaultNamespace = None,

@@ -1,8 +1,9 @@
 package lib
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class TextDatatypeSpec extends FunSpec with Matchers {
+class TextDatatypeSpec extends AnyFunSpec with Matchers {
 
   def label(types: Seq[TextDatatype]): String = {
     types.reverse match {

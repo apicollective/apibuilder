@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.spec.v0.models.ParameterLocation
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceAnnotationsSpec extends FunSpec with Matchers {
+class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
 
   it("fields specifying an undefined annotation are NOT allowed") {
     val json =

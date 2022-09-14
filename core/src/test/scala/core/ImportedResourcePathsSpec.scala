@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ImportedResourcePathsSpec extends FunSpec with Matchers {
+class ImportedResourcePathsSpec extends AnyFunSpec with Matchers {
 
   it("generates appropriate path for resources from imported models") {
     val common = """

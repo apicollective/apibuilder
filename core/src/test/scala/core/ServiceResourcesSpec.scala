@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceResourcesSpec extends FunSpec with Matchers {
+class ServiceResourcesSpec extends AnyFunSpec with Matchers {
 
   describe("with service") {
     val baseJson = """

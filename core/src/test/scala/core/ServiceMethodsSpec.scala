@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceMethodsSpec extends FunSpec with Matchers {
+class ServiceMethodsSpec extends AnyFunSpec with Matchers {
 
   it("missing method") {
     val json = """

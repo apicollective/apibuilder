@@ -1,8 +1,9 @@
 package core
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class DuplicateNamesSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class DuplicateNamesSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   val idField = makeField(name = "id")
 

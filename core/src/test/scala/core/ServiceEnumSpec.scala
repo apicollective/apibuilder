@@ -2,9 +2,10 @@ package core
 
 import core.TestHelper.ServiceValidatorForSpecs
 import io.apibuilder.api.json.v0.models.{EnumValue, Field, Parameter}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ServiceEnumSpec extends FunSpec with Matchers with helpers.ApiJsonHelpers {
+class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] val ageGroupField: Field = makeField(name = "age_group", `type` = "age_group")
   private[this] val ageGroupParameter: Parameter = makeParameter(name = "age_group", `type` = "age_group")

@@ -1,9 +1,10 @@
 package core
 
 import io.apibuilder.spec.v0.models.{Method, Response, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class SvcApiDocJsonSpec extends FunSpec with Matchers {
+class SvcApiDocJsonSpec extends AnyFunSpec with Matchers {
 
   private val Path = "spec/apibuilder-api.json"
   private lazy val service = TestHelper.parseFile(Path).service()
