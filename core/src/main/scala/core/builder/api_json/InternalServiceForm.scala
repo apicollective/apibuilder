@@ -1,7 +1,6 @@
 package builder.api_json
 
 import builder.JsonUtil
-import builder.api_json.upgrades.AllUpgrades
 import core.{ServiceFetcher, Util}
 import lib.Text
 import play.api.libs.json._
@@ -14,13 +13,12 @@ import play.api.libs.json._
  *
  */
 private[api_json] case class InternalServiceForm(
-  original: JsValue,
+  json: JsValue,
   fetcher: ServiceFetcher,
 ) {
-  val json: JsValue = AllUpgrades.apply(original)
   val internalDatatypeBuilder: InternalDatatypeBuilder = InternalDatatypeBuilder()
 
-  lazy val apidoc: Option[InternalApidocForm] = (json \ "apibuilder").asOpt[JsValue].map { InternalApidocForm(_) }
+  lazy val apidoc: Option[InternalApidocForm] = (json \ "apidoc").asOpt[JsValue].map { InternalApidocForm(_) }
   lazy val name: Option[String] = JsonUtil.asOptString(json \ "name")
   lazy val key: Option[String] = JsonUtil.asOptString(json \ "key")
   lazy val namespace: Option[String] = JsonUtil.asOptString(json \ "namespace")

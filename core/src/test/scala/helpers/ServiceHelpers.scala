@@ -5,6 +5,11 @@ import play.api.libs.json.{JsObject, Json}
 
 trait ServiceHelpers extends RandomHelpers {
 
+  def makeApidoc(): Apidoc = {
+    Apidoc(
+      version = "1.0",
+    )
+  }
   def makeOrganization(key: String = randomString()): Organization = {
     Organization(key = key)
   }
@@ -153,6 +158,7 @@ trait ServiceHelpers extends RandomHelpers {
     unions: Seq[Union] = Nil,
   ): Service = {
     Service(
+      apidoc = makeApidoc(),
       name = name,
       organization = organization,
       application = application,

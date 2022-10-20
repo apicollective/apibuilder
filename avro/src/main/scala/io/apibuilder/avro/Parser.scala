@@ -25,6 +25,7 @@ private[avro] case class Builder() {
     applicationKey: String
   ): Service = {
     Service(
+      apidoc = io.apibuilder.spec.v0.models.Apidoc(version = io.apibuilder.spec.v0.Constants.Version),
       name = name,
       info = Info(license = None, contact = None),
       baseUrl = None,

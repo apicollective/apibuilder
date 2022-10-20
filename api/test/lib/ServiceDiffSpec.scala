@@ -15,6 +15,14 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
     ServiceDiff(service, service).differences must be(Nil)
   }
 
+  "apidoc version" in {
+    ServiceDiff(service, service.copy(apidoc = Apidoc(version = "0.0.1"))).differences must be(
+      Seq(
+        NotMaterial.nonBreaking(s"apidoc/version changed from ${service.apidoc.version} to 0.0.1")
+      )
+    )
+  }
+
   "info" must {
     lazy val base = service.copy(info = Info(contact = None, license = None))
 
