@@ -61,8 +61,6 @@ package io.apibuilder.spec.v0.anorm.conversions {
     implicit val columnToMapApibuilderSpecResponseCodeOption: Column[Map[String, _root_.io.apibuilder.spec.v0.models.ResponseCodeOption]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.spec.v0.models.ResponseCodeOption]] }
     implicit val columnToSeqApibuilderSpecAnnotation: Column[Seq[_root_.io.apibuilder.spec.v0.models.Annotation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Annotation]] }
     implicit val columnToMapApibuilderSpecAnnotation: Column[Map[String, _root_.io.apibuilder.spec.v0.models.Annotation]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.spec.v0.models.Annotation]] }
-    implicit val columnToSeqApibuilderSpecApidoc: Column[Seq[_root_.io.apibuilder.spec.v0.models.Apidoc]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Apidoc]] }
-    implicit val columnToMapApibuilderSpecApidoc: Column[Map[String, _root_.io.apibuilder.spec.v0.models.Apidoc]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.spec.v0.models.Apidoc]] }
     implicit val columnToSeqApibuilderSpecApplication: Column[Seq[_root_.io.apibuilder.spec.v0.models.Application]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Application]] }
     implicit val columnToMapApibuilderSpecApplication: Column[Map[String, _root_.io.apibuilder.spec.v0.models.Application]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.spec.v0.models.Application]] }
     implicit val columnToSeqApibuilderSpecAttribute: Column[Seq[_root_.io.apibuilder.spec.v0.models.Attribute]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Attribute]] }

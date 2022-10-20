@@ -54,10 +54,6 @@ case class ServiceBuilder(
     }
 
     Service(
-      apidoc = internal.apidoc.flatMap(_.version) match {
-        case Some(v) => Apidoc(version = v)
-        case None => Apidoc(version = io.apibuilder.spec.v0.Constants.Version)
-      },
       info = info,
       name = name,
       namespace = namespace,

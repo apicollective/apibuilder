@@ -185,7 +185,6 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(
-    apidoc = spec.Apidoc(version = io.apibuilder.spec.v0.Constants.Version),
     info = spec.Info(contact = None, license = None),
     name = app.name,
     organization = spec.Organization(key = app.organization.key),

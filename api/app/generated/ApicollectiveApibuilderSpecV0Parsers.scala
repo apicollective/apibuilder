@@ -72,25 +72,6 @@ package io.apibuilder.spec.v0.anorm.parsers {
 
   }
 
-  object Apidoc {
-
-    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.spec.v0.models.Apidoc] = parser(prefixOpt = Some(s"$prefix$sep"))
-
-    def parser(
-      version: String = "version",
-      prefixOpt: Option[String] = None
-    ): RowParser[io.apibuilder.spec.v0.models.Apidoc] = {
-      SqlParser.str(prefixOpt.getOrElse("") + version) map {
-        case version => {
-          io.apibuilder.spec.v0.models.Apidoc(
-            version = version
-          )
-        }
-      }
-    }
-
-  }
-
   object Application {
 
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.spec.v0.models.Application] = parser(prefixOpt = Some(s"$prefix$sep"))
@@ -706,7 +687,6 @@ package io.apibuilder.spec.v0.anorm.parsers {
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.spec.v0.models.Service] = parser(prefixOpt = Some(s"$prefix$sep"))
 
     def parser(
-      apidocPrefix: String = "apidoc",
       name: String = "name",
       organizationPrefix: String = "organization",
       applicationPrefix: String = "application",
@@ -726,7 +706,6 @@ package io.apibuilder.spec.v0.anorm.parsers {
       annotations: String = "annotations",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.spec.v0.models.Service] = {
-      io.apibuilder.spec.v0.anorm.parsers.Apidoc.parserWithPrefix(prefixOpt.getOrElse("") + apidocPrefix) ~
       SqlParser.str(prefixOpt.getOrElse("") + name) ~
       io.apibuilder.spec.v0.anorm.parsers.Organization.parserWithPrefix(prefixOpt.getOrElse("") + organizationPrefix) ~
       io.apibuilder.spec.v0.anorm.parsers.Application.parserWithPrefix(prefixOpt.getOrElse("") + applicationPrefix) ~
@@ -744,9 +723,8 @@ package io.apibuilder.spec.v0.anorm.parsers {
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Resource]](prefixOpt.getOrElse("") + resources) ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) ~
       SqlParser.get[Seq[io.apibuilder.spec.v0.models.Annotation]](prefixOpt.getOrElse("") + annotations) map {
-        case apidoc ~ name ~ organization ~ application ~ namespace ~ version ~ baseUrl ~ description ~ info ~ headers ~ imports ~ enums ~ interfaces ~ unions ~ models ~ resources ~ attributes ~ annotations => {
+        case name ~ organization ~ application ~ namespace ~ version ~ baseUrl ~ description ~ info ~ headers ~ imports ~ enums ~ interfaces ~ unions ~ models ~ resources ~ attributes ~ annotations => {
           io.apibuilder.spec.v0.models.Service(
-            apidoc = apidoc,
             name = name,
             organization = organization,
             application = application,

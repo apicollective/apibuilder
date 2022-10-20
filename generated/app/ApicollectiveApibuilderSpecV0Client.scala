@@ -21,10 +21,6 @@ package io.apibuilder.spec.v0.models {
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None
   )
 
-  final case class Apidoc(
-    version: String
-  )
-
   /**
    * @param key Unique key identifying this application
    */
@@ -252,16 +248,10 @@ package io.apibuilder.spec.v0.models {
   )
 
   /**
-   * @param apidoc Documents that this is an apibuilder document, noting the specific version used.
-   *        Internally the version is then used for backwards compatibility when applicable
-   *        as new features are added to apibuilder. Note naming refers to the original name
-   *        of this project, 'apidoc', and is left here to avoid a breaking change for
-   *        preexisting services.
    * @param namespace Fully qualified namespace for this service
    */
 
   final case class Service(
-    apidoc: io.apibuilder.spec.v0.models.Apidoc,
     name: String,
     organization: io.apibuilder.spec.v0.models.Organization,
     application: io.apibuilder.spec.v0.models.Application,
@@ -606,22 +596,6 @@ package io.apibuilder.spec.v0.models {
     implicit def jsonWritesApibuilderSpecAnnotation: play.api.libs.json.Writes[Annotation] = {
       (obj: io.apibuilder.spec.v0.models.Annotation) => {
         jsObjectAnnotation(obj)
-      }
-    }
-
-    implicit def jsonReadsApibuilderSpecApidoc: play.api.libs.json.Reads[Apidoc] = {
-      (__ \ "version").read[String].map { x => new Apidoc(version = x) }
-    }
-
-    def jsObjectApidoc(obj: io.apibuilder.spec.v0.models.Apidoc): play.api.libs.json.JsObject = {
-      play.api.libs.json.Json.obj(
-        "version" -> play.api.libs.json.JsString(obj.version)
-      )
-    }
-
-    implicit def jsonWritesApibuilderSpecApidoc: play.api.libs.json.Writes[Apidoc] = {
-      (obj: io.apibuilder.spec.v0.models.Apidoc) => {
-        jsObjectApidoc(obj)
       }
     }
 
@@ -1248,7 +1222,6 @@ package io.apibuilder.spec.v0.models {
 
     implicit def jsonReadsApibuilderSpecService: play.api.libs.json.Reads[Service] = {
       for {
-        apidoc <- (__ \ "apidoc").read[io.apibuilder.spec.v0.models.Apidoc]
         name <- (__ \ "name").read[String]
         organization <- (__ \ "organization").read[io.apibuilder.spec.v0.models.Organization]
         application <- (__ \ "application").read[io.apibuilder.spec.v0.models.Application]
@@ -1266,12 +1239,11 @@ package io.apibuilder.spec.v0.models {
         resources <- (__ \ "resources").read[Seq[io.apibuilder.spec.v0.models.Resource]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
         annotations <- (__ \ "annotations").readWithDefault[Seq[io.apibuilder.spec.v0.models.Annotation]](Nil)
-      } yield Service(apidoc, name, organization, application, namespace, version, baseUrl, description, info, headers, imports, enums, interfaces, unions, models, resources, attributes, annotations)
+      } yield Service(name, organization, application, namespace, version, baseUrl, description, info, headers, imports, enums, interfaces, unions, models, resources, attributes, annotations)
     }
 
     def jsObjectService(obj: io.apibuilder.spec.v0.models.Service): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "apidoc" -> jsObjectApidoc(obj.apidoc),
         "name" -> play.api.libs.json.JsString(obj.name),
         "organization" -> jsObjectOrganization(obj.organization),
         "application" -> jsObjectApplication(obj.application),
