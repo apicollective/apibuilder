@@ -15,7 +15,7 @@ trait Upgrader {
 
 object AllUpgrades {
 
-  private[this] val all: Seq[Upgrader] = List(ApiDocRemovedFromSpec, InterfacesToSupportResources)
+  private[this] val all: Seq[Upgrader] = List(RemoveApiDocElement, InterfacesToSupportResources)
 
   def apply(js: JsValue): JsValue = {
     all.foldLeft(js) { case (j, upgrader) =>

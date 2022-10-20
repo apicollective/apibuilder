@@ -17,7 +17,7 @@ private[api_json] case class InternalServiceForm(
   original: JsValue,
   fetcher: ServiceFetcher,
 ) {
-  private[this] val json: JsValue = AllUpgrades.apply(original)
+  val json: JsValue = AllUpgrades.apply(original)
   val internalDatatypeBuilder: InternalDatatypeBuilder = InternalDatatypeBuilder()
 
   lazy val apidoc: Option[InternalApidocForm] = (json \ "apibuilder").asOpt[JsValue].map { InternalApidocForm(_) }

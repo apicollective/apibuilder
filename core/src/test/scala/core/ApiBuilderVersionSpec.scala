@@ -19,29 +19,4 @@ class ApiBuilderVersionSpec extends AnyFunSpec with Matchers {
     }
 
   }
-
-  describe("json documenent with an apidoc node") {
-
-    val baseJson = """
-    {
-      "name": "API Builder",
-      "apidoc": {
-        "version": "%s"
-      }
-    }
-  """
-
-    it("current version is ok") {
-      val json = baseJson.format(io.apibuilder.spec.v0.Constants.Version)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
-    }
-
-    it("rejects invalid version") {
-      val json = baseJson.format("!")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be(s"Invalid apidoc version[!]. Latest version of apidoc specification is ${io.apibuilder.spec.v0.Constants.Version}")
-    }
-
-  }
 }

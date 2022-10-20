@@ -434,16 +434,28 @@ package io.apibuilder.spec.v0.anorm.parsers {
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.spec.v0.models.Interface] = parser(prefixOpt = Some(s"$prefix$sep"))
 
     def parser(
-      models: String = "models",
-      resources: String = "resources",
+      name: String = "name",
+      plural: String = "plural",
+      description: String = "description",
+      deprecationPrefix: String = "deprecation",
+      fields: String = "fields",
+      attributes: String = "attributes",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.spec.v0.models.Interface] = {
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Model]](prefixOpt.getOrElse("") + models) ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Resource]](prefixOpt.getOrElse("") + resources) map {
-        case models ~ resources => {
+      SqlParser.str(prefixOpt.getOrElse("") + name) ~
+      SqlParser.str(prefixOpt.getOrElse("") + plural) ~
+      SqlParser.str(prefixOpt.getOrElse("") + description).? ~
+      io.apibuilder.spec.v0.anorm.parsers.Deprecation.parserWithPrefix(prefixOpt.getOrElse("") + deprecationPrefix).? ~
+      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Field]](prefixOpt.getOrElse("") + fields) ~
+      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](prefixOpt.getOrElse("") + attributes) map {
+        case name ~ plural ~ description ~ deprecation ~ fields ~ attributes => {
           io.apibuilder.spec.v0.models.Interface(
-            models = models,
-            resources = resources
+            name = name,
+            plural = plural,
+            description = description,
+            deprecation = deprecation,
+            fields = fields,
+            attributes = attributes
           )
         }
       }

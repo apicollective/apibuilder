@@ -159,8 +159,12 @@ package io.apibuilder.spec.v0.models {
   )
 
   final case class Interface(
-    models: Seq[io.apibuilder.spec.v0.models.Model] = Nil,
-    resources: Seq[io.apibuilder.spec.v0.models.Resource] = Nil
+    name: String,
+    plural: String,
+    description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
+    fields: Seq[io.apibuilder.spec.v0.models.Field],
+    attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil
   )
 
   /**
@@ -963,16 +967,29 @@ package io.apibuilder.spec.v0.models {
 
     implicit def jsonReadsApibuilderSpecInterface: play.api.libs.json.Reads[Interface] = {
       for {
-        models <- (__ \ "models").readWithDefault[Seq[io.apibuilder.spec.v0.models.Model]](Nil)
-        resources <- (__ \ "resources").readWithDefault[Seq[io.apibuilder.spec.v0.models.Resource]](Nil)
-      } yield Interface(models, resources)
+        name <- (__ \ "name").read[String]
+        plural <- (__ \ "plural").read[String]
+        description <- (__ \ "description").readNullable[String]
+        deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        fields <- (__ \ "fields").read[Seq[io.apibuilder.spec.v0.models.Field]]
+        attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
+      } yield Interface(name, plural, description, deprecation, fields, attributes)
     }
 
     def jsObjectInterface(obj: io.apibuilder.spec.v0.models.Interface): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "models" -> play.api.libs.json.Json.toJson(obj.models),
-        "resources" -> play.api.libs.json.Json.toJson(obj.resources)
-      )
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "plural" -> play.api.libs.json.JsString(obj.plural),
+        "fields" -> play.api.libs.json.Json.toJson(obj.fields),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
+      ) ++ (obj.description match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.deprecation match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("deprecation" -> jsObjectDeprecation(x))
+      })
     }
 
     implicit def jsonWritesApibuilderSpecInterface: play.api.libs.json.Writes[Interface] = {
