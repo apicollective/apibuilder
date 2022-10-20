@@ -207,9 +207,6 @@ trait Helpers extends util.Daos with RandomHelpers {
     io.apibuilder.api.v0.models.Original(
       `type` = OriginalType.ApiJson,
       data = Json.obj(
-        "apidoc" -> Json.obj(
-          "version" -> io.apibuilder.spec.v0.Constants.Version
-        ),
         "name" -> name
       ).toString
     )
