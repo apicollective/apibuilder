@@ -1,14 +1,21 @@
 package builder.api_json.upgrades
 
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsObject, JsValue}
 
 trait Upgrader {
-  def apply(js: JsValue): JsValue
+  final def apply(js: JsValue): JsValue = {
+    js match {
+      case o: JsObject => apply(o)
+      case j => j
+    }
+  }
+
+  def apply(js: JsObject): JsObject
 }
 
 object AllUpgrades {
 
-  private[this] val all: Seq[Upgrader] = List(ApiDocToApiBuilder, InterfacesToSupportResources)
+  private[this] val all: Seq[Upgrader] = List(ApiDocRemovedFromSpec, InterfacesToSupportResources)
 
   def apply(js: JsValue): JsValue = {
     all.foldLeft(js) { case (j, upgrader) =>

@@ -1,7 +1,7 @@
 package builder.api_json.upgrades
 
-import play.api.libs.json.JsValue
+import play.api.libs.json.JsObject
 
-object InterfacesToSupportResources {
-  def upgrade(js: JsValue): JsValue = ???
+object InterfacesToSupportResources extends Upgrader {
+  def upgrade(js: JsObject): JsObject = ???
 }
