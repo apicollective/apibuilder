@@ -300,7 +300,7 @@ class VersionsDao @Inject() (
           application = application,
           version = version,
           original = original,
-          service = Json.parse(serviceJson).asOpt[Service].getOrElse {
+          service = (DefaultVersion ++ Json.parse(serviceJson).as[JsObject]).asOpt[Service].getOrElse {
             sys.error(s"Failed to parse service with guid: ${guid}")
           },
           audit = audit
@@ -308,6 +308,8 @@ class VersionsDao @Inject() (
       }
     }
   }
+
+  private[this] val DefaultVersion: JsObject = Json.obj("apidoc" -> Json.obj("version" -> "1.0"))
 
   /**
     * Upgrades all versions to the latest API Builder spec in multiple
