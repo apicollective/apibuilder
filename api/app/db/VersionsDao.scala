@@ -299,7 +299,9 @@ class VersionsDao @Inject() (
           application = application,
           version = version,
           original = original,
-          service = Json.parse(serviceJson).as[Service],
+          service = Json.parse(serviceJson).asOpt[Service].getOrElse {
+            sys.error(s"Failed to parse service with guid: ${guid}")
+          },
           audit = audit
         )
       }
