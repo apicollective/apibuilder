@@ -252,8 +252,7 @@ class VersionsDao @Inject() (
         orderBy("versions.version_sort_key desc, versions.created_at desc").
         limit(limit).
         offset(offset).
-        as(parser().*
-      )
+        as(parser.*)
     }
   }
 
@@ -285,7 +284,7 @@ class VersionsDao @Inject() (
     }
   }
   
-  private[this] def parser(): RowParser[Version] = {
+  private[this] val parser: RowParser[Version] = {
     SqlParser.get[_root_.java.util.UUID]("guid") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
@@ -300,9 +299,7 @@ class VersionsDao @Inject() (
           application = application,
           version = version,
           original = original,
-          service = (DefaultVersion ++ Json.parse(serviceJson).as[JsObject]).asOpt[Service].getOrElse {
-            sys.error(s"Failed to parse service with guid: ${guid}")
-          },
+          service = parseService(guid, serviceJson),
           audit = audit
         )
       }
@@ -310,6 +307,12 @@ class VersionsDao @Inject() (
   }
 
   private[this] val DefaultVersion: JsObject = Json.obj("apidoc" -> Json.obj("version" -> "1.0"))
+  private[this] def parseService(guid: UUID, json: String): Service = {
+    (DefaultVersion ++ Json.parse(json).as[JsObject]).validate[Service] match {
+      case s: JsSuccess[Service] => s.value
+      case JsError(e) => sys.error(s"Failed to parse service with guid: $guid. Errors: ${e.map(_._2).mkString(", ")}")
+    }
+  }
 
   /**
     * Upgrades all versions to the latest API Builder spec in multiple
@@ -355,7 +358,7 @@ class VersionsDao @Inject() (
         orderBy("versions.created_at desc").
         limit(limit).
         offset(offset).
-        as(parser().*)
+        as(parser.*)
 
       records.foreach { version =>
         val orgKey = version.organization.key
