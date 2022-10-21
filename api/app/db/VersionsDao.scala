@@ -7,15 +7,17 @@ import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import io.flow.postgresql.Query
 import builder.OriginalValidator
+import builder.api_json.upgrades.ServiceParser
+import cats.data.Validated.{Invalid, Valid}
 import core.{ServiceFetcher, VersionMigration}
 import lib.{ServiceConfiguration, ServiceUri, VersionTag}
-import javax.inject.{Inject, Named, Singleton}
 
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
-import java.util.UUID
 
+import java.util.UUID
 import scala.annotation.tailrec
 
 case class MigrationStats(good: Long, bad: Long)
@@ -28,7 +30,8 @@ class VersionsDao @Inject() (
   originalsDao: OriginalsDao,
   tasksDao: TasksDao,
   usersDao: UsersDao,
-  organizationsDao: OrganizationsDao
+  organizationsDao: OrganizationsDao,
+  serviceParser: ServiceParser
 ) {
 
   private[this] val logger: Logger = Logger(this.getClass())
@@ -299,16 +302,15 @@ class VersionsDao @Inject() (
           application = application,
           version = version,
           original = original,
-          service = (DefaultVersion ++ Json.parse(serviceJson).as[JsObject]).asOpt[Service].getOrElse {
-            sys.error(s"Failed to parse service with guid: ${guid}")
+          service = serviceParser.fromString(serviceJson) match {
+            case Invalid(errs) => sys.error(s"Failed to parse service for version: $guid: ${errs.toNonEmptyList.toList.mkString(", ")}")
+            case Valid(s) => s
           },
           audit = audit
         )
       }
     }
   }
-
-  private[this] val DefaultVersion: JsObject = Json.obj("apidoc" -> Json.obj("version" -> "1.0"))
 
   /**
     * Upgrades all versions to the latest API Builder spec in multiple
