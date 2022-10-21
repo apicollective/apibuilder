@@ -141,8 +141,8 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
     "defaults to a unique name based on email" in {
       val base = UUID.randomUUID.toString
-      val email1 = base + "@test1.apidoc.me"
-      val email2 = base + "@test2.apidoc.me"
+      val email1 = base + "@test1.apibuilder.io"
+      val email2 = base + "@test2.apibuilder.io"
 
       usersDao.generateNickname(email1) must be(base)
       val user = usersDao.create(createUserForm(email1))
