@@ -28,6 +28,7 @@
     "api_json": {
       "fields": [
         { "name": "name", "type": "string" },
+        { "name": "apidoc", "type": "apidoc", "required": false },
         { "name": "info", "type": "info", "required": false },
         { "name": "namespace", "type": "string", "required": false },
         { "name": "base_url", "type": "string", "required": false },
@@ -66,6 +67,13 @@
         { "name": "url", "type": "string", "required": false, "example": "http://opensource.org/licenses/MIT" }
       ]
     },
+
+    "apidoc": {
+      "fields": [
+        { "name": "version", "type": "string", "example": "0.14.97" }
+      ]
+    },
+
 
     "model": {
       "fields": [

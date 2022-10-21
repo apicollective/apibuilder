@@ -46,6 +46,7 @@ case class ServiceSpecValidator(
   )
 
   lazy val errors: Seq[String] = {
+    validateApidoc() ++
     validateName() ++
     validateBaseUrl() ++
     validateInterfaces() ++
@@ -62,6 +63,19 @@ case class ServiceSpecValidator(
     validateParameters() ++
     validateResponses() ++
     validateGlobalAnnotations()
+  }
+
+  private def validateApidoc(): Seq[String] = {
+    val specified = VersionTag(service.apidoc.version)
+    specified.major match {
+      case None => {
+        val current = io.apibuilder.spec.v0.Constants.Version
+        Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")
+      }
+      case Some(_) => {
+        Nil
+      }
+    }
   }
 
   private def validateName(): Seq[String] = {

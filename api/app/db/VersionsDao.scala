@@ -252,7 +252,8 @@ class VersionsDao @Inject() (
         orderBy("versions.version_sort_key desc, versions.created_at desc").
         limit(limit).
         offset(offset).
-        as(parser.*)
+        as(parser().*
+      )
     }
   }
 
@@ -284,7 +285,7 @@ class VersionsDao @Inject() (
     }
   }
   
-  private[this] val parser: RowParser[Version] = {
+  private[this] def parser(): RowParser[Version] = {
     SqlParser.get[_root_.java.util.UUID]("guid") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
@@ -352,7 +353,7 @@ class VersionsDao @Inject() (
         orderBy("versions.created_at desc").
         limit(limit).
         offset(offset).
-        as(parser.*)
+        as(parser().*)
 
       records.foreach { version =>
         val orgKey = version.organization.key

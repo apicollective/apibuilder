@@ -39,6 +39,7 @@ case class Parser(config: ServiceConfiguration) {
     val finalModels = specModels ++ findPlaceholder(resources).toSeq
 
     Service(
+      apidoc = Apidoc(version = io.apibuilder.spec.v0.Constants.Version),
       name = info.getTitle,
       info = Info(
         contact = None,
