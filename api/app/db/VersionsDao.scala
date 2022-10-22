@@ -34,7 +34,7 @@ class VersionsDao @Inject() (
   serviceParser: ServiceParser
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass())
+  private[this] val logger: Logger = Logger(this.getClass)
 
   private[this] val LatestVersion = "latest"
   private[this] val LatestVersionFilter = "~"

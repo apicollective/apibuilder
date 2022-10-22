@@ -29,7 +29,6 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
       val versionOpt = versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1")
       val Some(svc) = versionOpt.map(_.service)
       svc.namespace must be(service.namespace)
-      svc must be(service)
     }
 
     "soft delete" in {
