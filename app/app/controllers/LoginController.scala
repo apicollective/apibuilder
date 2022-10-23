@@ -18,7 +18,7 @@ class LoginController @Inject() (
                                   util: Util
 ) extends ApiBuilderController {
 
-  private[this] val logger: Logger = Logger(this.getClass())
+  private[this] val logger: Logger = Logger(this.getClass)
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

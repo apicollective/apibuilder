@@ -13,7 +13,7 @@ class Config @Inject() (
   configuration: Configuration
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass())
+  private[this] val logger: Logger = Logger(this.getClass)
 
   def requiredString(name: String): String = {
     optionalString(name).getOrElse {

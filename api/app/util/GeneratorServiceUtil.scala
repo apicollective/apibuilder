@@ -2,28 +2,58 @@ package util
 
 import java.util.UUID
 import javax.inject.Inject
-
 import db.{Authorization, UsersDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.Client
-import play.api.Logger
+import lib.Pager
+import play.api.{Environment, Logger, Mode}
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
+import scala.util.{Failure, Success, Try}
 
 class GeneratorServiceUtil @Inject() (
   wSClient: WSClient,
   servicesDao: ServicesDao,
   generatorsDao: GeneratorsDao,
-  usersDao: UsersDao
+  usersDao: UsersDao,
+  env: Environment
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass())
+  private[this] val log: Logger = Logger(this.getClass)
+  private[this] val inTestEnv = env.mode match {
+    case Mode.Test => true
+    case Mode.Dev | Mode.Prod => false
+  }
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync }
+  }
+
+  def syncAll()(implicit ec: scala.concurrent.ExecutionContext): Unit = {
+    Pager.eachPage { offset =>
+      servicesDao.findAll(
+        Authorization.All,
+        limit = 200,
+        offset = offset
+      )
+    } { service =>
+      Try {
+        sync(service)
+      } match {
+        case Success(_) => {
+          log.info(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] synced")
+        }
+        case Failure(ex) => {
+          ex match {
+            case _: java.net.UnknownHostException if inTestEnv => // ignore
+            case _ => log.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
+          }
+        }
+      }
+    }
   }
 
   def sync(
@@ -58,7 +88,7 @@ class GeneratorServiceUtil @Inject() (
             generator = gen
           )
         ) match {
-          case Left(errors) => logger.error(s"Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
+          case Left(errors) => log.error(s"Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
           case Right(_) => {}
         }
       }
