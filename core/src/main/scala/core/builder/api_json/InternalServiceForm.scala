@@ -51,12 +51,12 @@ private[api_json] case class InternalServiceForm(
 
   def unions: Seq[InternalUnionForm] = declaredUnions ++ internalDatatypeBuilder.unionForms
 
-  private[this] def parseModels(js: JsValue): Seq[InternalModelForm] = {
+  private[this] def parseModels(js: JsValue, prefix: Option[String]): Seq[InternalModelForm] = {
     (js \ "models").asOpt[JsObject] match {
       case Some(models) => {
         models.fields.flatMap { v =>
           v match {
-            case (k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
+            case (k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _, prefix = prefix))
           }
         }
       }.toSeq
@@ -64,7 +64,7 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  private[this] lazy val declaredModels: Seq[InternalModelForm] = parseModels(json)
+  private[this] lazy val declaredModels: Seq[InternalModelForm] = parseModels(json, prefix = None)
 
   def templates: InternalTemplateForm = {
     (json \ "templates").asOpt[JsObject] match {
@@ -73,7 +73,7 @@ private[api_json] case class InternalServiceForm(
       }
       case Some(o) => {
         InternalTemplateForm(
-          models = parseModels(o),
+          models = parseModels(o, prefix = Some("Templates")),
           resources = parseResources(o)
         )
       }
@@ -508,7 +508,7 @@ object InternalInterfaceForm {
 
 object InternalModelForm {
 
-  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject): InternalModelForm = {
+  def apply(internalDatatypeBuilder: InternalDatatypeBuilder, name: String, value: JsObject, prefix: Option[String]): InternalModelForm = {
     InternalModelForm(
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
@@ -524,9 +524,16 @@ object InternalModelForm {
         optionalArraysOfStrings = Seq("interfaces"),
         optionalArraysOfObjects = Seq("attributes"),
         optionalObjects = Seq("deprecation"),
-        prefix = Some(s"Model[$name]")
+        prefix = Some(addPrefix(s"Model[$name]", prefix = prefix))
       )
     )
+  }
+
+  private[this] def addPrefix(label: String, prefix: Option[String]): String = {
+    prefix match {
+      case None => label
+      case Some(p) => s"$p $label"
+    }
   }
 
 }
