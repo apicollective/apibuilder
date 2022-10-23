@@ -45,6 +45,14 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeDeprecation(
+    description: Option[String] = None
+  ): Deprecation = {
+    Deprecation(
+      description = description
+    )
+  }
+
   def makeField(
     name: String = randomName(),
     `type`: String = "string",

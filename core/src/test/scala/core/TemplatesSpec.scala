@@ -1,7 +1,7 @@
 package core
 
 import helpers.ApiJsonHelpers
-import io.apibuilder.api.json.v0.models.Field
+import io.apibuilder.api.json.v0.models.{Deprecation, Field}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -38,7 +38,7 @@ class TemplatesSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
     "merge" must {
       "description" must {
-        def setupModelDesc(modelDesc: Option[String]) = {
+        def setupModel(modelDesc: Option[String]) = {
           val field = makeField()
           setup(
             templateField = field.copy(description = Some("foo")),
@@ -47,11 +47,29 @@ class TemplatesSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         }
 
         "inherit" in {
-          setupModelDesc(None) mustBe "foo"
+          setupModel(None) mustBe "foo"
         }
 
-        "not override" in {
-          setupModelDesc(Some("bar")) mustBe "bar"
+        "preserve model description" in {
+          setupModel(Some("bar")) mustBe "bar"
+        }
+      }
+
+      "deprecation" must {
+        def setupModel(modelDeprecation: Option[Deprecation]) = {
+          val field = makeField()
+          setup(
+            templateField = field.copy(deprecation = Some(makeDeprecation(description = Some("foo")))),
+            modelField = Some(field.copy(deprecation = modelDeprecation))
+          ).head.deprecation.get.description.get
+        }
+
+        "inherit" in {
+          setupModel(None) mustBe "foo"
+        }
+
+        "preserve model deprecation" in {
+          setupModel(Some(makeDeprecation(description = Some("bar")))) mustBe "bar"
         }
       }
     }
