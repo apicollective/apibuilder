@@ -1,71 +1,58 @@
 package core
 
+import helpers.ApiJsonHelpers
+import io.apibuilder.api.json.v0.models.Field
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class TemplatesSpec extends AnyWordSpec with Matchers with helpers.ApiJsonHelpers {
+class TemplatesSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   "models" must {
+    def setup(templateField: Field, modelField: Option[Field]) = {
+      val name = randomName()
+
+      val apiJson = makeApiJson(
+        templates = Some(makeTemplates(
+          models = Some(Map(
+            name -> makeModel(fields = Seq(templateField))
+          ))
+        )),
+        models = Map(name -> makeModel(fields = modelField.toSeq))
+      )
+
+      expectValid(apiJson).models.head.fields
+    }
+
     "fields" must {
       "inherit if not defined" in {
-        val name = randomName()
         val templateField = makeField()
-
-        val apiJson = makeApiJson(
-          templates = Some(makeTemplates(
-            models = Some(Map(
-              name -> makeModel(fields = Seq(templateField))
-            ))
-          )),
-          models = Map(name -> makeModel())
-        )
-
-        expectValid(apiJson).models.head.fields.map(_.name) mustBe Seq(templateField.name)
+        setup(templateField, None).map(_.name) mustBe Seq(templateField.name)
       }
 
       "include all other model fields" in {
-        val name = randomName()
         val templateField = makeField()
         val modelField = makeField()
-
-        val apiJson = makeApiJson(
-          templates = Some(makeTemplates(
-            models = Some(Map(
-              name -> makeModel(fields = Seq(templateField))
-            ))
-          )),
-          models = Map(name -> makeModel(fields = Seq(modelField)))
-        )
-
-        expectValid(apiJson).models.head.fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
+        setup(templateField, Some(modelField)).map(_.name) mustBe Seq(templateField.name, modelField.name)
       }
     }
 
     "merge" must {
       "description" must {
-        def setup(modelDesc: Option[String]) = {
-          val name = randomName()
-          val templateField = makeField()
-
-          val apiJson = makeApiJson(
-            templates = Some(makeTemplates(
-              models = Some(Map(
-                name -> makeModel(fields = Seq(templateField.copy(description = Some("foo"))))
-              ))
-            )),
-            models = Map(name -> makeModel(fields = Seq(templateField.copy(description = modelDesc))))
-          )
-
-          expectValid(apiJson).models.head.fields.head.description.get
+        def setupModelDesc(modelDesc: Option[String]) = {
+          val field = makeField()
+          setup(
+            templateField = field.copy(description = Some("foo")),
+            modelField = Some(field.copy(description = modelDesc))
+          ).head.description.get
         }
 
         "inherit" in {
-          setup(None) mustBe "foo"
-        }
-        "not override" in {
-          setup(Some("bar")) mustBe "bar"
+          setupModelDesc(None) mustBe "foo"
         }
 
+        "not override" in {
+          setupModelDesc(Some("bar")) mustBe "bar"
+        }
       }
     }
   }
