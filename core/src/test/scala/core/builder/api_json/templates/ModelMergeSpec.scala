@@ -1,11 +1,11 @@
-package core
+package builder.api_json.templates
 
 import helpers.ApiJsonHelpers
 import io.apibuilder.api.json.v0.models.{Deprecation, Field}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class TemplatesSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
+class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   "models" must {
     def setup(templateField: Field, modelField: Option[Field]) = {
