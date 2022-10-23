@@ -1,9 +1,10 @@
 package builder.api_json
 
-import core.{Importer, ServiceFetcher, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion, VersionMigration}
-import lib.{Methods, Primitives, ServiceConfiguration, Text, UrlKey}
+import core.builder.api_json.templates.{ModelMerge, ResourceMerge}
+import core._
 import io.apibuilder.spec.v0.models._
-import lib.Methods.{MethodsNotAcceptingBodies, supportsBody}
+import lib.Methods.supportsBody
+import lib.{Primitives, ServiceConfiguration, Text, UrlKey}
 import play.api.libs.json._
 
 import scala.util.{Failure, Success, Try}
@@ -40,8 +41,8 @@ case class ServiceBuilder(
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val interfaces = internal.interfaces.map { InterfaceBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val models = ModelMerge(internal.templates.models).merge(internal.models).map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val resources = ResourceMerge(internal.templates.resources).merge(internal.resources).map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
     val attributes = internal.attributes.map { AttributeBuilder(_) }
     val annotations = internal.annotations.map{ AnnotationsBuilder(_) }
 
@@ -249,7 +250,7 @@ case class ServiceBuilder(
       val fullPath = Seq(
         resourcePath,
         internal.path.getOrElse("")
-      ).filter(!_.isEmpty).mkString("") match {
+      ).filterNot(_.isEmpty).mkString("") match {
         case "" => "/"
         case p => p
       }

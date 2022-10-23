@@ -20,9 +20,7 @@ case class ApiJsonServiceValidator(
 
   def validate(): Either[Seq[String], Service] = {
     errors match {
-      case Nil => {
-        Right(ApplyTemplates(internalService.get.templates).apply(service))
-      }
+      case Nil => Right(service)
       case _ => Left(errors)
     }
   }
