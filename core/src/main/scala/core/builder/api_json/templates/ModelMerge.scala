@@ -1,4 +1,4 @@
-package core.builder.api_json.templates
+package builder.api_json.templates
 
 import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalModelForm}
 

@@ -1,6 +1,6 @@
 package builder.api_json
 
-import core.builder.api_json.templates.{ModelMerge, ResourceMerge}
+import templates.{ModelMerge, ResourceMerge}
 import core._
 import io.apibuilder.spec.v0.models._
 import lib.Methods.supportsBody
