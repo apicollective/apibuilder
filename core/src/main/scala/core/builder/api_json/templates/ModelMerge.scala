@@ -12,7 +12,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       templatesByName.get(model.name.toLowerCase().trim) match {
         case None => model
         case Some(tpl) => {
-          println(s"Found template form model named ${model.name}")
           InternalModelForm(
             name = model.name,
             plural = model.plural,
@@ -21,7 +20,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
             fields = mergeFields(model, tpl),
             attributes = mergeAttributes(model.attributes, tpl.attributes),
             interfaces = mergeInterfaces(model.interfaces, tpl.interfaces),
-            warnings = Nil
+            warnings = model.warnings ++ tpl.warnings
           )
         }
       }
