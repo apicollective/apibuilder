@@ -36,6 +36,7 @@
         { "name": "headers", "type": "[header]", "default": "[]", "required": false },
         { "name": "enums", "type": "map[enum]", "default": "{}", "required": false },
         { "name": "interfaces", "type": "map[interface]", "default": "{}", "required": false },
+        { "name": "templates", "type": "templates", "required": false },
         { "name": "unions", "type": "map[union]", "default": "{}", "required": false },
         { "name": "models", "type": "map[model]", "default": "{}", "required": false },
         { "name": "resources", "type": "map[resource]", "default": "{}", "required": false },
@@ -171,6 +172,14 @@
         { "name": "fields", "type": "[field]", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
+      ]
+    },
+
+    "templates": {
+      "description": "Experimental",
+      "fields": [
+        { "name": "models", "type": "map[model]", "required": false },
+        { "name": "resources", "type": "map[resource]", "required": false }
       ]
     },
 

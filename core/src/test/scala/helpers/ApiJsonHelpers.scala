@@ -10,9 +10,31 @@ import play.api.libs.json.Json
 
 trait ApiJsonHelpers {
 
+  def expectErrors(apiJson: ApiJson): Seq[String] = {
+    TestHelper.serviceValidator(apiJson).errors()
+  }
+
+  def expectValid(apiJson: ApiJson): Service = {
+    val validator = TestHelper.serviceValidator(apiJson)
+    if (validator.errors().nonEmpty) {
+      sys.error(s"Error: ${validator.errors()}")
+    }
+    validator.service()
+  }
+
   // random string that will start with a letter as we expect valid identifiers
-  private[this] def randomString(): String = {
+  def randomName(): String = {
     "a" + UUID.randomUUID.toString
+  }
+
+  def makeTemplates(
+    models: Option[Map[String, Model]] = None,
+    resources: Option[Map[String, Resource]] = None,
+  ): Templates = {
+    Templates(
+      models = models,
+      resources = resources
+    )
   }
 
   def makeInterface(
@@ -24,7 +46,7 @@ trait ApiJsonHelpers {
   }
 
   def makeField(
-    name: String = randomString(),
+    name: String = randomName(),
     `type`: String = "string",
     required: Boolean = true,
     default: Option[String] = None,
@@ -38,7 +60,7 @@ trait ApiJsonHelpers {
   }
 
   def makeEnumValue(
-    name: String = randomString(),
+    name: String = randomName(),
   ): EnumValue = {
     EnumValue(
       name = name,
@@ -79,7 +101,7 @@ trait ApiJsonHelpers {
   }
 
   def makeParameter(
-    name: String = randomString(),
+    name: String = randomName(),
     `type`: String = "string",
     location: ParameterLocation = ParameterLocation.Query,
   ): Parameter = {
@@ -110,7 +132,7 @@ trait ApiJsonHelpers {
     )
   }
 
-  def makeImport(uri: String = s"https://${randomString()}test.apibuilder.io"): Import = {
+  def makeImport(uri: String = s"https://${randomName()}test.apibuilder.io"): Import = {
     Import(
       uri = uri,
     )
@@ -144,11 +166,12 @@ trait ApiJsonHelpers {
   }
 
   def makeApiJson(
-    name: String = randomString(),
+    name: String = randomName(),
     namespace: Option[String] = None,
     baseUrl: Option[String] = None,
     imports: Seq[Import] = Nil,
     interfaces: Map[String, Interface] = Map.empty,
+    templates: Option[Templates] = None,
     enums: Map[String, Enum] = Map.empty,
     models: Map[String, Model] = Map.empty,
     unions: Map[String, Union] = Map.empty,
@@ -160,6 +183,7 @@ trait ApiJsonHelpers {
       baseUrl = baseUrl,
       imports = imports,
       interfaces = interfaces,
+      templates = templates,
       enums = enums,
       models = models,
       unions = unions,

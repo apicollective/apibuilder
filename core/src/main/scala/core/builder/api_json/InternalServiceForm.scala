@@ -20,13 +20,10 @@ private[api_json] case class InternalServiceForm(
   val json: JsValue = AllUpgrades.apply(original)
   val internalDatatypeBuilder: InternalDatatypeBuilder = InternalDatatypeBuilder()
 
-  lazy val apidoc: Option[InternalApidocForm] = (json \ "apibuilder").asOpt[JsValue].map { InternalApidocForm(_) }
   lazy val name: Option[String] = JsonUtil.asOptString(json \ "name")
   lazy val key: Option[String] = JsonUtil.asOptString(json \ "key")
   lazy val namespace: Option[String] = JsonUtil.asOptString(json \ "namespace")
   lazy val baseUrl: Option[String] = JsonUtil.asOptString(json \ "base_url")
-  lazy val basePath: Option[String] = JsonUtil.asOptString(json \ "base_path")
-
   lazy val description: Option[String] = JsonUtil.asOptString(json \ "description")
   lazy val info: Option[InternalInfoForm] = (json \ "info").asOpt[JsValue].map { InternalInfoForm(_) }
 
@@ -54,15 +51,33 @@ private[api_json] case class InternalServiceForm(
 
   def unions: Seq[InternalUnionForm] = declaredUnions ++ internalDatatypeBuilder.unionForms
 
-  private[this] lazy val declaredModels: Seq[InternalModelForm] = (json \ "models").asOpt[JsValue] match {
-    case Some(models: JsObject) => {
-      models.fields.flatMap { v =>
-        v match {
-          case(k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
+  private[this] def parseModels(js: JsValue): Seq[InternalModelForm] = {
+    (js \ "models").asOpt[JsObject] match {
+      case Some(models) => {
+        models.fields.flatMap { v =>
+          v match {
+            case (k, value) => value.asOpt[JsObject].map(InternalModelForm(internalDatatypeBuilder, k, _))
+          }
         }
+      }.toSeq
+      case _ => Seq.empty
+    }
+  }
+
+  private[this] lazy val declaredModels: Seq[InternalModelForm] = parseModels(json)
+
+  def templates: InternalTemplateForm = {
+    (json \ "templates").asOpt[JsObject] match {
+      case None => {
+        InternalTemplateForm(models = Nil, resources = Nil)
       }
-    }.toSeq
-    case _ => Seq.empty
+      case Some(o) => {
+        InternalTemplateForm(
+          models = parseModels(o),
+          resources = parseResources(o)
+        )
+      }
+    }
   }
 
   def interfaces: Seq[InternalInterfaceForm] = {
@@ -108,14 +123,14 @@ private[api_json] case class InternalServiceForm(
 
   lazy val headers: Seq[InternalHeaderForm] = InternalHeaderForm(internalDatatypeBuilder, json)
 
-  lazy val resources: Seq[InternalResourceForm] = {
+  private[this] def parseResources(json: JsValue): Seq[InternalResourceForm] = {
     (json \ "resources").asOpt[JsValue] match {
       case None => Seq.empty
 
       case Some(resources: JsObject) => {
         resources.fields.flatMap { v =>
           v match {
-            case(typeName, value) => {
+            case (typeName, value) => {
               value.asOpt[JsObject].map(InternalResourceForm(internalDatatypeBuilder, typeName, declaredModels, declaredEnums, unions, _))
             }
           }
@@ -125,6 +140,8 @@ private[api_json] case class InternalServiceForm(
       case _ => Seq.empty
     }
   }
+
+  lazy val resources: Seq[InternalResourceForm] = parseResources(json)
 
   lazy val attributes: Seq[InternalAttributeForm] = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray])
 
@@ -172,6 +189,11 @@ case class InternalInterfaceForm(
   fields: Seq[InternalFieldForm],
   attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
+)
+
+case class InternalTemplateForm(
+  models: Seq[InternalModelForm],
+  resources: Seq[InternalResourceForm]
 )
 
 case class InternalModelForm(

@@ -12,7 +12,6 @@ package io.apibuilder.api.json.v0.models {
 
   final case class ApiJson(
     name: String,
-    apidoc: _root_.scala.Option[io.apibuilder.api.json.v0.models.Apidoc] = None,
     info: _root_.scala.Option[io.apibuilder.api.json.v0.models.Info] = None,
     namespace: _root_.scala.Option[String] = None,
     baseUrl: _root_.scala.Option[String] = None,
@@ -21,15 +20,12 @@ package io.apibuilder.api.json.v0.models {
     headers: Seq[io.apibuilder.api.json.v0.models.Header] = Nil,
     enums: Map[String, io.apibuilder.api.json.v0.models.Enum] = Map.empty,
     interfaces: Map[String, io.apibuilder.api.json.v0.models.Interface] = Map.empty,
+    templates: _root_.scala.Option[io.apibuilder.api.json.v0.models.Templates] = None,
     unions: Map[String, io.apibuilder.api.json.v0.models.Union] = Map.empty,
     models: Map[String, io.apibuilder.api.json.v0.models.Model] = Map.empty,
     resources: Map[String, io.apibuilder.api.json.v0.models.Resource] = Map.empty,
     annotations: Map[String, io.apibuilder.api.json.v0.models.Annotation] = Map.empty,
     attributes: Seq[io.apibuilder.api.json.v0.models.Attribute] = Nil
-  )
-
-  final case class Apidoc(
-    version: String
   )
 
   final case class Attribute(
@@ -167,6 +163,15 @@ package io.apibuilder.api.json.v0.models {
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None,
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None
+  )
+
+  /**
+   * Experimental
+   */
+
+  final case class Templates(
+    models: _root_.scala.Option[Map[String, io.apibuilder.api.json.v0.models.Model]] = None,
+    resources: _root_.scala.Option[Map[String, io.apibuilder.api.json.v0.models.Resource]] = None
   )
 
   final case class Union(
@@ -314,7 +319,6 @@ package io.apibuilder.api.json.v0.models {
     implicit def jsonReadsApibuilderApiJsonApiJson: play.api.libs.json.Reads[ApiJson] = {
       for {
         name <- (__ \ "name").read[String]
-        apidoc <- (__ \ "apidoc").readNullable[io.apibuilder.api.json.v0.models.Apidoc]
         info <- (__ \ "info").readNullable[io.apibuilder.api.json.v0.models.Info]
         namespace <- (__ \ "namespace").readNullable[String]
         baseUrl <- (__ \ "base_url").readNullable[String]
@@ -323,12 +327,13 @@ package io.apibuilder.api.json.v0.models {
         headers <- (__ \ "headers").readWithDefault[Seq[io.apibuilder.api.json.v0.models.Header]](Nil)
         enums <- (__ \ "enums").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Enum]](Map.empty)
         interfaces <- (__ \ "interfaces").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Interface]](Map.empty)
+        templates <- (__ \ "templates").readNullable[io.apibuilder.api.json.v0.models.Templates]
         unions <- (__ \ "unions").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Union]](Map.empty)
         models <- (__ \ "models").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Model]](Map.empty)
         resources <- (__ \ "resources").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Resource]](Map.empty)
         annotations <- (__ \ "annotations").readWithDefault[Map[String, io.apibuilder.api.json.v0.models.Annotation]](Map.empty)
         attributes <- (__ \ "attributes").readWithDefault[Seq[io.apibuilder.api.json.v0.models.Attribute]](Nil)
-      } yield ApiJson(name, apidoc, info, namespace, baseUrl, description, imports, headers, enums, interfaces, unions, models, resources, annotations, attributes)
+      } yield ApiJson(name, info, namespace, baseUrl, description, imports, headers, enums, interfaces, templates, unions, models, resources, annotations, attributes)
     }
 
     def jsObjectApiJson(obj: io.apibuilder.api.json.v0.models.ApiJson): play.api.libs.json.JsObject = {
@@ -343,11 +348,7 @@ package io.apibuilder.api.json.v0.models {
         "resources" -> play.api.libs.json.Json.toJson(obj.resources),
         "annotations" -> play.api.libs.json.Json.toJson(obj.annotations),
         "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
-      ) ++ (obj.apidoc match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("apidoc" -> jsObjectApidoc(x))
-      }) ++
-      (obj.info match {
+      ) ++ (obj.info match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("info" -> jsObjectInfo(x))
       }) ++
@@ -362,28 +363,16 @@ package io.apibuilder.api.json.v0.models {
       (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.templates match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("templates" -> jsObjectTemplates(x))
       })
     }
 
     implicit def jsonWritesApibuilderApiJsonApiJson: play.api.libs.json.Writes[ApiJson] = {
       (obj: io.apibuilder.api.json.v0.models.ApiJson) => {
         jsObjectApiJson(obj)
-      }
-    }
-
-    implicit def jsonReadsApibuilderApiJsonApidoc: play.api.libs.json.Reads[Apidoc] = {
-      (__ \ "version").read[String].map { x => new Apidoc(version = x) }
-    }
-
-    def jsObjectApidoc(obj: io.apibuilder.api.json.v0.models.Apidoc): play.api.libs.json.JsObject = {
-      play.api.libs.json.Json.obj(
-        "version" -> play.api.libs.json.JsString(obj.version)
-      )
-    }
-
-    implicit def jsonWritesApibuilderApiJsonApidoc: play.api.libs.json.Writes[Apidoc] = {
-      (obj: io.apibuilder.api.json.v0.models.Apidoc) => {
-        jsObjectApidoc(obj)
       }
     }
 
@@ -977,6 +966,30 @@ package io.apibuilder.api.json.v0.models {
     implicit def jsonWritesApibuilderApiJsonResponse: play.api.libs.json.Writes[Response] = {
       (obj: io.apibuilder.api.json.v0.models.Response) => {
         jsObjectResponse(obj)
+      }
+    }
+
+    implicit def jsonReadsApibuilderApiJsonTemplates: play.api.libs.json.Reads[Templates] = {
+      for {
+        models <- (__ \ "models").readNullable[Map[String, io.apibuilder.api.json.v0.models.Model]]
+        resources <- (__ \ "resources").readNullable[Map[String, io.apibuilder.api.json.v0.models.Resource]]
+      } yield Templates(models, resources)
+    }
+
+    def jsObjectTemplates(obj: io.apibuilder.api.json.v0.models.Templates): play.api.libs.json.JsObject = {
+      (obj.models match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("models" -> play.api.libs.json.Json.toJson(x))
+      }) ++
+      (obj.resources match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("resources" -> play.api.libs.json.Json.toJson(x))
+      })
+    }
+
+    implicit def jsonWritesApibuilderApiJsonTemplates: play.api.libs.json.Writes[Templates] = {
+      (obj: io.apibuilder.api.json.v0.models.Templates) => {
+        jsObjectTemplates(obj)
       }
     }
 

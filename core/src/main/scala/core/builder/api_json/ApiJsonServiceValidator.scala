@@ -20,7 +20,9 @@ case class ApiJsonServiceValidator(
 
   def validate(): Either[Seq[String], Service] = {
     errors match {
-      case Nil => Right(service)
+      case Nil => {
+        Right(ApplyTemplates(internalService.get.templates).apply(service))
+      }
       case _ => Left(errors)
     }
   }
@@ -74,14 +76,15 @@ case class ApiJsonServiceValidator(
             validateImports() ++
             validateAttributes("Service", internalService.get.attributes) ++
             validateHeaders() ++
-            validateResources() ++
+            validateResources(internalService.get.resources, prefix = None) ++
             validateOperations() ++
             validateParameterBodies() ++
             validateParameters() ++
             validateResponses() ++
             validateInterfaces() ++
+            validateTemplates() ++
             validateUnions() ++
-            validateModels() ++
+            validateModels(internalService.get.models, prefix = None) ++
             validateFields() ++
             validateEnums() ++
             validateAnnotations() ++
@@ -133,7 +136,7 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace", "$schema"),
       optionalArraysOfObjects = Seq("imports", "headers", "attributes"),
-      optionalObjects = Seq("info", "enums", "interfaces", "models", "unions", "resources", "annotations")
+      optionalObjects = Seq("info", "enums", "interfaces", "models", "unions", "resources", "annotations", "templates")
     )
   }
 
@@ -226,12 +229,23 @@ case class ApiJsonServiceValidator(
     warnings ++ attributeErrors
   }
 
-  private def validateModels(): Seq[String] = {
-    val models = internalService.get.models
+  private def validateTemplates(): Seq[String] = {
+    val templates = internalService.get.templates
+    validateModels(templates.models, prefix = Some("Template")) ++
+      validateResources(templates.resources, prefix = Some("Template"))
+  }
+
+  private def validateModels(models: Seq[InternalModelForm], prefix: Option[String]): Seq[String] = {
     val warnings = models.flatMap(_.warnings)
 
     val attributeErrors = models.flatMap { model =>
-      validateAttributes(s"Model[${model.name}]", model.attributes)
+      val base = s"Model[${model.name}]"
+      val label = prefix match {
+        case None => base
+        case Some(p) => s"$p $base"
+      }
+
+      validateAttributes(label, model.attributes)
     }
 
     warnings ++ attributeErrors
@@ -332,9 +346,15 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateResources(): Seq[String] = {
-    internalService.get.resources.filter(_.warnings.nonEmpty).map { resource =>
-      s"Resource[${resource.datatype.label}] " + resource.warnings.mkString(", ")
+  private def validateResources(resources: Seq[InternalResourceForm], prefix: Option[String]): Seq[String] = {
+
+    resources.filter(_.warnings.nonEmpty).map { resource =>
+      val base = s"Resource[${resource.datatype.label}] "
+      val label = prefix match {
+        case None => base
+        case Some(p) => s"$p $base"
+      }
+      label + resource.warnings.mkString(", ")
     }
   }
 
