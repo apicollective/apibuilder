@@ -7,7 +7,7 @@ import play.api.Logger
   */
 trait ErrorHandler {
 
-  val logger: Logger = Logger(this.getClass())
+  val logger: Logger = Logger(this.getClass)
 
   /**
     * Wraps a block with error handling that will catch any throwable and log it.

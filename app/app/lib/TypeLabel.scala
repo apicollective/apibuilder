@@ -12,7 +12,7 @@ case class TypeLabel(
   typeName: String
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass())
+  private[this] val logger: Logger = Logger(this.getClass)
 
   private[this] val localResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
