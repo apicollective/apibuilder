@@ -19,8 +19,8 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
             description = model.description.orElse(tpl.description),
             deprecation = model.deprecation.orElse(tpl.deprecation),
             fields = mergeFields(model, tpl),
-            attributes = mergeAttributes(model, tpl),
-            interfaces = mergeInterfaces(model, tpl),
+            attributes = mergeAttributes(model.attributes, tpl.attributes),
+            interfaces = mergeInterfaces(model.interfaces, tpl.interfaces),
             warnings = Nil
           )
         }
@@ -28,13 +28,17 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     }
   }
 
-  private[this] def mergeInterfaces(model: InternalModelForm, tpl: InternalModelForm): Seq[String] = {
-    (tpl.interfaces ++ model.interfaces).distinct
+  private[this] def mergeInterfaces(model: Seq[String], tpl: Seq[String]): Seq[String] = {
+    (tpl ++ model).distinct
   }
 
-  def mergeAttributes(model: InternalModelForm, tpl: InternalModelForm): Seq[InternalAttributeForm] = {
-    val modelAttributesByName = model.attributes.map { f => f.name -> f }.toMap
-    tpl.attributes.map { tplAttr =>
+  private[this] def mergeAnnotations(model: Seq[String], tpl: Seq[String]): Seq[String] = {
+    (tpl ++ model).distinct
+  }
+
+  def mergeAttributes(model: Seq[InternalAttributeForm], tpl: Seq[InternalAttributeForm]): Seq[InternalAttributeForm] = {
+    val modelAttributesByName = model.map { f => f.name -> f }.toMap
+    tpl.map { tplAttr =>
       modelAttributesByName.get(tplAttr.name) match {
         case None => tplAttr
         case Some(a) => mergeAttribute(a, tplAttr)
@@ -53,15 +57,29 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     }
   }
 
-  private[this] def mergeField(modelField: InternalFieldForm, tpl: InternalFieldForm): InternalFieldForm = {
-    println(s"TODO: MErge field: ${modelField.name} / ${tpl.name}")
-    modelField
+  private[this] def mergeField(model: InternalFieldForm, tpl: InternalFieldForm): InternalFieldForm = {
+    InternalFieldForm(
+      name = model.name,
+      datatype = model.datatype,
+      description = model.description.orElse(tpl.description),
+      deprecation = model.deprecation.orElse(tpl.deprecation),
+      default = model.default.orElse(tpl.default),
+      example = model.example.orElse(tpl.example),
+      minimum = model.minimum.orElse(tpl.minimum),
+      maximum = model.maximum.orElse(tpl.maximum),
+      attributes = mergeAttributes(model.attributes, tpl.attributes),
+      annotations = mergeAnnotations(model.annotations, tpl.annotations)
+    )
   }
 
 
-  private[this] def mergeAttribute(modelAttribute: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
-    println(s"TODO: MErge Attribute: ${modelAttribute.name} / ${tpl.name}")
-    modelAttribute
+  private[this] def mergeAttribute(model: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
+    InternalAttributeForm(
+      name = model.name,
+      value = model.value.orElse(tpl.value),
+      description = model.description.orElse(tpl.description),
+      deprecation = model.deprecation.orElse(tpl.deprecation)
+    )
   }
 
 }
