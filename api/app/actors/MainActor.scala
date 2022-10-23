@@ -74,7 +74,7 @@ class MainActor @javax.inject.Inject() (
     }
 
     case m @ MainActor.Messages.GeneratorServiceCreated(guid) => withVerboseErrorHandler(m) {
-      generatorServiceActor ! GeneratorServiceActor.Messages.GeneratorServiceCreated(guid)
+      generatorServiceActor ! GeneratorServiceActorMessage.GeneratorServiceCreated(guid)
     }
 
     case m @ MainActor.Messages.EmailVerificationCreated(guid) => withVerboseErrorHandler(m) {
