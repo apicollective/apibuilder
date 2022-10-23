@@ -22,6 +22,23 @@ class TemplatesSpec extends AnyWordSpec with Matchers with helpers.ApiJsonHelper
 
         expectValid(apiJson).models.head.fields.map(_.name) mustBe Seq(templateField.name)
       }
+
+      "include all other model fields" in {
+        val name = randomName()
+        val templateField = makeField()
+        val modelField = makeField()
+
+        val apiJson = makeApiJson(
+          templates = Some(makeTemplates(
+            models = Some(Map(
+              name -> makeModel(fields = Seq(templateField))
+            ))
+          )),
+          models = Map(name -> makeModel(fields = Seq(modelField)))
+        )
+
+        expectValid(apiJson).models.head.fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
+      }
     }
 
     "merge" must {
