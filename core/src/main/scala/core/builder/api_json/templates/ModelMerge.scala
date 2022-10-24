@@ -37,13 +37,13 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
 
   def mergeAttributes(model: Seq[InternalAttributeForm], tpl: Seq[InternalAttributeForm]): Seq[InternalAttributeForm] = {
     val modelAttributesByName = model.map { f => f.name -> f }.toMap
+    val tplAttributeNames = tpl.flatMap(_.name).toSet
     tpl.map { tplAttr =>
       modelAttributesByName.get(tplAttr.name) match {
         case None => tplAttr
         case Some(a) => mergeAttribute(a, tplAttr)
       }
-    }
-
+    } ++ model.filterNot { a => tplAttributeNames.contains(a.name.get) }
   }
 
   private[this] def mergeFields(model: InternalModelForm, tpl: InternalModelForm): Seq[InternalFieldForm] = {

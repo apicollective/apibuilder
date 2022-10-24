@@ -53,17 +53,40 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeAttribute(name: String = randomName()): Attribute = {
+    Attribute(
+      name = name,
+      value = Json.obj()
+    )
+  }
+
+  def makeAnnotation(): Annotation = {
+    Annotation()
+  }
+
   def makeField(
     name: String = randomName(),
     `type`: String = "string",
     required: Boolean = true,
     default: Option[String] = None,
+    description: Option[String] = None,
+    example: Option[String] = None,
+    minimum: Option[Long] = None,
+    maximum: Option[Long] = None,
+    attributes: Option[Seq[Attribute]] = None,
+    annotations: Option[Seq[String]] = None,
   ): Field = {
     Field(
       name = name,
       `type` = `type`,
       required = required,
       default = default,
+      description = description,
+      example = example,
+      minimum = minimum,
+      maximum =  maximum,
+      attributes = attributes,
+      annotations = annotations
     )
   }
 
@@ -184,6 +207,7 @@ trait ApiJsonHelpers {
     models: Map[String, Model] = Map.empty,
     unions: Map[String, Union] = Map.empty,
     resources: Map[String, Resource] = Map.empty,
+    annotations: Map[String, Annotation] = Map.empty,
   ): ApiJson = {
     ApiJson(
       name = name,
@@ -196,6 +220,7 @@ trait ApiJsonHelpers {
       models = models,
       unions = unions,
       resources = resources,
+      annotations = annotations
     )
   }
 

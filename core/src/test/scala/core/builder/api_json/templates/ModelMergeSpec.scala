@@ -1,14 +1,18 @@
 package builder.api_json.templates
 
 import helpers.ApiJsonHelpers
-import io.apibuilder.api.json.v0.models.{Deprecation, Field}
+import io.apibuilder.api.json.v0.models._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   "models" must {
-    def setup(templateField: Field, modelField: Option[Field]) = {
+    def setup(
+      templateField: Field,
+      modelField: Option[Field],
+      annotations: Map[String, Annotation] = Map.empty,
+    ) = {
       val name = randomName()
 
       val apiJson = makeApiJson(
@@ -17,22 +21,23 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
             name -> makeModel(fields = Seq(templateField))
           ))
         )),
-        models = Map(name -> makeModel(fields = modelField.toSeq))
+        models = Map(name -> makeModel(fields = modelField.toSeq)),
+        annotations = annotations
       )
 
-      expectValid(apiJson).models.head.fields
+      expectValid(apiJson).models.head
     }
 
     "fields" must {
       "inherit if not defined" in {
         val templateField = makeField()
-        setup(templateField, None).map(_.name) mustBe Seq(templateField.name)
+        setup(templateField, None).fields.map(_.name) mustBe Seq(templateField.name)
       }
 
       "include all other model fields" in {
         val templateField = makeField()
         val modelField = makeField()
-        setup(templateField, Some(modelField)).map(_.name) mustBe Seq(templateField.name, modelField.name)
+        setup(templateField, Some(modelField)).fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
       }
     }
 
@@ -43,33 +48,178 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setup(
             templateField = field.copy(description = Some("foo")),
             modelField = Some(field.copy(description = modelDesc))
-          ).head.description.get
+          ).fields.head.description.get
         }
 
         "inherit" in {
           setupModel(None) mustBe "foo"
         }
 
-        "preserve model description" in {
+        "preserve" in {
           setupModel(Some("bar")) mustBe "bar"
         }
       }
 
       "deprecation" must {
-        def setupModel(modelDeprecation: Option[Deprecation]) = {
+        def setupModel(model: Option[Deprecation]) = {
           val field = makeField()
           setup(
             templateField = field.copy(deprecation = Some(makeDeprecation(description = Some("foo")))),
-            modelField = Some(field.copy(deprecation = modelDeprecation))
-          ).head.deprecation.get.description.get
+            modelField = Some(field.copy(deprecation = model))
+          ).fields.head.deprecation.get.description.get
         }
 
         "inherit" in {
           setupModel(None) mustBe "foo"
         }
 
-        "preserve model deprecation" in {
+        "preserve" in {
           setupModel(Some(makeDeprecation(description = Some("bar")))) mustBe "bar"
+        }
+      }
+
+      "fields" must {
+        def setupFields(templateField: Field, modelField: Field, annotations: Map[String, Annotation] = Map.empty) = {
+          setup(
+            templateField = templateField,
+            modelField = Some(modelField),
+            annotations = annotations
+          ).fields
+        }
+
+        "inherit" in {
+          val templateField = makeField()
+          val modelField = makeField()
+          setupFields(templateField, modelField).map(_.name) mustBe Seq(templateField.name, modelField.name)
+        }
+
+        "description" must {
+          def setupField(model: Option[String]) = {
+            val field = makeField(description = None)
+            setupFields(
+              templateField = field.copy(description = Some("foo")),
+              modelField = field.copy(description = model),
+            ).head.description.get
+          }
+
+          "inherit" in {
+            setupField(None) mustBe "foo"
+          }
+
+          "preserve" in {
+            setupField(Some("bar")) mustBe "bar"
+          }
+        }
+
+        "default" must {
+          def setupField(modelFieldDefault: Option[String]) = {
+            val field = makeField(default = None)
+            setupFields(
+              templateField = field.copy(default = Some("foo")),
+              modelField = field.copy(default = modelFieldDefault),
+            ).head.default.get
+          }
+
+          "inherit" in {
+            setupField(None) mustBe "foo"
+          }
+
+          "preserve" in {
+            setupField(Some("bar")) mustBe "bar"
+          }
+        }
+
+        "example" must {
+          def setupField(model: Option[String]) = {
+            val field = makeField(example = None)
+            setupFields(
+              templateField = field.copy(example = Some("foo")),
+              modelField = field.copy(example = model),
+            ).head.example.get
+          }
+
+          "inherit" in {
+            setupField(None) mustBe "foo"
+          }
+
+          "preserve" in {
+            setupField(Some("bar")) mustBe "bar"
+          }
+        }
+
+        "minimum" must {
+          def setupField(model: Option[Long]) = {
+            val field = makeField(minimum = None)
+            setupFields(
+              templateField = field.copy(minimum = Some(0)),
+              modelField = field.copy(minimum = model),
+            ).head.minimum.get
+          }
+
+          "inherit" in {
+            setupField(None) mustBe 0
+          }
+
+          "preserve" in {
+            setupField(Some(1)) mustBe 1
+          }
+        }
+
+        "maximum" must {
+          def setupField(model: Option[Long]) = {
+            val field = makeField(maximum = None)
+            setupFields(
+              templateField = field.copy(maximum = Some(0)),
+              modelField = field.copy(maximum = model),
+            ).head.maximum.get
+          }
+
+          "inherit" in {
+            setupField(None) mustBe 0
+          }
+
+          "preserve" in {
+            setupField(Some(1)) mustBe 1
+          }
+        }
+
+        "attributes" must {
+          def setupField(model: Option[String]) = {
+            val field = makeField(attributes = None)
+            setupFields(
+              templateField = field.copy(attributes = Some(Seq(makeAttribute(name = "foo")))),
+              modelField = field.copy(attributes = model.map { n => Seq(makeAttribute(name = n))}),
+            ).head.attributes.map(_.name)
+          }
+
+          "inherit" in {
+            setupField(None) mustBe Seq("foo")
+          }
+
+          "preserve" in {
+            setupField(Some("bar")) mustBe Seq("foo", "bar")
+          }
+        }
+
+        "annotations" must {
+          def setupField(model: Option[String]) = {
+            val field = makeField(annotations = None)
+            setupFields(
+              templateField = field.copy(annotations = Some(Seq("foo"))),
+              modelField = field.copy(annotations = model.map(Seq(_))),
+              annotations = (Seq("foo") ++ model.toSeq).map { n =>
+                n -> makeAnnotation()
+              }.toMap
+            ).head.annotations
+          }
+
+          "inherit" in {
+            setupField(None) mustBe Seq("foo")
+          }
+
+          "preserve" in {
+            setupField(Some("bar")) mustBe Seq("foo", "bar")
+          }
         }
       }
     }
