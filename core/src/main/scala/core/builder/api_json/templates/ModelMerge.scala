@@ -1,6 +1,6 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalModelForm}
+import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalModelForm, InternalTemplateDeclarationForm}
 import play.api.libs.json.Json
 
 case class ModelMerge(templates: Seq[InternalModelForm]) {
@@ -22,6 +22,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
             deprecation = model.deprecation.orElse(tpl.deprecation),
             fields = mergeFields(model, tpl),
             attributes = mergeAttributes(model.attributes, tpl.attributes),
+            templates = mergeTemplates(model.templates, tpl.templates),
             interfaces = union(model.interfaces, tpl.interfaces),
             warnings = model.warnings ++ tpl.warnings
           )
@@ -34,6 +35,18 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     (tpl ++ model).distinct
   }
 
+  def mergeTemplates(model: Seq[InternalTemplateDeclarationForm], tpl: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
+    println(s"mergeTemplates: ${model} tpl:$tpl")
+    val modelTemplatesByName = model.map { f => f.name -> f }.toMap
+    val tplTemplateNames = tpl.flatMap(_.name).toSet
+    tpl.map { t =>
+      modelTemplatesByName.get(t.name) match {
+        case None => t
+        case Some(a) => mergeTemplate(a, t)
+      }
+    } ++ model.filterNot { a => tplTemplateNames.contains(a.name.get) }
+  }
+  
   def mergeAttributes(model: Seq[InternalAttributeForm], tpl: Seq[InternalAttributeForm]): Seq[InternalAttributeForm] = {
     val modelAttributesByName = model.map { f => f.name -> f }.toMap
     val tplAttributeNames = tpl.flatMap(_.name).toSet
@@ -78,6 +91,13 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       value = Some(tpl.value.getOrElse(Json.obj()) ++ model.value.getOrElse(Json.obj())),
       description = model.description.orElse(tpl.description),
       deprecation = model.deprecation.orElse(tpl.deprecation)
+    )
+  }
+
+  private[this] def mergeTemplate(model: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
+    InternalTemplateDeclarationForm(
+      name = model.name,
+      warnings = model.warnings ++ tpl.warnings
     )
   }
 

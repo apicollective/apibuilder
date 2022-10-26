@@ -53,6 +53,12 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeTemplateDeclaration(name: String = randomName()): TemplateDeclaration = {
+    TemplateDeclaration(
+      name = name
+    )
+  }
+
   def makeAttribute(name: String = randomName()): Attribute = {
     Attribute(
       name = name,
@@ -124,12 +130,14 @@ trait ApiJsonHelpers {
     interfaces: Option[Seq[String]] = None,
     plural: Option[String] = None,
     attributes: Option[Seq[Attribute]] = None,
+    templates: Option[Seq[TemplateDeclaration]] = None
   ): Model = {
     Model(
       fields = fields,
       interfaces = interfaces,
       plural = plural,
       attributes = attributes,
+      templates = templates
     )
   }
 

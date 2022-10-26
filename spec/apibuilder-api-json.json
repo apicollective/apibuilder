@@ -75,6 +75,7 @@
         { "name": "fields", "type": "[field]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "interfaces", "type": "[string]", "required": false },
+        { "name": "templates", "type": "[template_declaration]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
@@ -250,6 +251,12 @@
     "deprecation": {
       "fields": [
         { "name": "description", "type": "string", "required": false }
+      ]
+    },
+
+    "template_declaration": {
+      "fields": [
+        { "name": "name", "type": "string" }
       ]
     }
 

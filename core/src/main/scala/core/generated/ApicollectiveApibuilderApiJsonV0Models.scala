@@ -121,6 +121,7 @@ package io.apibuilder.api.json.v0.models {
     fields: Seq[io.apibuilder.api.json.v0.models.Field],
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
     interfaces: _root_.scala.Option[Seq[String]] = None,
+    templates: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
   )
 
@@ -163,6 +164,10 @@ package io.apibuilder.api.json.v0.models {
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None,
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None
+  )
+
+  final case class TemplateDeclaration(
+    name: String
   )
 
   /**
@@ -753,8 +758,9 @@ package io.apibuilder.api.json.v0.models {
         fields <- (__ \ "fields").read[Seq[io.apibuilder.api.json.v0.models.Field]]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
         interfaces <- (__ \ "interfaces").readNullable[Seq[String]]
+        templates <- (__ \ "templates").readNullable[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
-      } yield Model(description, plural, fields, attributes, interfaces, deprecation)
+      } yield Model(description, plural, fields, attributes, interfaces, templates, deprecation)
     }
 
     def jsObjectModel(obj: io.apibuilder.api.json.v0.models.Model): play.api.libs.json.JsObject = {
@@ -775,6 +781,10 @@ package io.apibuilder.api.json.v0.models {
       (obj.interfaces match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("interfaces" -> play.api.libs.json.Json.toJson(x))
+      }) ++
+      (obj.templates match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("templates" -> play.api.libs.json.Json.toJson(x))
       }) ++
       (obj.deprecation match {
         case None => play.api.libs.json.Json.obj()
@@ -966,6 +976,22 @@ package io.apibuilder.api.json.v0.models {
     implicit def jsonWritesApibuilderApiJsonResponse: play.api.libs.json.Writes[Response] = {
       (obj: io.apibuilder.api.json.v0.models.Response) => {
         jsObjectResponse(obj)
+      }
+    }
+
+    implicit def jsonReadsApibuilderApiJsonTemplateDeclaration: play.api.libs.json.Reads[TemplateDeclaration] = {
+      (__ \ "name").read[String].map { x => new TemplateDeclaration(name = x) }
+    }
+
+    def jsObjectTemplateDeclaration(obj: io.apibuilder.api.json.v0.models.TemplateDeclaration): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "name" -> play.api.libs.json.JsString(obj.name)
+      )
+    }
+
+    implicit def jsonWritesApibuilderApiJsonTemplateDeclaration: play.api.libs.json.Writes[TemplateDeclaration] = {
+      (obj: io.apibuilder.api.json.v0.models.TemplateDeclaration) => {
+        jsObjectTemplateDeclaration(obj)
       }
     }
 

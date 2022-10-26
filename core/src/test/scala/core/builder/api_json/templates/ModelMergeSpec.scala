@@ -1,6 +1,7 @@
 package builder.api_json.templates
 
 import helpers.ApiJsonHelpers
+import io.apibuilder.spec.v0.models.{Model => SpecModel}
 import io.apibuilder.api.json.v0.models._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -16,25 +17,30 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       modelAttributes: Option[Seq[Attribute]] = None,
       templateInterfaces: Option[Seq[String]] = None,
       modelInterfaces: Option[Seq[String]] = None,
+      templateTemplateDeclarations: Option[Seq[TemplateDeclaration]] = None,
+      modelTemplateDeclarations: Option[Seq[TemplateDeclaration]] = None,
       annotations: Map[String, Annotation] = Map.empty,
       interfaces: Map[String, Interface] = Map.empty,
-    ) = {
+      otherTemplateModels: Map[String, Model] = Map.empty
+    ): SpecModel = {
       val name = randomName()
 
       val apiJson = makeApiJson(
         templates = Some(makeTemplates(
-          models = Some(Map(
+          models = Some(otherTemplateModels ++ Map(
             name -> makeModel(
               fields = templateField.toSeq,
               attributes = templateAttributes,
-              interfaces = templateInterfaces
+              interfaces = templateInterfaces,
+              templates = templateTemplateDeclarations,
             )
           ))
         )),
         models = Map(name -> makeModel(
           fields = modelField.toSeq,
           attributes = modelAttributes,
-          interfaces = modelInterfaces
+          interfaces = modelInterfaces,
+          templates = modelTemplateDeclarations,
         )),
         interfaces = interfaces,
         annotations = annotations,
@@ -307,6 +313,32 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setupModel(
             template = Some("foo"),
             model = Some("bar")
+          ) mustBe Seq("foo", "bar")
+        }
+      }
+
+      "templates" must {
+        def setupModel(template: Option[TemplateDeclaration], model: Option[TemplateDeclaration]) = {
+          setup(
+            templateTemplateDeclarations = Some(template.toSeq),
+            modelTemplateDeclarations = Some(model.toSeq),
+            otherTemplateModels = (template.toSeq ++ model.toSeq).map(_.name).map { n =>
+              n -> makeModel(fields = Seq(makeField(name = n)))
+            }.toMap
+          ).fields.map(_.name)
+        }
+
+        "inherit" in {
+          setupModel(
+            template = Some(makeTemplateDeclaration(name = "foo")),
+            model = None
+          ) mustBe Seq("foo")
+        }
+
+        "preserve" in {
+          setupModel(
+            template = Some(makeTemplateDeclaration(name = "foo")),
+            model = Some(makeTemplateDeclaration(name = "bar")),
           ) mustBe Seq("foo", "bar")
         }
       }

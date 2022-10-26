@@ -28,6 +28,5 @@ apicollective:
   apibuilder-spec:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderSpecV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderSpecV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderSpecV0Client.scala
