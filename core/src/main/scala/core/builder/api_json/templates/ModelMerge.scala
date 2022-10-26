@@ -19,7 +19,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
             deprecation = model.deprecation.orElse(tpl.deprecation),
             fields = mergeFields(model, tpl),
             attributes = mergeAttributes(model.attributes, tpl.attributes),
-            interfaces = mergeInterfaces(model.interfaces, tpl.interfaces),
+            interfaces = union(model.interfaces, tpl.interfaces),
             warnings = model.warnings ++ tpl.warnings
           )
         }
@@ -27,11 +27,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     }
   }
 
-  private[this] def mergeInterfaces(model: Seq[String], tpl: Seq[String]): Seq[String] = {
-    (tpl ++ model).distinct
-  }
-
-  private[this] def mergeAnnotations(model: Seq[String], tpl: Seq[String]): Seq[String] = {
+  private[this] def union(model: Seq[String], tpl: Seq[String]): Seq[String] = {
     (tpl ++ model).distinct
   }
 
@@ -68,7 +64,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       minimum = model.minimum.orElse(tpl.minimum),
       maximum = model.maximum.orElse(tpl.maximum),
       attributes = mergeAttributes(model.attributes, tpl.attributes),
-      annotations = mergeAnnotations(model.annotations, tpl.annotations)
+      annotations = union(model.annotations, tpl.annotations)
     )
   }
 
