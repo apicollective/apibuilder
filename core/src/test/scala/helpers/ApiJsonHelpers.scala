@@ -123,11 +123,13 @@ trait ApiJsonHelpers {
     fields: Seq[Field] = Nil,
     interfaces: Option[Seq[String]] = None,
     plural: Option[String] = None,
+    attributes: Option[Seq[Attribute]] = None,
   ): Model = {
     Model(
       fields = fields,
       interfaces = interfaces,
       plural = plural,
+      attributes = attributes
     )
   }
 

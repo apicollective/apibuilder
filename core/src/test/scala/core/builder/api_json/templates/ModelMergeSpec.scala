@@ -4,13 +4,16 @@ import helpers.ApiJsonHelpers
 import io.apibuilder.api.json.v0.models._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.Json
 
 class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   "models" must {
     def setup(
-      templateField: Field,
-      modelField: Option[Field],
+      templateField: Option[Field] = None,
+      modelField: Option[Field] = None,
+      templateAttributes: Option[Seq[Attribute]] = None,
+      modelAttributes: Option[Seq[Attribute]] = None,
       annotations: Map[String, Annotation] = Map.empty,
     ) = {
       val name = randomName()
@@ -18,11 +21,17 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       val apiJson = makeApiJson(
         templates = Some(makeTemplates(
           models = Some(Map(
-            name -> makeModel(fields = Seq(templateField))
+            name -> makeModel(
+              fields = templateField.toSeq,
+              attributes = templateAttributes
+            )
           ))
         )),
-        models = Map(name -> makeModel(fields = modelField.toSeq)),
-        annotations = annotations
+        models = Map(name -> makeModel(
+          fields = modelField.toSeq,
+          attributes = modelAttributes,
+        )),
+        annotations = annotations,
       )
 
       expectValid(apiJson).models.head
@@ -31,13 +40,13 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     "fields" must {
       "inherit if not defined" in {
         val templateField = makeField()
-        setup(templateField, None).fields.map(_.name) mustBe Seq(templateField.name)
+        setup(templateField = Some(templateField), None).fields.map(_.name) mustBe Seq(templateField.name)
       }
 
       "include all other model fields" in {
         val templateField = makeField()
         val modelField = makeField()
-        setup(templateField, Some(modelField)).fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
+        setup(templateField = Some(templateField), Some(modelField)).fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
       }
     }
 
@@ -46,7 +55,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         def setupModel(modelDesc: Option[String]) = {
           val field = makeField()
           setup(
-            templateField = field.copy(description = Some("foo")),
+            templateField = Some(field.copy(description = Some("foo"))),
             modelField = Some(field.copy(description = modelDesc))
           ).fields.head.description.get
         }
@@ -64,7 +73,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         def setupModel(model: Option[Deprecation]) = {
           val field = makeField()
           setup(
-            templateField = field.copy(deprecation = Some(makeDeprecation(description = Some("foo")))),
+            templateField = Some(field.copy(deprecation = Some(makeDeprecation(description = Some("foo"))))),
             modelField = Some(field.copy(deprecation = model))
           ).fields.head.deprecation.get.description.get
         }
@@ -81,7 +90,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       "fields" must {
         def setupFields(templateField: Field, modelField: Field, annotations: Map[String, Annotation] = Map.empty) = {
           setup(
-            templateField = templateField,
+            templateField = Some(templateField),
             modelField = Some(modelField),
             annotations = annotations
           ).fields
@@ -222,7 +231,50 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           }
         }
       }
+
+      "attributes" must {
+        def setupModel(template: Option[Attribute], model: Option[Attribute]) = {
+          setup(
+            templateAttributes = Some(template.toSeq),
+            modelAttributes = Some(model.toSeq),
+          ).attributes
+        }
+
+        "inherit" in {
+          setupModel(
+            template = Some(makeAttribute(name = "foo")),
+            model = None
+          ).map(_.name) mustBe Seq("foo")
+        }
+
+        "preserve" in {
+          setupModel(
+            template = Some(makeAttribute(name = "foo")),
+            model = Some(makeAttribute(name = "bar")),
+          ).map(_.name) mustBe Seq("foo", "bar")
+        }
+
+        "merge" must {
+          "value" in {
+            val attr = makeAttribute()
+            val value = Json.obj("bar" -> randomName())
+            val value2 = Json.obj("bar" -> randomName(), randomName() -> randomName())
+
+            setupModel(
+              template = Some(attr.copy(value = value)),
+              model = Some(attr),
+            ).head.value mustBe value
+
+            setupModel(
+              template = Some(attr.copy(value = value)),
+              model = Some(attr.copy(value = value2)),
+            ).head.value mustBe value2
+          }
+        }
+      }
+
     }
+
   }
 
 }

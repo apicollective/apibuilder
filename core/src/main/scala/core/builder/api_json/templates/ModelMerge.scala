@@ -1,6 +1,7 @@
 package builder.api_json.templates
 
 import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalModelForm}
+import play.api.libs.json.Json
 
 case class ModelMerge(templates: Seq[InternalModelForm]) {
   private[this] def format(value: String): String = value.toLowerCase().trim
@@ -72,9 +73,10 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
 
 
   private[this] def mergeAttribute(model: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
+    println(s"mergeAttribute: ${model.value} / ${tpl.value}")
     InternalAttributeForm(
       name = model.name,
-      value = model.value.orElse(tpl.value),
+      value = Some(tpl.value.getOrElse(Json.obj()) ++ model.value.getOrElse(Json.obj())),
       description = model.description.orElse(tpl.description),
       deprecation = model.deprecation.orElse(tpl.deprecation)
     )
