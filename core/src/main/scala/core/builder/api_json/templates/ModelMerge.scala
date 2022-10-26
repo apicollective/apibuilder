@@ -3,13 +3,15 @@ package builder.api_json.templates
 import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalModelForm}
 
 case class ModelMerge(templates: Seq[InternalModelForm]) {
+  private[this] def format(value: String): String = value.toLowerCase().trim
+
   private[this] val templatesByName: Map[String, InternalModelForm] = templates.map { t =>
-    t.name.toLowerCase().trim -> t
+    format(t.name) -> t
   }.toMap
 
   def merge(models: Seq[InternalModelForm]): Seq[InternalModelForm] = {
     models.map { model =>
-      templatesByName.get(model.name.toLowerCase().trim) match {
+      templatesByName.get(format(model.name)) match {
         case None => model
         case Some(tpl) => {
           InternalModelForm(
