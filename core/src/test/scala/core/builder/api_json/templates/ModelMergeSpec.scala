@@ -14,7 +14,10 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       modelField: Option[Field] = None,
       templateAttributes: Option[Seq[Attribute]] = None,
       modelAttributes: Option[Seq[Attribute]] = None,
+      templateInterfaces: Option[Seq[String]] = None,
+      modelInterfaces: Option[Seq[String]] = None,
       annotations: Map[String, Annotation] = Map.empty,
+      interfaces: Map[String, Interface] = Map.empty,
     ) = {
       val name = randomName()
 
@@ -23,14 +26,17 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           models = Some(Map(
             name -> makeModel(
               fields = templateField.toSeq,
-              attributes = templateAttributes
+              attributes = templateAttributes,
+              interfaces = templateInterfaces
             )
           ))
         )),
         models = Map(name -> makeModel(
           fields = modelField.toSeq,
           attributes = modelAttributes,
+          interfaces = modelInterfaces
         )),
+        interfaces = interfaces,
         annotations = annotations,
       )
 
@@ -40,13 +46,19 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     "fields" must {
       "inherit if not defined" in {
         val templateField = makeField()
-        setup(templateField = Some(templateField), None).fields.map(_.name) mustBe Seq(templateField.name)
+        setup(
+          templateField = Some(templateField),
+          modelField = None
+        ).fields.map(_.name) mustBe Seq(templateField.name)
       }
 
       "include all other model fields" in {
         val templateField = makeField()
         val modelField = makeField()
-        setup(templateField = Some(templateField), Some(modelField)).fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
+        setup(
+          templateField = Some(templateField),
+          modelField = Some(modelField)
+        ).fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
       }
     }
 
@@ -273,6 +285,31 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         }
       }
 
+      "interfaces" must {
+        def setupModel(template: Option[String], model: Option[String]) = {
+          setup(
+            templateInterfaces = Some(template.toSeq),
+            modelInterfaces = Some(model.toSeq),
+            interfaces = (template.toSeq ++ model.toSeq).map { n =>
+              n -> makeInterface()
+            }.toMap
+          ).interfaces
+        }
+
+        "inherit" in {
+          setupModel(
+            template = Some("foo"),
+            model = None
+          ) mustBe Seq("foo")
+        }
+
+        "preserve" in {
+          setupModel(
+            template = Some("foo"),
+            model = Some("bar")
+          ) mustBe Seq("foo", "bar")
+        }
+      }
     }
 
   }

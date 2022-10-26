@@ -73,7 +73,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
 
 
   private[this] def mergeAttribute(model: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
-    println(s"mergeAttribute: ${model.value} / ${tpl.value}")
     InternalAttributeForm(
       name = model.name,
       value = Some(tpl.value.getOrElse(Json.obj()) ++ model.value.getOrElse(Json.obj())),

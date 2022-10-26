@@ -129,7 +129,7 @@ trait ApiJsonHelpers {
       fields = fields,
       interfaces = interfaces,
       plural = plural,
-      attributes = attributes
+      attributes = attributes,
     )
   }
 
