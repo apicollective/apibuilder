@@ -240,7 +240,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           }
 
           "preserve" in {
-            setupField(Some("bar")) mustBe Seq("foo", "bar")
+            setupField(Some("bar")) mustBe Seq("bar", "foo")
           }
         }
       }
@@ -294,7 +294,10 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
             interfaces = (template.toSeq ++ model.toSeq).map { n =>
               n -> makeInterface()
             }.toMap
-          ).interfaces
+          ).interfaces.filter { i =>
+            // Remove the interface from the template itself
+            template.contains(i) || model.contains(i)
+          }
         }
 
         "inherit" in {
@@ -308,7 +311,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setupModel(
             template = Some("foo"),
             model = Some("bar")
-          ) mustBe Seq("foo", "bar")
+          ) mustBe Seq("bar", "foo")
         }
       }
 
