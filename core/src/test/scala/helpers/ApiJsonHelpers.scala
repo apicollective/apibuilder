@@ -11,7 +11,11 @@ import play.api.libs.json.Json
 trait ApiJsonHelpers {
 
   def expectErrors(apiJson: ApiJson): Seq[String] = {
-    TestHelper.serviceValidator(apiJson).errors()
+    val errors = TestHelper.serviceValidator(apiJson).errors()
+    if (errors.isEmpty) {
+      sys.error("Expected errors but found none")
+    }
+    errors
   }
 
   def expectValid(apiJson: ApiJson): Service = {

@@ -230,7 +230,19 @@ case class ApiJsonServiceValidator(
   private def validateTemplates(): Seq[String] = {
     val templates = internalService.get.templates
     validateModels(templates.models, prefix = Some("Template")) ++
-      validateResources(templates.resources, prefix = Some("Template"))
+      validateResources(templates.resources, prefix = Some("Template")) ++
+      validateTemplateModelNames()
+  }
+
+  private[this] def validateTemplateModelNames(): Seq[String] = {
+    val templateNames = internalService.get.templates.models.map(_.name)
+    val interfaceDups = internalService.get.interfaces.filter { i => templateNames.contains(i.name) }.map { i =>
+      s"Name[${i.name}] cannot be used as the name of both an interface and a template model"
+    }
+    val modelDups = internalService.get.models.filter { m => templateNames.contains(m.name) }.map { m =>
+      s"Name[${m.name}] cannot be used as the name of both a model and a template model"
+    }
+    interfaceDups ++ modelDups
   }
 
   private def validateModels(models: Seq[InternalModelForm], prefix: Option[String]): Seq[String] = {
