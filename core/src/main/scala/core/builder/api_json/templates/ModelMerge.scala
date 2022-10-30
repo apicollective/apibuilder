@@ -1,9 +1,14 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalModelForm, InternalTemplateDeclarationForm}
+import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalInterfaceForm, InternalModelForm, InternalTemplateDeclarationForm}
 import play.api.libs.json.Json
 
 import scala.annotation.tailrec
+
+case class ModelMergeData(
+  interfaces: Seq[InternalInterfaceForm],
+  models: Seq[InternalModelForm]
+)
 
 case class ModelMerge(templates: Seq[InternalModelForm]) {
   private[this] def format(value: String): String = value.toLowerCase().trim
@@ -12,9 +17,27 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     format(t.name) -> t
   }.toMap
 
-  def merge(models: Seq[InternalModelForm]): Seq[InternalModelForm] = {
-    models.map { model =>
-      applyTemplates(model, allTemplates(model.templates))
+  def merge(data: ModelMergeData): ModelMergeData = {
+    ModelMergeData(
+      models = data.models.map { model =>
+        applyTemplates(model, allTemplates(model.templates))
+      },
+      interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
+    )
+  }
+
+  private[this] def buildInterfaces(defined: Seq[InternalInterfaceForm]): Seq[InternalInterfaceForm] = {
+    val definedByName = defined.map(_.name).toSet
+    templates.filterNot { t => definedByName.contains(t.name) }.map { t =>
+      InternalInterfaceForm(
+        name = t.name,
+        plural = t.plural,
+        description = t.description,
+        deprecation = t.deprecation,
+        fields = t.fields,
+        attributes = t.attributes,
+        warnings = Nil
+      )
     }
   }
 
@@ -42,6 +65,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
 
   private[this] def applyTemplate(model: InternalModelForm, declaration: InternalTemplateDeclarationForm): InternalModelForm = {
     val tpl = templatesByName.getOrElse(declaration.name.get, sys.error(s"Cannot find template named '${declaration.name}'"))
+    val templates = mergeTemplates(model.templates, tpl.templates)
     InternalModelForm(
       name = model.name,
       plural = model.plural,
@@ -49,14 +73,18 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       deprecation = model.deprecation.orElse(tpl.deprecation),
       fields = mergeFields(model, tpl),
       attributes = mergeAttributes(model.attributes, tpl.attributes),
-      templates = mergeTemplates(model.templates, tpl.templates),
-      interfaces = union(model.interfaces, tpl.interfaces),
+      templates = templates,
+      interfaces = union(model.interfaces, tpl.interfaces, templates.flatMap(_.name)),
       warnings = model.warnings ++ tpl.warnings
     )
   }
 
-  private[this] def union(model: Seq[String], tpl: Seq[String]): Seq[String] = {
-    (tpl ++ model).distinct
+  @tailrec
+  private[this] def union(first: Seq[String], remaining: Seq[String]*): Seq[String] = {
+    remaining.toList match {
+      case Nil => first
+      case one :: rest => union((first ++ one).distinct, rest: _*)
+    }
   }
 
   def mergeTemplates(model: Seq[InternalTemplateDeclarationForm], tpl: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {

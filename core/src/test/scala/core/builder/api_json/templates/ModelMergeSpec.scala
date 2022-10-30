@@ -352,7 +352,8 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
         "setup interfaces" in {
           val apiJson = setupTemplate(
-            makeModel(
+            name = "foo",
+            template = makeModel(
               fields = Seq(makeField("foo"))
             )
           )
