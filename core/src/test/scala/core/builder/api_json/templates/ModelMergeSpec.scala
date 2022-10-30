@@ -17,30 +17,25 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       modelAttributes: Option[Seq[Attribute]] = None,
       templateInterfaces: Option[Seq[String]] = None,
       modelInterfaces: Option[Seq[String]] = None,
-      templateTemplateDeclarations: Option[Seq[TemplateDeclaration]] = None,
-      modelTemplateDeclarations: Option[Seq[TemplateDeclaration]] = None,
       annotations: Map[String, Annotation] = Map.empty,
       interfaces: Map[String, Interface] = Map.empty,
-      otherTemplateModels: Map[String, Model] = Map.empty
     ): SpecModel = {
       val name = randomName()
 
       val apiJson = makeApiJson(
         templates = Some(makeTemplates(
-          models = Some(otherTemplateModels ++ Map(
+          models = Some(Map(
             name -> makeModel(
               fields = templateField.toSeq,
               attributes = templateAttributes,
-              interfaces = templateInterfaces,
-              templates = templateTemplateDeclarations,
+              interfaces = templateInterfaces
             )
           ))
         )),
         models = Map(name -> makeModel(
           fields = modelField.toSeq,
           attributes = modelAttributes,
-          interfaces = modelInterfaces,
-          templates = modelTemplateDeclarations,
+          interfaces = modelInterfaces
         )),
         interfaces = interfaces,
         annotations = annotations,
@@ -318,28 +313,33 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       }
 
       "templates" must {
-        def setupModel(template: Option[TemplateDeclaration], model: Option[TemplateDeclaration]) = {
-          setup(
-            templateTemplateDeclarations = Some(template.toSeq),
-            modelTemplateDeclarations = Some(model.toSeq),
-            otherTemplateModels = (template.toSeq ++ model.toSeq).map(_.name).map { n =>
-              n -> makeModel(fields = Seq(makeField(name = n)))
-            }.toMap
-          ).fields.map(_.name)
-        }
-
         "inherit" in {
-          setupModel(
-            template = Some(makeTemplateDeclaration(name = "foo")),
-            model = None
-          ) mustBe Seq("foo")
-        }
+          def setup(templateTemplate: Option[Model]) = {
+            val apiJson = makeApiJson(
+              templates = Some(makeTemplates(
+                models = Some(Map(
+                  "other" -> templateTemplate.getOrElse(makeModel()),
+                  "foo" -> makeModel(
+                    fields = Seq(makeField("foo")),
+                    templates = Some(templateTemplate.toSeq.map { _ => makeTemplateDeclaration("other") })
+                  )
+                ))
+              )),
+              models = Map("user" -> makeModel(
+                fields = Seq(makeField("bar")),
+                templates = Some(Seq(makeTemplateDeclaration("foo")))
+              ))
+            )
+            expectValid(apiJson).models.head.fields.map(_.name)
+          }
 
-        "preserve" in {
-          setupModel(
-            template = Some(makeTemplateDeclaration(name = "foo")),
-            model = Some(makeTemplateDeclaration(name = "bar")),
-          ) mustBe Seq("foo", "bar")
+          // Verify the model inherits the fields from the template
+          setup(None) mustBe Seq("foo", "bar")
+
+          // The template itself may inherit from another template
+          setup(Some(
+            makeModel(fields = Seq(makeField("id")))
+          )) mustBe Seq("id", "foo", "bar")
         }
       }
     }
