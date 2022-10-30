@@ -347,6 +347,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setup(Seq("b")) mustBe Seq("a", "b")
           setup(Seq("c")) mustBe Seq("a", "b", "c")
           setup(Seq("a", "b" ,"c")) mustBe Seq("a", "b", "c")
+          setup(Seq("a", "b" , "c")) mustBe Seq("a", "b", "c")
         }
 
         "setup interfaces" in {
