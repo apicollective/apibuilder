@@ -20,10 +20,11 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       annotations: Map[String, Annotation] = Map.empty,
       interfaces: Map[String, Interface] = Map.empty,
     ): SpecModel = {
+      val name = randomName()
       val apiJson = makeApiJson(
         templates = Some(makeTemplates(
           models = Some(Map(
-            randomName() -> makeModel(
+            name -> makeModel(
               fields = templateField.toSeq,
               attributes = templateAttributes,
               interfaces = templateInterfaces
@@ -31,6 +32,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           ))
         )),
         models = Map(randomName() -> makeModel(
+          templates = Some(Seq(makeTemplateDeclaration(name))),
           fields = modelField.toSeq,
           attributes = modelAttributes,
           interfaces = modelInterfaces
