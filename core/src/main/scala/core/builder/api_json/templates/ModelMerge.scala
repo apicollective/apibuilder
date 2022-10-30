@@ -14,15 +14,15 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
 
   def merge(models: Seq[InternalModelForm]): Seq[InternalModelForm] = {
     models.map { model =>
-      applyTemplates(model, allTemplates(model))
+      applyTemplates(model, allTemplates(model.templates))
     }
   }
 
-  private[this] def allTemplates(form: InternalModelForm): Seq[InternalTemplateDeclarationForm] = {
-    form.templates.flatMap { tpl =>
+  private[this] def allTemplates(templates: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
+    templates.flatMap { tpl =>
       templatesByName.get(tpl.name.get) match {
         case None => Nil
-        case Some(model) => Seq(tpl) ++ model.templates
+        case Some(model) => Seq(tpl) ++ allTemplates(model.templates)
       }
     }
   }

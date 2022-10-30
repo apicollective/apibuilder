@@ -313,33 +313,53 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       }
 
       "templates" must {
+        def setupTemplate(template: Model, name: String = randomName()) = {
+          val apiJson = makeApiJson(
+            templates = Some(makeTemplates(
+              models = Some(Map(name -> template))
+            )),
+            models = Map(randomName() -> makeModel(
+              templates = Some(Seq(makeTemplateDeclaration(name)))
+            ))
+          )
+          expectValid(apiJson)
+        }
+
         "inherit" in {
-          def setup(templateTemplate: Option[Model]) = {
+          def setup(templates: Seq[String]) = {
             val apiJson = makeApiJson(
               templates = Some(makeTemplates(
                 models = Some(Map(
-                  "other" -> templateTemplate.getOrElse(makeModel()),
-                  "foo" -> makeModel(
-                    fields = Seq(makeField("foo")),
-                    templates = Some(templateTemplate.toSeq.map { _ => makeTemplateDeclaration("other") })
-                  )
+                  "a" -> makeModel(fields = Seq(makeField("a"))),
+                  "b" -> makeModel(fields = Seq(makeField("b")), templates = Some(Seq(makeTemplateDeclaration("a")))),
+                  "c" -> makeModel(fields = Seq(makeField("c")), templates = Some(Seq(makeTemplateDeclaration("b")))),
                 ))
               )),
-              models = Map("user" -> makeModel(
-                fields = Seq(makeField("bar")),
-                templates = Some(Seq(makeTemplateDeclaration("foo")))
+              models = Map(randomName() -> makeModel(
+                templates = Some(templates.map { name => makeTemplateDeclaration(name) })
               ))
             )
             expectValid(apiJson).models.head.fields.map(_.name)
           }
 
-          // Verify the model inherits the fields from the template
-          setup(None) mustBe Seq("foo", "bar")
+          setup(Nil) mustBe Nil
+          setup(Seq("a")) mustBe Seq("a")
+          setup(Seq("b")) mustBe Seq("a", "b")
+          setup(Seq("c")) mustBe Seq("a", "b", "c")
+          setup(Seq("a", "b" ,"c")) mustBe Seq("a", "b", "c")
+        }
 
-          // The template itself may inherit from another template
-          setup(Some(
-            makeModel(fields = Seq(makeField("id")))
-          )) mustBe Seq("id", "foo", "bar")
+        "setup interfaces" in {
+          val apiJson = setupTemplate(
+            makeModel(
+              fields = Seq(makeField("foo"))
+            )
+          )
+          apiJson.models.head.interfaces mustBe Seq("foo")
+
+          val i = apiJson.interfaces.head
+          i.name mustBe "foo"
+          i.fields.map(_.name) mustBe Seq("foo")
         }
       }
     }
