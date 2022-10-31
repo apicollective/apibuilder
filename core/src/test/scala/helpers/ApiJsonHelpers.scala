@@ -170,12 +170,14 @@ trait ApiJsonHelpers {
   }
 
   def makeResource(
+    path: Option[String] = None,
     operations: Seq[Operation] = Nil,
-    templates: Option[Seq[TemplateDeclaration]] = None
+    templates: Option[Seq[TemplateDeclaration]] = None,
   ): Resource = {
     Resource(
+      path = path,
       operations = operations,
-      templates = templates
+      templates = templates,
     )
   }
 
