@@ -2,8 +2,6 @@ package builder.api_json.templates
 
 import builder.api_json.{InternalFieldForm, InternalInterfaceForm, InternalModelForm, InternalTemplateDeclarationForm}
 
-import scala.annotation.tailrec
-
 case class ModelMergeData(
   interfaces: Seq[InternalInterfaceForm],
   models: Seq[InternalModelForm]
@@ -26,18 +24,18 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
     model.templates
   }
 
-  override def applyTemplate(model: InternalModelForm, tpl: InternalModelForm): InternalModelForm = {
-    val templates = mergeTemplates(model.templates, tpl.templates)
+  override def applyTemplate(original: InternalModelForm, tpl: InternalModelForm): InternalModelForm = {
+    val templates = mergeTemplates(original.templates, tpl.templates)
     InternalModelForm(
-      name = model.name,
-      plural = model.plural,
-      description = model.description.orElse(tpl.description),
-      deprecation = model.deprecation.orElse(tpl.deprecation),
-      fields = mergeFields(model, tpl),
-      attributes = mergeAttributes(model.attributes, tpl.attributes),
+      name = original.name,
+      plural = original.plural,
+      description = original.description.orElse(tpl.description),
+      deprecation = original.deprecation.orElse(tpl.deprecation),
+      fields = mergeFields(original, tpl),
+      attributes = mergeAttributes(original.attributes, tpl.attributes),
       templates = Nil,
-      interfaces = union(model.interfaces, tpl.interfaces, templates.flatMap(_.name)),
-      warnings = model.warnings ++ tpl.warnings
+      interfaces = union(original.interfaces, tpl.interfaces, templates.flatMap(_.name)),
+      warnings = union(original.warnings, tpl.warnings)
     )
   }
 
@@ -53,14 +51,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
         attributes = t.attributes,
         warnings = Nil
       )
-    }
-  }
-
-  @tailrec
-  private[this] def union(first: Seq[String], remaining: Seq[String]*): Seq[String] = {
-    remaining.toList match {
-      case Nil => first
-      case one :: rest => union((first ++ one).distinct, rest: _*)
     }
   }
 
@@ -101,10 +91,10 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
     )
   }
 
-  private[this] def mergeTemplate(model: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
+  private[this] def mergeTemplate(original: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
     InternalTemplateDeclarationForm(
-      name = model.name,
-      warnings = model.warnings ++ tpl.warnings
+      name = original.name,
+      warnings = union(original.warnings, tpl.warnings)
     )
   }
 

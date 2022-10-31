@@ -40,4 +40,12 @@ private[templates] abstract class TemplateMerge[T](templates: Seq[T]) {
       }
     }
   }
+
+  @tailrec
+  protected final def union(first: Seq[String], remaining: Seq[String]*): Seq[String] = {
+    remaining.toList match {
+      case Nil => first
+      case one :: rest => union((first ++ one).distinct, rest: _*)
+    }
+  }
 }

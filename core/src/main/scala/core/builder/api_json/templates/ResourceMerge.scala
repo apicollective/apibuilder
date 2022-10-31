@@ -1,6 +1,6 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalOperationForm, InternalResourceForm, InternalTemplateDeclarationForm}
+import builder.api_json.{InternalOperationForm, InternalParameterForm, InternalResourceForm, InternalResponseForm, InternalTemplateDeclarationForm}
 
 case class ResourceMergeData(resources: Seq[InternalResourceForm])
 
@@ -29,12 +29,47 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
       operations = mergeOperations(original.operations, tpl.operations),
       attributes = mergeAttributes(original.attributes, tpl.attributes),
       templates = Nil,
-      warnings = original.warnings ++ tpl.warnings
+      warnings = union(original.warnings, tpl.warnings)
     )
   }
 
+  private[this] def pathLabel(op: InternalOperationForm): String = {
+    op.method.getOrElse("") + ":" + op.path
+  }
+
+
   def mergeOperations(original: Seq[InternalOperationForm], template: Seq[InternalOperationForm]): Seq[InternalOperationForm] = {
-    println(s"TODO: Merge operations")
-    original ++ template
+    val originalByPath = original.map { op => pathLabel(op) -> op }.toMap
+    val tplByPath = template.map { op => pathLabel(op) -> op }.toMap
+    template.map { tplOp =>
+      originalByPath.get(pathLabel(tplOp)) match {
+        case None => tplOp
+        case Some(op) => mergeOperation(op, tplOp)
+      }
+    } ++ original.filterNot { op => tplByPath.contains(pathLabel(op)) }
+  }
+
+  private[this] def mergeOperation(original: InternalOperationForm, tpl: InternalOperationForm): InternalOperationForm = {
+    InternalOperationForm(
+      method = original.method,
+      path = original.path,
+      description = original.description.orElse(tpl.description),
+      deprecation = original.deprecation.orElse(tpl.deprecation),
+      namedPathParameters = union(original.namedPathParameters, tpl.namedPathParameters),
+      parameters = mergeParameters(original.parameters, tpl.parameters),
+      body = original.body.orElse(tpl.body),
+      responses = mergeResponses(original.responses, tpl.responses),
+      attributes = mergeAttributes(original.attributes, tpl.attributes),
+      warnings = union(original.warnings, tpl.warnings)
+    )
+  }
+  private[this] def mergeParameters(original: Seq[InternalParameterForm], tpl: Seq[InternalParameterForm]): Seq[InternalParameterForm] = {
+    println(s"TODO: Merge Parameters")
+    original ++ tpl
+  }
+
+  private[this] def mergeResponses(original: Seq[InternalResponseForm], tpl: Seq[InternalResponseForm]): Seq[InternalResponseForm] = {
+    println(s"TODO: Merge Responses")
+    original ++ tpl
   }
 }
