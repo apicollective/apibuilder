@@ -56,13 +56,29 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
     }.merge(original, template)
   }
 
-  private[this] def mergeParameters(original: Seq[InternalParameterForm], tpl: Seq[InternalParameterForm]): Seq[InternalParameterForm] = {
-    println(s"TODO: Merge Parameters")
-    original ++ tpl
+  private[this] def mergeParameters(original: Seq[InternalParameterForm], template: Seq[InternalParameterForm]): Seq[InternalParameterForm] = {
+    new ArrayMerge[InternalParameterForm]() {
+      override def label(i: InternalParameterForm): String = i.name.get
+
+      override def merge(original: InternalParameterForm, tpl: InternalParameterForm): InternalParameterForm = {
+        println(s"TODO: Merge Parameter:")
+        println(s"   - original: $original")
+        println(s"   -      tpl: $tpl")
+        original
+      }
+    }.merge(original, template)
   }
 
-  private[this] def mergeResponses(original: Seq[InternalResponseForm], tpl: Seq[InternalResponseForm]): Seq[InternalResponseForm] = {
-    println(s"TODO: Merge Responses")
-    original ++ tpl
+  private[this] def mergeResponses(original: Seq[InternalResponseForm], template: Seq[InternalResponseForm]): Seq[InternalResponseForm] = {
+    new ArrayMerge[InternalResponseForm]() {
+      override def label(i: InternalResponseForm): String = i.code
+
+      override def merge(original: InternalResponseForm, tpl: InternalResponseForm): InternalResponseForm = {
+        println(s"TODO: Merge Response:")
+        println(s"   - original: $original")
+        println(s"   -      tpl: $tpl")
+        original
+      }
+    }.merge(original, template)
   }
 }
