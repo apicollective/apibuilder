@@ -37,7 +37,7 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
     op.method.getOrElse("") + ":" + op.path
   }
 
-  def mergeOperations(original: Seq[InternalOperationForm], template: Seq[InternalOperationForm]): Seq[InternalOperationForm] = {
+  private[this] def mergeOperations(original: Seq[InternalOperationForm], template: Seq[InternalOperationForm]): Seq[InternalOperationForm] = {
     new ArrayMerge[InternalOperationForm]() {
       override def label(i: InternalOperationForm): String = pathLabel(i)
       override def merge(original: InternalOperationForm, tpl: InternalOperationForm): InternalOperationForm = {

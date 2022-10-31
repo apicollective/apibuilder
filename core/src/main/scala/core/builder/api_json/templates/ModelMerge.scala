@@ -54,15 +54,17 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
     }
   }
 
-  def mergeTemplates(model: Seq[InternalTemplateDeclarationForm], tpl: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
-    val modelTemplatesByName = model.map { f => f.name -> f }.toMap
-    val tplTemplateNames = tpl.flatMap(_.name).toSet
-    tpl.map { t =>
-      modelTemplatesByName.get(t.name) match {
-        case None => t
-        case Some(a) => mergeTemplate(a, t)
+  def mergeTemplates(original: Seq[InternalTemplateDeclarationForm], template: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
+    new ArrayMerge[InternalTemplateDeclarationForm]() {
+      override def label(i: InternalTemplateDeclarationForm): String = i.name.get
+
+      override def merge(original: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
+        InternalTemplateDeclarationForm(
+          name = original.name,
+          warnings = union(original.warnings, tpl.warnings)
+        )
       }
-    } ++ model.filterNot { a => tplTemplateNames.contains(a.name.get) }
+    }.merge(original, template)
   }
 
   private[this] def mergeFields(model: InternalModelForm, tpl: InternalModelForm): Seq[InternalFieldForm] = {
@@ -88,13 +90,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
       maximum = model.maximum.orElse(tpl.maximum),
       attributes = mergeAttributes(model.attributes, tpl.attributes),
       annotations = union(model.annotations, tpl.annotations)
-    )
-  }
-
-  private[this] def mergeTemplate(original: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
-    InternalTemplateDeclarationForm(
-      name = original.name,
-      warnings = union(original.warnings, tpl.warnings)
     )
   }
 
