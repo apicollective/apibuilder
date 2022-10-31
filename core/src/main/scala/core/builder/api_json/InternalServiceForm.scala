@@ -292,6 +292,7 @@ case class InternalResourceForm(
   path: Option[String],
   operations: Seq[InternalOperationForm],
   attributes: Seq[InternalAttributeForm],
+  templates: Seq[InternalTemplateDeclarationForm],
   warnings: Seq[String] = Seq.empty
 )
 
@@ -704,12 +705,13 @@ object InternalResourceForm {
           path = path,
           operations = operations.toSeq,
           attributes = InternalAttributeForm.fromJson((value \ "attributes").asOpt[JsArray]),
+          templates = InternalTemplateDeclarationForm.fromJson((value \ "templates").asOpt[JsArray]),
           warnings = JsonUtil.validate(
             value,
             optionalStrings = Seq("path", "description"),
             optionalObjects = Seq("deprecation"),
             arrayOfObjects = Seq("operations"),
-            optionalArraysOfObjects = Seq("attributes")
+            optionalArraysOfObjects = Seq("attributes", "templates")
           )
         )
       }

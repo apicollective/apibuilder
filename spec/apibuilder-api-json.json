@@ -103,6 +103,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "operations", "type": "[operation]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "templates", "type": "[template_declaration]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },

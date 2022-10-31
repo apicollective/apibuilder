@@ -26,21 +26,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     )
   }
 
-  private[this] def buildInterfaces(defined: Seq[InternalInterfaceForm]): Seq[InternalInterfaceForm] = {
-    val definedByName = defined.map(_.name).toSet
-    templates.filterNot { t => definedByName.contains(t.name) }.map { t =>
-      InternalInterfaceForm(
-        name = t.name,
-        plural = t.plural,
-        description = t.description,
-        deprecation = t.deprecation,
-        fields = t.fields,
-        attributes = t.attributes,
-        warnings = Nil
-      )
-    }
-  }
-
   private[this] def allTemplates(templates: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
     templates.flatMap { tpl =>
       templatesByName.get(tpl.name.get) match {
@@ -77,6 +62,21 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       interfaces = union(model.interfaces, tpl.interfaces, templates.flatMap(_.name)),
       warnings = model.warnings ++ tpl.warnings
     )
+  }
+
+  private[this] def buildInterfaces(defined: Seq[InternalInterfaceForm]): Seq[InternalInterfaceForm] = {
+    val definedByName = defined.map(_.name).toSet
+    templates.filterNot { t => definedByName.contains(t.name) }.map { t =>
+      InternalInterfaceForm(
+        name = t.name,
+        plural = t.plural,
+        description = t.description,
+        deprecation = t.deprecation,
+        fields = t.fields,
+        attributes = t.attributes,
+        warnings = Nil
+      )
+    }
   }
 
   @tailrec

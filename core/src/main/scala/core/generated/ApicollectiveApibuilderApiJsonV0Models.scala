@@ -155,6 +155,7 @@ package io.apibuilder.api.json.v0.models {
     description: _root_.scala.Option[String] = None,
     operations: Seq[io.apibuilder.api.json.v0.models.Operation],
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
+    templates: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
   )
 
@@ -911,8 +912,9 @@ package io.apibuilder.api.json.v0.models {
         description <- (__ \ "description").readNullable[String]
         operations <- (__ \ "operations").read[Seq[io.apibuilder.api.json.v0.models.Operation]]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
+        templates <- (__ \ "templates").readNullable[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
-      } yield Resource(path, description, operations, attributes, deprecation)
+      } yield Resource(path, description, operations, attributes, templates, deprecation)
     }
 
     def jsObjectResource(obj: io.apibuilder.api.json.v0.models.Resource): play.api.libs.json.JsObject = {
@@ -929,6 +931,10 @@ package io.apibuilder.api.json.v0.models {
       (obj.attributes match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("attributes" -> play.api.libs.json.Json.toJson(x))
+      }) ++
+      (obj.templates match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("templates" -> play.api.libs.json.Json.toJson(x))
       }) ++
       (obj.deprecation match {
         case None => play.api.libs.json.Json.obj()
