@@ -1,17 +1,10 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalResourceForm, InternalTemplateDeclarationForm}
-
-import scala.annotation.tailrec
+import builder.api_json.{InternalOperationForm, InternalResourceForm, InternalTemplateDeclarationForm}
 
 case class ResourceMergeData(resources: Seq[InternalResourceForm])
 
-case class ResourceMerge(templates: Seq[InternalResourceForm]) {
-  private[this] def format(value: String): String = value.toLowerCase().trim
-
-  private[this] val templatesByName: Map[String, InternalResourceForm] = templates.map { t =>
-    format(t.datatype.label) -> t
-  }.toMap
+case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateMerge[InternalResourceForm](templates) with AttributeMerge {
 
   def merge(data: ResourceMergeData): ResourceMergeData = {
     ResourceMergeData(
@@ -21,31 +14,27 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) {
     )
   }
 
-  private[this] def allTemplates(templates: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
-    templates.flatMap { tpl =>
-      templatesByName.get(tpl.name.get) match {
-        case None => Nil
-        case Some(resource) => Seq(tpl) ++ allTemplates(resource.templates)
-      }
-    }
+  override def label(resource: InternalResourceForm): String = resource.datatype.label
+
+  override def templateDeclarations(resource: InternalResourceForm): Seq[InternalTemplateDeclarationForm] = {
+    resource.templates
   }
 
-  @tailrec
-  private[this] def applyTemplates(resource: InternalResourceForm, remaining: Seq[InternalTemplateDeclarationForm]): InternalResourceForm = {
-    remaining.toList match {
-      case Nil => resource
-      case one :: rest => {
-        applyTemplates(
-          applyTemplate(resource, one),
-          rest
-        )
-      }
-    }
+  override def applyTemplate(original: InternalResourceForm, tpl: InternalResourceForm): InternalResourceForm = {
+    InternalResourceForm(
+      datatype = original.datatype,
+      description = original.description.orElse(tpl.description),
+      deprecation = original.deprecation.orElse(tpl.deprecation),
+      path = original.path.orElse(tpl.path),
+      operations = mergeOperations(original.operations, tpl.operations),
+      attributes = mergeAttributes(original.attributes, tpl.attributes),
+      templates = Nil,
+      warnings = original.warnings ++ tpl.warnings
+    )
   }
 
-  private[this] def applyTemplate(model: InternalResourceForm, declaration: InternalTemplateDeclarationForm): InternalResourceForm = {
-    val tpl = templatesByName.getOrElse(declaration.name.get, sys.error(s"Cannot find template named '${declaration.name}'"))
-    sys.error(s"TODO: Apply Resource Template: ${tpl.datatype.label}")
+  def mergeOperations(original: Seq[InternalOperationForm], template: Seq[InternalOperationForm]): Seq[InternalOperationForm] = {
+    println(s"TODO: Merge operations")
+    original ++ template
   }
-
 }

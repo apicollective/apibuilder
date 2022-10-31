@@ -1,7 +1,6 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalAttributeForm, InternalFieldForm, InternalInterfaceForm, InternalModelForm, InternalTemplateDeclarationForm}
-import play.api.libs.json.Json
+import builder.api_json.{InternalFieldForm, InternalInterfaceForm, InternalModelForm, InternalTemplateDeclarationForm}
 
 import scala.annotation.tailrec
 
@@ -10,12 +9,7 @@ case class ModelMergeData(
   models: Seq[InternalModelForm]
 )
 
-case class ModelMerge(templates: Seq[InternalModelForm]) {
-  private[this] def format(value: String): String = value.toLowerCase().trim
-
-  private[this] val templatesByName: Map[String, InternalModelForm] = templates.map { t =>
-    format(t.name) -> t
-  }.toMap
+case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[InternalModelForm](templates) with AttributeMerge {
 
   def merge(data: ModelMergeData): ModelMergeData = {
     ModelMergeData(
@@ -26,30 +20,13 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
     )
   }
 
-  private[this] def allTemplates(templates: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
-    templates.flatMap { tpl =>
-      templatesByName.get(tpl.name.get) match {
-        case None => Nil
-        case Some(model) => Seq(tpl) ++ allTemplates(model.templates)
-      }
-    }
+  override def label(model: InternalModelForm): String = model.name
+
+  override def templateDeclarations(model: InternalModelForm): Seq[InternalTemplateDeclarationForm] = {
+    model.templates
   }
 
-  @tailrec
-  private[this] def applyTemplates(model: InternalModelForm, remaining: Seq[InternalTemplateDeclarationForm]): InternalModelForm = {
-    remaining.toList match {
-      case Nil => model
-      case one :: rest => {
-        applyTemplates(
-          applyTemplate(model, one),
-          rest
-        )
-      }
-    }
-  }
-
-  private[this] def applyTemplate(model: InternalModelForm, declaration: InternalTemplateDeclarationForm): InternalModelForm = {
-    val tpl = templatesByName.getOrElse(declaration.name.get, sys.error(s"Cannot find template named '${declaration.name}'"))
+  override def applyTemplate(model: InternalModelForm, tpl: InternalModelForm): InternalModelForm = {
     val templates = mergeTemplates(model.templates, tpl.templates)
     InternalModelForm(
       name = model.name,
@@ -58,7 +35,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       deprecation = model.deprecation.orElse(tpl.deprecation),
       fields = mergeFields(model, tpl),
       attributes = mergeAttributes(model.attributes, tpl.attributes),
-      templates = templates,
+      templates = Nil,
       interfaces = union(model.interfaces, tpl.interfaces, templates.flatMap(_.name)),
       warnings = model.warnings ++ tpl.warnings
     )
@@ -97,17 +74,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       }
     } ++ model.filterNot { a => tplTemplateNames.contains(a.name.get) }
   }
-  
-  def mergeAttributes(model: Seq[InternalAttributeForm], tpl: Seq[InternalAttributeForm]): Seq[InternalAttributeForm] = {
-    val modelAttributesByName = model.map { f => f.name -> f }.toMap
-    val tplAttributeNames = tpl.flatMap(_.name).toSet
-    tpl.map { tplAttr =>
-      modelAttributesByName.get(tplAttr.name) match {
-        case None => tplAttr
-        case Some(a) => mergeAttribute(a, tplAttr)
-      }
-    } ++ model.filterNot { a => tplAttributeNames.contains(a.name.get) }
-  }
 
   private[this] def mergeFields(model: InternalModelForm, tpl: InternalModelForm): Seq[InternalFieldForm] = {
     val modelFieldsByName = model.fields.map { f => f.name -> f }.toMap
@@ -132,16 +98,6 @@ case class ModelMerge(templates: Seq[InternalModelForm]) {
       maximum = model.maximum.orElse(tpl.maximum),
       attributes = mergeAttributes(model.attributes, tpl.attributes),
       annotations = union(model.annotations, tpl.annotations)
-    )
-  }
-
-
-  private[this] def mergeAttribute(model: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
-    InternalAttributeForm(
-      name = model.name,
-      value = Some(tpl.value.getOrElse(Json.obj()) ++ model.value.getOrElse(Json.obj())),
-      description = model.description.orElse(tpl.description),
-      deprecation = model.deprecation.orElse(tpl.deprecation)
     )
   }
 
