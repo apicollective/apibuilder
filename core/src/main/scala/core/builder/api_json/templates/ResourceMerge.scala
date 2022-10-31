@@ -55,7 +55,6 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
       path = original.path,
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
-      namedPathParameters = union(original.namedPathParameters, tpl.namedPathParameters),
       parameters = mergeParameters(original.parameters, tpl.parameters),
       body = original.body.orElse(tpl.body),
       responses = mergeResponses(original.responses, tpl.responses),

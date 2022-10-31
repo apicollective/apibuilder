@@ -55,7 +55,6 @@ class ServiceResponsesSpec extends AnyFunSpec with Matchers {
   it("validates that responses is map from string to object") {
     val json = baseJson.format("DELETE", s""", "responses": { "204": "unit" } """)
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    println(validator.errors().mkString(" "))
     validator.errors().mkString(" ") should be("Resource[user] DELETE /users/:id 204: value must be an object")
   }
 

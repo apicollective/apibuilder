@@ -231,7 +231,7 @@ case class ServiceBuilder(
         }
       }
 
-      val pathParameters = internal.namedPathParameters.map { name =>
+      val pathParameters = Util.namedParametersInPath(Util.joinPaths(resourcePath, internal.path)).map { name =>
         internal.parameters.find(_.name.contains(name)) match {
           case None => {
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {

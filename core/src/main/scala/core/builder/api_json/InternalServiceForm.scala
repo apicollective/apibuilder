@@ -301,7 +301,6 @@ case class InternalOperationForm(
   path: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
-  namedPathParameters: Seq[String],
   parameters: Seq[InternalParameterForm],
   body: Option[InternalBodyForm],
   responses: Seq[InternalResponseForm],
@@ -721,11 +720,8 @@ object InternalResourceForm {
 object InternalOperationForm {
 
   def apply(internalDatatypeBuilder: InternalDatatypeBuilder, resourcePath: Option[String], json: JsObject): InternalOperationForm = {
-    val operationPath = JsonUtil.asOptString(json \ "path")
+    val path = JsonUtil.asOptString(json \ "path")
 
-    val knownPath = Seq(resourcePath, operationPath).flatten.mkString("/")
-
-    val namedPathParameters = Util.namedParametersInPath(knownPath)
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
@@ -778,12 +774,11 @@ object InternalOperationForm {
 
     InternalOperationForm(
       method = JsonUtil.asOptString(json \ "method").map(_.toUpperCase),
-      path = operationPath,
+      path = path,
       body = body,
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
       responses = responses,
-      namedPathParameters = namedPathParameters,
       parameters = parameters.toSeq,
       attributes = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
