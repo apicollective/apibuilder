@@ -10,7 +10,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
   "operations" in {
     val templateOp = makeOperation(
       method = "GET",
-      path = "/"
+      path = "/:id"
     )
     val apiJson = makeApiJson(
       templates = Some(makeTemplates(
@@ -25,6 +25,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       ),
       resources = Map(
         "channel_statement" -> makeResource(
+          path = Some("/channel/:channel_id/statements"),
           templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
         )
       )
@@ -32,7 +33,8 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
     val op = expectValid(apiJson).resources.head.operations.head
     op.method mustBe Method.Get
-    op.path mustBe "/channel_statements/"
+    op.path mustBe "/channel/:channel_id/statements/:id"
+    op.parameters.map(_.name) mustBe Seq("channel_id", "id")
   }
 
 }
