@@ -548,9 +548,8 @@ object InternalModelForm {
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("description", "plural"),
-        arrayOfObjects = Seq("fields"),
         optionalArraysOfStrings = Seq("interfaces"),
-        optionalArraysOfObjects = Seq("attributes", "templates"),
+        optionalArraysOfObjects = Seq("fields", "attributes", "templates"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(addPrefix(s"Model[$name]", prefix = prefix))
       )
@@ -710,8 +709,7 @@ object InternalResourceForm {
             value,
             optionalStrings = Seq("path", "description"),
             optionalObjects = Seq("deprecation"),
-            arrayOfObjects = Seq("operations"),
-            optionalArraysOfObjects = Seq("attributes", "templates")
+            optionalArraysOfObjects = Seq("attributes", "templates", "operations")
           )
         )
       }
