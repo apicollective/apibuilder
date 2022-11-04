@@ -12,26 +12,26 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     templateOp: Operation,
     resourcePath: String = "/channel/statements"
   ): SpecOperation = {
-    val apiJson = makeApiJson(
-      templates = Some(makeTemplates(
-        resources = Some(Map(
-          "statement" -> makeResource(
-            operations = Seq(templateOp)
+    expectValid(
+      makeApiJson(
+        templates = Some(makeTemplates(
+          resources = Some(Map(
+            "statement" -> makeResource(
+              operations = Seq(templateOp)
+            )
+          ))
+        )),
+        models = Map(
+          "channel_statement" -> makeModel(fields = Seq(makeField("id")))
+        ),
+        resources = Map(
+          "channel_statement" -> makeResource(
+            path = Some(resourcePath),
+            templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
           )
-        ))
-      )),
-      models = Map(
-        "channel_statement" -> makeModel(fields = Seq(makeField("id")))
-      ),
-      resources = Map(
-        "channel_statement" -> makeResource(
-          path = Some(resourcePath),
-          templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
         )
       )
-    )
-
-    expectValid(apiJson).resources.head.operations.head
+    ).resources.head.operations.head
   }
 
   "operations" must {
@@ -68,7 +68,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     }
   }
 
-  "response_type is changed to the specific model" in {
+  "response_type is specialized to the specific model" in {
     setupOperation(
       makeOperation(
         responses = Some(Seq(makeResponse("statement")))

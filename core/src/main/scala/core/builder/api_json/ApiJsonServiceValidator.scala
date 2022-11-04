@@ -75,15 +75,10 @@ case class ApiJsonServiceValidator(
             validateAttributes("Service", internalService.get.attributes) ++
             validateHeaders() ++
             validateResources(internalService.get.resources, prefix = None) ++
-            validateOperations() ++
-            validateParameterBodies() ++
-            validateParameters() ++
-            validateResponses() ++
             validateInterfaces() ++
             validateTemplates() ++
             validateUnions() ++
             validateModels(internalService.get.models, prefix = None) ++
-            validateFields() ++
             validateEnums() ++
             validateAnnotations() ++
             DuplicateJsonParser.validateDuplicates(apiJson)
@@ -229,7 +224,13 @@ case class ApiJsonServiceValidator(
 
   private def validateTemplates(): Seq[String] = {
     val templates = internalService.get.templates
-    validateModels(templates.models, prefix = Some("Template")) ++
+    val warnings = templates.models.filter(_.warnings.nonEmpty).map { m =>
+      modelLabel(m, m.warnings.mkString(", "), prefix = Some("Template"))
+    } ++ templates.resources.filter(_.warnings.nonEmpty).map { r =>
+      resourceLabel(r, r.warnings.mkString(", "), prefix = Some("Template"))
+    }
+
+    warnings ++ validateModels(templates.models, prefix = Some("Template")) ++
       validateResources(templates.resources, prefix = Some("Template")) ++
       validateTemplateModelNames()
   }
@@ -249,16 +250,17 @@ case class ApiJsonServiceValidator(
     val warnings = models.flatMap(_.warnings)
 
     val attributeErrors = models.flatMap { model =>
-      val base = s"Model[${model.name}]"
-      val label = prefix match {
-        case None => base
-        case Some(p) => s"$p $base"
-      }
-
-      validateAttributes(label, model.attributes)
+      validateAttributes(labelWitPrefix(s"Model[${model.name}]", prefix), model.attributes)
     }
 
-    warnings ++ attributeErrors
+    warnings ++ attributeErrors ++ validateFields(models, prefix)
+  }
+
+  private[this] def labelWitPrefix(base: String, prefix: Option[String]): String = {
+    prefix match {
+      case None => base
+      case Some(p) => s"$p $base"
+    }
   }
 
   private def validateHeaders(): Seq[String] = {
@@ -271,17 +273,19 @@ case class ApiJsonServiceValidator(
     warnings ++ attributeErrors
   }
 
-  private def validateFields(): Seq[String] = {
-    val missingNames = internalService.get.models.flatMap { model =>
+  private def validateFields(models: Seq[InternalModelForm], prefix: Option[String]): Seq[String] = {
+    val missingNames = models.flatMap { model =>
       model.fields.filter(_.name.isEmpty).map { f =>
-        s"Model[${model.name}] field[${f.name}] must have a name"
+        modelLabel(model, s"field[${f.name}] must have a name", prefix = prefix)
       }
     }
 
-    val missingTypes = internalService.get.models.flatMap { model =>
+    val missingTypes = models.flatMap { model =>
       model.fields.filter(_.name.isDefined).flatMap { f =>
         f.datatype match {
-          case Left(errors) => Some(s"Model[${model.name}] field[${f.name.get}] type ${errors.mkString(", ")}")
+          case Left(errors) => Some({
+            modelLabel(model, s"field[${f.name.get}] type ${errors.mkString(", ")}", prefix = prefix)
+          })
           case Right(_) => None
         }
       }
@@ -318,20 +322,22 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateResponses(): Seq[String] = {
-    val codeErrors = internalService.get.resources.flatMap { resource =>
+  private def validateResponses(resources: Seq[InternalResourceForm], prefix: Option[String]): Seq[String] = {
+    val codeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.declaredResponses.filter(r => r.warnings.nonEmpty).map { r =>
-          opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
+          opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "), prefix = prefix)
         }
       }
     }
 
-    val typeErrors = internalService.get.resources.flatMap { resource =>
+    val typeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.declaredResponses.flatMap { r =>
           r.datatype match {
-            case Left(errors) => Some(opLabel(resource, op, s"${r.code} type: " + errors.mkString(", ")))
+            case Left(errors) => Some(opLabel(
+              resource, op, s"${r.code} type: " + errors.mkString(", "), prefix = prefix
+            ))
             case Right(_) => None
           }
         }
@@ -345,11 +351,11 @@ case class ApiJsonServiceValidator(
     codeErrors ++ typeErrors ++ attributeErrors
   }
 
-  private def validateParameterBodies(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
+  private def validateParameterBodies(resources: Seq[InternalResourceForm], prefix: Option[String]): Seq[String] = {
+    resources.flatMap { resource =>
       resource.operations.filter(_.body.isDefined).flatMap { op =>
         op.body.get.datatype match {
-          case Left(errs) => Some(opLabel(resource, op, s"Body ${errs.mkString(", ")}"))
+          case Left(errs) => Some(opLabel(resource, op, s"Body ${errs.mkString(", ")}", prefix = prefix))
           case Right(_) => None
         }
       }
@@ -357,54 +363,64 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateResources(resources: Seq[InternalResourceForm], prefix: Option[String]): Seq[String] = {
-
-    resources.filter(_.warnings.nonEmpty).map { resource =>
-      val base = s"Resource[${resource.datatype.label}] "
-      val label = prefix match {
-        case None => base
-        case Some(p) => s"$p $base"
-      }
-      label + resource.warnings.mkString(", ")
+    val resourceWarnings = resources.filter(_.warnings.nonEmpty).map { resource =>
+      labelWitPrefix(s"Resource[${resource.datatype.label}]", prefix) + resource.warnings.mkString(", ")
     }
+    resourceWarnings ++
+      validateOperations(resources, prefix) ++
+      validateParameterBodies(resources, prefix) ++
+      validateParameters(resources, prefix) ++
+      validateResponses(resources, prefix)
   }
 
-  private def validateOperations(): Seq[String] = {
-    val warnings = internalService.get.resources.flatMap { resource =>
+  private def validateOperations(resources: Seq[InternalResourceForm], prefix: Option[String]): Seq[String] = {
+    val warnings = resources.flatMap { resource =>
       resource.operations.filter(_.warnings.nonEmpty).map { op =>
-        opLabel(resource, op, op.warnings.mkString(", "))
+        opLabel(resource, op, op.warnings.mkString(", "), prefix = prefix)
       }
     }
 
     val attributeErrors = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        validateAttributes(opLabel(resource, op, ""), op.attributes)
+        validateAttributes(opLabel(resource, op, "", prefix = prefix), op.attributes)
       }
     }
 
     val bodyAttributeErrors = internalService.get.resources.flatMap { resource =>
       resource.operations.filter(_.body.isDefined).flatMap { op =>
-        validateAttributes(opLabel(resource, op, "body"), op.body.get.attributes)
+        validateAttributes(opLabel(resource, op, "body", prefix = prefix), op.body.get.attributes)
       }
     }
 
     warnings ++ attributeErrors ++ bodyAttributeErrors
   }
 
-  private def validateParameters(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
+  private def validateParameters(resources: Seq[InternalResourceForm], prefix: Option[String]): Seq[String] = {
+    resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.flatMap(_.warnings)
+        op.parameters.filter(_.warnings.nonEmpty).map { p =>
+          opLabel(resource, op, s"Parameter[${p.name}]", prefix = prefix)
+        }
       }
     }
+  }
+
+  private def resourceLabel(
+    resource: InternalResourceForm,
+    message: String,
+    prefix: Option[String]
+  ): String = {
+    labelWitPrefix(s"Resource[${resource.datatype.label}] $message", prefix)
   }
 
   private def opLabel(
     resource: InternalResourceForm,
     op: InternalOperationForm,
-    message: String
+    message: String,
+    prefix: Option[String]
   ): String = {
     Seq(
-      s"Resource[${resource.datatype.label}]",
+      labelWitPrefix(s"Resource[${resource.datatype.label}]", prefix),
       op.method.getOrElse(""),
       Seq(
         resource.path,
@@ -414,4 +430,7 @@ case class ApiJsonServiceValidator(
     ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
+  private def modelLabel(model: InternalModelForm, message: String, prefix: Option[String]): String = {
+    labelWitPrefix(s"Model[${model.name}] $message", prefix)
+  }
 }

@@ -22,6 +22,8 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
 
   override def applyTemplate(original: InternalResourceForm, tpl: InternalResourceForm): InternalResourceForm = {
     println(s"Resource merge. original type: ${original.datatype.label} / tpl: ${tpl.datatype.label}")
+    println(s"    original ops: ${original.operations}")
+    println(s"         tpl ops: ${tpl.operations}")
     InternalResourceForm(
       datatype = original.datatype,
       description = original.description.orElse(tpl.description),
@@ -42,6 +44,9 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
     new ArrayMerge[InternalOperationForm]() {
       override def uniqueIdentifier(i: InternalOperationForm): String = pathLabel(i)
       override def merge(original: InternalOperationForm, tpl: InternalOperationForm): InternalOperationForm = {
+        println(s"original.responses: " + original.declaredResponses)
+        println(s"     tpl.responses: " + tpl.declaredResponses)
+        println(s" merged: " + mergeResponses(original.declaredResponses, tpl.declaredResponses))
         InternalOperationForm(
           method = original.method,
           path = original.path,
