@@ -35,10 +35,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
   private[this] def validateTemplateDeclaration(modelName: String, decl: TemplateDeclaration): ValidatedNec[String, Unit] = {
     templates.get(decl.name) match {
       case None => s"Model[$modelName] cannot find template named '${decl.name}'".invalidNec
-      case Some(_) => {
-        println(s"Found template named ${decl.name}")
-        ().validNec
-      }
+      case Some(_) => ().validNec
     }
   }
 

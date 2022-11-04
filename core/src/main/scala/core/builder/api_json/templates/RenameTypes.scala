@@ -4,7 +4,6 @@ import io.apibuilder.api.json.v0.models._
 import lib.TextDatatype
 
 case class RenameTypes(from: String, to: String) {
-  println(s"RenameTypes $from => $to")
   def rename(op: Operation): Operation = {
     op.copy(
       body = op.body.map(renameBody),
