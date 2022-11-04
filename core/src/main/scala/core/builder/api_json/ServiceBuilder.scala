@@ -1,6 +1,5 @@
 package builder.api_json
 
-import templates.{ModelMerge, ModelMergeData, ResourceMerge, ResourceMergeData}
 import core._
 import io.apibuilder.spec.v0.models._
 import lib.Methods.supportsBody
@@ -36,23 +35,13 @@ case class ServiceBuilder(
       RecursiveTypesProvider(internal)
     )
 
-    val modelMerge = ModelMerge(internal.templates.models).merge(
-      ModelMergeData(
-        models = internal.models,
-        interfaces = internal.interfaces
-      )
-    )
-    val resourceMerge = ResourceMerge(internal.templates.resources).merge(
-      ResourceMergeData(resources = internal.resources)
-    )
-
     val imports = internal.imports.map { ImportBuilder(internal.fetcher, _) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val interfaces = modelMerge.interfaces.map { InterfaceBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val interfaces = internal.interfaces.map { InterfaceBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val models = modelMerge.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = resourceMerge.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
     val attributes = internal.attributes.map { AttributeBuilder(_) }
     val annotations = internal.annotations.map{ AnnotationsBuilder(_) }
 

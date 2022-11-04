@@ -1,80 +1,72 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalFieldForm, InternalInterfaceForm, InternalModelForm, InternalTemplateDeclarationForm}
+import io.apibuilder.api.json.v0.models._
 
 case class ModelMergeData(
-  interfaces: Seq[InternalInterfaceForm],
-  models: Seq[InternalModelForm]
+  interfaces: Map[String, Interface],
+  models: Map[String, Model]
 )
 
-case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[InternalModelForm](templates) with AttributeMerge {
+case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model](templates) with AttributeMerge {
 
   def merge(data: ModelMergeData): ModelMergeData = {
     ModelMergeData(
-      models = data.models.map { model =>
-        applyTemplates(model, allTemplates(model.templates))
+      models = data.models.map { case (name, model) =>
+        name -> applyTemplates(model, allTemplates(model.templates))
       },
       interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
     )
   }
 
-  override def label(model: InternalModelForm): String = model.name
-
-  override def templateDeclarations(model: InternalModelForm): Seq[InternalTemplateDeclarationForm] = {
-    model.templates
+  override def templateDeclarations(model: Model): Seq[TemplateDeclaration] = {
+    model.templates.getOrElse(Nil)
   }
 
-  override def applyTemplate(original: InternalModelForm, tpl: InternalModelForm): InternalModelForm = {
+  override def applyTemplate(original: Model, tpl: Model): Model = {
     val templates = mergeTemplates(original.templates, tpl.templates)
-    InternalModelForm(
-      name = original.name,
+    Model(
       plural = original.plural,
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
       fields = mergeFields(original, tpl),
       attributes = mergeAttributes(original.attributes, tpl.attributes),
-      templates = Nil,
-      interfaces = union(original.interfaces, tpl.interfaces, templates.flatMap(_.name)),
-      warnings = union(original.warnings, tpl.warnings)
+      templates = None,
+      interfaces = union(original.interfaces.getOrElse(Nil), tpl.interfaces.getOrElse(Nil), templates.getOrElse(Nil).map(_.name))
     )
   }
 
-  private[this] def buildInterfaces(defined: Seq[InternalInterfaceForm]): Seq[InternalInterfaceForm] = {
-    val definedByName = defined.map(_.name).toSet
-    templates.filterNot { t => definedByName.contains(t.name) }.map { t =>
-      InternalInterfaceForm(
-        name = t.name,
+  private[this] def buildInterfaces(defined: Map[String, Interface]): Map[String, Interface] = {
+    templates.filterNot { case (name, _) => defined.contains(name) }.map { case (name, t) =>
+      name -> Interface(
         plural = t.plural,
         description = t.description,
         deprecation = t.deprecation,
-        fields = t.fields,
+        fields = Some(t.fields),
         attributes = t.attributes,
-        warnings = Nil
       )
     }
   }
 
-  def mergeTemplates(original: Seq[InternalTemplateDeclarationForm], template: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
-    new ArrayMerge[InternalTemplateDeclarationForm]() {
-      override def uniqueIdentifier(i: InternalTemplateDeclarationForm): String = i.name.get
+  def mergeTemplates(original: Option[Seq[TemplateDeclaration]], template: Option[Seq[TemplateDeclaration]]): Option[Seq[TemplateDeclaration]] = {
+    new ArrayMerge[TemplateDeclaration]() {
+      override def uniqueIdentifier(i: TemplateDeclaration): String = i.name
 
-      override def merge(original: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
-        InternalTemplateDeclarationForm(
-          name = original.name,
-          warnings = union(original.warnings, tpl.warnings)
+      override def merge(original: TemplateDeclaration, tpl: TemplateDeclaration): TemplateDeclaration = {
+        TemplateDeclaration(
+          name = original.name
         )
       }
     }.merge(original, template)
   }
 
-  private[this] def mergeFields(model: InternalModelForm, tpl: InternalModelForm): Seq[InternalFieldForm] = {
-    new ArrayMerge[InternalFieldForm] {
-      override def uniqueIdentifier(f: InternalFieldForm): String = f.name.get
+  private[this] def mergeFields(model: Model, tpl: Model): Seq[Field] = {
+    new ArrayMerge[Field] {
+      override def uniqueIdentifier(f: Field): String = f.name
 
-      override def merge(original: InternalFieldForm, tpl: InternalFieldForm): InternalFieldForm = {
-        InternalFieldForm(
+      override def merge(original: Field, tpl: Field): Field = {
+        Field(
           name = original.name,
-          datatype = original.datatype,
+          `type` = original.`type`,
           description = original.description.orElse(tpl.description),
           deprecation = original.deprecation.orElse(tpl.deprecation),
           default = original.default.orElse(tpl.default),
@@ -82,7 +74,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
           minimum = original.minimum.orElse(tpl.minimum),
           maximum = original.maximum.orElse(tpl.maximum),
           attributes = mergeAttributes(original.attributes, tpl.attributes),
-          annotations = union(original.annotations, tpl.annotations)
+          annotations = union(original.annotations.getOrElse(Nil), tpl.annotations.getOrElse(Nil))
         )
       }
     }.merge(model.fields, tpl.fields)

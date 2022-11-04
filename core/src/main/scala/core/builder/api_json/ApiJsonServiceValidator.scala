@@ -1,6 +1,7 @@
 package builder.api_json
 
 import builder.JsonUtil
+import cats.data.Validated.{Invalid, Valid}
 import core.{DuplicateJsonParser, Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
 import io.apibuilder.spec.v0.models.Service
@@ -25,28 +26,34 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private var parseError: Option[String] = None
+  private var parseError: Option[Seq[String]] = None
 
   lazy val serviceForm: Option[JsObject] = {
     Try(Json.parse(apiJson)) match {
       case Success(v) => {
         v.asOpt[JsObject] match {
           case Some(o) => {
-            Some(o)
+            templates.JsMerge.merge(o) match {
+              case Invalid(errors) => {
+                parseError = Some(errors.toNonEmptyList.toList)
+                None
+              }
+              case Valid(js) => Some(js)
+            }
           }
           case None => {
-            parseError = Some("Must upload a Json Object")
+            parseError = Some(Seq("Must upload a Json Object"))
             None
           }
         }
       }
       case Failure(ex) => ex match {
         case e: JsonParseException => {
-          parseError = Some(e.getMessage)
+          parseError = Some(Seq(e.getMessage))
           None
         }
         case e: JsonProcessingException => {
-          parseError = Some(e.getMessage)
+          parseError = Some(Seq(e.getMessage))
           None
         }
       }
@@ -62,7 +69,10 @@ case class ApiJsonServiceValidator(
         if (apiJson.trim == "") {
           Seq("No Data")
         } else {
-          Seq(parseError.getOrElse("Invalid JSON"))
+          parseError.getOrElse(Nil).toList match {
+            case Nil => Seq("Invalid JSON")
+            case errs => errs
+          }
         }
       }
 

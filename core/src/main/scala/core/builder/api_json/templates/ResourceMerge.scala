@@ -1,76 +1,66 @@
 package builder.api_json.templates
 
-import builder.api_json.{InternalOperationForm, InternalParameterForm, InternalResourceForm, InternalResponseForm, InternalTemplateDeclarationForm}
+import io.apibuilder.api.json.v0.models._
 
-case class ResourceMergeData(resources: Seq[InternalResourceForm])
-
-case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateMerge[InternalResourceForm](templates) with HeaderMerge {
+case class ResourceMergeData(resources: Map[String, Resource])
+case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge[Resource](templates) with HeaderMerge {
 
   def merge(data: ResourceMergeData): ResourceMergeData = {
     ResourceMergeData(
-      resources = data.resources.map { resource =>
-        applyTemplates(resource, allTemplates(resource.templates))
+      resources = data.resources.map { case (name, resource) =>
+        name -> applyTemplates(resource, allTemplates(resource.templates))
       }
     )
   }
 
-  override def label(resource: InternalResourceForm): String = resource.datatype.label
-
-  override def templateDeclarations(resource: InternalResourceForm): Seq[InternalTemplateDeclarationForm] = {
-    resource.templates
+  override def templateDeclarations(resource: Resource): Seq[TemplateDeclaration] = {
+    resource.templates.getOrElse(Nil)
   }
 
-  override def applyTemplate(original: InternalResourceForm, tpl: InternalResourceForm): InternalResourceForm = {
-    println(s"Resource merge. original type: ${original.datatype.label} / tpl: ${tpl.datatype.label}")
-    println(s"    original ops: ${original.operations}")
-    println(s"         tpl ops: ${tpl.operations}")
-    InternalResourceForm(
-      datatype = original.datatype,
+  override def applyTemplate(original: Resource, tpl: Resource): Resource = {
+    Resource(
+      path = original.path.orElse(tpl.path),
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
-      path = original.path.orElse(tpl.path),
       operations = mergeOperations(original.operations, tpl.operations),
       attributes = mergeAttributes(original.attributes, tpl.attributes),
-      templates = Nil,
-      warnings = union(original.warnings, tpl.warnings)
+      templates = None,
     )
   }
 
-  private[this] def pathLabel(op: InternalOperationForm): String = {
-    op.method.getOrElse("") + ":" + op.path
+  private[this] def pathLabel(op: Operation): String = {
+    op.method + ":" + op.path
   }
 
-  private[this] def mergeOperations(original: Seq[InternalOperationForm], template: Seq[InternalOperationForm]): Seq[InternalOperationForm] = {
-    new ArrayMerge[InternalOperationForm]() {
-      override def uniqueIdentifier(i: InternalOperationForm): String = pathLabel(i)
-      override def merge(original: InternalOperationForm, tpl: InternalOperationForm): InternalOperationForm = {
-        println(s"original.responses: " + original.declaredResponses)
-        println(s"     tpl.responses: " + tpl.declaredResponses)
-        println(s" merged: " + mergeResponses(original.declaredResponses, tpl.declaredResponses))
-        InternalOperationForm(
+  private[this] def mergeOperations(original: Seq[Operation], template: Seq[Operation]): Seq[Operation] = {
+    new ArrayMerge[Operation]() {
+      override def uniqueIdentifier(i: Operation): String = pathLabel(i)
+      override def merge(original: Operation, tpl: Operation): Operation = {
+        println(s"original.responses: " + original.responses)
+        println(s"     tpl.responses: " + tpl.responses)
+        Operation(
           method = original.method,
           path = original.path,
           description = original.description.orElse(tpl.description),
           deprecation = original.deprecation.orElse(tpl.deprecation),
           parameters = mergeParameters(original.parameters, tpl.parameters),
           body = original.body.orElse(tpl.body),
-          declaredResponses = mergeResponses(original.declaredResponses, tpl.declaredResponses),
-          attributes = mergeAttributes(original.attributes, tpl.attributes),
-          warnings = union(original.warnings, tpl.warnings)
+          responses = mergeResponses(original.responses, tpl.responses),
+          attributes = mergeAttributes(original.attributes, tpl.attributes)
         )
       }
     }.merge(original, template)
   }
 
-  private[this] def mergeParameters(original: Seq[InternalParameterForm], template: Seq[InternalParameterForm]): Seq[InternalParameterForm] = {
-    new ArrayMerge[InternalParameterForm]() {
-      override def uniqueIdentifier(i: InternalParameterForm): String = i.name.get
+  private[this] def mergeParameters(original: Option[Seq[Parameter]], template: Option[Seq[Parameter]]): Option[Seq[Parameter]] = {
+    new ArrayMerge[Parameter]() {
+      override def uniqueIdentifier(i: Parameter): String = i.name
 
-      override def merge(original: InternalParameterForm, tpl: InternalParameterForm): InternalParameterForm = {
-        InternalParameterForm(
+      override def merge(original: Parameter, tpl: Parameter): Parameter = {
+        Parameter(
           name = original.name,
-          datatype = original.datatype,
-          location = original.location.orElse(tpl.location),
+          `type` = original.`type`,
+          location = original.location,
           description = original.description.orElse(tpl.description),
           deprecation = original.deprecation.orElse(tpl.deprecation),
           required = original.required,
@@ -78,26 +68,21 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
           minimum = original.minimum.orElse(tpl.minimum),
           maximum = original.maximum.orElse(tpl.maximum),
           example = original.example.orElse(tpl.example),
-          attributes = mergeAttributes(original.attributes, tpl.attributes),
-          warnings = original.warnings ++ tpl.warnings
+          attributes = mergeAttributes(original.attributes, tpl.attributes)
         )
       }
     }.merge(original, template)
   }
 
-  private[this] def mergeResponses(original: Seq[InternalResponseForm], template: Seq[InternalResponseForm]): Seq[InternalResponseForm] = {
-    new ArrayMerge[InternalResponseForm]() {
-      override def uniqueIdentifier(i: InternalResponseForm): String = i.code
-
-      override def merge(original: InternalResponseForm, tpl: InternalResponseForm): InternalResponseForm = {
-        InternalResponseForm(
-          code = original.code,
-          datatype = original.datatype,
+  private[this] def mergeResponses(original: Option[Map[String, Response]], template: Option[Map[String, Response]]): Option[Map[String, Response]] = {
+    new MapMerge[Response]() {
+      override def merge(original: Response, tpl: Response): Response = {
+        Response(
+          `type` = original.`type`,
           headers = mergeHeaders(original.headers, tpl.headers),
           description = original.description.orElse(tpl.description),
           deprecation = original.deprecation.orElse(tpl.deprecation),
-          attributes = mergeAttributes(original.attributes, tpl.attributes),
-          warnings = original.warnings ++ tpl.warnings
+          attributes = mergeAttributes(original.attributes, tpl.attributes)
         )
       }
     }.merge(original, template)

@@ -1,23 +1,20 @@
 package builder.api_json.templates
 
-import builder.api_json.InternalAttributeForm
-import play.api.libs.json.Json
+import io.apibuilder.api.json.v0.models.Attribute
 
 trait AttributeMerge {
-  private[this] val merger = new ArrayMerge[InternalAttributeForm] {
-    override def uniqueIdentifier(i: InternalAttributeForm): String = i.name.get
+  private[this] val merger = new ArrayMerge[Attribute] {
+    override def uniqueIdentifier(i: Attribute): String = i.name
 
-    override def merge(original: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
-      InternalAttributeForm(
+    override def merge(original: Attribute, tpl: Attribute): Attribute = {
+      Attribute(
         name = original.name,
-        value = Some(tpl.value.getOrElse(Json.obj()) ++ original.value.getOrElse(Json.obj())),
-        description = original.description.orElse(tpl.description),
-        deprecation = original.deprecation.orElse(tpl.deprecation)
+        value = tpl.value ++ original.value
       )
     }
   }
 
-  def mergeAttributes(original: Seq[InternalAttributeForm], tpl: Seq[InternalAttributeForm]): Seq[InternalAttributeForm] = {
+  def mergeAttributes(original: Option[Seq[Attribute]], tpl: Option[Seq[Attribute]]): Option[Seq[Attribute]] = {
     merger.merge(original, tpl)
   }
 

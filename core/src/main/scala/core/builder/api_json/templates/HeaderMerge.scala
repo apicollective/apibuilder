@@ -1,26 +1,24 @@
 package builder.api_json.templates
 
-import builder.api_json.InternalHeaderForm
+import io.apibuilder.api.json.v0.models.Header
 
 trait HeaderMerge extends AttributeMerge {
-  private[this] val merger = new ArrayMerge[InternalHeaderForm] {
-    override def uniqueIdentifier(i: InternalHeaderForm): String = i.name.get
+  private[this] val merger = new ArrayMerge[Header] {
+    override def uniqueIdentifier(i: Header): String = i.name
 
-    override def merge(original: InternalHeaderForm, tpl: InternalHeaderForm): InternalHeaderForm = {
-      InternalHeaderForm(
+    override def merge(original: Header, tpl: Header): Header = {
+      Header(
         name = original.name,
-        datatype = original.datatype,
+        `type` = original.`type`,
         required = original.required,
         description = original.description.orElse(tpl.description),
-        deprecation = original.deprecation.orElse(tpl.deprecation),
-        default = original.default.orElse(tpl.default),
         attributes = mergeAttributes(original.attributes, tpl.attributes),
-        warnings = original.warnings ++ tpl.warnings
+        deprecation = original.deprecation.orElse(tpl.deprecation),
       )
     }
   }
 
-  def mergeHeaders(original: Seq[InternalHeaderForm], tpl: Seq[InternalHeaderForm]): Seq[InternalHeaderForm] = {
+  def mergeHeaders(original: Option[Seq[Header]], tpl: Option[Seq[Header]]): Option[Seq[Header]] = {
     merger.merge(original, tpl)
   }
 
