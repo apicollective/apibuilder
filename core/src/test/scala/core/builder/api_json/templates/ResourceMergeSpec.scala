@@ -57,7 +57,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       }
 
       "declared" in {
-        val name = randomName()
+        val name = "foo"//randomName()
         setupOperation(
           makeOperation(
             path = "/:id",

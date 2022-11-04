@@ -7,7 +7,9 @@ case class RenameTypes(from: String, to: String) {
   def rename(op: Operation): Operation = {
     op.copy(
       body = op.body.map(renameBody),
-      parameters = op.parameters, // TODO
+      parameters = op.parameters.map { p =>
+        p.map(renameParameter)
+      },
       responses = op.responses.map { r =>
         r.view.mapValues(renameResponse).toMap
       }
@@ -23,6 +25,11 @@ case class RenameTypes(from: String, to: String) {
   private[this] def renameResponse(response: Response): Response = {
     response.copy(
       `type` = renameType(response.`type`)
+    )
+  }
+  private[this] def renameParameter(param: Parameter): Parameter = {
+    param.copy(
+      `type` = renameType(param.`type`)
     )
   }
 
