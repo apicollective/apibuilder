@@ -161,11 +161,23 @@ trait ApiJsonHelpers {
     method: String = "GET",
     path: String = "/",
     parameters: Option[Seq[Parameter]] = None,
+    responses: Option[Seq[Response]] = None,
   ): Operation = {
     Operation(
       method = method,
       path = path,
       parameters = parameters,
+      responses = responses
+    )
+  }
+
+  def makeResponse(`type`: String): Response = {
+    Response(
+      `type` = `type`,
+      headers = None,
+      description = None,
+      deprecation = None,
+      attributes = None,
     )
   }
 

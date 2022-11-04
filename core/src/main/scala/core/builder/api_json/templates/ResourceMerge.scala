@@ -21,6 +21,7 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
   }
 
   override def applyTemplate(original: InternalResourceForm, tpl: InternalResourceForm): InternalResourceForm = {
+    println(s"Resource merge. original type: ${original.datatype.label} / tpl: ${tpl.datatype.label}")
     InternalResourceForm(
       datatype = original.datatype,
       description = original.description.orElse(tpl.description),

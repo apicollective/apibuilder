@@ -1,17 +1,17 @@
 package builder.api_json.templates
 
 import helpers.ApiJsonHelpers
-import io.apibuilder.spec.v0.models.Method
+import io.apibuilder.api.json.v0.models.Operation
+import io.apibuilder.spec.v0.models.{Method, Operation => SpecOperation}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
-  "operations" in {
-    val templateOp = makeOperation(
-      method = "GET",
-      path = "/:id"
-    )
+  private[this] def setupOperation(
+    templateOp: Operation,
+    resourcePath: String = "/channel/statements"
+  ): SpecOperation = {
     val apiJson = makeApiJson(
       templates = Some(makeTemplates(
         resources = Some(Map(
@@ -25,16 +25,55 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       ),
       resources = Map(
         "channel_statement" -> makeResource(
-          path = Some("/channel/:channel_id/statements"),
+          path = Some(resourcePath),
           templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
         )
       )
     )
 
-    val op = expectValid(apiJson).resources.head.operations.head
-    op.method mustBe Method.Get
-    op.path mustBe "/channel/:channel_id/statements/:id"
-    op.parameters.map(_.name) mustBe Seq("channel_id", "id")
+    expectValid(apiJson).resources.head.operations.head
+  }
+
+  "operations" must {
+    "method" in {
+      setupOperation(
+        makeOperation(method = "GET")
+      ).method mustBe Method.Get
+    }
+
+    "path" in {
+      setupOperation(
+        makeOperation(path = "/:id"),
+        resourcePath = "/channel/statements"
+      ).path mustBe "/channel/statements/:id"
+    }
+
+    "parameters" must {
+      "path" in {
+        setupOperation(
+          makeOperation(path = "/:id"),
+          resourcePath = "/channel/:channel_id/statements",
+        ).parameters.map(_.name) mustBe Seq("channel_id", "id")
+      }
+
+      "declared" in {
+        val name = randomName()
+        setupOperation(
+          makeOperation(
+            path = "/:id",
+            parameters = Some(Seq(makeParameter(name = name)))
+          )
+        ).parameters.map(_.name) mustBe Seq("id", name)
+      }
+    }
+  }
+
+  "response_type is changed to the specific model" in {
+    setupOperation(
+      makeOperation(
+        responses = Some(Seq(makeResponse("statement")))
+      )
+    ).responses.map(_.`type`) mustBe "channel_statement"
   }
 
 }
