@@ -71,7 +71,7 @@ package io.apibuilder.api.json.v0.models {
     `type`: String,
     description: _root_.scala.Option[String] = None,
     required: Boolean = true,
-    default: _root_.scala.Option[String] = None,
+    default: _root_.scala.Option[_root_.play.api.libs.json.JsValue] = None,
     example: _root_.scala.Option[String] = None,
     minimum: _root_.scala.Option[Long] = None,
     maximum: _root_.scala.Option[Long] = None,
@@ -118,7 +118,7 @@ package io.apibuilder.api.json.v0.models {
   final case class Model(
     description: _root_.scala.Option[String] = None,
     plural: _root_.scala.Option[String] = None,
-    fields: Seq[io.apibuilder.api.json.v0.models.Field],
+    fields: Seq[io.apibuilder.api.json.v0.models.Field] = Nil,
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
     interfaces: _root_.scala.Option[Seq[String]] = None,
     templates: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]] = None,
@@ -127,7 +127,7 @@ package io.apibuilder.api.json.v0.models {
 
   final case class Operation(
     method: String,
-    path: String,
+    path: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
     body: _root_.scala.Option[io.apibuilder.api.json.v0.models.Body] = None,
     parameters: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Parameter]] = None,
@@ -142,7 +142,7 @@ package io.apibuilder.api.json.v0.models {
     location: io.apibuilder.api.json.v0.models.ParameterLocation = io.apibuilder.api.json.v0.models.ParameterLocation.Query,
     description: _root_.scala.Option[String] = None,
     required: Boolean = true,
-    default: _root_.scala.Option[String] = None,
+    default: _root_.scala.Option[_root_.play.api.libs.json.JsValue] = None,
     minimum: _root_.scala.Option[Long] = None,
     maximum: _root_.scala.Option[Long] = None,
     example: _root_.scala.Option[String] = None,
@@ -153,7 +153,7 @@ package io.apibuilder.api.json.v0.models {
   final case class Resource(
     path: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
-    operations: Seq[io.apibuilder.api.json.v0.models.Operation],
+    operations: Seq[io.apibuilder.api.json.v0.models.Operation] = Nil,
     attributes: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.Attribute]] = None,
     templates: _root_.scala.Option[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]] = None,
     deprecation: _root_.scala.Option[io.apibuilder.api.json.v0.models.Deprecation] = None
@@ -559,8 +559,8 @@ package io.apibuilder.api.json.v0.models {
         name <- (__ \ "name").read[String]
         `type` <- (__ \ "type").read[String]
         description <- (__ \ "description").readNullable[String]
-        required <- (__ \ "required").read[Boolean]
-        default <- (__ \ "default").readNullable[String]
+        required <- (__ \ "required").readWithDefault[Boolean](true)
+        default <- (__ \ "default").readNullable[_root_.play.api.libs.json.JsValue]
         example <- (__ \ "example").readNullable[String]
         minimum <- (__ \ "minimum").readNullable[Long]
         maximum <- (__ \ "maximum").readNullable[Long]
@@ -581,7 +581,7 @@ package io.apibuilder.api.json.v0.models {
       }) ++
       (obj.default match {
         case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("default" -> play.api.libs.json.JsString(x))
+        case Some(x) => play.api.libs.json.Json.obj("default" -> x)
       }) ++
       (obj.example match {
         case None => play.api.libs.json.Json.obj()
@@ -619,7 +619,7 @@ package io.apibuilder.api.json.v0.models {
       for {
         name <- (__ \ "name").read[String]
         `type` <- (__ \ "type").read[String]
-        required <- (__ \ "required").read[Boolean]
+        required <- (__ \ "required").readWithDefault[Boolean](true)
         description <- (__ \ "description").readNullable[String]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
@@ -756,7 +756,7 @@ package io.apibuilder.api.json.v0.models {
       for {
         description <- (__ \ "description").readNullable[String]
         plural <- (__ \ "plural").readNullable[String]
-        fields <- (__ \ "fields").read[Seq[io.apibuilder.api.json.v0.models.Field]]
+        fields <- (__ \ "fields").readWithDefault[Seq[io.apibuilder.api.json.v0.models.Field]](Nil)
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
         interfaces <- (__ \ "interfaces").readNullable[Seq[String]]
         templates <- (__ \ "templates").readNullable[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]]
@@ -802,7 +802,7 @@ package io.apibuilder.api.json.v0.models {
     implicit def jsonReadsApibuilderApiJsonOperation: play.api.libs.json.Reads[Operation] = {
       for {
         method <- (__ \ "method").read[String]
-        path <- (__ \ "path").read[String]
+        path <- (__ \ "path").readNullable[String]
         description <- (__ \ "description").readNullable[String]
         body <- (__ \ "body").readNullable[io.apibuilder.api.json.v0.models.Body]
         parameters <- (__ \ "parameters").readNullable[Seq[io.apibuilder.api.json.v0.models.Parameter]]
@@ -814,9 +814,12 @@ package io.apibuilder.api.json.v0.models {
 
     def jsObjectOperation(obj: io.apibuilder.api.json.v0.models.Operation): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "method" -> play.api.libs.json.JsString(obj.method),
-        "path" -> play.api.libs.json.JsString(obj.path)
-      ) ++ (obj.description match {
+        "method" -> play.api.libs.json.JsString(obj.method)
+      ) ++ (obj.path match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("path" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
       }) ++
@@ -854,8 +857,8 @@ package io.apibuilder.api.json.v0.models {
         `type` <- (__ \ "type").read[String]
         location <- (__ \ "location").readWithDefault[io.apibuilder.api.json.v0.models.ParameterLocation](io.apibuilder.api.json.v0.models.ParameterLocation.Query)
         description <- (__ \ "description").readNullable[String]
-        required <- (__ \ "required").read[Boolean]
-        default <- (__ \ "default").readNullable[String]
+        required <- (__ \ "required").readWithDefault[Boolean](true)
+        default <- (__ \ "default").readNullable[_root_.play.api.libs.json.JsValue]
         minimum <- (__ \ "minimum").readNullable[Long]
         maximum <- (__ \ "maximum").readNullable[Long]
         example <- (__ \ "example").readNullable[String]
@@ -876,7 +879,7 @@ package io.apibuilder.api.json.v0.models {
       }) ++
       (obj.default match {
         case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("default" -> play.api.libs.json.JsString(x))
+        case Some(x) => play.api.libs.json.Json.obj("default" -> x)
       }) ++
       (obj.minimum match {
         case None => play.api.libs.json.Json.obj()
@@ -910,7 +913,7 @@ package io.apibuilder.api.json.v0.models {
       for {
         path <- (__ \ "path").readNullable[String]
         description <- (__ \ "description").readNullable[String]
-        operations <- (__ \ "operations").read[Seq[io.apibuilder.api.json.v0.models.Operation]]
+        operations <- (__ \ "operations").readWithDefault[Seq[io.apibuilder.api.json.v0.models.Operation]](Nil)
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
         templates <- (__ \ "templates").readNullable[Seq[io.apibuilder.api.json.v0.models.TemplateDeclaration]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]
@@ -1076,7 +1079,7 @@ package io.apibuilder.api.json.v0.models {
       for {
         `type` <- (__ \ "type").read[String]
         description <- (__ \ "description").readNullable[String]
-        default <- (__ \ "default").read[Boolean]
+        default <- (__ \ "default").readWithDefault[Boolean](false)
         discriminatorValue <- (__ \ "discriminator_value").readNullable[String]
         attributes <- (__ \ "attributes").readNullable[Seq[io.apibuilder.api.json.v0.models.Attribute]]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.api.json.v0.models.Deprecation]

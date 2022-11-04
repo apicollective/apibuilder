@@ -13,6 +13,8 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
         name -> applyTemplates(name, resource, all)
       }
     }.toSeq.sequence.map { all =>
+      println(s"Merged resources. Original: ${data.resources}")
+      println(s"  ==> ${all.map { case (n, m) => n -> m }.toMap}")
       ResourceMergeData(
         resources = all.map { case (n, m) => n -> m }.toMap
       )
