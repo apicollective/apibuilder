@@ -12,16 +12,69 @@ case class ModelMergeData(
 case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model](templates) with AttributeMerge {
 
   def merge(data: ModelMergeData): ValidatedNec[String, ModelMergeData] = {
+    (
+      validateTemplateNames(data),
+      validateTemplateDeclarations(data.models),
+      applyTemplates(data)
+    ).mapN { case (_, _, models) =>
+      ModelMergeData(
+        models = models,
+        interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
+      )
+    }
+  }
+
+  private[this] def validateTemplateNames(data: ModelMergeData): ValidatedNec[String, Unit] = {
+    (
+      validateTemplateNamesModel(data),
+      validateTemplateNamesInterface(data)
+    ).mapN { case (_, _) => () }
+  }
+  private[this] def validateTemplateNamesModel(data: ModelMergeData): ValidatedNec[String, Unit] = {
+    templates.keys.filter(data.models.contains).toList match {
+      case Nil => ().validNec
+      case dups => dups.map { n =>
+        s"Name[$n] cannot be used as the name of both a model and a template model"
+      }.mkString(", ").invalidNec
+    }
+  }
+
+  private[this] def validateTemplateNamesInterface(data: ModelMergeData): ValidatedNec[String, Unit] = {
+    templates.keys.filter(data.interfaces.contains).toList match {
+      case Nil => ().validNec
+      case dups => dups.map { n =>
+        s"Name[$n] cannot be used as the name of both an interface and a template model"
+      }.mkString(", ").invalidNec
+    }
+  }
+
+  private[this] def validateTemplateDeclarations(models: Map[String, Model]): ValidatedNec[String, Unit] = {
+    models
+      .flatMap { case (name, model) =>
+      model.templates.getOrElse(Nil).map { tpl =>
+        validateTemplateDeclaration(name, tpl)
+      }
+    }.toSeq.sequence.map(_ => ())
+  }
+
+  private[this] def validateTemplateDeclaration(modelName: String, decl: TemplateDeclaration): ValidatedNec[String, Unit] = {
+    templates.get(decl.name) match {
+      case None => s"Model[$modelName] cannot find template named '${decl.name}'".invalidNec
+      case Some(_) => {
+        println(s"Found template named ${decl.name}")
+        ().validNec
+      }
+    }
+  }
+
+
+  private[this] def applyTemplates(data: ModelMergeData): ValidatedNec[String, Map[String, Model]] = {
     data.models.map { case (name, model) =>
       allTemplates(model.templates).map { all =>
         name -> applyTemplates(name, model, all)
       }
     }.toSeq.sequence.map { all =>
-      val models = all.map { case (n, m) => n -> m }.toMap
-      ModelMergeData(
-        models = models,
-        interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
-      )
+      all.map { case (n, m) => n -> m }.toMap
     }
   }
 
