@@ -4,7 +4,7 @@ import builder.api_json.{InternalOperationForm, InternalParameterForm, InternalR
 
 case class ResourceMergeData(resources: Seq[InternalResourceForm])
 
-case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateMerge[InternalResourceForm](templates) with AttributeMerge {
+case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateMerge[InternalResourceForm](templates) with HeaderMerge {
 
   def merge(data: ResourceMergeData): ResourceMergeData = {
     ResourceMergeData(
@@ -61,10 +61,20 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
       override def label(i: InternalParameterForm): String = i.name.get
 
       override def merge(original: InternalParameterForm, tpl: InternalParameterForm): InternalParameterForm = {
-        println(s"TODO: Merge Parameter:")
-        println(s"   - original: $original")
-        println(s"   -      tpl: $tpl")
-        original
+        InternalParameterForm(
+          name = original.name,
+          datatype = original.datatype,
+          location = original.location.orElse(tpl.location),
+          description = original.description.orElse(tpl.description),
+          deprecation = original.deprecation.orElse(tpl.deprecation),
+          required = original.required,
+          default = original.default.orElse(tpl.default),
+          minimum = original.minimum.orElse(tpl.minimum),
+          maximum = original.maximum.orElse(tpl.maximum),
+          example = original.example.orElse(tpl.example),
+          attributes = mergeAttributes(original.attributes, tpl.attributes),
+          warnings = original.warnings ++ tpl.warnings
+        )
       }
     }.merge(original, template)
   }
@@ -74,10 +84,15 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
       override def label(i: InternalResponseForm): String = i.code
 
       override def merge(original: InternalResponseForm, tpl: InternalResponseForm): InternalResponseForm = {
-        println(s"TODO: Merge Response:")
-        println(s"   - original: $original")
-        println(s"   -      tpl: $tpl")
-        original
+        InternalResponseForm(
+          code = original.code,
+          datatype = original.datatype,
+          headers = mergeHeaders(original.headers, tpl.headers),
+          description = original.description.orElse(tpl.description),
+          deprecation = original.deprecation.orElse(tpl.deprecation),
+          attributes = mergeAttributes(original.attributes, tpl.attributes),
+          warnings = original.warnings ++ tpl.warnings
+        )
       }
     }.merge(original, template)
   }
