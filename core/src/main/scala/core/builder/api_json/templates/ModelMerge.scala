@@ -68,29 +68,24 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
   }
 
   private[this] def mergeFields(model: InternalModelForm, tpl: InternalModelForm): Seq[InternalFieldForm] = {
-    val modelFieldsByName = model.fields.map { f => f.name -> f }.toMap
-    val tplFieldNames = tpl.fields.flatMap(_.name).toSet
-    tpl.fields.map { tplField =>
-      modelFieldsByName.get(tplField.name) match {
-        case None => tplField
-        case Some(f) => mergeField(f, tplField)
-      }
-    } ++ model.fields.filterNot { f => tplFieldNames.contains(f.name.get) }
-  }
+    new ArrayMerge[InternalFieldForm] {
+      override def uniqueIdentifier(f: InternalFieldForm): String = f.name.get
 
-  private[this] def mergeField(model: InternalFieldForm, tpl: InternalFieldForm): InternalFieldForm = {
-    InternalFieldForm(
-      name = model.name,
-      datatype = model.datatype,
-      description = model.description.orElse(tpl.description),
-      deprecation = model.deprecation.orElse(tpl.deprecation),
-      default = model.default.orElse(tpl.default),
-      example = model.example.orElse(tpl.example),
-      minimum = model.minimum.orElse(tpl.minimum),
-      maximum = model.maximum.orElse(tpl.maximum),
-      attributes = mergeAttributes(model.attributes, tpl.attributes),
-      annotations = union(model.annotations, tpl.annotations)
-    )
+      override def merge(original: InternalFieldForm, tpl: InternalFieldForm): InternalFieldForm = {
+        InternalFieldForm(
+          name = original.name,
+          datatype = original.datatype,
+          description = original.description.orElse(tpl.description),
+          deprecation = original.deprecation.orElse(tpl.deprecation),
+          default = original.default.orElse(tpl.default),
+          example = original.example.orElse(tpl.example),
+          minimum = original.minimum.orElse(tpl.minimum),
+          maximum = original.maximum.orElse(tpl.maximum),
+          attributes = mergeAttributes(original.attributes, tpl.attributes),
+          annotations = union(original.annotations, tpl.annotations)
+        )
+      }
+    }.merge(model.fields, tpl.fields)
   }
 
 }
