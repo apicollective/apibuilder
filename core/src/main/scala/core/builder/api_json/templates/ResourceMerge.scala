@@ -8,7 +8,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
   def merge(data: ResourceMergeData): ResourceMergeData = {
     ResourceMergeData(
       resources = data.resources.map { case (name, resource) =>
-        name -> applyTemplates(resource, allTemplates(resource.templates))
+        name -> applyTemplates(name, resource, allTemplates(resource.templates))
       }
     )
   }
@@ -17,27 +17,28 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
     resource.templates.getOrElse(Nil)
   }
 
-  override def applyTemplate(original: Resource, tpl: Resource): Resource = {
+  override def applyTemplate(originalName: String, original: Resource, tplName: String, tpl: Resource): Resource = {
+    println(s"ResourceMerge.applyTemplate $originalName ==> $tplName")
     Resource(
       path = original.path.orElse(tpl.path),
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
-      operations = mergeOperations(original.operations, tpl.operations),
+      operations = mergeOperations(original.operations, tpl.operations).map { op =>
+        RenameTypes(tplName, originalName).rename(op)
+      },
       attributes = mergeAttributes(original.attributes, tpl.attributes),
       templates = None,
     )
   }
 
   private[this] def pathLabel(op: Operation): String = {
-    op.method + ":" + op.path
+    (op.method + ":" + op.path).toLowerCase().trim
   }
 
   private[this] def mergeOperations(original: Seq[Operation], template: Seq[Operation]): Seq[Operation] = {
     new ArrayMerge[Operation]() {
       override def uniqueIdentifier(i: Operation): String = pathLabel(i)
       override def merge(original: Operation, tpl: Operation): Operation = {
-        println(s"original.responses: " + original.responses)
-        println(s"     tpl.responses: " + tpl.responses)
         Operation(
           method = original.method,
           path = original.path,
@@ -77,6 +78,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
   private[this] def mergeResponses(original: Option[Map[String, Response]], template: Option[Map[String, Response]]): Option[Map[String, Response]] = {
     new MapMerge[Response]() {
       override def merge(original: Response, tpl: Response): Response = {
+        println(s"mergeResponses original: $original tpl: $tpl")
         Response(
           `type` = original.`type`,
           headers = mergeHeaders(original.headers, tpl.headers),
@@ -87,4 +89,5 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
       }
     }.merge(original, template)
   }
+
 }

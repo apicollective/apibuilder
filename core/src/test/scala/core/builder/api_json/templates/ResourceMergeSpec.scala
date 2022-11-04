@@ -73,7 +73,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       makeOperation(
         responses = Some(Map("200" -> makeResponse("statement")))
       )
-    ).responses.map(_.`type`) mustBe "channel_statement"
+    ).responses.map(_.`type`) mustBe Seq("channel_statement")
   }
 
 }

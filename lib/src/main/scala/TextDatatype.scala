@@ -21,4 +21,16 @@ object TextDatatype {
     }
   }
 
+  def label(types: Seq[TextDatatype]): String = {
+    types.toList match {
+      case Nil => ""
+      case one :: rest => {
+        one match {
+          case List => "[" + label(rest) + "]"
+          case Map => "map[" + label(rest) + "]"
+          case Singleton(n) => n + label(rest)
+        }
+      }
+    }
+  }
 }

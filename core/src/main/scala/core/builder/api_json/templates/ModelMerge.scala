@@ -12,7 +12,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
   def merge(data: ModelMergeData): ModelMergeData = {
     ModelMergeData(
       models = data.models.map { case (name, model) =>
-        name -> applyTemplates(model, allTemplates(model.templates))
+        name -> applyTemplates(name, model, allTemplates(model.templates))
       },
       interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
     )
@@ -22,7 +22,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     model.templates.getOrElse(Nil)
   }
 
-  override def applyTemplate(original: Model, tpl: Model): Model = {
+  override def applyTemplate(name: String, original: Model, tplName: String, tpl: Model): Model = {
     val templates = mergeTemplates(original.templates, tpl.templates)
     Model(
       plural = original.plural,

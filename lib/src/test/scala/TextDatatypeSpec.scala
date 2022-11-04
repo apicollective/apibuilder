@@ -5,26 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 class TextDatatypeSpec extends AnyFunSpec with Matchers {
 
-  def label(types: Seq[TextDatatype]): String = {
-    types.reverse match {
-      case Nil => ""
-      case TextDatatype.Singleton(name) :: rest => label(name, rest)
-      case _ => sys.error(s"Could not parse $types")
-    }
-  }
-
-  def label(result: String, types: Seq[TextDatatype]): String = {
-    types match {
-      case Nil => result
-      case one :: rest => {
-        one match {
-          case TextDatatype.List => label(s"[$result]", types.drop(1))
-          case TextDatatype.Map => label(s"map[$result]", types.drop(1))
-          case TextDatatype.Singleton(name) => sys.error("Invalid")
-        }
-      }
-    }
-  }
+  private[this] def label(types: Seq[TextDatatype]): String = TextDatatype.label(types)
 
   it("primitives") {
     label(TextDatatype.parse("string")) should be("string")

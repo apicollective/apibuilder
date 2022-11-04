@@ -20,7 +20,6 @@ object JsMerge {
   }
 
   def merge(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
-    println(s"Merging templates: ${templates}")
     val modelMerge = ModelMerge(templates.models.getOrElse(Map.empty)).merge(
       ModelMergeData(
         models = js.models,
@@ -30,6 +29,12 @@ object JsMerge {
     val resourceMerge = ResourceMerge(templates.resources.getOrElse(Map.empty)).merge(
       ResourceMergeData(resources = js.resources)
     )
-    js.validNec
+    println(s"Merged resources: ${resourceMerge.resources}")
+    js.copy(
+      models = modelMerge.models,
+      interfaces = modelMerge.interfaces,
+      resources = resourceMerge.resources,
+      templates = None
+    ).validNec
   }
 }

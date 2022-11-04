@@ -5,7 +5,7 @@ import io.apibuilder.api.json.v0.models.TemplateDeclaration
 import scala.annotation.tailrec
 
 private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
-  def applyTemplate(original: T, tpl: T): T
+  def applyTemplate(originalName: String, original: T, tplName: String, tpl: T): T
 
   def templateDeclarations(tpl: T): Seq[TemplateDeclaration]
 
@@ -25,18 +25,19 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
   }
 
   @tailrec
-  protected final def applyTemplates(resource: T, remaining: Seq[TemplateDeclaration]): T = {
+  protected final def applyTemplates(name: String, resource: T, remaining: Seq[TemplateDeclaration]): T = {
     remaining.toList match {
       case Nil => resource
       case one :: rest => {
         templatesByName.get(format(one.name)) match {
           case None => {
             // Template not found. Will be validated by ApiJsonServiceValidator
-            applyTemplates(resource, rest)
+            applyTemplates(name, resource, rest)
           }
           case Some(tpl) => {
             applyTemplates(
-              applyTemplate(resource, tpl),
+              name,
+              applyTemplate(name, resource, one.name, tpl),
               rest
             )
           }
