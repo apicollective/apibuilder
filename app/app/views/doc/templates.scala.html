@@ -1,0 +1,159 @@
+@(
+  util: lib.Util,
+  user: Option[io.apibuilder.api.v0.models.User]
+)
+
+@doc.main(routes.DocController.templates.url, user, Some("Templates")) {
+  <p>
+    Templates are an experimental feature in API Builder's API.json format.
+  </p>
+
+  <p>
+    <ul>
+      <li> <a href='@lib.Labels.ApiBuilderGitHubUrl/blob/main/examples/example-template.json'>Example api.json file demonstrating templates</a></li>
+      <li> <a href='@util.fullUrl("/apicollective/example-template/latest#interface-statement")'>API Builder UI of this example</a></li>
+    </ul>
+  </p>
+
+  <p>
+    Templates add support to api.json to create reusable definitions of
+    the various features in API Builder. As of the initial release, templates
+    are supported for both models and resources. Templates are syntactic sugar
+    in the api.json file format that copy portions of common specs into multiple
+    places. Templates require no changes in code generators (specifically because
+    there are no template related changes in the service specification itself).
+  </p>
+
+  <p>
+    The best way to understand templates is with an example. At Flow Commerce,
+    we have APIs that surface account information to both our clients and to
+    our partners. The accounts share a lot of common behavior - including fields
+    and operations - but are exposed at different URLs (enabling caching
+    and authorization based on how Flow's internal schemes).
+  </p>
+
+  <p>
+    To implement the client and partner accounts, we wanted to define two models, eg
+    (note this example is a simpler version of what we use at Flow but should highlight
+    the strength of the templates feature).
+
+    <pre>
+      client_account:
+        fields:
+          - id: string
+          - currency: string
+
+      partner_account
+        fields:
+          - id: string
+          - currency: string
+    </pre>
+
+    Then we expose each as a resource with a common set of operations:
+    <pre>
+      client_account:
+        GET /client/accounts
+        GET /client/accounts/:id
+
+      partner_account:
+        GET /partner/accounts
+        GET /partner/accounts/:id
+    </pre>
+
+    In practice this leads to duplication in the api definition - and there is
+    no good way to guarantee that the implementations stay consistent.
+  </p>
+
+  <p>
+    With the templates feature, we instead define the common specs in a new
+    top level node named "templates":
+
+    <pre>
+      "templates": {
+        "models": {
+          "account": {
+            "fields": [
+              { "name": "id", "type": "string", "example": "xxxx-1234" },
+              { "name": "currency", "type": "string" }
+            ]
+          },
+          "resources": {
+            "account": {
+              "operations": [
+                {
+                  "method": "GET",
+                  "parameters": [
+                    { "name": "id", "type": "[string]", "required": false, "maximum": 100 }
+                  ],
+                  "responses": {
+                    "200": { "type": "[account]" },
+                    "401": { "type": "unit" },
+                    "404": { "type": "unit" }
+                  }
+                },
+                {
+                  "method": "GET",
+                  "path": "/:id",
+                  "responses": {
+                    "200": { "type": "account" },
+                    "401": { "type": "unit" },
+                    "404": { "type": "unit" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    </pre>
+  </p>
+
+  <p>
+    With this template, we can now define our two models. Note that these models will contain
+    ALL of the data specified in the template - including all of the fields. Additionally, API Builder 
+    automatically adds an interface named "account" with each model extending that interface.
+    Model template declarations pull from the <em>templates/models/&lt;name&gt;</em> nodes in the
+    api json specification.
+    <pre>
+      "models": {
+        "partner_account": {
+          "templates": [{ "name": "account" }]
+        },
+        "client_account": {
+          "templates": [{ "name": "account" }]
+        }
+      }
+    </pre>
+  </p>
+
+  <p>
+    We can now expose these models as resources, referencing the template for all the common operations.
+    Resource template declarations pull from the <em>templates/resources/&lt;name&gt;</em> nodes in the
+    api json specification.
+    <pre>
+      "resources": {
+        "partner_account": {
+          "templates": [{ "name": "account" }],
+          "path": "/partner/accounts"
+        },
+        "client_account": {
+          "templates": [{ "name": "account" }],
+          "path": "/client/accounts"
+        }
+      }
+    </pre>
+  </p>
+
+  <p>
+    Importantly, the template operations are merge operations. Anything you specific in the model
+    or resource definition takes precedence. For example, you can easily add a field to just
+    the client_account model by simply adding the field to that model specification.
+  </p>
+
+  <p>
+    Note also that any types that are specified only in the templates section will be specialized
+    to the model or resource that is using that template. In the example here, the template resource
+    operations refer to the type <em>account</em> - the actual service specifications will refer
+     to the type <em>client_account</em> and <em>partner_account</em> respectively.
+  </p>
+}

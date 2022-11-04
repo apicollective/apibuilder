@@ -1,0 +1,71 @@
+{
+  "name": "example-template",
+
+  "templates": {
+    "models": {
+      "statement": {
+        "fields": [
+          { "name": "id", "type": "string", "example": "xxxx-1234" },
+          { "name": "currency", "type": "string" }
+        ]
+      }
+    },
+    "resources": {
+      "statement": {
+        "operations": [
+          {
+            "method": "GET",
+            "parameters": [
+              { "name": "id", "type": "[string]", "required": false, "maximum": 100 }
+            ],
+            "responses": {
+              "200": { "type": "[statement]" },
+              "401": { "type": "unit" },
+              "404": { "type": "unit" }
+            }
+          },
+
+          {
+            "method": "GET",
+            "path": "/:id",
+            "responses": {
+              "200": { "type": "statement" },
+              "401": { "type": "unit" },
+              "404": { "type": "unit" }
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "models": {
+    "partner_statement": {
+      "templates": [
+        { "name": "statement" }
+      ]
+    },
+
+    "client_statement": {
+      "templates": [
+        { "name": "statement" }
+      ]
+    }
+  },
+
+  "resources": {
+    "partner_account": {
+      "templates": [
+        { "name": "account" }
+      ],
+      "path": "/partner/accounts"
+    },
+
+    "client_account": {
+      "templates": [
+        { "name": "account" }
+      ],
+      "path": "/client/accounts"
+    }
+  }
+}

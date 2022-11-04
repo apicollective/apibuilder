@@ -24,8 +24,9 @@
       "unions": <em>JSON Object of <a href="#union">Union</a> (optional)</em>,
       "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>,
       "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
-      "annotations": <em>JSON Object of <a href="#annotation">Annotation</a> (optional)</em>
-    }
+      "annotations": <em>JSON Object of <a href="#annotation">Annotation</a> (optional)</em>,
+      "templates": <em>JSON Object of <a href="#templates">Templates</a> (optional and experimental)</em>,
+  }
     </pre>
 
     where:
@@ -639,6 +640,33 @@
       you intend the tag to clarify the usage of a field,
       possibly including links to additional documentation
     <li><em>deprecation</em> JSON Object that indicates that this object is deprecated.</li>
+  </ul>
+
+  <a name="templates"></a>
+  <h2>Templates declaration</h2>
+
+  <p>
+    Templates are an experimental feature to create reusable definitions of
+    the various features in API Builder. See <a href='@routes.DocController.templates'>Templates</a>
+    for more information.
+  </p>
+  <p>
+    Generated code may preserve annotations either in the type system, documentation or via metaprogramming
+    facilities depending on language support. Generated documentation should include the tag when displaying
+    a field, along with a link to the annotation's declaration.
+  </p>
+
+  <pre>
+    "templates": {
+      "models": <em>JSON Object of <a href="#model">Model</a> (optional)</em>,
+      "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>,
+    }
+  </pre>
+
+  where
+  <ul>
+    <li><em>models</em> JSON object defining templates for models in this API. The key of each object is the model template name. See <a href="#model">Model</a></li>
+    <li><em>resources</em> JSON object defining templates for resources in this API. The key of each object is the name of a template resource type.</li>
   </ul>
 
 }
