@@ -115,7 +115,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "body", "type": "body", "required": false },
         { "name": "parameters", "type": "[parameter]", "required": false },
-        { "name": "responses", "type": "[response]", "required": false },
+        { "name": "responses", "type": "map[response]", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
