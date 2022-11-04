@@ -13,38 +13,13 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
 
   def merge(data: ModelMergeData): ValidatedNec[String, ModelMergeData] = {
     (
-      validateTemplateNames(data),
       validateTemplateDeclarations(data.models),
       applyTemplates(data)
-    ).mapN { case (_, _, models) =>
+    ).mapN { case (_, models) =>
       ModelMergeData(
         models = models,
         interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
       )
-    }
-  }
-
-  private[this] def validateTemplateNames(data: ModelMergeData): ValidatedNec[String, Unit] = {
-    (
-      validateTemplateNamesModel(data),
-      validateTemplateNamesInterface(data)
-    ).mapN { case (_, _) => () }
-  }
-  private[this] def validateTemplateNamesModel(data: ModelMergeData): ValidatedNec[String, Unit] = {
-    templates.keys.filter(data.models.contains).toList match {
-      case Nil => ().validNec
-      case dups => dups.map { n =>
-        s"Name[$n] cannot be used as the name of both a model and a template model"
-      }.mkString(", ").invalidNec
-    }
-  }
-
-  private[this] def validateTemplateNamesInterface(data: ModelMergeData): ValidatedNec[String, Unit] = {
-    templates.keys.filter(data.interfaces.contains).toList match {
-      case Nil => ().validNec
-      case dups => dups.map { n =>
-        s"Name[$n] cannot be used as the name of both an interface and a template model"
-      }.mkString(", ").invalidNec
     }
   }
 
@@ -66,7 +41,6 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
       }
     }
   }
-
 
   private[this] def applyTemplates(data: ModelMergeData): ValidatedNec[String, Map[String, Model]] = {
     data.models.map { case (name, model) =>
