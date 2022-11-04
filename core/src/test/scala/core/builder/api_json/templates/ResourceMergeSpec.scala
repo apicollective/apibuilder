@@ -71,7 +71,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
   "response_type is specialized to the specific model" in {
     setupOperation(
       makeOperation(
-        responses = Some(Seq(makeResponse("statement")))
+        responses = Some(Map("200" -> makeResponse("statement")))
       )
     ).responses.map(_.`type`) mustBe "channel_statement"
   }

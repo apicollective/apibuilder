@@ -161,7 +161,7 @@ trait ApiJsonHelpers {
     method: String = "GET",
     path: String = "/",
     parameters: Option[Seq[Parameter]] = None,
-    responses: Option[Seq[Response]] = None,
+    responses: Option[Map[String, Response]] = None,
   ): Operation = {
     Operation(
       method = method,
