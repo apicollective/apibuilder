@@ -69,7 +69,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
         )
       ) { v =>
         v.errors() should be(
-          Seq("Resource[user] GET /users/ param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
+          Seq("Resource[user] GET /users param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
         )
       }
     }

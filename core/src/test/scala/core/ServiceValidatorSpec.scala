@@ -154,7 +154,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           "operations": [
             {
               "method": "GET",
-              "path": Some("/:guid"),
+              "path": "/:guid",
               "responses": {
                 "200": {
                   "type": "user",
@@ -202,7 +202,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           "operations": [
             {
               "method": "GET",
-              "path": Some("/:guid"),
+              "path": "/:guid",
               "parameters": [
                 { "name": "guid", "type": "string" }
               ],
