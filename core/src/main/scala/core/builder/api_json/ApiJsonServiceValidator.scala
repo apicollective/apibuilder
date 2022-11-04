@@ -30,22 +30,16 @@ case class ApiJsonServiceValidator(
   private var parseError: Option[Seq[String]] = None
 
   lazy val serviceForm: Option[JsObject] = {
-    println(s"Building service form")
     Try(Json.parse(apiJson)) match {
       case Success(v) => {
         v.asOpt[JsObject] match {
           case Some(o) => {
-            println(s"Starting js merge")
             JsMerge.merge(o) match {
               case Invalid(errors) => {
-                println(s"Js merge errors: ${errors}")
                 parseError = Some(errors.toNonEmptyList.toList)
                 None
               }
-              case Valid(js) => {
-                println(s"Js merge Done")
-                Some(js)
-              }
+              case Valid(js) => Some(js)
             }
           }
           case None => {

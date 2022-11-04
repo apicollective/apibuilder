@@ -1,12 +1,11 @@
 package helpers
 
 import java.util.UUID
-
 import core.TestHelper
 import io.apibuilder.api.json.v0.models._
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.Service
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 
 trait ApiJsonHelpers {
 
@@ -78,7 +77,7 @@ trait ApiJsonHelpers {
     name: String = randomName(),
     `type`: String = "string",
     required: Boolean = true,
-    default: Option[String] = None,
+    default: Option[JsValue] = None,
     description: Option[String] = None,
     example: Option[String] = None,
     minimum: Option[Long] = None,
@@ -159,7 +158,7 @@ trait ApiJsonHelpers {
 
   def makeOperation(
     method: String = "GET",
-    path: String = "/",
+    path: Option[String] = None,
     parameters: Option[Seq[Parameter]] = None,
     responses: Option[Map[String, Response]] = None,
   ): Operation = {

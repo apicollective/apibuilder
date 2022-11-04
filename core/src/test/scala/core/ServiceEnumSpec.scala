@@ -4,6 +4,7 @@ import core.TestHelper.ServiceValidatorForSpecs
 import io.apibuilder.api.json.v0.models.{EnumValue, Field, Parameter}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import play.api.libs.json.JsString
 
 class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
@@ -41,7 +42,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
     it("supports a known default") {
       setup(
         field = ageGroupField.copy(
-          default = Some("Twenties"),
+          default = Some(JsString("Twenties")),
         )
       ) { v =>
         v.errors() should be(Nil)
@@ -52,7 +53,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
     it("validates unknown defaults") {
       setup(
         field = ageGroupField.copy(
-          default = Some("other"),
+          default = Some(JsString("other")),
         )
       ) { v =>
         v.errors() should be(
@@ -64,7 +65,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
     it("validates unknown defaults in parameters") {
       setup(
         parameter = ageGroupParameter.copy(
-          default = Some("other"),
+          default = Some(JsString("other")),
         )
       ) { v =>
         v.errors() should be(

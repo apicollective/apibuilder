@@ -5,7 +5,7 @@ import io.apibuilder.spec.v0.models.{Model => SpecModel}
 import io.apibuilder.api.json.v0.models._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 
 class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
@@ -137,8 +137,8 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           def setupField(modelFieldDefault: Option[String]) = {
             val field = makeField(default = None)
             setupFields(
-              templateField = field.copy(default = Some("foo")),
-              modelField = field.copy(default = modelFieldDefault),
+              templateField = field.copy(default = Some(JsString("foo"))),
+              modelField = field.copy(default = modelFieldDefault.map(JsString)),
             ).head.default.get
           }
 

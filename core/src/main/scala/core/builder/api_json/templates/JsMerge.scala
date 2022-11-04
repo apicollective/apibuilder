@@ -8,14 +8,11 @@ import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 
 object JsMerge {
   def merge(js: JsObject): ValidatedNec[String, JsObject] = {
-    println(s"JsMerge 1")
     js.validate[ApiJson] match {
       case e: JsError => {
-        println(s"JsMerge 2: NOT A VALID APIJSON: $e")
         js.validNec
       } // Let parent validate the structure
       case JsSuccess(apiJson, _) => {
-        println(s"JsMerge 3 apiJson.templates: ${apiJson.templates}")
         apiJson.templates match {
           case None => js.validNec
           case Some(t) => merge(apiJson, t).map { r => Json.toJson(r).asInstanceOf[JsObject] }
@@ -25,7 +22,6 @@ object JsMerge {
   }
 
   def merge(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
-    println(s"JsMerge for templates: ${templates}")
     (
       validateTemplateNames(js, templates),
       mergeModels(js, templates),

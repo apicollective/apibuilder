@@ -43,7 +43,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
     "path" in {
       setupOperation(
-        makeOperation(path = "/:id"),
+        makeOperation(path = Some("/:id")),
         resourcePath = "/channel/statements"
       ).path mustBe "/channel/statements/:id"
     }
@@ -51,7 +51,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     "parameters" must {
       "path" in {
         setupOperation(
-          makeOperation(path = "/:id"),
+          makeOperation(path = Some("/:id")),
           resourcePath = "/channel/:channel_id/statements",
         ).parameters.map(_.name) mustBe Seq("channel_id", "id")
       }
@@ -60,7 +60,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         val name = "foo"//randomName()
         setupOperation(
           makeOperation(
-            path = "/:id",
+            path = Some("/:id"),
             parameters = Some(Seq(makeParameter(name = name)))
           )
         ).parameters.map(_.name) mustBe Seq("id", name)

@@ -13,8 +13,6 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
         name -> applyTemplates(name, resource, all)
       }
     }.toSeq.sequence.map { all =>
-      println(s"Merged resources. Original: ${data.resources}")
-      println(s"  ==> ${all.map { case (n, m) => n -> m }.toMap}")
       ResourceMergeData(
         resources = all.map { case (n, m) => n -> m }.toMap
       )
@@ -26,7 +24,6 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
   }
 
   override def applyTemplate(originalName: String, original: Resource, tplName: String, tpl: Resource): Resource = {
-    println(s"ResourceMerge.applyTemplate $originalName ==> $tplName")
     Resource(
       path = original.path.orElse(tpl.path),
       description = original.description.orElse(tpl.description),
@@ -86,7 +83,6 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
   private[this] def mergeResponses(original: Option[Map[String, Response]], template: Option[Map[String, Response]]): Option[Map[String, Response]] = {
     new MapMerge[Response]() {
       override def merge(original: Response, tpl: Response): Response = {
-        println(s"mergeResponses original: $original tpl: $tpl")
         Response(
           `type` = original.`type`,
           headers = mergeHeaders(original.headers, tpl.headers),

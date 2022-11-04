@@ -1,6 +1,6 @@
 package core
 
-import builder.OriginalValidator
+import _root_.builder.OriginalValidator
 import io.apibuilder.api.json.v0.models.Model
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.json._
@@ -73,13 +73,13 @@ class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with helpers
       ),
       resources = Map(
         "test.apibuilder.import-shared.models.user" -> makeResource(
-          operations = Seq(makeOperation(method = "GET", path = "/get/:id"))
+          operations = Seq(makeOperation(method = "GET", path = Some("/get/:id")))
         ),
         "test.apibuilder.import-shared.unions.user_or_guest" -> makeResource(
-          operations = Seq(makeOperation(method = "GET", path = "/get/:id"))
+          operations = Seq(makeOperation(method = "GET", path = Some("/get/:id")))
         ),
         "test.apibuilder.import-shared.unions.user_or_random" -> makeResource(
-          operations = Seq(makeOperation(method = "GET", path = "/get/:id"))
+          operations = Seq(makeOperation(method = "GET", path = Some("/get/:id")))
         ),
       )
     )

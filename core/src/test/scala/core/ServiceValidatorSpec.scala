@@ -101,7 +101,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
         models = Map("user" -> makeModelWithField()),
         resources = Map("user" -> makeResource(
           operations = Seq(
-            makeOperation(method = "DELETE", path = "/:guid")
+            makeOperation(method = "DELETE", path = Some("/:guid"))
           )
         ))
       )
@@ -117,7 +117,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           models = Map("user" -> makeModelWithField()),
           resources = Map("user" -> makeResource(
             operations = Seq(
-              makeOperation(method = "DELETE", path = "/:guid", parameters = Some(Seq(
+              makeOperation(method = "DELETE", path = Some("/:guid"), parameters = Some(Seq(
                 makeParameter(name = "guid", `type` = typ, location = ParameterLocation.Header)
               )))
             )
@@ -154,7 +154,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           "operations": [
             {
               "method": "GET",
-              "path": "/:guid",
+              "path": Some("/:guid"),
               "responses": {
                 "200": {
                   "type": "user",
@@ -202,7 +202,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           "operations": [
             {
               "method": "GET",
-              "path": "/:guid",
+              "path": Some("/:guid"),
               "parameters": [
                 { "name": "guid", "type": "string" }
               ],
@@ -274,7 +274,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           "operations": [
             {
               "method": "DELETE",
-              "path": "/:guid"
+              "path": Some("/:guid")
             }
           ]
         }
