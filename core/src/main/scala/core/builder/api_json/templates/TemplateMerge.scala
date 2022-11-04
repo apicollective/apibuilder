@@ -1,5 +1,8 @@
 package builder.api_json.templates
 
+
+import cats.data.ValidatedNec
+import cats.implicits._
 import io.apibuilder.api.json.v0.models.TemplateDeclaration
 
 import scala.annotation.tailrec
@@ -15,13 +18,15 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
     format(name) -> t
   }
 
-  def allTemplates(templates: Option[Seq[TemplateDeclaration]]): Seq[TemplateDeclaration] = {
-    templates.getOrElse(Nil).flatMap { tpl =>
+  def allTemplates(templates: Option[Seq[TemplateDeclaration]]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
+    templates.getOrElse(Nil).map { tpl =>
       templatesByName.get(format(tpl.name)) match {
-        case None => Nil
-        case Some(o) => Seq(tpl) ++ allTemplates(Some(templateDeclarations(o)))
+        case None => s"Cannot find template named '${tpl.name.trim}'".invalidNec
+        case Some(o) => allTemplates(Some(templateDeclarations(o))).map { resolved =>
+          Seq(tpl) ++ resolved
+        }
       }
-    }
+    }.sequence.map(_.flatten)
   }
 
   @tailrec

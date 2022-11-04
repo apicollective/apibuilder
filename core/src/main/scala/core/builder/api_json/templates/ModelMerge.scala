@@ -1,5 +1,7 @@
 package builder.api_json.templates
 
+import cats.data.ValidatedNec
+import cats.implicits._
 import io.apibuilder.api.json.v0.models._
 
 case class ModelMergeData(
@@ -9,13 +11,18 @@ case class ModelMergeData(
 
 case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model](templates) with AttributeMerge {
 
-  def merge(data: ModelMergeData): ModelMergeData = {
-    ModelMergeData(
-      models = data.models.map { case (name, model) =>
-        name -> applyTemplates(name, model, allTemplates(model.templates))
-      },
-      interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
-    )
+  def merge(data: ModelMergeData): ValidatedNec[String, ModelMergeData] = {
+    data.models.map { case (name, model) =>
+      allTemplates(model.templates).map { all =>
+        name -> applyTemplates(name, model, all)
+      }
+    }.toSeq.sequence.map { all =>
+      val models = all.map { case (n, m) => n -> m }.toMap
+      ModelMergeData(
+        models = models,
+        interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
+      )
+    }
   }
 
   override def templateDeclarations(model: Model): Seq[TemplateDeclaration] = {

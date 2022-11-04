@@ -1,9 +1,9 @@
 package builder.api_json.templates
 
-import cats.implicits._
 import cats.data.ValidatedNec
-import io.apibuilder.api.json.v0.models.{ApiJson, Templates}
+import cats.implicits._
 import io.apibuilder.api.json.v0.models.json._
+import io.apibuilder.api.json.v0.models.{ApiJson, Templates}
 import play.api.libs.json.{JsObject, Json}
 
 object JsMerge {
@@ -20,21 +20,23 @@ object JsMerge {
   }
 
   def merge(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
-    val modelMerge = ModelMerge(templates.models.getOrElse(Map.empty)).merge(
-      ModelMergeData(
-        models = js.models,
-        interfaces = js.interfaces
+    (
+      ModelMerge(templates.models.getOrElse(Map.empty)).merge(
+        ModelMergeData(
+          models = js.models,
+          interfaces = js.interfaces
+        )
+      ),
+      ResourceMerge(templates.resources.getOrElse(Map.empty)).merge(
+        ResourceMergeData(resources = js.resources)
       )
-    )
-    val resourceMerge = ResourceMerge(templates.resources.getOrElse(Map.empty)).merge(
-      ResourceMergeData(resources = js.resources)
-    )
-    println(s"Merged resources: ${resourceMerge.resources}")
-    js.copy(
-      models = modelMerge.models,
-      interfaces = modelMerge.interfaces,
-      resources = resourceMerge.resources,
-      templates = None
-    ).validNec
+    ).mapN { case (modelMerge, resourceMerge) =>
+      js.copy(
+        models = modelMerge.models,
+        interfaces = modelMerge.interfaces,
+        resources = resourceMerge.resources,
+        templates = None
+      )
+    }
   }
 }

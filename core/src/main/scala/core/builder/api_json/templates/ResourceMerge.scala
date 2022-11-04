@@ -1,16 +1,22 @@
 package builder.api_json.templates
 
+import cats.implicits._
+import cats.data.ValidatedNec
 import io.apibuilder.api.json.v0.models._
 
 case class ResourceMergeData(resources: Map[String, Resource])
 case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge[Resource](templates) with HeaderMerge {
 
-  def merge(data: ResourceMergeData): ResourceMergeData = {
-    ResourceMergeData(
-      resources = data.resources.map { case (name, resource) =>
-        name -> applyTemplates(name, resource, allTemplates(resource.templates))
+  def merge(data: ResourceMergeData): ValidatedNec[String, ResourceMergeData] = {
+    data.resources.map { case (name, resource) =>
+      allTemplates(resource.templates).map { all =>
+        name -> applyTemplates(name, resource, all)
       }
-    )
+    }.toSeq.sequence.map { all =>
+      ResourceMergeData(
+        resources = all.map { case (n, m) => n -> m }.toMap
+      )
+    }
   }
 
   override def templateDeclarations(resource: Resource): Seq[TemplateDeclaration] = {
