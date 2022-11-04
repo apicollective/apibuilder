@@ -321,7 +321,7 @@ case class ApiJsonServiceValidator(
   private def validateResponses(): Seq[String] = {
     val codeErrors = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.responses.filter(r => r.warnings.nonEmpty).map { r =>
+        op.declaredResponses.filter(r => r.warnings.nonEmpty).map { r =>
           opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
         }
       }
@@ -329,7 +329,7 @@ case class ApiJsonServiceValidator(
 
     val typeErrors = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.responses.flatMap { r =>
+        op.declaredResponses.flatMap { r =>
           r.datatype match {
             case Left(errors) => Some(opLabel(resource, op, s"${r.code} type: " + errors.mkString(", ")))
             case Right(_) => None

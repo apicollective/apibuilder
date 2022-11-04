@@ -265,6 +265,12 @@ case class ServiceBuilder(
         case p => p
       }
 
+      val responses = if (internal.declaredResponses.isEmpty) {
+        Seq(ResponseBuilder.DefaultUnitResponse)
+      } else {
+        internal.declaredResponses.map { ResponseBuilder(resolver, _) }
+      }
+
       Operation(
         method = Method(method),
         path = fullPath,
@@ -272,7 +278,7 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         body = internal.body.map { BodyBuilder(_) },
         parameters = pathParameters ++ internalParams,
-        responses = internal.responses.map { ResponseBuilder(resolver, _) },
+        responses = responses,
         attributes = internal.attributes.map { AttributeBuilder(_) }
       )
     }
@@ -490,6 +496,10 @@ case class ServiceBuilder(
   }
 
   object ResponseBuilder {
+    val DefaultUnitResponse: Response = Response(
+      code = ResponseCodeInt(204),
+      `type` = Primitives.Unit.toString
+    )
 
     def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
       Response(

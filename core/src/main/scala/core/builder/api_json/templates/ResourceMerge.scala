@@ -48,7 +48,7 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
           deprecation = original.deprecation.orElse(tpl.deprecation),
           parameters = mergeParameters(original.parameters, tpl.parameters),
           body = original.body.orElse(tpl.body),
-          responses = mergeResponses(original.responses, tpl.responses),
+          declaredResponses = mergeResponses(original.declaredResponses, tpl.declaredResponses),
           attributes = mergeAttributes(original.attributes, tpl.attributes),
           warnings = union(original.warnings, tpl.warnings)
         )

@@ -2,7 +2,7 @@ package builder.api_json
 
 import builder.JsonUtil
 import builder.api_json.upgrades.AllUpgrades
-import core.{ServiceFetcher, Util}
+import core.ServiceFetcher
 import lib.Text
 import play.api.libs.json._
 
@@ -303,7 +303,7 @@ case class InternalOperationForm(
   deprecation: Option[InternalDeprecationForm],
   parameters: Seq[InternalParameterForm],
   body: Option[InternalBodyForm],
-  responses: Seq[InternalResponseForm],
+  declaredResponses: Seq[InternalResponseForm],
   attributes: Seq[InternalAttributeForm],
   warnings: Seq[String] = Seq.empty
 ) {
@@ -731,10 +731,7 @@ object InternalOperationForm {
 
     val responses: Seq[InternalResponseForm] = {
       (json \ "responses").asOpt[JsObject] match {
-        case None => {
-          Seq(InternalResponseForm(code = "204", datatype = Right(InternalDatatype.Unit)))
-        }
-
+        case None => Nil
         case Some(responses: JsObject) => {
           responses.fields.map {
             case(code, value) => {
@@ -778,7 +775,7 @@ object InternalOperationForm {
       body = body,
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      responses = responses,
+      declaredResponses = responses,
       parameters = parameters.toSeq,
       attributes = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
