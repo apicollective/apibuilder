@@ -4,7 +4,7 @@ import builder.api_json.InternalHeaderForm
 
 trait HeaderMerge extends AttributeMerge {
   private[this] val merger = new ArrayMerge[InternalHeaderForm] {
-    override def label(i: InternalHeaderForm): String = i.name.get
+    override def uniqueIdentifier(i: InternalHeaderForm): String = i.name.get
 
     override def merge(original: InternalHeaderForm, tpl: InternalHeaderForm): InternalHeaderForm = {
       InternalHeaderForm(

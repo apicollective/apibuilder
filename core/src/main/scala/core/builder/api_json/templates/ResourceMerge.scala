@@ -39,7 +39,7 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
 
   private[this] def mergeOperations(original: Seq[InternalOperationForm], template: Seq[InternalOperationForm]): Seq[InternalOperationForm] = {
     new ArrayMerge[InternalOperationForm]() {
-      override def label(i: InternalOperationForm): String = pathLabel(i)
+      override def uniqueIdentifier(i: InternalOperationForm): String = pathLabel(i)
       override def merge(original: InternalOperationForm, tpl: InternalOperationForm): InternalOperationForm = {
         InternalOperationForm(
           method = original.method,
@@ -58,7 +58,7 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
 
   private[this] def mergeParameters(original: Seq[InternalParameterForm], template: Seq[InternalParameterForm]): Seq[InternalParameterForm] = {
     new ArrayMerge[InternalParameterForm]() {
-      override def label(i: InternalParameterForm): String = i.name.get
+      override def uniqueIdentifier(i: InternalParameterForm): String = i.name.get
 
       override def merge(original: InternalParameterForm, tpl: InternalParameterForm): InternalParameterForm = {
         InternalParameterForm(
@@ -81,7 +81,7 @@ case class ResourceMerge(templates: Seq[InternalResourceForm]) extends TemplateM
 
   private[this] def mergeResponses(original: Seq[InternalResponseForm], template: Seq[InternalResponseForm]): Seq[InternalResponseForm] = {
     new ArrayMerge[InternalResponseForm]() {
-      override def label(i: InternalResponseForm): String = i.code
+      override def uniqueIdentifier(i: InternalResponseForm): String = i.code
 
       override def merge(original: InternalResponseForm, tpl: InternalResponseForm): InternalResponseForm = {
         InternalResponseForm(

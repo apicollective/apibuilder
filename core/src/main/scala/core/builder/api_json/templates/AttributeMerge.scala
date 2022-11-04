@@ -5,7 +5,7 @@ import play.api.libs.json.Json
 
 trait AttributeMerge {
   private[this] val merger = new ArrayMerge[InternalAttributeForm] {
-    override def label(i: InternalAttributeForm): String = i.name.get
+    override def uniqueIdentifier(i: InternalAttributeForm): String = i.name.get
 
     override def merge(original: InternalAttributeForm, tpl: InternalAttributeForm): InternalAttributeForm = {
       InternalAttributeForm(

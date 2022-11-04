@@ -56,7 +56,7 @@ case class ModelMerge(templates: Seq[InternalModelForm]) extends TemplateMerge[I
 
   def mergeTemplates(original: Seq[InternalTemplateDeclarationForm], template: Seq[InternalTemplateDeclarationForm]): Seq[InternalTemplateDeclarationForm] = {
     new ArrayMerge[InternalTemplateDeclarationForm]() {
-      override def label(i: InternalTemplateDeclarationForm): String = i.name.get
+      override def uniqueIdentifier(i: InternalTemplateDeclarationForm): String = i.name.get
 
       override def merge(original: InternalTemplateDeclarationForm, tpl: InternalTemplateDeclarationForm): InternalTemplateDeclarationForm = {
         InternalTemplateDeclarationForm(
