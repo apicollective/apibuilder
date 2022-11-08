@@ -371,4 +371,9 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   }
 
+  "specialized field type" in {
+    println(s"TODO: Test specializing field type")
+    "a" mustBe "TODO"
+  }
+
 }

@@ -41,7 +41,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
 
   private[this] def applyTemplates(data: ModelMergeData): ValidatedNec[String, Map[String, Model]] = {
     data.models.map { case (name, model) =>
-      allTemplates(model.templates).map { all =>
+      resolveTemplateDeclarations(model.templates).map { all =>
         name -> applyTemplates(name, model, all)
       }
     }.toSeq.sequence.map { all =>

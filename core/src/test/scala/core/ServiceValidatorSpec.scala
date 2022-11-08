@@ -274,7 +274,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           "operations": [
             {
               "method": "DELETE",
-              "path": Some("/:guid")
+              "path": "/:guid"
             }
           ]
         }

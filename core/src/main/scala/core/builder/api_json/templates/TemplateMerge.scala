@@ -18,13 +18,21 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
     format(name) -> t
   }
 
-  def allTemplates(templates: Option[Seq[TemplateDeclaration]]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
-    println(s"allTemplates: ${templates.getOrElse(Nil).map(_.name)}")
-    templates.getOrElse(Nil).map { tpl =>
-      templatesByName.get(format(tpl.name)) match {
-        case None => s"Cannot find template named '${tpl.name.trim}'".invalidNec
-        case Some(o) => allTemplates(Some(templateDeclarations(o))).map { resolved =>
-          Seq(tpl) ++ resolved
+  def resolveTemplateDeclarations(templates: Option[Seq[TemplateDeclaration]]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
+    resolveTemplateDeclarations(templates.getOrElse(Nil).distinctBy(_.name), resolved = Nil)
+  }
+
+  private[this] def resolveTemplateDeclarations(templates: Seq[TemplateDeclaration], resolved: Seq[String]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
+    templates.map { tpl =>
+      val fName = format(tpl.name)
+      if (resolved.contains(fName)) {
+        s"Recursive template named '${tpl.name.trim}' found. Remove this template declaration as it results in an infinite loop".invalidNec
+      } else {
+        templatesByName.get(format(tpl.name)) match {
+          case None => s"Cannot find template named '${tpl.name.trim}'".invalidNec
+          case Some(o) => resolveTemplateDeclarations(templateDeclarations(o), resolved = resolved ++ Seq(fName)).map { newTemplates =>
+            Seq(tpl) ++ newTemplates
+          }
         }
       }
     }.sequence.map(_.flatten)
@@ -32,18 +40,15 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
 
   @tailrec
   protected final def applyTemplates(name: String, resource: T, remaining: Seq[TemplateDeclaration]): T = {
-    println(s"Apply Templates: ${remaining.map(_.name)}")
     remaining.toList match {
       case Nil => resource
       case one :: rest => {
         templatesByName.get(format(one.name)) match {
           case None => {
-            println(s" -- $one: template not found")
             // Template not found. Will be validated by ApiJsonServiceValidator
             applyTemplates(name, resource, rest)
           }
           case Some(tpl) => {
-            println(s" -- $one: found template: ${tpl}")
             applyTemplates(
               name,
               applyTemplate(name, resource, one.name, tpl),

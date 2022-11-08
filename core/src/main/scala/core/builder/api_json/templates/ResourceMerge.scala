@@ -9,7 +9,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
 
   def merge(data: ResourceMergeData): ValidatedNec[String, ResourceMergeData] = {
     data.resources.map { case (name, resource) =>
-      allTemplates(resource.templates).map { all =>
+      resolveTemplateDeclarations(resource.templates).map { all =>
         name -> applyTemplates(name, resource, all)
       }
     }.toSeq.sequence.map { all =>

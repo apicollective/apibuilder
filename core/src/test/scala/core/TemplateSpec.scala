@@ -69,7 +69,7 @@ class TemplateSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
         )
       )
     ) should be(
-      Seq("Name[person] TODO")
+      Seq("Recursive template named 'person' found. Remove this template declaration as it results in an infinite loop")
     )
   }
 
