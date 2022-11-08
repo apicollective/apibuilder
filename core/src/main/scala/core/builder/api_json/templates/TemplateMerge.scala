@@ -19,6 +19,7 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
   }
 
   def allTemplates(templates: Option[Seq[TemplateDeclaration]]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
+    println(s"allTemplates: ${templates.getOrElse(Nil).map(_.name)}")
     templates.getOrElse(Nil).map { tpl =>
       templatesByName.get(format(tpl.name)) match {
         case None => s"Cannot find template named '${tpl.name.trim}'".invalidNec
@@ -31,15 +32,18 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
 
   @tailrec
   protected final def applyTemplates(name: String, resource: T, remaining: Seq[TemplateDeclaration]): T = {
+    println(s"Apply Templates: ${remaining.map(_.name)}")
     remaining.toList match {
       case Nil => resource
       case one :: rest => {
         templatesByName.get(format(one.name)) match {
           case None => {
+            println(s" -- $one: template not found")
             // Template not found. Will be validated by ApiJsonServiceValidator
             applyTemplates(name, resource, rest)
           }
           case Some(tpl) => {
+            println(s" -- $one: found template: ${tpl}")
             applyTemplates(
               name,
               applyTemplate(name, resource, one.name, tpl),
