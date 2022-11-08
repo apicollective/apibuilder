@@ -49,7 +49,6 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
             applyTemplates(name, resource, rest)
           }
           case Some(tpl) => {
-            // TODO: rename name -> one.name
             applyTemplates(
               name,
               applyTemplate(resource, tpl),

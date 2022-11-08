@@ -23,8 +23,25 @@ object JsMerge {
 
   def merge(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
     mergeTemplates(js, templates).map { apiJson =>
-      // TODO: Build Map
-      RenameTypes(Map.empty).rename(apiJson)
+      // Note we build types from the original js as we remove templates after merging
+      RenameTypes(typesToRename(js)).rename(apiJson)
+    }
+  }
+
+  /**
+   * In a type declaration, we have data that looks like:
+   *   - template name: 'group'
+   *   - resource "user_group" using template "group"
+   *   - we user_group is the name of the model, we need to rewrite the return type
+   *     of 'group' to the type of the resource 'user_group'
+   * This method collects the mappings from the template name to the actual model|resource type
+   */
+  private[this] def typesToRename(json: ApiJson): Map[String, String] = {
+    json.models
+      .flatMap { case (modelName, model) =>
+      model.templates.getOrElse(Nil).map(_.name).map { tplName => tplName -> modelName }
+    } ++ json.resources.flatMap { case (resourceType, resource) =>
+      resource.templates.getOrElse(Nil).map(_.name).map { tplName => tplName -> resourceType }
     }
   }
 

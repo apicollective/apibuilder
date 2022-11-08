@@ -10,19 +10,21 @@ case class RenameTypes(data: Map[String, String]) {
   def rename(apiJson: ApiJson): ApiJson = {
     apiJson.copy(
       models = apiJson.models.map { case (t, o) =>
-        renameType(t) -> renameModel(o)
+        t -> renameModel(o)
       },
       resources = apiJson.resources.map { case (t, o) =>
-        renameType(t) -> renameResource(o)
+        t -> renameResource(o)
       },
       interfaces = apiJson.interfaces.map { case (t, o) =>
-        renameType(t) -> renameInterface(o)
+        t -> renameInterface(o)
       }
     )
   }
 
   private[this] def renameInterface(interface: Interface): Interface = {
-    interface
+    interface.copy(
+      fields = interface.fields.map(_.map(renameField))
+    )
   }
 
   private[this] def renameResource(res: Resource): Resource = {
