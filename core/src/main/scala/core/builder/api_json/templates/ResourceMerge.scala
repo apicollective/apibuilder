@@ -29,7 +29,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
       operations = mergeOperations(original.operations, tpl.operations).map { op =>
-        RenameTypes(tplName, originalName).rename(op)
+        RenameTypes(tplName, originalName).renameOperation(op)
       },
       attributes = mergeAttributes(original.attributes, tpl.attributes),
       templates = None,

@@ -53,9 +53,9 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     model.templates.getOrElse(Nil)
   }
 
-  override def applyTemplate(name: String, original: Model, tplName: String, tpl: Model): Model = {
+  override def applyTemplate(originalName: String, original: Model, tplName: String, tpl: Model): Model = {
     val templates = mergeTemplates(original.templates, tpl.templates)
-    Model(
+    val m = Model(
       plural = original.plural,
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
@@ -64,6 +64,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
       templates = None,
       interfaces = union(original.interfaces.getOrElse(Nil), tpl.interfaces.getOrElse(Nil), templates.getOrElse(Nil).map(_.name))
     )
+    RenameTypes(tplName, originalName).renameModel(m)
   }
 
   private[this] def buildInterfaces(defined: Map[String, Interface]): Map[String, Interface] = {
