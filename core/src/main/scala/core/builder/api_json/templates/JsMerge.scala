@@ -22,6 +22,13 @@ object JsMerge {
   }
 
   def merge(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
+    mergeTemplates(js, templates).map { apiJson =>
+      // TODO: Build Map
+      RenameTypes(Map.empty).rename(apiJson)
+    }
+  }
+
+  private[this] def mergeTemplates(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
     (
       validateTemplateNames(js, templates),
       mergeModels(js, templates),

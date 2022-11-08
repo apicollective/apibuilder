@@ -23,14 +23,12 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
     resource.templates.getOrElse(Nil)
   }
 
-  override def applyTemplate(originalName: String, original: Resource, tplName: String, tpl: Resource): Resource = {
+  override def applyTemplate(original: Resource, tpl: Resource): Resource = {
     Resource(
       path = original.path.orElse(tpl.path),
       description = original.description.orElse(tpl.description),
       deprecation = original.deprecation.orElse(tpl.deprecation),
-      operations = mergeOperations(original.operations, tpl.operations).map { op =>
-        RenameTypes(tplName, originalName).renameOperation(op)
-      },
+      operations = mergeOperations(original.operations, tpl.operations),
       attributes = mergeAttributes(original.attributes, tpl.attributes),
       templates = None,
     )

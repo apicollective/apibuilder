@@ -8,7 +8,7 @@ import io.apibuilder.api.json.v0.models.TemplateDeclaration
 import scala.annotation.tailrec
 
 private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
-  def applyTemplate(originalName: String, original: T, tplName: String, tpl: T): T
+  def applyTemplate(original: T, tpl: T): T
 
   def templateDeclarations(tpl: T): Seq[TemplateDeclaration]
 
@@ -49,9 +49,10 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
             applyTemplates(name, resource, rest)
           }
           case Some(tpl) => {
+            // TODO: rename name -> one.name
             applyTemplates(
               name,
-              applyTemplate(name, resource, one.name, tpl),
+              applyTemplate(resource, tpl),
               rest
             )
           }
