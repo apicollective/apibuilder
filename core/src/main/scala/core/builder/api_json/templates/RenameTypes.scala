@@ -16,6 +16,12 @@ case class RenameTypes(from: String, to: String) {
     )
   }
 
+  def rename(m: Model): Model = {
+    m.copy(
+      fields = m.fields.map(renameField)
+    )
+  }
+
   private[this] def renameBody(body: Body): Body = {
     body.copy(
       `type` = renameType(body.`type`)
@@ -30,6 +36,13 @@ case class RenameTypes(from: String, to: String) {
   private[this] def renameParameter(param: Parameter): Parameter = {
     param.copy(
       `type` = renameType(param.`type`)
+    )
+  }
+
+
+  private[this] def renameField(field: Field): Field = {
+    field.copy(
+      `type` = renameType(field.`type`)
     )
   }
 

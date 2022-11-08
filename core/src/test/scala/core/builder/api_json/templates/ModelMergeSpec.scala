@@ -372,8 +372,18 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
   }
 
   "specialized field type" in {
-    println(s"TODO: Test specializing field type")
-    "a" mustBe "TODO"
+    expectValid {
+      makeApiJson(
+        templates = Some(makeTemplates(
+          models = Some(Map(
+            "group" -> makeModel(fields = Seq(makeField(`type` = "group")))
+          ))
+        )),
+        models = Map("user_group" -> makeModel(
+          templates = Some(Seq(makeTemplateDeclaration("group")))
+        ))
+      )
+    }.models.head.fields.head.`type` mustBe "user_group"
   }
 
 }
