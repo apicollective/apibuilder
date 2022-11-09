@@ -244,10 +244,10 @@ case class ServiceBuilder(
           case Some(declared) => {
             // Path parameter was declared in the parameters
             // section. Use the explicit information provided in the
-            // specification
-            val builder = ParameterBuilder(declared, ParameterLocation.Path)
-            debug(s"  - found! location: ${builder.location} / declared location: ${declared.location}")
-            builder
+            // specification and ensure the location is the path
+            ParameterBuilder(declared, ParameterLocation.Path).copy(
+              location = io.apibuilder.spec.v0.models.ParameterLocation.Path
+            )
           }
         }
       }
