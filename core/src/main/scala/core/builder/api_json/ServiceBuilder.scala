@@ -220,9 +220,17 @@ case class ServiceBuilder(
         }
       }
 
+      def debug(msg: String) = {
+        if (resourcePath == "/:organization/account/statements") {
+          println(s"[DEBUG] $msg")
+        }
+      }
+
       val pathParameters = Util.namedParametersInPath(Util.joinPaths(resourcePath, internal.path)).map { name =>
+        debug(s"paramName: $name")
         internal.parameters.find(_.name.contains(name)) match {
           case None => {
+            debug(s"  - not found")
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
               case Some(field) => field.`type`
               case None => {
@@ -237,7 +245,9 @@ case class ServiceBuilder(
             // Path parameter was declared in the parameters
             // section. Use the explicit information provided in the
             // specification
-            ParameterBuilder(declared, ParameterLocation.Path)
+            val builder = ParameterBuilder(declared, ParameterLocation.Path)
+            debug(s"  - found! location: ${builder.location} / declared location: ${declared.location}")
+            builder
           }
         }
       }

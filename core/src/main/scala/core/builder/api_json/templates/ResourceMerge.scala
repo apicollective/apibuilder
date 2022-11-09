@@ -35,7 +35,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
   }
 
   private[this] def pathLabel(op: Operation): String = {
-    (op.method + ":" + op.path).toLowerCase().trim
+    (op.method + ":" + op.path.getOrElse("")).toLowerCase().trim
   }
 
   private[this] def mergeOperations(original: Seq[Operation], template: Seq[Operation]): Seq[Operation] = {
