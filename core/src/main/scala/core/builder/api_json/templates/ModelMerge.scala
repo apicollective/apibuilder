@@ -18,7 +18,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     ).mapN { case (_, models) =>
       ModelMergeData(
         models = models,
-        interfaces = data.interfaces ++ buildInterfaces(data.interfaces)
+        interfaces = data.interfaces ++ buildInterfaces(data)
       )
     }
   }
@@ -66,8 +66,8 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     )
   }
 
-  private[this] def buildInterfaces(defined: Map[String, Interface]): Map[String, Interface] = {
-    templates.filterNot { case (name, _) => defined.contains(name) }.map { case (name, t) =>
+  private[this] def buildInterfaces(data: ModelMergeData): Map[String, Interface] = {
+    templates.filterNot { case (name, _) => data.interfaces.contains(name) }.map { case (name, t) =>
       name -> Interface(
         plural = t.plural,
         description = t.description,
