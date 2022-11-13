@@ -220,17 +220,9 @@ case class ServiceBuilder(
         }
       }
 
-      def debug(msg: String) = {
-        if (resourcePath == "/:organization/account/statements") {
-          println(s"[DEBUG] $msg")
-        }
-      }
-
       val pathParameters = Util.namedParametersInPath(Util.joinPaths(resourcePath, internal.path)).map { name =>
-        debug(s"paramName: $name")
         internal.parameters.find(_.name.contains(name)) match {
           case None => {
-            debug(s"  - not found")
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
               case Some(field) => field.`type`
               case None => {

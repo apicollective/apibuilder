@@ -36,13 +36,13 @@ object JsMerge {
    *     of 'group' to the type of the resource 'user_group'
    * This method collects the mappings from the template name to the actual model|resource type
    */
-  private[this] def typesToRename(json: ApiJson): Map[String, String] = {
+  private[this] def typesToRename(json: ApiJson): Seq[Renaming] = {
     json.models
       .flatMap { case (modelName, model) =>
-      model.templates.getOrElse(Nil).map(_.name).map { tplName => tplName -> modelName }
-    } ++ json.resources.flatMap { case (resourceType, resource) =>
-      resource.templates.getOrElse(Nil).map(_.name).map { tplName => tplName -> resourceType }
-    }
+      model.templates.getOrElse(Nil).map(_.name).map { tplName => Renaming(tplName, modelName) }
+    }.toSeq ++ json.resources.flatMap { case (resourceType, resource) =>
+      resource.templates.getOrElse(Nil).map(_.name).map { tplName => Renaming(tplName, resourceType) }
+    }.toSeq
   }
 
   private[this] def mergeTemplates(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
