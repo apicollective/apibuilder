@@ -371,8 +371,8 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   }
 
-  "specialized field type" in {
-    expectValid {
+  "validates field type" in {
+    expectErrors {
       makeApiJson(
         templates = Some(makeTemplates(
           models = Some(Map(
@@ -383,7 +383,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           templates = Some(Seq(makeTemplateDeclaration("group")))
         ))
       )
-    }.models.head.fields.head.`type` mustBe "user_group"
+    }.head.contains("type[group] is an interface and cannot be used as a field type") mustBe true
   }
 
 }

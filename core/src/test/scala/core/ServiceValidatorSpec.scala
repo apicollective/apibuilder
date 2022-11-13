@@ -128,10 +128,10 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     setup("string").errors() should be(Nil)
     val guid = setup("string").service().resources.head.operations.head.parameters.head
     guid.`type` should be("string")
-    guid.location should be(spec.ParameterLocation.Header)
+    guid.location should be(spec.ParameterLocation.Path)
 
     setup("user").errors() should be(
-      Seq("Resource[user] DELETE /users/:guid Parameter[guid] has an invalid type[user]. Interface, model and union types are not supported as header parameters.")
+      Seq("Resource[user] DELETE /users/:guid path parameter[guid] has an invalid type[user]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
     )
   }
 
