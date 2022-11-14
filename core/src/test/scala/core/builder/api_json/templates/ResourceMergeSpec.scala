@@ -99,7 +99,6 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
   }
 
   "body is specialized to the specific model" in {
-    val templateOp = makeOperation(method = "POST", body = Some(makeBody(`type` = "statement")))
     val operations = expectValid(
       makeApiJson(
         templates = Some(makeTemplates(
@@ -108,7 +107,9 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           )),
           resources = Some(Map(
             "statement" -> makeResource(
-              operations = Seq(templateOp)
+              operations = Seq(
+                makeOperation(method = "POST", body = Some(makeBody(`type` = "statement_form")))
+              )
             )
           ))
         )),
