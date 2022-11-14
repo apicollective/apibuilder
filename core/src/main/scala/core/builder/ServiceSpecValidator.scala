@@ -55,10 +55,10 @@ case class ServiceSpecValidator(
     validateHeaders(service.headers, "Header") ++
     validateTypeNamesAreUnique() ++
     validateResources() ++
-    validateParameterLocations() ++
-    validateParameterBodies() ++
-    validateParameterDefaults() ++
-    validateParameterNames() ++
+    validateResourceLocations() ++
+    validateResourceBodies() ++
+    validateResourceDefaults() ++
+    validateResourceNames() ++
     validateParameters() ++
     validateResponses() ++
     validateGlobalAnnotations()
@@ -726,7 +726,7 @@ case class ServiceSpecValidator(
     datatypeErrors ++ missingOperations ++ duplicateModels ++ duplicatePlurals
   }
 
-  private def validateParameterLocations(): Seq[String] = {
+  private def validateResourceLocations(): Seq[String] = {
     service.resources.flatMap { resource =>
       resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
@@ -739,7 +739,7 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def validateParameterBodies(): Seq[String] = {
+  private def validateResourceBodies(): Seq[String] = {
     val typesNotFound = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.body match {
@@ -763,7 +763,7 @@ case class ServiceSpecValidator(
     typesNotFound ++ invalidMethods
   }
 
-  private def validateParameterDefaults(): Seq[String] = {
+  private def validateResourceDefaults(): Seq[String] = {
     service.resources.flatMap { resource =>
       resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
@@ -782,7 +782,7 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def validateParameterNames(): Seq[String] = {
+  private def validateResourceNames(): Seq[String] = {
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         DuplicateErrorMessage.message(

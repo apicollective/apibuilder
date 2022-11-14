@@ -372,6 +372,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
   }
 
   "validates field type" in {
+    val model =  makeModel(templates = Some(Seq(makeTemplateDeclaration("group"))))
     expectErrors {
       makeApiJson(
         templates = Some(makeTemplates(
@@ -379,9 +380,10 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
             "group" -> makeModel(fields = Seq(makeField(`type` = "group")))
           ))
         )),
-        models = Map("user_group" -> makeModel(
-          templates = Some(Seq(makeTemplateDeclaration("group")))
-        ))
+        models = Map(
+          "user_group" -> model,
+          "other_group" -> model
+        )
       )
     }.head.contains("type[group] is an interface and cannot be used as a field type") mustBe true
   }

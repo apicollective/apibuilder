@@ -98,4 +98,33 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     )
   }
 
+  "body is specialized to the specific model" in {
+    val operations = expectValid(
+      makeApiJson(
+        templates = Some(makeTemplates(
+          models = Some(Map(
+            "statement_form" -> makeModel(fields = Seq(makeField()))
+          )),
+          resources = Some(Map(
+            "statement" -> makeResource(
+              operations = Seq(
+                makeOperation(method = "POST", body = Some(makeBody(`type` = "statement_form")))
+              )
+            )
+          ))
+        )),
+        models = Map(
+          "channel_statement_form" -> makeModel(templates = Some(Seq(makeTemplateDeclaration(name = "statement_form")))),
+          "channel_statement" -> makeModel(fields = Seq(makeField("id")))
+        ),
+        resources = Map(
+          "channel_statement" -> makeResource(
+            templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
+          )
+        )
+      )
+    ).resources.flatMap(_.operations).flatMap(_.body).map(_.`type`) mustBe Seq(
+      "channel_statement_form"
+    )
+  }
 }

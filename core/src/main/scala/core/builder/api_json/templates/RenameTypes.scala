@@ -11,6 +11,12 @@ case class Renaming(from: String, to: String)
 case class RenameTypes(data: Seq[Renaming]) {
 
   private[this] val byTypeName: Map[String, Seq[Renaming]] = data.groupBy(_.to)
+  private[this] val singletons: Map[String, String] = data.groupBy(_.from).flatMap { case (from, to) =>
+    to.toList match {
+      case one :: Nil => Some(from -> one.to)
+      case _ => None
+    }
+  }
 
   def rename(apiJson: ApiJson): ApiJson = {
     apiJson.copy(
@@ -87,7 +93,7 @@ case class RenameTypes(data: Seq[Renaming]) {
         case TextDatatype.List => TextDatatype.List
         case TextDatatype.Singleton(name) => TextDatatype.Singleton(
           byTypeName.getOrElse(context, Nil).filter(_.from == name).map(_.to).distinct.toList match {
-            case Nil => name
+            case Nil => singletons.getOrElse(name, name)
             case one :: Nil => one
             case multiple => {
               sys.error(s"Multiple rename options for type[$typ] context[$context]: $multiple")

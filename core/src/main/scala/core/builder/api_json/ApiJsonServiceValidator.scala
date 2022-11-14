@@ -328,7 +328,7 @@ case class ApiJsonServiceValidator(
     codeErrors ++ typeErrors ++ attributeErrors
   }
 
-  private def validateParameterBodies(resources: Seq[InternalResourceForm]): Seq[String] = {
+  private def validateResourceBodies(resources: Seq[InternalResourceForm]): Seq[String] = {
     resources.flatMap { resource =>
       resource.operations.filter(_.body.isDefined).flatMap { op =>
         op.body.get.datatype match {
@@ -345,7 +345,7 @@ case class ApiJsonServiceValidator(
     }
     resourceWarnings ++
       validateOperations(resources) ++
-      validateParameterBodies(resources) ++
+      validateResourceBodies(resources) ++
       validateParameters(resources) ++
       validateResponses(resources)
   }

@@ -156,15 +156,23 @@ trait ApiJsonHelpers {
     )
   }
 
+  def makeBody(`type`: String = "string") :Body = {
+    Body(
+      `type` = `type`
+    )
+  }
+
   def makeOperation(
     method: String = "GET",
     path: Option[String] = None,
+    body: Option[Body] = None,
     parameters: Option[Seq[Parameter]] = None,
     responses: Option[Map[String, Response]] = None,
   ): Operation = {
     Operation(
       method = method,
       path = path,
+      body = body,
       parameters = parameters,
       responses = responses
     )
