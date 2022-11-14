@@ -46,7 +46,6 @@ case class ServiceSpecValidator(
   )
 
   lazy val errors: Seq[String] = {
-    validateApidoc() ++
     validateName() ++
     validateBaseUrl() ++
     validateInterfaces() ++
@@ -63,19 +62,6 @@ case class ServiceSpecValidator(
     validateParameters() ++
     validateResponses() ++
     validateGlobalAnnotations()
-  }
-
-  private def validateApidoc(): Seq[String] = {
-    val specified = VersionTag(service.apidoc.version)
-    specified.major match {
-      case None => {
-        val current = io.apibuilder.spec.v0.Constants.Version
-        Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")
-      }
-      case Some(_) => {
-        Nil
-      }
-    }
   }
 
   private def validateName(): Seq[String] = {
@@ -114,7 +100,7 @@ case class ServiceSpecValidator(
       val p = s"Interface[${interface.name}]"
       validateName(p, interface.name) ++ validateFields(p, interface.fields)
     } ++
-      dupsError("Interface", service.interfaces.map(_.name))
+      DuplicateErrorMessage.message("Interface", service.interfaces.map(_.name))
   }
 
   private def validateModels(): Seq[String] = {
@@ -124,7 +110,7 @@ case class ServiceSpecValidator(
       validateName(p, model.name) ++
         validateFields(p, model.fields) ++
         model.interfaces.flatMap { n => validateInterfaceFields(p, n, model.fields) }
-    } ++ dupsError("Model", service.models.map(_.name))
+    } ++ DuplicateErrorMessage.message("Model", service.models.map(_.name))
   }
 
   def validateAnnotation(prefix: String, anno: String): Seq[String] = {
@@ -136,7 +122,7 @@ case class ServiceSpecValidator(
   }
 
   def validateFields(prefix: String, fields: Seq[Field]): Seq[String] = {
-    dupsError(s"$prefix field", fields.map(_.name)) ++
+    DuplicateErrorMessage.message(s"$prefix field", fields.map(_.name)) ++
       fields.flatMap { f => validateField(s"$prefix Field[${f.name}]", f) }
   }
 
@@ -218,7 +204,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    val duplicates = dupsError("Enum", service.enums.map(_.name))
+    val duplicates = DuplicateErrorMessage.message("Enum", service.enums.map(_.name))
 
     val valueErrors = service.enums.filter { _.values.isEmpty }.map { enum =>
       s"Enum[${enum.name}] must have at least one value"
@@ -238,14 +224,14 @@ case class ServiceSpecValidator(
     }
 
     val duplicateValues = service.enums.flatMap { enum =>
-      dups(enum.values.map(_.name)).map { value =>
+      DuplicateErrorMessage.findDuplicates(enum.values.map(_.name)).map { value =>
         s"Enum[${enum.name}] value[$value] appears more than once"
       }
     }.toList match {
       case Nil => {
         // Check uniqueness of the serialization values
         service.enums.flatMap { enum =>
-          dups(enum.values.map { ev => ev.value.getOrElse(ev.name) }).map { value =>
+          DuplicateErrorMessage.findDuplicates(enum.values.map { ev => ev.value.getOrElse(ev.name) }).map { value =>
             s"Enum[${enum.name}] value[$value] appears more than once"
           }
         }
@@ -258,7 +244,7 @@ case class ServiceSpecValidator(
 
   private def validateAnnotations(prefix: String, annotations: Seq[String]): Seq[String] = {
     annotations.flatMap { a => validateAnnotation(prefix, a) } ++
-      dupsError(s"$prefix Annotation", annotations)
+      DuplicateErrorMessage.message(s"$prefix Annotation", annotations)
 
   }
 
@@ -272,7 +258,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    val duplicates = dupsError("Annotation", service.annotations.map(_.name))
+    val duplicates = DuplicateErrorMessage.message("Annotation", service.annotations.map(_.name))
 
     nameErrors ++ duplicates
   }
@@ -329,7 +315,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    val duplicates = dupsError("Union", service.unions.map(_.name))
+    val duplicates = DuplicateErrorMessage.message("Union", service.unions.map(_.name))
 
     // Only do additional validation if we have a valid discriminator
     val additionalDiscriminatorErrors = if (discriminatorErrors.isEmpty) {
@@ -373,7 +359,7 @@ case class ServiceSpecValidator(
       validateType(s"$prefix", t.`type`) ++
         validateTypeNotUnit(prefix, t.`type`) ++
         validateTypeLocal(s"$prefix Type[${t.`type`}]", t.`type`) ++
-        dupsError(s"$prefix Type", types.map(_.`type`))
+        DuplicateErrorMessage.message(s"$prefix Type", types.map(_.`type`))
     } ++ validateUnionTypeDefaults(prefix, types)
   }
 
@@ -470,7 +456,7 @@ case class ServiceSpecValidator(
 
   private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): Seq[String] = {
     service.unions.flatMap { union =>
-      dupsError(
+      DuplicateErrorMessage.message(
         s"Union[${union.name}] discriminator value",
         getAllDiscriminatorValues(union),
       )
@@ -613,7 +599,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    val duplicates = dupsError(location, headers.map(_.name))
+    val duplicates = DuplicateErrorMessage.message(location, headers.map(_.name))
 
     headersWithInvalidTypes ++ duplicates
   }
@@ -735,7 +721,7 @@ case class ServiceSpecValidator(
       }
     }.distinct
 
-    val duplicatePlurals = dupsError("Resource with plural", service.resources.map(_.plural))
+    val duplicatePlurals = DuplicateErrorMessage.message("Resource with plural", service.resources.map(_.plural))
 
     datatypeErrors ++ missingOperations ++ duplicateModels ++ duplicatePlurals
   }
@@ -799,7 +785,7 @@ case class ServiceSpecValidator(
   private def validateParameterNames(): Seq[String] = {
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        dupsError(
+        DuplicateErrorMessage.message(
           opLabel(resource, op, "Parameter"),
           op.parameters.map(_.name)
         )
@@ -1012,18 +998,6 @@ case class ServiceSpecValidator(
       case None => Nil
       case Some(kind) => validator.validate(kind, default, Some(prefix)).toSeq
     }
-  }
-
-  private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
-    dups(values).map { n =>
-      s"$label[$n] appears more than once"
-    }
-  }
-
-  private def dups(values: Iterable[String]): List[String] = {
-    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim)
-      .filter { _._2.size > 1 }
-      .keys.toList.sorted
   }
 
   private def opLabel(

@@ -1,6 +1,8 @@
 package builder.api_json
 
 import builder.JsonUtil
+import builder.api_json.templates.JsMerge
+import cats.data.Validated.{Invalid, Valid}
 import core.{DuplicateJsonParser, Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
 import io.apibuilder.spec.v0.models.Service
@@ -25,28 +27,34 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private var parseError: Option[String] = None
+  private var parseError: Option[Seq[String]] = None
 
   lazy val serviceForm: Option[JsObject] = {
     Try(Json.parse(apiJson)) match {
       case Success(v) => {
         v.asOpt[JsObject] match {
           case Some(o) => {
-            Some(o)
+            JsMerge.merge(o) match {
+              case Invalid(errors) => {
+                parseError = Some(errors.toNonEmptyList.toList)
+                None
+              }
+              case Valid(js) => Some(js)
+            }
           }
           case None => {
-            parseError = Some("Must upload a Json Object")
+            parseError = Some(Seq("Must upload a Json Object"))
             None
           }
         }
       }
       case Failure(ex) => ex match {
         case e: JsonParseException => {
-          parseError = Some(e.getMessage)
+          parseError = Some(Seq(e.getMessage))
           None
         }
         case e: JsonProcessingException => {
-          parseError = Some(e.getMessage)
+          parseError = Some(Seq(e.getMessage))
           None
         }
       }
@@ -62,7 +70,10 @@ case class ApiJsonServiceValidator(
         if (apiJson.trim == "") {
           Seq("No Data")
         } else {
-          Seq(parseError.getOrElse("Invalid JSON"))
+          parseError.getOrElse(Nil).toList match {
+            case Nil => Seq("Invalid JSON")
+            case errs => errs
+          }
         }
       }
 
@@ -74,15 +85,10 @@ case class ApiJsonServiceValidator(
             validateImports() ++
             validateAttributes("Service", internalService.get.attributes) ++
             validateHeaders() ++
-            validateResources() ++
-            validateOperations() ++
-            validateParameterBodies() ++
-            validateParameters() ++
-            validateResponses() ++
+            validateResources(internalService.get.resources) ++
             validateInterfaces() ++
             validateUnions() ++
-            validateModels() ++
-            validateFields() ++
+            validateModels(internalService.get.models) ++
             validateEnums() ++
             validateAnnotations() ++
             DuplicateJsonParser.validateDuplicates(apiJson)
@@ -133,7 +139,7 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace", "$schema"),
       optionalArraysOfObjects = Seq("imports", "headers", "attributes"),
-      optionalObjects = Seq("apidoc", "info", "enums", "interfaces", "models", "unions", "resources", "annotations")
+      optionalObjects = Seq("info", "enums", "interfaces", "models", "unions", "resources", "annotations", "templates")
     )
   }
 
@@ -226,15 +232,14 @@ case class ApiJsonServiceValidator(
     warnings ++ attributeErrors
   }
 
-  private def validateModels(): Seq[String] = {
-    val models = internalService.get.models
+  private def validateModels(models: Seq[InternalModelForm]): Seq[String] = {
     val warnings = models.flatMap(_.warnings)
 
     val attributeErrors = models.flatMap { model =>
       validateAttributes(s"Model[${model.name}]", model.attributes)
     }
 
-    warnings ++ attributeErrors
+    warnings ++ attributeErrors ++ validateFields(models)
   }
 
   private def validateHeaders(): Seq[String] = {
@@ -247,17 +252,19 @@ case class ApiJsonServiceValidator(
     warnings ++ attributeErrors
   }
 
-  private def validateFields(): Seq[String] = {
-    val missingNames = internalService.get.models.flatMap { model =>
+  private def validateFields(models: Seq[InternalModelForm]): Seq[String] = {
+    val missingNames = models.flatMap { model =>
       model.fields.filter(_.name.isEmpty).map { f =>
-        s"Model[${model.name}] field[${f.name}] must have a name"
+        modelLabel(model, s"field[${f.name}] must have a name")
       }
     }
 
-    val missingTypes = internalService.get.models.flatMap { model =>
+    val missingTypes = models.flatMap { model =>
       model.fields.filter(_.name.isDefined).flatMap { f =>
         f.datatype match {
-          case Left(errors) => Some(s"Model[${model.name}] field[${f.name.get}] type ${errors.mkString(", ")}")
+          case Left(errors) => Some({
+            modelLabel(model, s"field[${f.name.get}] type ${errors.mkString(", ")}")
+          })
           case Right(_) => None
         }
       }
@@ -294,18 +301,18 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateResponses(): Seq[String] = {
-    val codeErrors = internalService.get.resources.flatMap { resource =>
+  private def validateResponses(resources: Seq[InternalResourceForm]): Seq[String] = {
+    val codeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.responses.filter(r => r.warnings.nonEmpty).map { r =>
+        op.declaredResponses.filter(r => r.warnings.nonEmpty).map { r =>
           opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
         }
       }
     }
 
-    val typeErrors = internalService.get.resources.flatMap { resource =>
+    val typeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.responses.flatMap { r =>
+        op.declaredResponses.flatMap { r =>
           r.datatype match {
             case Left(errors) => Some(opLabel(resource, op, s"${r.code} type: " + errors.mkString(", ")))
             case Right(_) => None
@@ -321,8 +328,8 @@ case class ApiJsonServiceValidator(
     codeErrors ++ typeErrors ++ attributeErrors
   }
 
-  private def validateParameterBodies(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
+  private def validateParameterBodies(resources: Seq[InternalResourceForm]): Seq[String] = {
+    resources.flatMap { resource =>
       resource.operations.filter(_.body.isDefined).flatMap { op =>
         op.body.get.datatype match {
           case Left(errs) => Some(opLabel(resource, op, s"Body ${errs.mkString(", ")}"))
@@ -332,14 +339,19 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateResources(): Seq[String] = {
-    internalService.get.resources.filter(_.warnings.nonEmpty).map { resource =>
-      s"Resource[${resource.datatype.label}] " + resource.warnings.mkString(", ")
+  private def validateResources(resources: Seq[InternalResourceForm]): Seq[String] = {
+    val resourceWarnings = resources.filter(_.warnings.nonEmpty).map { resource =>
+      s"Resource[${resource.datatype.label}]" + resource.warnings.mkString(", ")
     }
+    resourceWarnings ++
+      validateOperations(resources) ++
+      validateParameterBodies(resources) ++
+      validateParameters(resources) ++
+      validateResponses(resources)
   }
 
-  private def validateOperations(): Seq[String] = {
-    val warnings = internalService.get.resources.flatMap { resource =>
+  private def validateOperations(resources: Seq[InternalResourceForm]): Seq[String] = {
+    val warnings = resources.flatMap { resource =>
       resource.operations.filter(_.warnings.nonEmpty).map { op =>
         opLabel(resource, op, op.warnings.mkString(", "))
       }
@@ -360,12 +372,21 @@ case class ApiJsonServiceValidator(
     warnings ++ attributeErrors ++ bodyAttributeErrors
   }
 
-  private def validateParameters(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
+  private def validateParameters(resources: Seq[InternalResourceForm]): Seq[String] = {
+    resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.flatMap(_.warnings)
+        op.parameters.filter(_.warnings.nonEmpty).map { p =>
+          opLabel(resource, op, s"Parameter[${p.name}]")
+        }
       }
     }
+  }
+
+  private def resourceLabel(
+    resource: InternalResourceForm,
+    message: String
+  ): String = {
+    s"Resource[${resource.datatype.label}] $message"
   }
 
   private def opLabel(
@@ -384,4 +405,7 @@ case class ApiJsonServiceValidator(
     ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
+  private def modelLabel(model: InternalModelForm, message: String): String = {
+    s"Model[${model.name}] $message"
+  }
 }

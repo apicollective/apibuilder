@@ -47,8 +47,8 @@
 
 <ul>
 
-  <li> apidoc officially renamed to API Builder</li>
-  <li> apidoc clients in the Com::Bryzek namespace have moved to Io. For example, instead of importing com.bryzek.apidoc... now import io.apibuilder...</li>
+  <li> apibuilder officially renamed to API Builder</li>
+  <li> apibuilder clients in the Com::Bryzek namespace have moved to Io. For example, instead of importing com.bryzek.apibuilder... now import io.apibuilder...</li>
 
 </ul>
 
@@ -130,7 +130,7 @@
     availability of a go client code generator. This should be
     considered alpha but is already being used in production. </li>
 
-    <li> Attributes now supported: We have added attributes to apidoc
+    <li> Attributes now supported: We have added attributes to apibuilder
     - these are globally defined, with values currently set at the
     organization level. Code generators can declare what attributes
     they use - and any attribute values are now made available to the
@@ -258,7 +258,7 @@
   <ul>
 
     <li> Introduction of a play 2.4.x code generator. Only minor changes from 2.3.x.</li>
-    <li> apidoc itself is now running play 2.4.2 </li>
+    <li> apibuilder itself is now running play 2.4.2 </li>
     <li> Introduction of a java model code
     generator. See <a href='@lib.Labels.ApiBuilderGeneratorGitHubUrl/pull/29'>PR
     29</a>. Many thanks
@@ -365,11 +365,11 @@
 
   <ul>
 
-    <li> Added a required, top level node named 'apidoc' to the
+    <li> Added a required, top level node named 'apibuilder' to the
     api.json upload. The initial purpose of this node is to capture
-    the version of the apidoc specification used by that
-    file. See <a href="@routes.DocController.apiJson#apidoc">api.json
-    apidoc</a> for details.</li>
+    the version of the apibuilder specification used by that
+    file. See <a href="@routes.DocController.apiJson#apibuilder">api.json
+    apibuilder</a> for details.</li>
 
     <li> Add support for explicitly specifying 404 responses - users
     will now have to explicitly specify 404 for any responses that
@@ -385,7 +385,7 @@
   <ul>
 
     <li> New 'default' keyword for response codes - this feature has
-    been added to enhance support of apidoc uploads using the swagger
+    been added to enhance support of apibuilder uploads using the swagger
     specification. We now support the keyword 'default' when defining
     the response code. This keyword can be used to specify a default
     type for all non specified response codes, which is particularly
@@ -434,7 +434,7 @@
 
       <li>It is illegal to specify a default for a non-required
           field. You will see a validation error when uploading a
-          service to apidoc.</li>
+          service to apibuilder.</li>
 
     </ul>
 
@@ -445,18 +445,18 @@
     <li> Experimental support for Swagger Json (2.0 only). This
     feature allows you to define your service using
     the <a href="http://swagger.io">swagger spec, version 2.0</a> and
-    import it into apidoc. This in turns means you can use the apidoc
+    import it into apibuilder. This in turns means you can use the apibuilder
     code generators to access services described with swagger. There
     are a few major caveats:
 
     <ul>
 
       <li> Only a subset of features are supported as swagger has a
-      broader feature set. We are prioritizing future work in apidoc
+      broader feature set. We are prioritizing future work in apibuilder
       to incorporate these features directly.</li>
 
       <li> There is a mismatch between APIs in swagger and Resources
-      in apidoc. Right now we are using a simple pattern match on API
+      in apibuilder. Right now we are using a simple pattern match on API
       Urls to determine resources. You will get an error if an API
       path cannot automatically be mapped to a resource.</li>
 
@@ -484,12 +484,12 @@
     your models
     using <a href="https://avro.apache.org/docs/1.7.7/idl.html">Avro
     IDL</a> specification. You can upload this file and it will be
-    automatically converted to the apidoc service specification. The
+    automatically converted to the apibuilder service specification. The
     primary use cases we are exploring here: (1) when you are only
     defining events (e.g. no resources / operations) and prefer IDL or
     already have IDL; (2) support for generate nice libraries / models
     for working with your models where the input data are already in
-    IDL (hopefully the existing clients from apidoc are useful).
+    IDL (hopefully the existing clients from apibuilder are useful).
 
     <p>
     To use this feature, upload an .avdl file instead of a .json file
@@ -558,7 +558,7 @@ are support for union types and imports.</p>
       <li> We have replaced the code that converts a service name to a
       package name so that it is more consistent. The main change is
       that camelcased service names will now split into sub packages
-      (so apidocSpec becomes apidoc.spec). We think this change makes
+      (so apibuilderSpec becomes apibuilder.spec). We think this change makes
       the package names more approachable and consistent.</li>
 
       <li> Code generators automatically include the major version
@@ -569,7 +569,7 @@ are support for union types and imports.</p>
       made. By including the major version number in the package name
       we simplify a portion of the upgrade path. Note that you can
       override this behavior by explicitly providing a namespace in
-      the api.json file you upload to apidoc.</li>
+      the api.json file you upload to apibuilder.</li>
 
       <pre>package io.apibuilderspec</pre>
 
@@ -640,7 +640,7 @@ are support for union types and imports.</p>
   <ul>
 
     <li> <a href="@routes.DocController.apiJson#union">Union types</a> -
-    apidoc provides support for declaring your own union types
+    apibuilder provides support for declaring your own union types
     (sometimes referred to as sum or algebraic types). The basic idea
     is that you can express that a particular variable is one of a
     known set of types. As an example, in an ecommerce system, you
@@ -664,18 +664,18 @@ are support for union types and imports.</p>
     differentiate between an application, each of its versions, and
     the actual REST API (or service). More precisely: Organizations
     contain applications. Each application can contain one or more
-    versions (users upload versions to apidoc).</li>
+    versions (users upload versions to apibuilder).</li>
 
     <li> We have introduced a new concept of a Service which is a
     complete description of a REST service as described by
-    apidoc. Users of apidoc upload api.json files that contain a
-    specification of a REST API. apidoc converts the specification
+    apibuilder. Users of apibuilder upload api.json files that contain a
+    specification of a REST API. apibuilder converts the specification
     into a service description that we now call a
     &quot;Service&quot;. A Service is a full description of the REST
     API. The schema for a service can be found
     at <a href="@lib.Labels.ApiBuilderSpecExample.docsUrl">@lib.Labels.ApiBuilderSpecExample.label</a>.</li>
 
-    <li>Code generators have been moved out of the apidoc code
+    <li>Code generators have been moved out of the apibuilder code
     repository and into a separate repository (<a
     href="@lib.Labels.ApiBuilderGeneratorGitHubUrl">@lib.Labels.ApiBuilderGeneratorGitHubUrl</a>). Combined
     with the introduction of the service schema, we now have a much
@@ -698,11 +698,11 @@ are support for union types and imports.</p>
     lower case, under score separated (converting from camel case
     automatically), and then splitting on underscore. Thus for the
     organization namespace io.apibuilder, version 1 of an application named
-    apidoc-spec will result in a namespace of io.apibuilder.spec.v1.
+    apibuilder-spec will result in a namespace of io.apibuilder.spec.v1.
 
     <ol>
 
-      <li> apidoc now supports importing definitions from other
+      <li> apibuilder now supports importing definitions from other
       services. The namespace is required in order to resolve a
       reference to a model or enum imported from another service. See
       notes <a href="#import">below on importing</a>.</li>
@@ -759,7 +759,7 @@ are support for union types and imports.</p>
   <ul>
 
     <li> You can now create and manage API tokens to programmatically
-    access apidoc
+    access apibuilder
     applications. Visit <a href="@routes.TokensController.index()">@routes.TokensController.index()</a>
     to manage tokens. There is an experimental CLI that relies on
     these tokens available
@@ -797,7 +797,7 @@ are support for union types and imports.</p>
     created or updated, and as an org admin, whenever somebody
     requests to join your organization. We also added email
     verification - combined with organization level domains, today
-    when a new user joins apidoc they will receive an email message to
+    when a new user joins apibuilder they will receive an email message to
     confirm their email. Upon confirming their email, if their email
     domain matches a domain that you've setup for your organization,
     that user will automatically become part of your organization.</li>
@@ -820,7 +820,7 @@ are support for union types and imports.</p>
     create copies of the instances with changes to specific
     fields. Example:
     <pre>
-      domain = Apidoc::Models::Domain.new(:name => "apibuilder.io")
+      domain = apibuilder::Models::Domain.new(:name => "apibuilder.io")
       puts domain.name
       => apibuilder.io
 
@@ -859,7 +859,7 @@ are support for union types and imports.</p>
 
     <li> <b>Support for community code generators (alpha):</b>
     Generators are now implemented as rest services, with a standard
-    interface described in apidoc. Adding a generator requires two
+    interface described in apibuilder. Adding a generator requires two
     steps:
 
     <ol>
@@ -934,7 +934,7 @@ are support for union types and imports.</p>
 
     <li> Revised documentation, including getting started
     guid. See <a href="@routes.DocController.index">Introduction to
-    apidoc</a>.</li>
+    apibuilder</a>.</li>
 
   </ul>
 
@@ -944,9 +944,9 @@ are support for union types and imports.</p>
 
     <li><a href="@routes.DocController.index">Improved documentation</a>, especially for new users!</li>
 
-    <li>Code refactoring in apidoc itself - project is mature enough
+    <li>Code refactoring in apibuilder itself - project is mature enough
     now that we were able to replace the internal models used to
-    bootstrap apidoc with the apidoc generated models! Thanks
+    bootstrap apibuilder with the apibuilder generated models! Thanks
     gheine. See <a href='@lib.Labels.ApiBuilderGitHubUrl/pull/176'>PR
     176</a></li>
 
@@ -958,7 +958,7 @@ are support for union types and imports.</p>
 
     <li>Code generation targets are extensible internally. First step
     towards opening up a simple way for anybody to contribute
-    generators based on the apidoc
+    generators based on the apibuilder
     model. See <a href='@lib.Labels.ApiBuilderGitHubUrl/pull/171'>PR
     171</a></li>
 
@@ -980,7 +980,7 @@ are support for union types and imports.</p>
     of type date are now allowed in the HTTP Path. Previously, we
     restricted this particular type from path parameters as
     serialization is unclear; Serialization remains the responsibility
-    of the service itself and thus apidoc will just document that the
+    of the service itself and thus apibuilder will just document that the
     type is a
     date. See <a href='@lib.Labels.ApiBuilderGitHubUrl/issues/161'>Issue
     161</a></li>
@@ -988,7 +988,7 @@ are support for union types and imports.</p>
     <li>UI refactored so that resources are hyperlinked to their
     underlying model; All models, even if mapped to resources, are now
     listed in the Models section of the UI of
-    apidoc. See <a href='@lib.Labels.ApiBuilderGitHubUrl/issues/152'>Issue
+    apibuilder. See <a href='@lib.Labels.ApiBuilderGitHubUrl/issues/152'>Issue
     152</a></li>
 
     <li>When downloading a client for the 'latest' version of a
@@ -1093,7 +1093,7 @@ are support for union types and imports.</p>
     <li> Simple command line validation of api.json files! To validate
     a file, you can now use a public REST endpoint:
 
-    <pre>curl -XPOST -d @@./api.json http://api.apidoc.me/validations</pre>
+    <pre>curl -XPOST -d @@./api.json http://api.apibuilder.me/validations</pre>
     </li>
 
     <li> Organization metadata now part of settings - To access, visit
@@ -1146,7 +1146,7 @@ are support for union types and imports.</p>
   <ul>
 
     <li> Enums are now supported as first class elements in
-    apidoc. This is a breaking change as the prior implementation
+    apibuilder. This is a breaking change as the prior implementation
     (using an enum attribute on fields) is no longer supported. You
     will get a validation error message to help with
     migration. See <a href="@routes.DocController.apiJson">apiJson documentation</a>
@@ -1177,7 +1177,7 @@ are support for union types and imports.</p>
     it is actually the request that failed.</li>
 
     <li>User agents in client: All generated clients now provide a
-    default user agent to identify the version of apidoc that
+    default user agent to identify the version of apibuilder that
     generated the client as well as the specific org, service, and
     version of the service description used to generate the client.
     See <a href='@lib.Labels.ApiBuilderGitHubUrl/pull/116'>PR 116</a>

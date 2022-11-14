@@ -32,6 +32,7 @@ GET     /doc/start                                                controllers.Do
 GET     /doc/apiJson                                              controllers.DocController.apiJson
 GET     /doc/interfaces                                           controllers.DocController.interfaces
 GET     /doc/attributes                                           controllers.DocController.attributes
+GET     /doc/templates                                            controllers.DocController.templates
 GET     /doc/types                                                controllers.DocController.types
 GET     /doc/examples                                             controllers.DocController.examples
 GET     /doc/generators                                           controllers.DocController.generators

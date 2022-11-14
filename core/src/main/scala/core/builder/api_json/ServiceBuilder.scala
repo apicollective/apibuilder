@@ -1,9 +1,9 @@
 package builder.api_json
 
-import core.{Importer, ServiceFetcher, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion, VersionMigration}
-import lib.{Methods, Primitives, ServiceConfiguration, Text, UrlKey}
+import core._
 import io.apibuilder.spec.v0.models._
-import lib.Methods.{MethodsNotAcceptingBodies, supportsBody}
+import lib.Methods.supportsBody
+import lib.{Primitives, ServiceConfiguration, Text, UrlKey}
 import play.api.libs.json._
 
 import scala.util.{Failure, Success, Try}
@@ -54,10 +54,6 @@ case class ServiceBuilder(
     }
 
     Service(
-      apidoc = internal.apidoc.flatMap(_.version) match {
-        case Some(v) => Apidoc(version = v)
-        case None => Apidoc(version = io.apibuilder.spec.v0.Constants.Version)
-      },
       info = info,
       name = name,
       namespace = namespace,
@@ -224,7 +220,7 @@ case class ServiceBuilder(
         }
       }
 
-      val pathParameters = internal.namedPathParameters.map { name =>
+      val pathParameters = Util.namedParametersInPath(Util.joinPaths(resourcePath, internal.path)).map { name =>
         internal.parameters.find(_.name.contains(name)) match {
           case None => {
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
@@ -240,8 +236,10 @@ case class ServiceBuilder(
           case Some(declared) => {
             // Path parameter was declared in the parameters
             // section. Use the explicit information provided in the
-            // specification
-            ParameterBuilder(declared, ParameterLocation.Path)
+            // specification and ensure the location is the path
+            ParameterBuilder(declared, ParameterLocation.Path).copy(
+              location = io.apibuilder.spec.v0.models.ParameterLocation.Path
+            )
           }
         }
       }
@@ -253,9 +251,15 @@ case class ServiceBuilder(
       val fullPath = Seq(
         resourcePath,
         internal.path.getOrElse("")
-      ).filter(!_.isEmpty).mkString("") match {
+      ).filterNot(_.isEmpty).mkString("") match {
         case "" => "/"
         case p => p
+      }
+
+      val responses = if (internal.declaredResponses.isEmpty) {
+        Seq(ResponseBuilder.DefaultUnitResponse)
+      } else {
+        internal.declaredResponses.map { ResponseBuilder(resolver, _) }
       }
 
       Operation(
@@ -265,7 +269,7 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         body = internal.body.map { BodyBuilder(_) },
         parameters = pathParameters ++ internalParams,
-        responses = internal.responses.map { ResponseBuilder(resolver, _) },
+        responses = responses,
         attributes = internal.attributes.map { AttributeBuilder(_) }
       )
     }
@@ -483,6 +487,10 @@ case class ServiceBuilder(
   }
 
   object ResponseBuilder {
+    val DefaultUnitResponse: Response = Response(
+      code = ResponseCodeInt(204),
+      `type` = Primitives.Unit.toString
+    )
 
     def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
       Response(

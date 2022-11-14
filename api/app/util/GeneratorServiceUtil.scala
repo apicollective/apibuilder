@@ -7,7 +7,7 @@ import db.generators.{GeneratorsDao, ServicesDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.Client
 import lib.Pager
-import play.api.Logger
+import play.api.{Environment, Logger, Mode}
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
@@ -18,10 +18,15 @@ class GeneratorServiceUtil @Inject() (
   wSClient: WSClient,
   servicesDao: ServicesDao,
   generatorsDao: GeneratorsDao,
-  usersDao: UsersDao
+  usersDao: UsersDao,
+  env: Environment
 ) {
 
   private[this] val log: Logger = Logger(this.getClass)
+  private[this] val inTestEnv = env.mode match {
+    case Mode.Test => true
+    case Mode.Dev | Mode.Prod => false
+  }
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync }
@@ -42,7 +47,10 @@ class GeneratorServiceUtil @Inject() (
           log.info(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] synced")
         }
         case Failure(ex) => {
-          log.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
+          ex match {
+            case _: java.net.UnknownHostException if inTestEnv => // ignore
+            case _ => log.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
+          }
         }
       }
     }

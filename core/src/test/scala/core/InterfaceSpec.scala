@@ -1,10 +1,11 @@
 package core
 
+import helpers.ApiJsonHelpers
 import io.apibuilder.api.json.v0.models.{ApiJson, Field, Interface, Model}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class InterfaceSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   private[this] val person: Interface = makeInterface(
     fields = Some(Seq(
@@ -18,18 +19,6 @@ class InterfaceSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers
       makeField(name = "id")
     )
   )
-
-  private[this] def expectErrors(apiJson: ApiJson): Seq[String] = {
-    TestHelper.serviceValidator(apiJson).errors()
-  }
-
-  private[this] def expectValid(apiJson: ApiJson) = {
-    val validator = TestHelper.serviceValidator(apiJson)
-    if (validator.errors().nonEmpty) {
-      sys.error(s"Error: ${validator.errors()}")
-    }
-    validator.service()
-  }
 
   private[this] def servicePersonUnionAndInterface(
     interfaces: Seq[String],

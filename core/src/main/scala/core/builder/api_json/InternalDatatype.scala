@@ -87,7 +87,7 @@ private[api_json] case class InternalDatatypeBuilder() {
   private[this] def inlineModel(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicModels.append(
-        InternalModelForm(this, dt.name, value - ModelMarker)
+        InternalModelForm(this, dt.name, value - ModelMarker, prefix = None)
       )
       dt
     }

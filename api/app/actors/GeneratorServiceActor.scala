@@ -2,6 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import db.generators.ServicesDao
+import play.api.Mode
 import util.GeneratorServiceUtil
 
 import java.util.UUID

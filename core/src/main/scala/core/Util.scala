@@ -6,6 +6,19 @@ import scala.util.{Failure, Success, Try}
 
 object Util {
 
+  def joinPaths(resourcePath: String, operationPath: Option[String]): String = {
+    operationPath match {
+      case None => resourcePath
+      case Some(op) => {
+        if (resourcePath.endsWith("/")) {
+          resourcePath + op
+        } else {
+          resourcePath + "/" + op
+        }
+      }
+    }
+  }
+
   // Select out named parameters in the path. E.g. /:org/:service/foo would return [org, service]
   def namedParametersInPath(path: String): Seq[String] = {
     path.split("/").toSeq.flatMap { name =>

@@ -126,7 +126,7 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Model[user] description, if present, must be a string Model[user] Missing fields")
+    validator.errors().mkString(" ") should be("Model[user] description, if present, must be a string")
   }
 
   it("validates model fields are objects") {

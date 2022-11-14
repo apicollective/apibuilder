@@ -5,7 +5,7 @@ import io.apibuilder.api.json.v0.models.Field
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsString, JsValue, Json}
 
 class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
@@ -21,7 +21,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelper
 
   private[this] def expectError(typ: String, default: JsValue): Assertion = {
     setup(makeField(name = "tags", `type` = typ, default = Some(
-      default.toString()
+      default
     ))) { v =>
       v.errors() should not be (empty)
     }
@@ -29,7 +29,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelper
 
   private[this] def expectSuccess(typ: String, default: JsValue): Assertion = {
     setup(makeField(name = "tags", `type` = typ, default = Some(
-      default.toString()
+      default
     ))) { v =>
       v.errors() should be(Nil)
 
@@ -48,7 +48,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelper
   }
 
   it("accept defaults for maps") {
-    setup(makeField(name = "tags", `type` = "map", default = Some("{ }"))) { v =>
+    setup(makeField(name = "tags", `type` = "map", default = Some(JsString("{ }")))) { v =>
       v.errors() should be(Nil)
       v.service().models.head.fields.head.default shouldBe Some("{ }")
     }
@@ -56,7 +56,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelper
 
   it("validates invalid json") {
     def expectError(default: String, msg: String) = {
-      setup(makeField(name = "tags", `type` = "map", default = Some(default))) { v =>
+      setup(makeField(name = "tags", `type` = "map", default = Some(JsString(default)))) { v =>
         v.errors() should be(Seq(msg))
       }
     }
@@ -67,7 +67,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelper
 
   it("accepts valid defaults for map[string]") {
     val default = Json.obj("foo" -> "bar")
-    setup(makeField(name = "tags", `type` = "map", default = Some(default.toString))) { v =>
+    setup(makeField(name = "tags", `type` = "map", default = Some(default))) { v =>
       v.errors() should be(Nil)
       v.service().models.head.fields.head.default shouldBe Some(default.toString)
     }
@@ -75,7 +75,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelper
 
   it("accepts valid defaults for map[integer]") {
     val default = Json.obj("foo" -> 1)
-    setup(makeField(name = "tags", `type` = "map", default = Some(default.toString))) { v =>
+    setup(makeField(name = "tags", `type` = "map", default = Some(default))) { v =>
       v.errors() should be(Nil)
       v.service().models.head.fields.head.default shouldBe Some(default.toString)
     }

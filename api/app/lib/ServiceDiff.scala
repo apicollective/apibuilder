@@ -44,7 +44,6 @@ case class ServiceDiff(
   import DiffFactories._
 
   val differences: Seq[Diff] = Seq(
-    diffApidoc(),
     diffInfo(),
     diffName(),
     diffOrganization(),
@@ -63,10 +62,6 @@ case class ServiceDiff(
     diffResources(),
     diffAnnotations()
   ).flatten
-
-  private[this] def diffApidoc(): Seq[Diff] = {
-    Helpers.diffStringNonBreakingNotMaterial("apidoc/version", a.apidoc.version, b.apidoc.version)
-  }
 
   private[this] def diffInfo(): Seq[Diff] = {
     diffContact() ++ diffLicense()

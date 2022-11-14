@@ -38,6 +38,10 @@ class DocController @Inject() (
     Ok(views.html.doc.types(util, request.user))
   }
 
+  def templates: Action[AnyContent] = Anonymous { implicit request =>
+    Ok(views.html.doc.templates(util, request.user))
+  }
+
   def examples: Action[AnyContent] = Anonymous { implicit request =>
     Ok(views.html.doc.examples(util, request.user))
   }

@@ -28,7 +28,6 @@
     "api_json": {
       "fields": [
         { "name": "name", "type": "string" },
-        { "name": "apidoc", "type": "apidoc", "required": false },
         { "name": "info", "type": "info", "required": false },
         { "name": "namespace", "type": "string", "required": false },
         { "name": "base_url", "type": "string", "required": false },
@@ -37,6 +36,7 @@
         { "name": "headers", "type": "[header]", "default": "[]", "required": false },
         { "name": "enums", "type": "map[enum]", "default": "{}", "required": false },
         { "name": "interfaces", "type": "map[interface]", "default": "{}", "required": false },
+        { "name": "templates", "type": "templates", "required": false },
         { "name": "unions", "type": "map[union]", "default": "{}", "required": false },
         { "name": "models", "type": "map[model]", "default": "{}", "required": false },
         { "name": "resources", "type": "map[resource]", "default": "{}", "required": false },
@@ -68,20 +68,14 @@
       ]
     },
 
-    "apidoc": {
-      "fields": [
-        { "name": "version", "type": "string", "example": "0.14.97" }
-      ]
-    },
-
-
     "model": {
       "fields": [
         { "name": "description", "type": "string", "required": false },
         { "name": "plural", "type": "string", "required": false },
-        { "name": "fields", "type": "[field]" },
+        { "name": "fields", "type": "[field]", "required": false, "default": "[]" },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "interfaces", "type": "[string]", "required": false },
+        { "name": "templates", "type": "[template_declaration]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
@@ -91,8 +85,8 @@
         { "name": "name", "type": "string" },
         { "name": "type", "type": "string" },
         { "name": "description", "type": "string", "required": false },
-        { "name": "required", "type": "boolean", "default": true },
-        { "name": "default", "type": "string", "required": false },
+        { "name": "required", "type": "boolean", "required": false, "default": true },
+        { "name": "default", "type": "json", "required": false },
         { "name": "example", "type": "string", "required": false },
         { "name": "minimum", "type": "long", "required": false },
         { "name": "maximum", "type": "long", "required": false },
@@ -107,8 +101,9 @@
       "fields": [
         { "name": "path", "type": "string", "required": false },
         { "name": "description", "type": "string", "required": false },
-        { "name": "operations", "type": "[operation]" },
+        { "name": "operations", "type": "[operation]", "required": false, "default": [] },
         { "name": "attributes", "type": "[attribute]", "required": false },
+        { "name": "templates", "type": "[template_declaration]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
     },
@@ -116,11 +111,11 @@
     "operation": {
       "fields": [
         { "name": "method", "type": "string" },
-        { "name": "path", "type": "string" },
+        { "name": "path", "type": "string", "required": false },
         { "name": "description", "type": "string", "required": false },
         { "name": "body", "type": "body", "required": false },
         { "name": "parameters", "type": "[parameter]", "required": false },
-        { "name": "responses", "type": "[response]", "required": false },
+        { "name": "responses", "type": "map[response]", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]
@@ -141,8 +136,8 @@
         { "name": "type", "type": "string" },
         { "name": "location", "type": "parameter_location", "required": false, "default": "query" },
         { "name": "description", "type": "string", "required": false },
-        { "name": "required", "type": "boolean", "default": true },
-        { "name": "default", "type": "string", "required": false },
+        { "name": "required", "type": "boolean", "required": false, "default": true },
+        { "name": "default", "type": "json", "required": false },
         { "name": "minimum", "type": "long", "required": false },
         { "name": "maximum", "type": "long", "required": false },
         { "name": "example", "type": "string", "required": false },
@@ -182,6 +177,14 @@
       ]
     },
 
+    "templates": {
+      "description": "Experimental",
+      "fields": [
+        { "name": "models", "type": "map[model]", "required": false },
+        { "name": "resources", "type": "map[resource]", "required": false }
+      ]
+    },
+
     "union": {
       "fields": [
         { "name": "plural", "type": "string", "required": false },
@@ -198,7 +201,7 @@
       "fields": [
         { "name": "type", "type": "string" },
         { "name": "description", "type": "string", "required": false },
-        { "name": "default", "type": "boolean", "default": false },
+        { "name": "default", "type": "boolean", "required": false, "default": false },
         { "name": "discriminator_value", "type": "string", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
@@ -215,7 +218,7 @@
       "fields": [
         { "name": "name", "type": "string" },
         { "name": "type", "type": "string" },
-        { "name": "required", "type": "boolean", "default": true },
+        { "name": "required", "type": "boolean", "required": false, "default": true },
         { "name": "description", "type": "string", "required": false },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
@@ -249,6 +252,12 @@
     "deprecation": {
       "fields": [
         { "name": "description", "type": "string", "required": false }
+      ]
+    },
+
+    "template_declaration": {
+      "fields": [
+        { "name": "name", "type": "string" }
       ]
     }
 

@@ -16,10 +16,7 @@ import scala.util.{Failure, Success, Try}
 
 object UsersDao {
 
-  val AdminUserEmails = Seq(
-    "admin@apibuilder.io",
-    "admin@apidoc.me"
-  )
+  val AdminUserEmails: Seq[String] = Seq("admin@apibuilder.io")
 
   val AdminUserGuid: UUID = UUID.fromString("f3973f60-be9f-11e3-b1b6-0800200c9a66")
 
