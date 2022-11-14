@@ -11,6 +11,8 @@ case class Renaming(from: String, to: String)
 case class RenameTypes(data: Seq[Renaming]) {
 
   private[this] val byTypeName: Map[String, Seq[Renaming]] = data.groupBy(_.to)
+  println(s"data: $data")
+  println(s"byTypeName: $byTypeName")
 
   def rename(apiJson: ApiJson): ApiJson = {
     apiJson.copy(
