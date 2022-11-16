@@ -56,9 +56,13 @@ trait ApiJsonHelpers {
     )
   }
 
-  def makeTemplateDeclaration(name: String = randomName()): TemplateDeclaration = {
+  def makeTemplateDeclaration(
+    name: String = randomName(),
+    cast: Option[Map[String, String]] = None
+  ): TemplateDeclaration = {
     TemplateDeclaration(
-      name = name
+      name = name,
+      cast = cast
     )
   }
 

@@ -3,20 +3,14 @@ package builder.api_json.templates
 import io.apibuilder.api.json.v0.models._
 import lib.TextDatatype
 
-case class Renaming(from: String, to: String)
+case class TemplateTypeCast(typeName: String, from: String, to: String)
 
 /**
- * @param data we rename from key => value
+ * @param casts we rename from key => value
  */
-case class RenameTypes(data: Seq[Renaming]) {
+case class RenameTypes(casts: Seq[TemplateTypeCast]) {
 
-  private[this] val byTypeName: Map[String, Seq[Renaming]] = data.groupBy(_.to)
-  private[this] val singletons: Map[String, String] = data.groupBy(_.from).flatMap { case (from, to) =>
-    to.toList match {
-      case one :: Nil => Some(from -> one.to)
-      case _ => None
-    }
-  }
+  private[this] val byTypeName: Map[String, Seq[TemplateTypeCast]] = casts.groupBy(_.typeName)
 
   def rename(apiJson: ApiJson): ApiJson = {
     apiJson.copy(
@@ -93,7 +87,7 @@ case class RenameTypes(data: Seq[Renaming]) {
         case TextDatatype.List => TextDatatype.List
         case TextDatatype.Singleton(name) => TextDatatype.Singleton(
           byTypeName.getOrElse(context, Nil).filter(_.from == name).map(_.to).distinct.toList match {
-            case Nil => singletons.getOrElse(name, name)
+            case Nil => name
             case one :: Nil => one
             case multiple => {
               sys.error(s"Multiple rename options for type[$typ] context[$context]: $multiple")

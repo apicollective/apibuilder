@@ -169,6 +169,7 @@
         "plural": <em>string (optional)</em>,
         "interfaces": <em>JSON Array of type string where each value indicates the name of a declared interface</em> (optional),
         "fields": <em>JSON Array of <a href="#field">Field</a></em>,
+        "templates": <em>JSON Array of <a href="#template_declaration">Template Declaration</a> (optional)</em>,
         "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
         "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
@@ -237,6 +238,7 @@
         "path": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
         "operations": <em>JSON Array of <a href="#operation">Operation</a></em>,
+        "templates": <em>JSON Array of <a href="#template_declaration">Template Declaration</a> (optional)</em>,
         "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
         "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
@@ -556,6 +558,36 @@
     </ul>
 
   </p>
+
+  <a id="template_declaration"></a>
+  <h2>Template declaration</h2>
+
+  <p>
+    A template declaration is represented as a JSON object in the following form:
+
+  <pre>
+    {
+      "name": <em>string</em>,
+      "casts": <em>JSON Object of strings (optional)</em>
+    }
+  </pre>
+
+  where
+  <ul>
+    <li><em>name</em> the name of the template.</li>
+    <li><em>casts</em> a JSON object used to map types in the template to concrete types to use for this resource.</li>
+  </ul>
+
+  Example attribute:
+
+  <pre>
+    {
+    "name": "my_regex_validation",
+    "value": {
+    "regex": "[a-z]"
+    }
+    }
+  </pre>
 
   <a id="attribute"></a>
   <h2>Attribute declaration</h2>
