@@ -29,23 +29,29 @@ object JsMerge {
   }
 
   /**
-   * In a type declaration, we have data that looks like:
+   * Fetches all the template type casts and also injects a default cast from
+   * resource name to template name.
+   *
+   * For the default cast, in a type declaration, we have data that looks like:
    *   - template name: 'group'
    *   - resource "user_group" using template "group"
    *   - 'user_group' is the name of the model, we need to rewrite the return type
    *     of 'group' to the type of the resource 'user_group'
    * This method collects the mappings from the template name to the actual model|resource type
    */
-  private[this] def typeCasts(json: ApiJson): Seq[Renaming] = {
+  private[this] def typeCasts(json: ApiJson): Seq[TemplateTypeCast] = {
     def casts(typeName: String, template: TemplateDeclaration) = {
-      Renaming(template.name, typeName)
+      template.cast match {
+        case None => Seq(TemplateTypeCast(typeName, template.name, typeName))
+        case Some(c) => c.map { case (from, to) => TemplateTypeCast(typeName, from, to) }
+      }
     }
 
     json.models
       .flatMap { case (modelName, model) =>
-        model.templates.getOrElse(Nil).map { tpl => casts(modelName, tpl) }
+        model.templates.getOrElse(Nil).flatMap { tpl => casts(modelName, tpl) }
       }.toSeq ++ json.resources.flatMap { case (resourceType, resource) =>
-      resource.templates.getOrElse(Nil).map { tpl => casts(resourceType, tpl) }
+      resource.templates.getOrElse(Nil).flatMap { tpl => casts(resourceType, tpl) }
     }.toSeq
   }
 
