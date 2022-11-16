@@ -257,7 +257,8 @@
 
     "template_declaration": {
       "fields": [
-        { "name": "name", "type": "string" }
+        { "name": "name", "type": "string" },
+        { "name": "cast", "type": "map[string]", "required": false, "description": "Casts the types declared in the template to the types you want to use in this declaration" }
       ]
     }
 

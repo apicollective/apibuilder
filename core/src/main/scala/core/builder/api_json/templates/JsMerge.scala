@@ -3,7 +3,7 @@ package builder.api_json.templates
 import cats.data.ValidatedNec
 import cats.implicits._
 import io.apibuilder.api.json.v0.models.json._
-import io.apibuilder.api.json.v0.models.{ApiJson, Model, Templates}
+import io.apibuilder.api.json.v0.models.{ApiJson, Model, TemplateDeclaration, Templates}
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 
 object JsMerge {
@@ -24,7 +24,7 @@ object JsMerge {
   def merge(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
     mergeTemplates(js, templates).map { apiJson =>
       // Note we build types from the original js as we remove templates after merging
-      RenameTypes(typesToRename(js)).rename(apiJson)
+      RenameTypes(typeCasts(js)).rename(apiJson)
     }
   }
 
@@ -32,16 +32,20 @@ object JsMerge {
    * In a type declaration, we have data that looks like:
    *   - template name: 'group'
    *   - resource "user_group" using template "group"
-   *   - we user_group is the name of the model, we need to rewrite the return type
+   *   - 'user_group' is the name of the model, we need to rewrite the return type
    *     of 'group' to the type of the resource 'user_group'
    * This method collects the mappings from the template name to the actual model|resource type
    */
-  private[this] def typesToRename(json: ApiJson): Seq[Renaming] = {
+  private[this] def typeCasts(json: ApiJson): Seq[Renaming] = {
+    def casts(typeName: String, template: TemplateDeclaration) = {
+      Renaming(template.name, typeName)
+    }
+
     json.models
       .flatMap { case (modelName, model) =>
-      model.templates.getOrElse(Nil).map(_.name).map { tplName => Renaming(tplName, modelName) }
-    }.toSeq ++ json.resources.flatMap { case (resourceType, resource) =>
-      resource.templates.getOrElse(Nil).map(_.name).map { tplName => Renaming(tplName, resourceType) }
+        model.templates.getOrElse(Nil).map { tpl => casts(modelName, tpl) }
+      }.toSeq ++ json.resources.flatMap { case (resourceType, resource) =>
+      resource.templates.getOrElse(Nil).map { tpl => casts(resourceType, tpl) }
     }.toSeq
   }
 

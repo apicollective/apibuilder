@@ -98,10 +98,15 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     )
   }
 
-  "body is specialized to the specific model" in {
-    val resource = makeResource(
-      templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
-    )
+  "body is cast" in {
+    def resource(cast: Map[String, String]) = {
+      makeResource(
+        templates = Some(Seq(makeTemplateDeclaration(
+          name = "statement",
+          cast = Some(cast)
+        )))
+      )
+    }
 
     val operations = expectValid(
       makeApiJson(
@@ -120,16 +125,20 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         models = Map(
           "partner_statement_form" -> makeModel(templates = Some(Seq(makeTemplateDeclaration(name = "statement_form")))),
           "partner_statement" -> makeModel(fields = Seq(makeField("id"))),
-//          "client_statement_form" -> makeModel(templates = Some(Seq(makeTemplateDeclaration(name = "statement_form")))),
+          "client_statement_form" -> makeModel(templates = Some(Seq(makeTemplateDeclaration(name = "statement_form")))),
           "client_statement" -> makeModel(fields = Seq(makeField("id"))),
         ),
         resources = Map(
-          "partner_statement" -> resource,
-          "client_statement" -> resource,
+          "partner_statement" -> resource(
+            Map("statement" -> "partner_statement", "statement_form" -> "partner_statement_form")
+          ),
+          "client_statement" -> resource(
+            Map("statement" -> "client_statement", "statement_form" -> "client_statement_form")
+          ),
         )
       )
     ).resources.flatMap(_.operations).flatMap(_.body).map(_.`type`).sorted mustBe Seq(
-      "partner_statement_form", "partner_statement_form"
+      "client_statement_form", "partner_statement_form"
     )
   }
 }
