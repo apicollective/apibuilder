@@ -347,7 +347,7 @@ case class ServiceSpecValidator(
 
   private def validateTypeNotUnit(prefix: String, typ: String): Seq[String] = {
     localTypeResolver.parse(typ) match {
-      case Some(kind: Kind.Primitive) if kind.name == "unit" => {
+      case Some(kind: Kind.Primitive) if kind.name == Primitives.Unit.toString => {
         Seq(s"$prefix Union types cannot contain unit. To make a particular field optional, use the required property.")
       }
       case _ => Nil
@@ -585,7 +585,7 @@ case class ServiceSpecValidator(
 
   private def validateHeaders(headers: Seq[Header], location: String): Seq[String] = {
     val headersWithInvalidTypes = headers.flatMap { header =>
-      typeResolver.parse(header.`type`) match {
+      parseConcreteType(header.`type`) match {
         case None => Some(s"$location[${header.name}] type[${header.`type`}] is invalid")
         case Some(kind) => {
           kind match {
@@ -688,7 +688,7 @@ case class ServiceSpecValidator(
 
   private def validateResources(): Seq[String] = {
     val datatypeErrors = service.resources.flatMap { resource =>
-      typeResolver.parse(resource.`type`) match {
+      parseConcreteType(resource.`type`) match {
         case None => {
           Some(s"Resource[${resource.`type`}] has an invalid type. Must resolve to a known enum, model or primitive")
         }
@@ -745,7 +745,7 @@ case class ServiceSpecValidator(
         op.body match {
           case None => Seq.empty
           case Some(body) => {
-            typeResolver.parse(body.`type`) match {
+            parseConcreteType(body.`type`) match {
               case None => Some(opLabel(resource, op, s"body: Type[${body.`type`}] not found"))
               case Some(_) => None
             }
@@ -797,7 +797,7 @@ case class ServiceSpecValidator(
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.parameters.flatMap { p =>
-          typeResolver.parse(p.`type`) match {
+          parseConcreteType(p.`type`) match {
             case None => {
               Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type: ${p.`type`}"))
             }
@@ -922,7 +922,7 @@ case class ServiceSpecValidator(
     val missingOrInvalidTypes = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
-          typeResolver.parse(r.`type`) match {
+          parseConcreteType(r.`type`) match {
             case None => {
               Some(opLabel(resource, op, s"response code[${responseCodeString(r.code)}] has an invalid type[${r.`type`}]."))
             }
@@ -994,7 +994,7 @@ case class ServiceSpecValidator(
     `type`: String,
     default: String
   ): Seq[String] = {
-    typeResolver.parse(`type`) match {
+    parseConcreteType(`type`) match {
       case None => Nil
       case Some(kind) => validator.validate(kind, default, Some(prefix)).toSeq
     }
@@ -1013,5 +1013,10 @@ case class ServiceSpecValidator(
     ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
-
+  private[this] def parseConcreteType(value: String): Option[Kind] = {
+    typeResolver.parse(value) {
+      case _: Kind.Interface => false
+      case _ => true
+    }
+  }
 }
