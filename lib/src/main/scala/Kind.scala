@@ -60,7 +60,7 @@ case class DatatypeResolver(
               }
             }
           }
-        }) ++ interfaceNames.find(_ == name).map { name => Kind.Interface(name) }.toSeq
+        }) ++ interfaceNames.find(_ == name).map(Kind.Interface).toSeq
       }
     }
 
