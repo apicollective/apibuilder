@@ -59,7 +59,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         setup(
           templateField = Some(templateField),
           modelField = Some(modelField)
-        ).fields.map(_.name) mustBe Seq(templateField.name, modelField.name)
+        ).fields.map(_.name) mustBe Seq(modelField.name, templateField.name)
       }
     }
 
@@ -112,7 +112,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         "inherit" in {
           val templateField = makeField()
           val modelField = makeField()
-          setupFields(templateField, modelField).map(_.name) mustBe Seq(templateField.name, modelField.name)
+          setupFields(templateField, modelField).map(_.name) mustBe Seq(modelField.name, templateField.name)
         }
 
         "description" must {
@@ -219,7 +219,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           }
 
           "preserve" in {
-            setupField(Some("bar")) mustBe Seq("foo", "bar")
+            setupField(Some("bar")) mustBe Seq("bar", "foo")
           }
         }
 
@@ -264,7 +264,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setupModel(
             template = Some(makeAttribute(name = "foo")),
             model = Some(makeAttribute(name = "bar")),
-          ).map(_.name) mustBe Seq("foo", "bar")
+          ).map(_.name) mustBe Seq("bar", "foo")
         }
 
         "merge" must {
@@ -347,10 +347,10 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
           setup(Nil) mustBe Nil
           setup(Seq("a")) mustBe Seq("a")
-          setup(Seq("b")) mustBe Seq("a", "b")
-          setup(Seq("c")) mustBe Seq("a", "b", "c")
-          setup(Seq("a", "b" ,"c")) mustBe Seq("a", "b", "c")
-          setup(Seq("a", "b" , "c")) mustBe Seq("a", "b", "c")
+          setup(Seq("b")) mustBe Seq("b", "a")
+          setup(Seq("c")) mustBe Seq("c", "b", "a")
+          setup(Seq("a", "b" ,"c")) mustBe Seq("c", "b", "a")
+          setup(Seq("a", "b" , "c")) mustBe Seq("c", "b", "a")
         }
 
         "setup interfaces" in {
