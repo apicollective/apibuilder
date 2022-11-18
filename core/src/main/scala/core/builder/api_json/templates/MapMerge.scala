@@ -9,10 +9,10 @@ abstract class MapMerge[T]() {
   }
 
   final def merge(a: Map[String, T], b: Map[String, T]): Map[String, T] = {
-    a.filterNot { case (n, _) => b.contains(n) } ++ b.map { case (name, aInstance) =>
+    a.filterNot { case (n, _) => b.contains(n) } ++ b.map { case (name, bInstance) =>
       a.get(name) match {
-        case None => name -> aInstance
-        case Some(bInstance) => name -> merge(aInstance, bInstance)
+        case None => name -> bInstance
+        case Some(aInstance) => name -> merge(aInstance, bInstance)
       }
     }
   }

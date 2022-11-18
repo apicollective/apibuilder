@@ -61,6 +61,26 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           modelField = Some(modelField)
         ).fields.map(_.name) mustBe Seq(modelField.name, templateField.name)
       }
+
+      "preserve field order from declared mode" in {
+        expectValid {
+          makeApiJson(
+            templates = Some(makeTemplates(
+              models = Some(Map(
+                "abstract_user" -> makeModel(
+                  fields = Seq(makeField("id"), makeField("name"))
+                )
+              ))
+            )),
+            models = Map(
+              "user" -> makeModel(
+                fields = Seq(makeField("id"), makeField("email")),
+                templates = Some(Seq(makeTemplateDeclaration(name = "abstract_user")))
+              )
+            )
+          )
+        }.models.head.fields.map(_.name) mustBe Seq("id", "email", "name")
+      }
     }
 
     "merge" must {
@@ -349,8 +369,8 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setup(Seq("a")) mustBe Seq("a")
           setup(Seq("b")) mustBe Seq("b", "a")
           setup(Seq("c")) mustBe Seq("c", "b", "a")
-          setup(Seq("a", "b" ,"c")) mustBe Seq("c", "b", "a")
-          setup(Seq("a", "b" , "c")) mustBe Seq("c", "b", "a")
+          setup(Seq("a", "b")) mustBe Seq("a", "b")
+          setup(Seq("a", "b", "c")) mustBe Seq("a", "b", "c")
         }
 
         "setup interfaces" in {
