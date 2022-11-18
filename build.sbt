@@ -105,7 +105,7 @@ lazy val api = project
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.postgresql"    %  "postgresql"     % "42.5.0",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
-      "com.sendgrid"      %  "sendgrid-java"  % "4.9.3",
+      "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
       "org.typelevel"     %% "cats-core" % "2.9.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
