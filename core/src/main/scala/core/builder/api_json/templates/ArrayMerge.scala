@@ -14,12 +14,7 @@ abstract class ArrayMerge[T]() {
     val bByLabel = b.map { i => uniqueIdentifier(i) -> i }.toMap
     val all = a.map(uniqueIdentifier) ++ b.map(uniqueIdentifier).filterNot(aByLabel.contains)
     all.flatMap { identifier =>
-      (aByLabel.get(identifier), bByLabel.get(identifier)) match {
-        case (None, None) => None
-        case (Some(a), None) => Some(a)
-        case (None, Some(b)) => Some(b)
-        case (Some(a), Some(b)) => Some(merge(a, b))
-      }
-    }.toSeq
+      OptionHelpers.flatten(aByLabel.get(identifier), bByLabel.get(identifier))(merge)
+    }
   }
 }
