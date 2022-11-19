@@ -12,7 +12,7 @@ abstract class ArrayMerge[T]() {
   final def merge(a: Seq[T], b: Seq[T]): Seq[T] = {
     val aByLabel = a.map { i => uniqueIdentifier(i) -> i }.toMap
     val bByLabel = b.map { i => uniqueIdentifier(i) -> i }.toMap
-    val all = aByLabel.keys ++ bByLabel.keys.filterNot(aByLabel.contains)
+    val all = a.map(uniqueIdentifier) ++ b.map(uniqueIdentifier).filterNot(aByLabel.contains)
     all.flatMap { identifier =>
       (aByLabel.get(identifier), bByLabel.get(identifier)) match {
         case (None, None) => None
