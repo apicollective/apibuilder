@@ -107,7 +107,6 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
-      "org.typelevel"     %% "cats-core" % "2.9.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
     )
@@ -159,6 +158,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.4",
     "com.typesafe.play" %% "play-json-joda" % "2.9.3",
     "org.atteo" % "evo-inflector" % "1.3",
+    "org.typelevel" %% "cats-core" % "2.9.0",
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
   ),
   scalacOptions ++= allScalacOptions,
