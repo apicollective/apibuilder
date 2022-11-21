@@ -53,7 +53,7 @@ lazy val swagger = project
    )
   )
 
-val circeVersion = "0.14.2"
+val circeVersion = "0.14.3"
 lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)
@@ -90,7 +90,7 @@ lazy val api = project
     scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     testOptions += Tests.Argument("-oF"),
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "0.108.1",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.0.1",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
@@ -107,9 +107,9 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
-      "org.typelevel"     %% "cats-core" % "2.8.0",
+      "org.typelevel"     %% "cats-core" % "2.9.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
-      "com.github.tomakehurst" % "wiremock-standalone" % "2.27.0" % Test
+      "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
     )
   )
 
@@ -123,7 +123,7 @@ lazy val app = project
   .settings(commonSettings: _*)
   .settings(
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "0.83.2",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.0.1",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
@@ -131,7 +131,7 @@ lazy val app = project
       guice,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.apache.commons" % "commons-compress" % "1.21",
+      "org.apache.commons" % "commons-compress" % "1.22",
       "com.github.tototoshi" %% "scala-csv" % "1.3.10",
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.8.18",
