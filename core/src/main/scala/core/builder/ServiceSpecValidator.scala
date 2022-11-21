@@ -895,7 +895,17 @@ case class ServiceSpecValidator(
     }
   }
 
-  // START
+  private[this] def validateResponses(): ValidatedNec[String, Unit] = {
+    sequence(Seq(
+      validateResponseCodes(),
+      validateResponseMethods(),
+      validateResponseTypes(),
+      validateResponseMixed2xxTypes(),
+      validateResponseStatusCodesRequiringUnit(),
+      validateResponseHeaders()
+    ))
+  }
+
   private[this] def validateResponseCodes(): ValidatedNec[String, Unit] = {
     sequence(
       service.resources.flatMap { resource =>
@@ -995,19 +1005,6 @@ case class ServiceSpecValidator(
         validateHeaders(r.headers.getOrElse(Nil), opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
       }
     )
-  }
-
-  // END
-
-  private[this] def validateResponses(): ValidatedNec[String, Unit] = {
-    sequence(Seq(
-      validateResponseCodes(),
-      validateResponseMethods(),
-      validateResponseTypes(),
-      validateResponseMixed2xxTypes(),
-      validateResponseStatusCodesRequiringUnit(),
-      validateResponseHeaders()
-    ))
   }
 
   private[this] def validateType(prefix: String, `type`: String)(
