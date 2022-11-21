@@ -281,32 +281,46 @@ case class ServiceSpecValidator(
   }
 
   private def validateUnions(): ValidatedNec[String, Unit] = {
-    val nameErrors = service.unions.flatMap { union =>
+    (
+      Seq(
+        validateUnionNames(),
+        validateUnionTypesNonEmpty(),
+        validateUnionTypes(),
+        validateUnionDiscriminator()
+      ) ++ Seq(
+        DuplicateErrorMessage.validate("Union", service.unions.map(_.name))
+      )
+    ).sequence.map(_ => ())
+  }
+
+  private def validateUnionNames(): ValidatedNec[String, Unit] = {
+    service.unions.map { union =>
       validateName(s"Union[${union.name}]", union.name)
-    }
+    }.sequence.map(_ => ())
+  }
 
-    val typeErrors = service.unions.filter { _.types.isEmpty }.map { union =>
-      s"Union[${union.name}] must have at least one type"
-    }
+  private def validateUnionTypesNonEmpty(): ValidatedNec[String, Unit] = {
+    service.unions.map { union =>
+      if (union.types.isEmpty) {
+        s"Union[${union.name}] must have at least one type".invalidNec
+      } else {
+        ().validNec
+      }
+    }.sequence.map(_ => ())
+  }
 
-    val invalidTypes = service.unions.filter(_.name.nonEmpty).flatMap { union =>
+  private def validateUnionTypes(): ValidatedNec[String, Unit] = {
+    service.unions.filter(_.name.nonEmpty).map { union =>
       validateUnionTypes(s"Union[${union.name}]", union.types)
-    }
-
-    val discriminatorErrors = service.unions.flatMap { union =>
+    }.sequence.map(_ => ())
+  }
+  private def validateUnionDiscriminator(): ValidatedNec[String, Unit] = {
+    service.unions.map { union =>
       union.discriminator match {
-        case None => {
-          union.types.filter { t => t.default.getOrElse(false) }.toList match {
-            case Nil => None
-            case types => Seq(
-              s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")
-            )
-          }
-        }
-
+        case None => validateUnionTypesWithoutDiscriminator(union)
         case Some(discriminator) => {
           if (ReservedDiscriminatorValues.contains(discriminator)) {
-            Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved and cannot be used as a discriminator")
+            s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved and cannot be used as a discriminator".invalidNec
           } else {
             validateName(s"Union[${union.name}] discriminator[$discriminator]", discriminator).andThen { _ =>
               unionTypesWithNamedField(union, discriminator) match {
@@ -320,18 +334,21 @@ case class ServiceSpecValidator(
           }
         }
       }
+    }.sequence.andThen { _ =>
+      // Only do additional validation if we have a valid discriminator
+      (
+        validateUnionTypeDiscriminatorValues(),
+        validateUnionTypeDiscriminatorNames()
+      ).mapN { case (_, _) => () }
     }
+  }
 
-    val duplicates = DuplicateErrorMessage.validate("Union", service.unions.map(_.name))
-
-    // Only do additional validation if we have a valid discriminator
-    val additionalDiscriminatorErrors = if (discriminatorErrors.isEmpty) {
-      validateUnionTypeDiscriminatorValues() ++ validateUnionTypeDiscriminatorNames()
-    } else {
-      Nil
+  private def validateUnionTypesWithoutDiscriminator(union: Union): ValidatedNec[String, Unit] = {
+    assert(union.discriminator.isEmpty)
+    union.types.filter { t => t.default.getOrElse(false) }.toList match {
+      case Nil => ().validNec
+      case types => (s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")).invalidNec
     }
-
-    nameErrors ++ typeErrors ++ invalidTypes ++ validateUnionCyclicReferences() ++ discriminatorErrors ++ duplicates ++ additionalDiscriminatorErrors
   }
 
   // Validate that the type is NOT imported as there is
@@ -521,7 +538,7 @@ case class ServiceSpecValidator(
     * Given a union, returns the list of types that contain the
     * specified field.
     */
-  private[this] def unionTypesWithNamedField(union: Union, fieldName: String): ValidatedNec[String, Unit] = {
+  private[this] def unionTypesWithNamedField(union: Union, fieldName: String): List[String] = {
     union.types.flatMap { unionType =>
       typeResolver.parse(unionType.`type`) match {
         case None => {
@@ -535,7 +552,7 @@ case class ServiceSpecValidator(
   }
 
   @tailrec
-  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): ValidatedNec[String, Unit] = {
+  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): List[String] = {
     def findField(fields: Seq[Field]) = {
       fields.find(_.name == fieldName) match {
         case None => Nil
