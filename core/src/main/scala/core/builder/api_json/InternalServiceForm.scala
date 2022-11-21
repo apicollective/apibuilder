@@ -154,7 +154,7 @@ private[api_json] case class InternalServiceForm(
 
 case class InternalImportForm(
   uri: Option[String],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalApidocForm(
@@ -164,7 +164,7 @@ case class InternalApidocForm(
 case class InternalInfoForm(
   contact: Option[InternalInfoContactForm],
   license: Option[InternalInfoLicenseForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalInfoContactForm(
@@ -189,7 +189,7 @@ case class InternalInterfaceForm(
   deprecation: Option[InternalDeprecationForm],
   fields: Seq[InternalFieldForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalTemplateForm(
@@ -198,7 +198,7 @@ case class InternalTemplateForm(
 )
 case class InternalTemplateDeclarationForm(
   name: Option[String],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 object InternalTemplateDeclarationForm {
@@ -231,7 +231,7 @@ case class InternalModelForm(
   attributes: Seq[InternalAttributeForm],
   interfaces: Seq[String],
   templates: Seq[InternalTemplateDeclarationForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalEnumForm(
@@ -241,7 +241,7 @@ case class InternalEnumForm(
   deprecation: Option[InternalDeprecationForm],
   values: Seq[InternalEnumValueForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalEnumValueForm(
@@ -250,7 +250,7 @@ case class InternalEnumValueForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalUnionForm(
@@ -262,7 +262,7 @@ case class InternalUnionForm(
   types: Seq[InternalUnionTypeForm],
   interfaces: Seq[String],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalUnionTypeForm(
@@ -272,7 +272,7 @@ case class InternalUnionTypeForm(
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
   discriminatorValue: Option[String],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalHeaderForm(
@@ -283,7 +283,7 @@ case class InternalHeaderForm(
   deprecation: Option[InternalDeprecationForm],
   default: Option[String],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalResourceForm(
@@ -294,7 +294,7 @@ case class InternalResourceForm(
   operations: Seq[InternalOperationForm],
   attributes: Seq[InternalAttributeForm],
   templates: Seq[InternalTemplateDeclarationForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalOperationForm(
@@ -306,7 +306,7 @@ case class InternalOperationForm(
   body: Option[InternalBodyForm],
   declaredResponses: Seq[InternalResponseForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 ) {
 
   lazy val label: String = "%s %s".format(method.getOrElse(""), path).trim
@@ -325,7 +325,7 @@ case class InternalFieldForm(
   maximum: Option[Long] = None,
   attributes: Seq[InternalAttributeForm] = Nil,
   annotations: Seq[String],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalAttributeForm(
@@ -333,14 +333,14 @@ case class InternalAttributeForm(
   value: Option[JsObject] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalAnnotationForm(
   name: String,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalParameterForm(
@@ -355,7 +355,7 @@ case class InternalParameterForm(
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
   attributes: Seq[InternalAttributeForm] = Nil,
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalBodyForm(
@@ -363,7 +363,7 @@ case class InternalBodyForm(
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalResponseForm(
@@ -373,7 +373,7 @@ case class InternalResponseForm(
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,
   attributes: Seq[InternalAttributeForm] = Nil,
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 ) {
 
   lazy val datatypeLabel: Option[String] = datatype match {
