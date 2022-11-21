@@ -11,7 +11,7 @@ import scala.annotation.tailrec
 
 case class ServiceSpecValidator(
   service: Service,
-) {
+) extends ValidatedHelpers {
 
   private val ReservedDiscriminatorValues = Seq("value", "implicit")
 
@@ -1052,9 +1052,5 @@ case class ServiceSpecValidator(
       case _: Kind.List => ().validNec
       case _: Kind.Map => ().validNec
     }
-  }
-
-  private[this] def sequence(all: Iterable[ValidatedNec[String, Any]]): ValidatedNec[String, Unit] = {
-    all.toSeq.sequence.map(_ => ())
   }
 }
