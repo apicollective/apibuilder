@@ -7,7 +7,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
 class BatchDownloadApplicationsServiceSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite
   with helpers.BatchDownloadApplicationHelpers
-  with helpers.ValidatedHelpers
+  with helpers.ValidatedTestHelpers
 {
   private[this] def batchDownloadApplicationsService: BatchDownloadApplicationsService = app.injector.instanceOf[BatchDownloadApplicationsService]
 

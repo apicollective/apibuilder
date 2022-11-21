@@ -1,10 +1,11 @@
 package io.apibuilder.avro
 
+import helpers.ValidatedTestHelpers
 import lib.ServiceConfiguration
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers {
+class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   private def readFile(path: String): String = {
     val source = scala.io.Source.fromFile(path)
@@ -22,13 +23,8 @@ class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers {
   )
 
   it("parses") {
-    AvroIdlServiceValidator(config, readFile("avro/example.avdl")).validate() match {
-      case Left(errors) => {
-        println("ERRORS: " + errors.mkString(", "))
-      }
-      case Right(service) => {
-        println("No errors. Service: " + service.name)
-      }
+    expectValid {
+      AvroIdlServiceValidator(config, readFile("avro/example.avdl")).validate()
     }
   }
 

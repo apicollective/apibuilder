@@ -1,6 +1,7 @@
 package core
 
 import _root_.builder.OriginalValidator
+import helpers.ValidatedTestHelpers
 import lib.{FileUtils, ServiceConfiguration}
 import io.apibuilder.api.v0.models.Original
 import io.apibuilder.api.v0.models.OriginalType.Swagger
@@ -10,6 +11,7 @@ import org.scalatest.matchers.should.Matchers
 class OriginalValidatorSpec
   extends AnyFunSpec
   with Matchers
+  with ValidatedTestHelpers
 {
 
   private def readFile(path: String): String = FileUtils.readToString(path)
@@ -25,7 +27,7 @@ class OriginalValidatorSpec
     it("should validate valid swagger json with parameter of type array") {
       val filename = "simple-w-array.json"
       val path = s"core/src/test/resources/$filename"
-      val result =
+      expectValid {
         OriginalValidator(
           config,
           original = Original(
@@ -34,13 +36,13 @@ class OriginalValidatorSpec
           ),
           MockServiceFetcher()
         ).validate()
-    result.isRight should be(true)
+      }
     }
 
     it("should validate valid swagger json without parameter of type array") {
       val filename = "simple-without-array.json"
       val path = s"core/src/test/resources/$filename"
-      val result =
+      expectValid {
         OriginalValidator(
           config,
           original = Original(
@@ -49,7 +51,7 @@ class OriginalValidatorSpec
           ),
           MockServiceFetcher()
         ).validate()
-      result.isRight should be(true)
+      }
     }
   }
 }

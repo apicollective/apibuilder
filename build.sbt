@@ -28,7 +28,7 @@ val playJsonVersion = "2.9.3"
 
 lazy val avro = project
   .in(file("avro"))
-  .dependsOn(generated, lib)
+  .dependsOn(generated, lib % "compile->compile;test->test")
   .aggregate(generated, lib)
   .settings(
     scalacOptions ++= allScalacOptions,

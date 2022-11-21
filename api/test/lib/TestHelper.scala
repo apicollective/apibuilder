@@ -1,14 +1,15 @@
 package lib
 
-import db.Authorization
 import builder.OriginalValidator
+import db.Authorization
+import helpers.ValidatedTestHelpers
 import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models.Service
 import play.api.Application
 
 import java.io.File
 
-trait TestHelper {
+trait TestHelper extends ValidatedTestHelpers {
 
   def app: Application
 
@@ -27,10 +28,8 @@ trait TestHelper {
       Original(OriginalType.ApiJson, contents),
       app.injector.instanceOf[DatabaseServiceFetcher].instance(Authorization.All)
     )
-    validOrError {}
-    validator.validate() match {
-      case Left(errors) => sys.error(s"Errors: $errors")
-      case Right(service) => service
+    expectValid {
+      validator.validate()
     }
   }
 

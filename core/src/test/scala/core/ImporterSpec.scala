@@ -1,12 +1,13 @@
 package core
 
+import helpers.{ServiceHelpers, ValidatedTestHelpers}
 import io.apibuilder.spec.v0.models.{Application, Organization}
 import io.apibuilder.spec.v0.models.json._
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
-class ImporterSpec extends AnyFunSpec with Matchers with helpers.ServiceHelpers {
+class ImporterSpec extends AnyFunSpec with Matchers with ServiceHelpers with ValidatedTestHelpers {
 
   describe("with an invalid service") {
     val json = """
@@ -18,7 +19,10 @@ class ImporterSpec extends AnyFunSpec with Matchers with helpers.ServiceHelpers 
 
     val path = TestHelper.writeToTempFile(json)
     val imp = Importer(FileServiceFetcher(), s"file://$path")
-    imp.validate.size should be > 0
+    expectInvalid(
+      imp.validate
+    )
+
   }
 
   describe("with a valid service") {

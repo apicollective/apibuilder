@@ -153,10 +153,10 @@ object TestHelper extends ValidatedHelpers {
     val contents = readFile(filename)
     val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
     validator.validate() match {
-      case Left(errors) => {
-        sys.error(s"Invalid api.json file[$filename]: " + errors.mkString("\n"))
+      case Invalid(errors) => {
+        sys.error(s"Invalid api.json file[$filename]: " + formatErrors(errors))
       }
-      case Right(_) => {}
+      case Valid(_) => {}
     }
     TestServiceValidator(
       validator

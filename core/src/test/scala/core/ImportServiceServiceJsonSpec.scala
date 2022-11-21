@@ -1,6 +1,7 @@
 package core
 
 import _root_.builder.OriginalValidator
+import helpers.{ApiJsonHelpers, ValidatedTestHelpers}
 import io.apibuilder.api.json.v0.models.Model
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.json._
@@ -9,7 +10,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json
 
-class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with ApiJsonHelpers with ValidatedTestHelpers {
 
   private[this] def makeUserModel(idType: String = "long"): Model = {
     makeModel(
@@ -90,19 +91,13 @@ class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with helpers
       fetcher = FileServiceFetcher(),
     )
 
-    lazy val validService = validator.validate() match {
-      case Left(errors) => sys.error(errors.mkString(","))
-      case Right(service) => service
+    lazy val validService = expectValid {
+      validator.validate()
     }
 
     it("parses service definition with imports") {
-      validator.validate() match {
-        case Left(errors) => {
-          fail(errors.mkString(""))
-        }
-        case Right(_) => {
-          // Success
-        }
+      expectValid {
+        validator.validate()
       }
     }
 
