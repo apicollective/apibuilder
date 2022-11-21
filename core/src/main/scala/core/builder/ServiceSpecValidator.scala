@@ -700,7 +700,7 @@ case class ServiceSpecValidator(
           case Some(max) if bd > max => s"$prefix default[$bd] must be <= specified maximum[$max]".invalidNec
           case _ => ().validNec
         }
-        sequence(minErrors, maxErrors)
+        sequence(Seq(minErrors, maxErrors))
       }
     }
   }
@@ -742,16 +742,18 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResourceLocations(): ValidatedNec[String, Unit] = {
-    service.resources.flatMap { resource =>
-      resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
-        op.parameters.flatMap { param =>
-          param.location match {
-            case ParameterLocation.UNDEFINED(name) => Some(opLabel(resource, op, s"location[$name] is not recognized. Must be one of: ${ParameterLocation.all.map(_.toString.toLowerCase).mkString(", ")}"))
-            case _ => None
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
+          op.parameters.map { param =>
+            param.location match {
+              case ParameterLocation.UNDEFINED(name) => opLabel(resource, op, s"location[$name] is not recognized. Must be one of: ${ParameterLocation.all.map(_.toString.toLowerCase).mkString(", ")}").invalidNec
+              case _ => ().validNec
+            }
           }
         }
       }
-    }
+    )
   }
 
   private[this] def validateResourceBodies(): ValidatedNec[String, Unit] = {
@@ -762,82 +764,80 @@ case class ServiceSpecValidator(
           case Some(body) => validateConcreteType(opLabel(resource, op, s"body: Type[${body.`type`}]"), body.`type`)
         }
       }
-    }.sequence.map(_ => ())
+    }
 
     val invalidMethods = service.resources.flatMap { resource =>
       resource.operations.filter(op => op.body.isDefined && !Methods.supportsBody(op.method.toString)).map { op =>
-        opLabel(resource, op, s"Cannot specify body for HTTP method[${op.method}]")
+        opLabel(resource, op, s"Cannot specify body for HTTP method[${op.method}]").invalidNec
       }
     }
 
-    typesNotFound ++ invalidMethods
+    sequence(typesNotFound ++ invalidMethods)
   }
 
   private[this] def validateResourceDefaults(): ValidatedNec[String, Unit] = {
-    service.resources.flatMap { resource =>
-      resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
-        op.parameters.flatMap { param =>
-          param.default match {
-            case None => Nil
-            case Some(default) => {
-              if (param.required) {
-                validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
-              } else {
-                Seq(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
+          op.parameters.map { param =>
+            param.default match {
+              case None => ().validNec
+              case Some(default) => {
+                if (param.required) {
+                  validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+                } else {
+                  opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required").invalidNec
+                }
               }
             }
           }
         }
       }
-    }
+    )
   }
 
   private[this] def validateResourceNames(): ValidatedNec[String, Unit] = {
-    service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        DuplicateErrorMessage.validate(
-          opLabel(resource, op, "Parameter"),
-          op.parameters.map(_.name)
-        )
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.map { op =>
+          DuplicateErrorMessage.validate(
+            opLabel(resource, op, "Parameter"),
+            op.parameters.map(_.name)
+          )
+        }
       }
-    }
+    )
   }
 
   private[this] def validateParameters(): ValidatedNec[String, Unit] = {
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.flatMap { p =>
+        op.parameters.map { p =>
           validateConcreteType(opLabel(resource, op, s"Parameter[${p.name}]"), p.`type`).andThen { kind =>
             p.location match {
               case ParameterLocation.Query | ParameterLocation.Header => {
                 // Query and Header parameters can only be primitives or enums
                 kind match {
-                  case Kind.Enum(_) => {
-                    None
-                  }
+                  case Kind.Enum(_) => ().validNec
 
-                  case Kind.Primitive(_) if isValidInUrl(kind) => {
-                    None
-                  }
+                  case Kind.Primitive(_) if isValidInUrl(kind) => ().validNec
 
                   case Kind.Primitive(_) => {
-                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid types for ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
+                    opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid types for ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.").invalidNec
                   }
 
-                  case Kind.List(nested) if isValidInUrl(nested) => {
-                    None
-                  }
+                  case Kind.List(nested) if isValidInUrl(nested) => ().validNec
 
                   case Kind.List(_) => {
-                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
+                    opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.").invalidNec
                   }
 
                   case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) => {
-                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Interface, model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
+                    opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Interface, model and union types are not supported as ${p.location.toString.toLowerCase} parameters.").invalidNec
                   }
 
                   case Kind.Map(_) => {
-                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as ${p.location.toString.toLowerCase} parameters."))
+                    opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as ${p.location.toString.toLowerCase} parameters.").invalidNec
                   }
 
                 }
@@ -849,21 +849,19 @@ case class ServiceSpecValidator(
                 if (p.required) {
                   // Verify that path parameter is actually in the path and immediately before or after a '/'
                   if (!Util.namedParametersInPath(op.path).contains(p.name)) {
-                    Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
+                    opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]").invalidNec
                   } else if (isValidInUrl(kind)) {
-                    None
+                    ().validNec
                   } else {
                     val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.")
-                    Some(errorTemplate.format(kind.toString))
+                    errorTemplate.format(kind.toString).invalidNec
                   }
                 } else {
-                  Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
+                  opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required").invalidNec
                 }
               }
 
-              case _ => {
-                None
-              }
+              case _ => ().validNec
             }
           }
         }
