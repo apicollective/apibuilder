@@ -1,17 +1,18 @@
 package builder.api_json
 
+import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import core._
 import io.apibuilder.spec.v0.models._
 import lib.Methods.supportsBody
-import lib.{Primitives, ServiceConfiguration, Text, UrlKey}
+import lib.{Primitives, ServiceConfiguration, Text, UrlKey, ValidatedHelpers}
 import play.api.libs.json._
 
 import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(
   migration: VersionMigration
-) {
+) extends ValidatedHelpers {
 
   def apply(
     config: ServiceConfiguration,
@@ -315,8 +316,8 @@ case class ServiceBuilder(
 
     def apply(ib: InternalBodyForm): Body = {
       ib.datatype match {
-        case Left(errs) => sys.error("Body missing type: " + errs.mkString(", "))
-        case Right(datatype) => Body(
+        case Invalid(errs) => sys.error("Body missing type: " + formatErrors(errs))
+        case Valid(datatype) => Body(
           `type` = datatype.label,
           description = ib.description,
           deprecation = ib.deprecation.map(DeprecationBuilder(_)),
@@ -368,7 +369,7 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         interfaces = internal.interfaces,
         types = internal.types.map { it =>
-          val typ = rightOrError(it.datatype)
+          val typ = validOrError(it.datatype)
           UnionType(
             `type` = typ.label,
             description = it.description,
@@ -390,7 +391,7 @@ case class ServiceBuilder(
     def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
       Header(
         name = ih.name.get,
-        `type` = rightOrError(ih.datatype).label,
+        `type` = validOrError(ih.datatype).label,
         required = ih.required,
         description = ih.description,
         deprecation = ih.deprecation.map(DeprecationBuilder(_)),
@@ -434,10 +435,10 @@ case class ServiceBuilder(
 
     def apply(fetcher: ServiceFetcher, internal: InternalImportForm): Import = {
       Importer(fetcher, internal.uri.get).fetched match {
-        case Left(errors) => {
-          sys.error("Errors in import: " + errors)
+        case Invalid(errors) => {
+          sys.error("Errors in import: " + formatErrors(errors))
         }
-        case Right(service) => {
+        case Valid(service) => {
           Import(
             uri = internal.uri.get,
             organization = service.organization,
@@ -499,7 +500,7 @@ case class ServiceBuilder(
           case Success(code) => ResponseCodeInt(code)
           case Failure(_) => ResponseCodeOption(internal.code)
         },
-        `type` = rightOrError(internal.datatype).label,
+        `type` = validOrError(internal.datatype).label,
         headers = internal.headers.map { HeaderBuilder(resolver, _) }.toList match {
           case Nil => None
           case headers => Some(headers)
@@ -526,7 +527,7 @@ case class ServiceBuilder(
     def apply(internal: InternalParameterForm, defaultLocation: ParameterLocation): Parameter = {
       Parameter(
         name = internal.name.get,
-        `type` = rightOrError(internal.datatype).label,
+        `type` = validOrError(internal.datatype).label,
         location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
@@ -553,7 +554,7 @@ case class ServiceBuilder(
     ): Field = {
       Field(
         name = internal.name.get,
-        `type` = rightOrError(internal.datatype).label,
+        `type` = validOrError(internal.datatype).label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         default = internal.default,
@@ -600,10 +601,10 @@ case class ServiceBuilder(
     }
   }
 
-  private[this] def rightOrError[T](value: ValidatedNec[String, T]): T = {
+  private[this] def validOrError[T](value: ValidatedNec[String, T]): T = {
     value match {
-      case Left(errors) => sys.error("Unexpected errors: " + errors.mkString(", "))
-      case Right(v) => v
+      case Invalid(errors) => sys.error("Unexpected errors: " + formatErrors(errors))
+      case Valid(v) => v
     }
   }
 }

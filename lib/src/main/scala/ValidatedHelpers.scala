@@ -16,7 +16,7 @@ trait ValidatedHelpers {
     }
   }
 
-  private[this] def formatErrors(errors: NonEmptyChain[String]): String = {
+  def formatErrors(errors: NonEmptyChain[String]): String = {
     errors.toNonEmptyList.toList.mkString(", ")
   }
 

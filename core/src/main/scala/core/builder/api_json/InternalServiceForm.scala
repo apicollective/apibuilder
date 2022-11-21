@@ -1,10 +1,12 @@
 package builder.api_json
 
+import cats.implicits._
 import cats.data.ValidatedNec
 import builder.JsonUtil
 import builder.api_json.upgrades.AllUpgrades
+import cats.data.Validated.{Invalid, Valid}
 import core.ServiceFetcher
-import lib.Text
+import lib.{Text, ValidatedHelpers}
 import play.api.libs.json._
 
 /**
@@ -376,10 +378,7 @@ case class InternalResponseForm(
   warnings: ValidatedNec[String, Unit]
 ) {
 
-  lazy val datatypeLabel: Option[String] = datatype match {
-    case Left(_) => None
-    case Right(dt) => Some(dt.name)
-  }
+  lazy val datatypeLabel: Option[String] = datatype.toOption.map(_.name)
 
 }
 
@@ -422,6 +421,7 @@ object InternalInfoForm {
 
 }
 
+
 object InternalDeprecationForm {
 
   def apply(value: JsValue): InternalDeprecationForm = {
@@ -446,10 +446,7 @@ object InternalUnionForm {
          a.value.flatMap { value =>
            value.asOpt[JsObject].map { json =>
              val internalDatatype = internalDatatypeBuilder.parseTypeFromObject(json)
-             val datatypeName = internalDatatype match {
-               case Left(_) => None
-               case Right(dt) => Some(dt.name)
-             }
+             val datatypeName = internalDatatype.toOption.map(_.name)
 
              InternalUnionTypeForm(
                datatype = internalDatatype,
@@ -621,17 +618,13 @@ object InternalHeaderForm {
       el match {
         case o: JsObject => {
           val datatype = internalDatatypeBuilder.parseTypeFromObject(o)
-          val isRequired = datatype match {
-            case Left(_) => true
-            case Right(dt) => dt.required
-          }
 
           val headerName = JsonUtil.asOptString(o \ "name")
           Some(
             InternalHeaderForm(
               name = headerName,
               datatype = datatype,
-              required = isRequired,
+              required = InternalDatatype.isRequired(datatype),
               description = JsonUtil.asOptString(o \ "description"),
               deprecation = InternalDeprecationForm.fromJsValue(o),
               default = JsonUtil.asOptString(o \ "default"),
@@ -655,7 +648,7 @@ object InternalHeaderForm {
   }.toSeq
 }
 
-object InternalResourceForm {
+object InternalResourceForm extends ValidatedHelpers {
 
   def apply(
     internalDatatypeBuilder: InternalDatatypeBuilder,
@@ -695,8 +688,8 @@ object InternalResourceForm {
     }
 
     internalDatatypeBuilder.fromString(typeName) match {
-      case Left(errors) => sys.error(s"Invalid datatype[$typeName]: ${errors.mkString(", ")}")
-      case Right(datatype) => {
+      case Invalid(errors) => sys.error(s"Invalid datatype[$typeName]: ${formatErrors(errors)}")
+      case Valid(datatype) => {
         InternalResourceForm(
           datatype = datatype,
           description = JsonUtil.asOptString(value \ "description"),
@@ -742,9 +735,9 @@ object InternalOperationForm {
                 }
                 case _ => {
                   InternalResponseForm(
-                    datatype = Right(InternalDatatype.Unit),
+                    datatype = InternalDatatype.Unit.validNec,
                     code = code,
-                    warnings = Seq("value must be an object")
+                    warnings = "value must be an object".invalidNec
                   )
                 }
               }
@@ -812,7 +805,7 @@ object InternalResponseForm {
   }
 }
 
-object InternalFieldForm {
+object InternalFieldForm extends ValidatedHelpers {
 
   def parse(internalDatatypeBuilder: InternalDatatypeBuilder, value: JsValue): Seq[InternalFieldForm] = {
     (value \ "fields").asOpt[JsArray] match {
@@ -827,30 +820,26 @@ object InternalFieldForm {
 
   def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalFieldForm = {
     val warnings = if (JsonUtil.hasKey(json, "enum") || JsonUtil.hasKey(json, "values")) {
-      Seq("Enumerations are now first class objects and must be defined in an explicit enum section")
+      "Enumerations are now first class objects and must be defined in an explicit enum section".invalidNec
     } else {
-      Seq.empty
+      ().validNec
     }
 
     val datatype = internalDatatypeBuilder.parseTypeFromObject(json)
-    val isRequired = datatype match {
-      case Left(_) => true
-      case Right(dt) => dt.required
-    }
 
     InternalFieldForm(
       name = JsonUtil.asOptString(json \ "name"),
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      required = isRequired,
+      required = InternalDatatype.isRequired(datatype),
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
       attributes = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray]),
       annotations = JsonUtil.asSeqOfString(json \ "annotations"),
-      warnings = warnings ++ JsonUtil.validate(
+      warnings = sequence(Seq(warnings, JsonUtil.validate(
         json,
         strings = Seq("name"),
         anys = Seq("type"),
@@ -860,7 +849,7 @@ object InternalFieldForm {
         optionalNumbers = Seq("minimum", "maximum"),
         optionalArraysOfObjects = Seq("attributes"),
         optionalAnys = Seq("default", "annotations")
-      )
+      )))
     )
   }
 
@@ -913,10 +902,6 @@ object InternalParameterForm {
 
   def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalParameterForm = {
     val datatype = internalDatatypeBuilder.parseTypeFromObject(json)
-    val isRequired = datatype match {
-      case Left(_) => true
-      case Right(dt) => dt.required
-    }
 
     InternalParameterForm(
       name = JsonUtil.asOptString(json \ "name"),
@@ -924,7 +909,7 @@ object InternalParameterForm {
       location = JsonUtil.asOptString(json \ "location"),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      required = isRequired,
+      required = InternalDatatype.isRequired(datatype),
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),

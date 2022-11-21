@@ -27,6 +27,7 @@ trait TestHelper {
       Original(OriginalType.ApiJson, contents),
       app.injector.instanceOf[DatabaseServiceFetcher].instance(Authorization.All)
     )
+    validOrError {}
     validator.validate() match {
       case Left(errors) => sys.error(s"Errors: $errors")
       case Right(service) => service

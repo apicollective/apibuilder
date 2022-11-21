@@ -373,13 +373,6 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def resourceLabel(
-    resource: InternalResourceForm,
-    message: String
-  ): String = {
-    s"Resource[${resource.datatype.label}] $message"
-  }
-
   private def opLabel(
     resource: InternalResourceForm,
     op: InternalOperationForm,

@@ -6,10 +6,12 @@ import io.apibuilder.spec.v0.models.{Field, Service, UnionType}
 import lib._
 import builder.OriginalValidator
 import db._
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 import _root_.util.ApiBuilderServiceImportResolver
+import cats.data.Validated.{Invalid, Valid}
 
 @Singleton
 class Versions @Inject() (
@@ -113,10 +115,10 @@ class Versions @Inject() (
                 original = OriginalUtil.toOriginal(form.originalForm),
                 fetcher = databaseServiceFetcher.instance(request.authorization)
               ).validate() match {
-                case Left(errors) => {
+                case Invalid(errors) => {
                   Conflict(Json.toJson(Validation.errors(errors)))
                 }
-                case Right(service) => {
+                case Valid(service) => {
                   versionValidator.validate(request.user, org, service.application.key) match {
                     case Nil => {
                       upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service) match {
@@ -161,10 +163,10 @@ class Versions @Inject() (
                 original = OriginalUtil.toOriginal(form.originalForm),
                 fetcher = databaseServiceFetcher.instance(request.authorization)
               ).validate() match {
-                case Left(errors) => {
+                case Invalid(errors) => {
                   Conflict(Json.toJson(Validation.errors(errors)))
                 }
-                case Right(service) => {
+                case Valid(service) => {
                   versionValidator.validate(request.user, org, service.application.key, Some(applicationKey)) match {
                     case Nil => {
                       upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey)) match {

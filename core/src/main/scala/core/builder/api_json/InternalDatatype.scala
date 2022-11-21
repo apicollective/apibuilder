@@ -3,7 +3,7 @@ package builder.api_json
 import builder.JsonUtil
 import cats.implicits._
 import cats.data.ValidatedNec
-import builder.JsonUtil
+import cats.data.Validated.{Invalid, Valid}
 import lib.Primitives
 import play.api.libs.json._
 
@@ -20,6 +20,13 @@ sealed trait InternalDatatype {
 }
 
 object InternalDatatype {
+  def isRequired(datatype: ValidatedNec[String, InternalDatatype]): Boolean = {
+    datatype match {
+      case Invalid(_) => true
+      case Valid(dt) => dt.required
+    }
+  }
+
   case class List(name: String, required: Boolean) extends InternalDatatype {
     override def label: String = makeLabel("[", "]")
   }

@@ -1,28 +1,26 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Application, ApplicationMetadataVersion, Original, User, Version}
-import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
-import io.apibuilder.spec.v0.models.Service
-import io.apibuilder.spec.v0.models.json._
-import io.flow.postgresql.Query
 import builder.OriginalValidator
 import builder.api_json.upgrades.ServiceParser
 import cats.data.Validated.{Invalid, Valid}
 import core.{ServiceFetcher, VersionMigration}
-import lib.{ServiceConfiguration, ServiceUri, VersionTag}
-
-import javax.inject.{Inject, Named, Singleton}
-import play.api.db._
+import io.apibuilder.api.v0.models._
+import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
+import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.json._
+import io.flow.postgresql.Query
+import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import play.api.Logger
+import play.api.db._
 import play.api.libs.json._
 
 import java.util.UUID
+import javax.inject.{Inject, Named}
 import scala.annotation.tailrec
 
 case class MigrationStats(good: Long, bad: Long)
 
-@Singleton
 class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
   @Named("main-actor") mainActor: akka.actor.ActorRef,
@@ -32,7 +30,7 @@ class VersionsDao @Inject() (
   usersDao: UsersDao,
   organizationsDao: OrganizationsDao,
   serviceParser: ServiceParser
-) {
+) extends ValidatedHelpers {
 
   private[this] val logger: Logger = Logger(this.getClass)
 
@@ -384,11 +382,11 @@ class VersionsDao @Inject() (
             migration = VersionMigration(internal = true)
           )
           validator.validate() match {
-            case Left(errors) => {
-              logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + errors.distinct.mkString(", "))
+            case Invalid(errors) => {
+              logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + formatErrors(errors))
               bad += 1
             }
-            case Right(service) => {
+            case Valid(service) => {
               insertService(c, usersDao.AdminUser, versionGuid, service)
               good += 1
             }
