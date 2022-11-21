@@ -1,5 +1,6 @@
 package builder.api_json
 
+import cats.data.ValidatedNec
 import builder.JsonUtil
 import builder.api_json.upgrades.AllUpgrades
 import core.ServiceFetcher
@@ -265,7 +266,7 @@ case class InternalUnionForm(
 )
 
 case class InternalUnionTypeForm(
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
@@ -276,7 +277,7 @@ case class InternalUnionTypeForm(
 
 case class InternalHeaderForm(
   name: Option[String],
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   required: Boolean,
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
@@ -314,7 +315,7 @@ case class InternalOperationForm(
 
 case class InternalFieldForm(
   name: Option[String] = None,
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   required: Boolean = true,
@@ -344,7 +345,7 @@ case class InternalAnnotationForm(
 
 case class InternalParameterForm(
   name: Option[String] = None,
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   location: Option[String] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
@@ -358,7 +359,7 @@ case class InternalParameterForm(
 )
 
 case class InternalBodyForm(
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
@@ -367,7 +368,7 @@ case class InternalBodyForm(
 
 case class InternalResponseForm(
   code: String,
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   headers: Seq[InternalHeaderForm] = Nil,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,

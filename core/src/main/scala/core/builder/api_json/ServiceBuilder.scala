@@ -1,5 +1,6 @@
 package builder.api_json
 
+import cats.data.ValidatedNec
 import core._
 import io.apibuilder.spec.v0.models._
 import lib.Methods.supportsBody
@@ -599,7 +600,7 @@ case class ServiceBuilder(
     }
   }
 
-  private[this] def rightOrError[T](value: Either[Seq[String], T]): T = {
+  private[this] def rightOrError[T](value: ValidatedNec[String, T]): T = {
     value match {
       case Left(errors) => sys.error("Unexpected errors: " + errors.mkString(", "))
       case Right(v) => v

@@ -1,30 +1,40 @@
 package lib
 
+import cats.implicits._
+import cats.data.ValidatedNec
+
 object Text {
 
   /**
    * We require names to be alpha numeric and to start with a letter
    */
   def isValidName(name: String): Boolean = {
-    validateName(name).isEmpty
+    validateName(name).isValid
   }
 
-  def validateName(name: String): Seq[String] = {
-    val alphaNumericError = if (isAlphaNumeric(name)) {
-                              Seq.empty
-                            } else {
-                              Seq("Name can only contain a-z, A-Z, 0-9, - and _ characters")
-                            }
+  def validateName(name: String): ValidatedNec[String, Unit] = {
+    (
+      validateAlphanumeic(name),
+      validateInitialLetter(name)
+    ).mapN { case (_, _) => () }
+  }
 
-    val startsWithLetterError = if (startsWithLetter(name) || (startsWithUnderscore(name) && name.length > 1)) {
-                                  Seq.empty
-                                } else if (name.isEmpty) {
-                                  Seq("Name cannot be blank")
-                                } else {
-                                  Seq("Name must start with a letter")
-                                }
+  private[this] def validateAlphanumeic(name: String): ValidatedNec[String, Unit] = {
+    if (isAlphaNumeric(name)) {
+      ().validNec
+    } else {
+      "Name can only contain a-z, A-Z, 0-9, - and _ characters".invalidNec
+    }
+  }
 
-    alphaNumericError ++ startsWithLetterError
+  private[this] def validateInitialLetter(name: String): ValidatedNec[String, Unit] = {
+    if (startsWithLetter(name) || (startsWithUnderscore(name) && name.length > 1)) {
+      ().validNec
+    } else if (name.isEmpty) {
+      "Name cannot be blank".invalidNec
+    } else {
+      "Name must start with a letter".invalidNec
+    }
   }
 
   private[this] val AlphaNumericRx = "^[a-zA-Z0-9-_.\\.]*$".r

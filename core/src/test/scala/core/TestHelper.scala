@@ -28,7 +28,7 @@ object TestHelper {
 
     private[this] lazy val validateResult = validator.validate()
 
-    override def validate(): Either[Seq[String], Service] = validateResult
+    override def validate(): ValidatedNec[String, Service] = validateResult
 
     override def errors(): Seq[String] = validateResult match {
       case Left(errors) => errors

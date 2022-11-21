@@ -1,9 +1,11 @@
 package builder.api_json
 
 import builder.JsonUtil
+import cats.implicits._
+import cats.data.ValidatedNec
+import builder.JsonUtil
 import lib.Primitives
 import play.api.libs.json._
-
 
 sealed trait InternalDatatype {
 
@@ -58,24 +60,24 @@ private[api_json] case class InternalDatatypeBuilder() {
   private val MapRx = "^map\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
 
-  private[this] def apply(r: JsLookupResult): Either[Seq[String], InternalDatatype] = {
+  private[this] def apply(r: JsLookupResult): ValidatedNec[String, InternalDatatype] = {
     JsonUtil.asOptJsValue(r) match {
-      case None => Left(Seq("must be an object"))
+      case None => "must be an object".invalidNec
       case Some(v) => apply(v)
     }
   }
 
-  private[this] def apply(value: JsValue): Either[Seq[String], InternalDatatype] = {
+  private[this] def apply(value: JsValue): ValidatedNec[String, InternalDatatype] = {
     value.asOpt[String] match {
       case Some(v) => fromString(v)
       case None => value.asOpt[JsObject] match {
         case Some(v) => inlineType(v)
-        case None => Left(Seq("must be a string or an object"))
+        case None => "must be a string or an object".invalidNec
       }
     }
   }
 
-  private[this] def inlineEnum(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+  private[this] def inlineEnum(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicEnums.append(
         InternalEnumForm(dt.name, value - EnumMarker)
@@ -84,7 +86,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineModel(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+  private[this] def inlineModel(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicModels.append(
         InternalModelForm(this, dt.name, value - ModelMarker, prefix = None)
@@ -93,7 +95,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineInterface(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+  private[this] def inlineInterface(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicInterfaces.append(
         InternalInterfaceForm(this, dt.name, value - InterfaceMarker)
@@ -102,7 +104,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineUnion(name: String, value: JsObject): Either[Seq[String], InternalDatatype] = {
+  private[this] def inlineUnion(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicUnions.append(
         InternalUnionForm(this, dt.name, value - UnionMarker)
@@ -111,7 +113,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineType(value: JsObject): Either[Seq[String], InternalDatatype] = {
+  private[this] def inlineType(value: JsObject): ValidatedNec[String, InternalDatatype] = {
     JsonUtil.asOptString(value \ EnumMarker) match {
       case Some(name) => inlineEnum(name, value)
       case None => {
@@ -123,7 +125,7 @@ private[api_json] case class InternalDatatypeBuilder() {
               case None => {
                 JsonUtil.asOptString(value \ UnionMarker) match {
                   case Some(name) => inlineUnion(name, value)
-                  case None => Left(Seq(s"must specify field '$EnumMarker', '$ModelMarker' or '$UnionMarker'"))
+                  case None => s"must specify field '$EnumMarker', '$ModelMarker' or '$UnionMarker'".invalidNec
                 }
               }
             }
@@ -133,18 +135,18 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  def fromString(value: String): Either[Seq[String], InternalDatatype] = {
+  def fromString(value: String): ValidatedNec[String, InternalDatatype] = {
     Option(value.trim).filter(_.nonEmpty) match {
-      case None => Left(Seq("type must be a non empty string"))
+      case None => "type must be a non empty string".invalidNec
       case Some(v) => {
-        Right(
+        (
           v match {
             case ListRx(name) => InternalDatatype.List(formatName(name), required = true)
             case MapRx(name) => InternalDatatype.Map(formatName(name), required = true)
             case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString, required = true)
             case _ => InternalDatatype.Singleton(formatName(value), required = true)
           }
-        )
+        ).validNec
       }
     }
   }
@@ -160,38 +162,30 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  def parseTypeFromObject(json: JsObject): Either[Seq[String], InternalDatatype] = {
-    apply(json \ "type") match {
-      case Left(errors) => {
-        Left(errors)
-      }
+  def parseTypeFromObject(json: JsObject): ValidatedNec[String, InternalDatatype] = {
+    apply(json \ "type").map { dt =>
+      JsonUtil.asOptBoolean(json \ "required") match {
+        case None => {
+          dt
+        }
 
-      case Right(dt) => {
-        Right(
-          JsonUtil.asOptBoolean(json \ "required") match {
-            case None => {
-              dt
-            }
-
-            case Some(true) => {
-              // User explicitly marked this required
-              dt match {
-                case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), required = true)
-                case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), required = true)
-                case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), required = true)
-              }
-            }
-
-            case Some(false) => {
-              // User explicitly marked this optional
-              dt match {
-                case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), required = false)
-                case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), required = false)
-                case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), required = false)
-              }
-            }
+        case Some(true) => {
+          // User explicitly marked this required
+          dt match {
+            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), required = true)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), required = true)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), required = true)
           }
-        )
+        }
+
+        case Some(false) => {
+          // User explicitly marked this optional
+          dt match {
+            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), required = false)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), required = false)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), required = false)
+          }
+        }
       }
     }
   }

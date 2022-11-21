@@ -2,6 +2,8 @@ package builder.api_json
 
 import builder.JsonUtil
 import builder.api_json.templates.JsMerge
+import cats.implicits._
+import cats.data.ValidatedNec
 import cats.data.Validated.{Invalid, Valid}
 import core.{DuplicateJsonParser, Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
@@ -20,10 +22,10 @@ case class ApiJsonServiceValidator(
 
   private lazy val service: Service = ServiceBuilder(migration = migration).apply(config, internalService.get)
 
-  def validate(): Either[Seq[String], Service] = {
+  override def validate(): ValidatedNec[String, Service] = {
     errors match {
-      case Nil => Right(service)
-      case _ => Left(errors)
+      case Nil => service.validNec
+      case _ => errors.map(_.invalidNec).sequence.map(_.head)
     }
   }
 

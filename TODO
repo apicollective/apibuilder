@@ -1,3 +1,7 @@
+ValidatedNec refactor:
+  - JsonUtil
+  - private[this] lazy val errors: Seq[String]
+
 Remove play.api.Play.current
 
 Bindables with multiple services

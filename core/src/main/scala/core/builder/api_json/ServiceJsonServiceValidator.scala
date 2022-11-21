@@ -1,5 +1,7 @@
 package builder.api_json
 
+import cats.implicits._
+import cats.data.ValidatedNec
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import lib.ServiceValidator
@@ -11,25 +13,25 @@ case class ServiceJsonServiceValidator(
   json: String
 ) extends ServiceValidator[Service] {
 
-  def validate(): Either[Seq[String], Service] = {
+  def validate(): ValidatedNec[String, Service] = {
     Try(Json.parse(json)) match {
       case Success(js) => {
         js.validate[Service] match {
           case e: JsError => {
-            Left(Seq("Not a valid service.json document: " + e.toString))
+            ("Not a valid service.json document: " + e.toString).invalidNec
           }
           case s: JsSuccess[Service] => {
-            Right(s.get)
+            s.get.validNec
           }
         }
       }
 
       case Failure(ex) => ex match {
         case e: JsonParseException => {
-          Left(Seq("Invalid JSON: " + e.getMessage))
+          ("Invalid JSON: " + e.getMessage).invalidNec
         }
         case e: JsonProcessingException => {
-          Left(Seq("Invalid JSON: " + e.getMessage))
+          ("Invalid JSON: " + e.getMessage).invalidNec
         }
       }
     }
