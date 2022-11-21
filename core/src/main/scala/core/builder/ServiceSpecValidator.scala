@@ -154,15 +154,7 @@ case class ServiceSpecValidator(
     (
       Seq(
         validateName(prefix, field.name),
-        validateType(prefix, field.`type`) {
-          case _: Kind.Interface => Some(s"$prefix type[${field.`type`}] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type")
-          case _: Kind.Primitive => None
-          case _: Kind.Enum => None
-          case _: Kind.Model => None
-          case _: Kind.Union => None
-          case _: Kind.List => None
-          case _: Kind.Map => None
-        },
+        validateConcreteType(prefix, field.`type`),
         validateRange(prefix, field.minimum, field.maximum),
         validateInRange(prefix, field.minimum, field.maximum, field.default),
         validateAnnotations(prefix, field.annotations)
@@ -355,59 +347,59 @@ case class ServiceSpecValidator(
   // no way we could retroactively modify the imported
   // type to extend the union type that is only being
   // defined in this service.
-  private def validateTypeLocal(prefix: String, typ: String): ValidatedNec[String, Unit] = {
-    validateType(prefix, typ) match {
-      case Nil => {
-        localTypeResolver.parse(typ) match {
-          case None => {
-            Seq(s"$prefix is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
-          }
-          case Some(_) => Nil
-        }
+  private def validateUnionTypeLocal(prefix: String, typ: String): ValidatedNec[String, Unit] = {
+    validateType(prefix, typ).andThen { _ =>
+      localTypeResolver.parse(typ) match {
+        case Some(_) => ().validNec
+        case None => s"$prefix is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.".invalidNec
       }
-      case _ => Nil // another type error already found
     }
   }
 
   private def validateTypeNotUnit(prefix: String, typ: String): ValidatedNec[String, Unit] = {
     localTypeResolver.parse(typ) match {
       case Some(kind: Kind.Primitive) if kind.name == Primitives.Unit.toString => {
-        Seq(s"$prefix Union types cannot contain unit. To make a particular field optional, use the required property.")
+        s"$prefix Union types cannot contain unit. To make a particular field optional, use the required property.".invalidNec
       }
-      case _ => Nil
+      case _ => ().validNec
     }
   }
 
   private def validateUnionTypes(prefix: String, types: Seq[UnionType]): ValidatedNec[String, Unit] = {
-    types.flatMap { t =>
-      validateType(s"$prefix", t.`type`) ++
-        validateTypeNotUnit(prefix, t.`type`) ++
-        validateTypeLocal(s"$prefix Type[${t.`type`}]", t.`type`) ++
-        DuplicateErrorMessage.validate(s"$prefix Type", types.map(_.`type`))
-    } ++ validateUnionTypeDefaults(prefix, types)
+    (
+      types.flatMap { t =>
+        Seq(
+          validateType(s"$prefix", t.`type`),
+          validateTypeNotUnit(prefix, t.`type`),
+          validateUnionTypeLocal(s"$prefix Type[${t.`type`}]", t.`type`),
+          DuplicateErrorMessage.validate(s"$prefix Type", types.map(_.`type`)),
+          validateUnionTypeDefaults(prefix, types)
+        )
+      }
+    ).sequence.map(_ => ())
   }
 
   private def validateUnionTypeDefaults(prefix: String, types: Seq[UnionType]): ValidatedNec[String, Unit] = {
     val defaultTypes = types.filter(_.default.getOrElse(false)).map(_.`type`)
     if (defaultTypes.size > 1) {
-      Seq(s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.sorted.mkString(", ")}")
+      s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.sorted.mkString(", ")}".invalidNec
     } else {
-      Nil
+      ().validNec
     }
   }
 
   private[this] def validateUnionTypeDiscriminatorNames(): ValidatedNec[String, Unit] = {
-    service.unions.flatMap { union =>
+    service.unions.map { union =>
       val all = getAllDiscriminatorNames(union).distinct
       if (all.length > 1) {
         union.discriminator match {
-          case None => Some(s"Union[${union.name}] does not specify a discriminator yet one of the types does. Either add the same discriminator to this union or remove from the member types")
-          case Some(d) => Some(s"Union[${union.name}] specifies a discriminator named '$d'. All member types must also specify this same discriminator")
+          case None => s"Union[${union.name}] does not specify a discriminator yet one of the types does. Either add the same discriminator to this union or remove from the member types".invalidNec
+          case Some(d) => s"Union[${union.name}] specifies a discriminator named '$d'. All member types must also specify this same discriminator".invalidNec
         }
       } else {
-        None
+        ().validNec
       }
-    }
+    }.sequence.map(_ => ())
   }
 
   private[this] def getAllDiscriminatorNames(union: Union, resolved: Set[String] = Set.empty): Seq[Option[String]] = {
@@ -420,20 +412,22 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateUnionTypeDiscriminatorValues(): ValidatedNec[String, Unit] = {
-    validateUnionTypeDiscriminatorValuesValidNames() ++
-      validateUnionTypeDiscriminatorValuesAreDistinct() ++
+    Seq(
+      validateUnionTypeDiscriminatorValuesValidNames(),
+      validateUnionTypeDiscriminatorValuesAreDistinct(),
       validateUnionTypeDiscriminatorKeyValuesAreUniquePerModel()
+    ).sequence.map(_ => ())
   }
 
   private[this] def validateUnionTypeDiscriminatorValuesValidNames(): ValidatedNec[String, Unit] = {
     service.unions.flatMap { union =>
-      union.types.flatMap { unionType =>
+      union.types.map { unionType =>
         unionType.discriminatorValue match {
-          case None => None
+          case None => ().validNec
           case Some(value) => validateName(s"Union[${union.name}] type[${unionType.`type`}]", value)
         }
       }
-    }
+    }.sequence.map(_ => ())
   }
 
   private[this] def validateUnionCyclicReferences(): ValidatedNec[String, Unit] = {
@@ -458,29 +452,32 @@ case class ServiceSpecValidator(
 
     val allCycles = service.unions.flatMap { union => findCycle(union.name, Nil) }
 
-    val deduped = allCycles.groupBy(_.sorted).values.toSeq.map(_.head)
-
-    deduped.map { cycle =>
-      if (cycle.size == 1) {
-        s"Union[${cycle.head}] cannot contain itself as one of its types or sub-types"
-      } else {
-        // need to reverse the order and duplicate the start of the cycle, so that c->b->a becomes a->b->c->a
-        val reversed = (cycle.last :: cycle).reverse
-        s"Union[${reversed.head}] cannot contain itself as one of its types or sub-types: ${reversed.mkString("->")}"
-      }
+    allCycles.groupBy(_.sorted).values.toSeq.map(_.head).toList match {
+      case Nil => ().validNec
+      case deduped => {
+        deduped.map { cycle =>
+          if (cycle.size == 1) {
+            s"Union[${cycle.head}] cannot contain itself as one of its types or sub-types".invalidNec
+          } else {
+            // need to reverse the order and duplicate the start of the cycle, so that c->b->a becomes a->b->c->a
+            val reversed = (cycle.last :: cycle).reverse
+            s"Union[${reversed.head}] cannot contain itself as one of its types or sub-types: ${reversed.mkString("->")}".invalidNec
+          }
+        }
+      }.sequence.map(_ => ())
     }
   }
 
   private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): ValidatedNec[String, Unit] = {
-    service.unions.flatMap { union =>
+    service.unions.map { union =>
       DuplicateErrorMessage.validate(
         s"Union[${union.name}] discriminator value",
         getAllDiscriminatorValues(union),
       )
-    }
+    }.sequence.map(_ => ())
   }
 
-  private[this] def getAllDiscriminatorValues(union: Union, resolved: Set[String] = Set.empty): ValidatedNec[String, Unit] = {
+  private[this] def getAllDiscriminatorValues(union: Union, resolved: Set[String] = Set.empty): Seq[String] = {
     if (resolved.contains(union.name))
       Nil
     else {
@@ -498,8 +495,10 @@ case class ServiceSpecValidator(
       .flatMap(u => u.types.map(t => (u, t)))
       // model -> unions
       .groupBy { case (_, unionType) => unionType.`type` }
-      .flatMap { case (modelName, unions) => validateUniqueDiscriminatorKeyValues(modelName, unions) }
+      .map { case (modelName, unions) => validateUniqueDiscriminatorKeyValues(modelName, unions) }
       .toSeq
+      .sequence
+      .map(_ => ())
 
 
   private def validateUniqueDiscriminatorKeyValues(modelName: String, unions: Seq[(Union, UnionType)]): ValidatedNec[String, Unit] = {
@@ -601,24 +600,19 @@ case class ServiceSpecValidator(
   }
 
   private def validateHeaders(headers: Seq[Header], location: String): ValidatedNec[String, Unit] = {
-    val headersWithInvalidTypes = headers.flatMap { header =>
-      parseConcreteType(header.`type`) match {
-        case None => Some(s"$location[${header.name}] type[${header.`type`}] is invalid")
-        case Some(kind) => {
-          kind match {
-            case Kind.Enum(_) | Kind.Primitive("string") => None
-            case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => None
-            case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
-              Some(s"$location[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
-            }
+    (
+      headers.map { header =>
+        validateConcreteType(s"$location[${header.name}] type[${header.`type`}]", header.`type`).andThen {
+          case Kind.Enum(_) | Kind.Primitive("string") => ().validNec
+          case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => ().validNec
+          case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
+            s"$location[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum".invalidNec
           }
         }
-      }
-    }
-
-    val duplicates = DuplicateErrorMessage.validate(location, headers.map(_.name))
-
-    headersWithInvalidTypes ++ duplicates
+      } ++ Seq(
+        DuplicateErrorMessage.validate(location, headers.map(_.name))
+      )
+    ).sequence.map(_ => ())
   }
 
   private[this] case class TypesUniqueValidator(label: String, names: ValidatedNec[String, Unit]) {
@@ -758,18 +752,13 @@ case class ServiceSpecValidator(
 
   private def validateResourceBodies(): ValidatedNec[String, Unit] = {
     val typesNotFound = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
+      resource.operations.map { op =>
         op.body match {
           case None => ().validNec
-          case Some(body) => {
-            parseConcreteType(body.`type`) match {
-              case None => Some(opLabel(resource, op, s"body: Type[${body.`type`}] not found"))
-              case Some(_) => None
-            }
-          }
+          case Some(body) => validateConcreteType(opLabel(resource, op, s"body: Type[${body.`type`}]"), body.`type`)
         }
       }
-    }
+    }.sequence.map(_ => ())
 
     val invalidMethods = service.resources.flatMap { resource =>
       resource.operations.filter(op => op.body.isDefined && !Methods.supportsBody(op.method.toString)).map { op =>
@@ -814,67 +803,62 @@ case class ServiceSpecValidator(
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.parameters.flatMap { p =>
-          parseConcreteType(p.`type`) match {
-            case None => {
-              Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type: ${p.`type`}"))
-            }
-            case Some(kind) => {
-              p.location match {
-                case ParameterLocation.Query | ParameterLocation.Header => {
-                  // Query and Header parameters can only be primitives or enums
-                  kind match {
-                    case Kind.Enum(_) => {
-                      None
-                    }
+          validateConcreteType(opLabel(resource, op, s"Parameter[${p.name}]"), p.`type`).andThen { kind =>
+            p.location match {
+              case ParameterLocation.Query | ParameterLocation.Header => {
+                // Query and Header parameters can only be primitives or enums
+                kind match {
+                  case Kind.Enum(_) => {
+                    None
+                  }
 
-                    case Kind.Primitive(_) if isValidInUrl(kind) => {
-                      None
-                    }
+                  case Kind.Primitive(_) if isValidInUrl(kind) => {
+                    None
+                  }
 
-                    case Kind.Primitive(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid types for ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
-                    }
+                  case Kind.Primitive(_) => {
+                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid types for ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
+                  }
 
-                    case Kind.List(nested) if isValidInUrl(nested) => {
-                      None
-                    }
+                  case Kind.List(nested) if isValidInUrl(nested) => {
+                    None
+                  }
 
-                    case Kind.List(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
-                    }
+                  case Kind.List(_) => {
+                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
+                  }
 
-                    case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Interface, model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
-                    }
+                  case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) => {
+                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Interface, model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
+                  }
 
-                    case Kind.Map(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as ${p.location.toString.toLowerCase} parameters."))
-                    }
-
+                  case Kind.Map(_) => {
+                    Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as ${p.location.toString.toLowerCase} parameters."))
                   }
 
                 }
 
-                case ParameterLocation.Path => {
-                  // Path parameters are required
-                  if (p.required) {
-                    // Verify that path parameter is actually in the path and immediately before or after a '/'
-                    if (!Util.namedParametersInPath(op.path).contains(p.name)) {
-                      Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
-                    } else if (isValidInUrl(kind)) {
-                      None
-                    } else {
-                      val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.")
-                      Some(errorTemplate.format(kind.toString))
-                    }
+              }
+
+              case ParameterLocation.Path => {
+                // Path parameters are required
+                if (p.required) {
+                  // Verify that path parameter is actually in the path and immediately before or after a '/'
+                  if (!Util.namedParametersInPath(op.path).contains(p.name)) {
+                    Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
+                  } else if (isValidInUrl(kind)) {
+                    None
                   } else {
-                    Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
+                    val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.")
+                    Some(errorTemplate.format(kind.toString))
                   }
+                } else {
+                  Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
                 }
+              }
 
-                case _ => {
-                  None
-                }
+              case _ => {
+                None
               }
             }
           }
@@ -993,16 +977,11 @@ case class ServiceSpecValidator(
   }
 
   private def validateType(prefix: String, `type`: String)(
-    implicit validateType: Kind => Option[String] = {_ => None}
+    implicit doValidateType: Kind => ValidatedNec[String, Unit] = {_ => ().validNec}
   ): ValidatedNec[String, Unit] = {
     typeResolver.parse(`type`) match {
-      case None => Seq(s"$prefix type[${`type`}] not found")
-      case Some(t) => {
-        validateType(t) match {
-          case None => Nil
-          case Some(error) => Seq(error)
-        }
-      }
+      case None => s"$prefix type[${`type`}] not found".invalidNec
+      case Some(t) => doValidateType(t)
     }
   }
 
@@ -1030,10 +1009,15 @@ case class ServiceSpecValidator(
     ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
-  private[this] def parseConcreteType(value: String): Option[Kind] = {
-    typeResolver.parse(value) {
-      case _: Kind.Interface => false
-      case _ => true
+  private[this] def validateConcreteType(prefix: String, value: String) = {
+    validateType(prefix, value) {
+      case _: Kind.Interface => s"$prefix is an interface and cannot be used as a field type. Specify the specific model you need or use a union type".invalidNec
+      case _: Kind.Primitive => ().validNec
+      case _: Kind.Enum => ().validNec
+      case _: Kind.Model => ().validNec
+      case _: Kind.Union => ().validNec
+      case _: Kind.List => ().validNec
+      case _: Kind.Map => ().validNec
     }
   }
 }
