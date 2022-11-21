@@ -189,186 +189,190 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateEnums(): ValidatedNec[String, Unit] = {
-    val warnings = internalService.get.enums.flatMap(_.warnings)
-
-    val attributeErrors = internalService.get.enums.flatMap { enum =>
-      validateAttributes(s"Enum[${enum.name}]", enum.attributes)
-    }
-
-    val valueErrors = internalService.get.enums.flatMap(validateEnumValues)
-
-    warnings ++ attributeErrors ++ valueErrors
+    val enums = internalService.get.enums
+    sequence(
+      enums.flatMap(_.warnings).map(_.invalidNec) ++ enums.map { enum =>
+        validateAttributes(s"Enum[${enum.name}]", enum.attributes)
+      } ++ enums.map(validateEnumValues)
+    )
   }
 
   private def validateEnumValues(`enum`: InternalEnumForm): ValidatedNec[String, Unit] = {
-    val attributeErrors = `enum`.values.zipWithIndex.flatMap { case (value, i) =>
-      value.name match {
-        case None => Seq(s"Enum[${`enum`.name}] value[$i]: Missing name")
-        case Some(name) => validateAttributes(s"Enum[${`enum`.name}] value[$name]", value.attributes)
+    sequence(
+      `enum`.values.flatMap(_.warnings).map(_.invalidNec) ++ `enum`.values.zipWithIndex.map { case (value, i) =>
+        value.name match {
+          case None => s"Enum[${`enum`.name}] value[$i]: Missing name".invalidNec
+          case Some(name) => validateAttributes(s"Enum[${`enum`.name}] value[$name]", value.attributes)
+        }
       }
-    }
-
-    `enum`.values.flatMap(_.warnings) ++ attributeErrors
+    )
   }
 
   private def validateInterfaces(): ValidatedNec[String, Unit] = {
-    val warnings = internalService.get.interfaces.flatMap(_.warnings)
-
-    val attributeErrors = internalService.get.interfaces.flatMap { interface =>
-      validateAttributes(s"Interface[${interface.name}]", interface.attributes)
-    }
-
-    warnings ++ attributeErrors
+    val interfaces = internalService.get.interfaces
+    sequence(
+      interfaces.flatMap(_.warnings).map(_.invalidNec) ++ interfaces.map { interface =>
+        validateAttributes(s"Interface[${interface.name}]", interface.attributes)
+      }
+    )
   }
 
   private def validateModels(models: Seq[InternalModelForm]): ValidatedNec[String, Unit] = {
-    val warnings = models.flatMap(_.warnings)
-
-    val attributeErrors = models.flatMap { model =>
-      validateAttributes(s"Model[${model.name}]", model.attributes)
-    }
-
-    warnings ++ attributeErrors ++ validateFields(models)
+    sequence(
+      models.flatMap(_.warnings).map(_.invalidNec) ++ models.map { model =>
+        validateAttributes(s"Model[${model.name}]", model.attributes)
+      } ++ Seq(validateFields(models))
+    )
   }
 
   private def validateHeaders(): ValidatedNec[String, Unit] = {
-    val warnings = internalService.get.headers.flatMap(_.warnings)
-
-    val attributeErrors = internalService.get.headers.filter(_.name.isDefined).flatMap { header =>
-      validateAttributes(s"Header[${header.name}]", header.attributes)
-    }
-
-    warnings ++ attributeErrors
+    val headers = internalService.get.headers
+    sequence(
+      headers.flatMap(_.warnings).map(_.invalidNec) ++ headers.filter(_.name.isDefined).map { header =>
+        validateAttributes(s"Header[${header.name}]", header.attributes)
+      }
+    )
   }
 
   private def validateFields(models: Seq[InternalModelForm]): ValidatedNec[String, Unit] = {
     val missingNames = models.flatMap { model =>
-      model.fields.filter(_.name.isEmpty).map { f =>
-        modelLabel(model, s"field[${f.name}] must have a name")
+      model.fields.filter(_.name.isEmpty).zipWithIndex.map { case (_, i) =>
+        modelLabel(model, s"field[$i] must have a name").invalidNec
       }
     }
 
     val missingTypes = models.flatMap { model =>
-      model.fields.filter(_.name.isDefined).flatMap { f =>
+      model.fields.filter(_.name.isDefined).map { f =>
         f.datatype match {
-          case Left(errors) => Some({
-            modelLabel(model, s"field[${f.name.get}] type ${errors.mkString(", ")}")
-          })
-          case Right(_) => None
+          case Invalid(errors) => {
+            modelLabel(model, s"field[${f.name.get}] type ${errors.toNonEmptyList.toList.mkString(", ")}").invalidNec
+          }
+          case Valid(_) => ().validNec
         }
       }
     }
 
     val attributeErrors = internalService.get.models.flatMap { model =>
-      model.fields.filter(_.name.isDefined).flatMap { f =>
+      model.fields.filter(_.name.isDefined).map { f =>
         validateAttributes(s"Model[${model.name}] field[${f.name.get}]", f.attributes)
       }
     }
 
     val warnings = internalService.get.models.flatMap { model =>
       model.fields.filter(f => f.warnings.nonEmpty && f.name.isDefined).map { f =>
-        s"Model[${model.name}] field[${f.name.get}]: " + f.warnings.mkString(", ")
+        (s"Model[${model.name}] field[${f.name.get}]: " + f.warnings.mkString(", ")).invalidNec
       }
     }
 
-    missingTypes ++ missingNames ++ attributeErrors ++ warnings
+    sequence(missingTypes ++ missingNames ++ attributeErrors ++ warnings)
   }
 
   private def validateAttributes(prefix: String, attributes: Seq[InternalAttributeForm]): ValidatedNec[String, Unit] = {
-    attributes.zipWithIndex.flatMap { case (attr, i) =>
-      val fieldErrors = attr.name match {
-        case None => Seq(s"$prefix: Attribute $i must have a name")
-        case Some(name) => {
-          attr.value match {
-            case None => Seq(s"$prefix: Attribute $name must have a value")
-            case Some(_) => Nil
+    sequence(
+      attributes.zipWithIndex.map { case (attr, i) =>
+        val fieldErrors = attr.name match {
+          case None => s"$prefix: Attribute $i must have a name".invalidNec
+          case Some(name) => {
+            attr.value match {
+              case None => s"$prefix: Attribute $name must have a value".invalidNec
+              case Some(_) => ().validNec
+            }
           }
         }
-      }
 
-      fieldErrors ++ attr.warnings.map { err => s"$prefix: $err" }
-    }
+        sequence(Seq(
+          fieldErrors) ++ attr.warnings.map { err => s"$prefix: $err".invalidNec
+        })
+      }
+    )
   }
 
   private def validateResponses(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
     val codeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.declaredResponses.filter(r => r.warnings.nonEmpty).map { r =>
-          opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
+          opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", ")).invalidNec
         }
       }
     }
 
     val typeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.declaredResponses.flatMap { r =>
+        op.declaredResponses.map { r =>
           r.datatype match {
-            case Left(errors) => Some(opLabel(resource, op, s"${r.code} type: " + errors.mkString(", ")))
-            case Right(_) => None
+            case Invalid(errors) => opLabel(resource, op, s"${r.code} type: " + errors.toNonEmptyList.toList.mkString(", ")).invalidNec
+            case Valid(_) => ().validNec
           }
         }
       }
     }
 
-    val attributeErrors = internalService.get.resources.flatMap { resource =>
+    val attributeErrors = internalService.get.resources.map { resource =>
       validateAttributes(s"Resource[${resource.datatype.label}]", resource.attributes)
     }
 
-    codeErrors ++ typeErrors ++ attributeErrors
+    sequence(codeErrors ++ typeErrors ++ attributeErrors)
   }
 
   private def validateResourceBodies(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    resources.flatMap { resource =>
-      resource.operations.filter(_.body.isDefined).flatMap { op =>
-        op.body.get.datatype match {
-          case Left(errs) => Some(opLabel(resource, op, s"Body ${errs.mkString(", ")}"))
-          case Right(_) => None
+    sequence(
+      resources.flatMap { resource =>
+        resource.operations.filter(_.body.isDefined).map { op =>
+          op.body.get.datatype match {
+            case Invalid(errs) => opLabel(resource, op, s"Body ${errs.toNonEmptyList.toList.mkString(", ")}").invalidNec
+            case Valid(_) => ().validNec
+          }
         }
       }
-    }
+    )
   }
 
   private def validateResources(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    val resourceWarnings = resources.filter(_.warnings.nonEmpty).map { resource =>
-      s"Resource[${resource.datatype.label}]" + resource.warnings.mkString(", ")
-    }
-    resourceWarnings ++
-      validateOperations(resources) ++
-      validateResourceBodies(resources) ++
-      validateParameters(resources) ++
+    val resourceWarnings = sequence(resources.filter(_.warnings.nonEmpty).map { resource =>
+      (s"Resource[${resource.datatype.label}]" + resource.warnings.mkString(", ")).invalidNec
+    })
+
+    sequence(Seq(
+      resourceWarnings,
+      validateOperations(resources),
+      validateResourceBodies(resources),
+      validateParameters(resources),
       validateResponses(resources)
+    ))
   }
 
   private def validateOperations(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
     val warnings = resources.flatMap { resource =>
       resource.operations.filter(_.warnings.nonEmpty).map { op =>
-        opLabel(resource, op, op.warnings.mkString(", "))
+        opLabel(resource, op, op.warnings.mkString(", ")).invalidNec
       }
     }
 
-    val attributeErrors = internalService.get.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
+    val attributeErrors = resources.flatMap { resource =>
+      resource.operations.map { op =>
         validateAttributes(opLabel(resource, op, ""), op.attributes)
       }
     }
 
-    val bodyAttributeErrors = internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(_.body.isDefined).flatMap { op =>
+    val bodyAttributeErrors = resources.flatMap { resource =>
+      resource.operations.filter(_.body.isDefined).map { op =>
         validateAttributes(opLabel(resource, op, "body"), op.body.get.attributes)
       }
     }
 
-    warnings ++ attributeErrors ++ bodyAttributeErrors
+    sequence(warnings ++ attributeErrors ++ bodyAttributeErrors)
   }
 
   private def validateParameters(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.parameters.filter(_.warnings.nonEmpty).map { p =>
-          opLabel(resource, op, s"Parameter[${p.name}]")
+    sequence(
+      resources.flatMap { resource =>
+        resource.operations.flatMap { op =>
+          op.parameters.filter(_.warnings.nonEmpty).map { p =>
+            opLabel(resource, op, s"Parameter[${p.name}]").invalidNec
+          }
         }
       }
-    }
+    )
   }
 
   private def resourceLabel(
