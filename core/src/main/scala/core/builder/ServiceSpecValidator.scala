@@ -810,7 +810,8 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateParameters(): ValidatedNec[String, Unit] = {
-    service.resources.flatMap { resource =>
+    sequence(
+      service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.parameters.map { p =>
           validateConcreteType(opLabel(resource, op, s"Parameter[${p.name}]"), p.`type`).andThen { kind =>
@@ -867,6 +868,7 @@ case class ServiceSpecValidator(
         }
       }
     }
+    )
   }
 
   private[this] def isValidInUrl(kind: Kind): Boolean = {
@@ -893,84 +895,119 @@ case class ServiceSpecValidator(
     }
   }
 
-  private[this] def validateResponses(): ValidatedNec[String, Unit] = {
-    val invalidCodes = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.responses.flatMap { r =>
-          r.code match {
-            case ResponseCodeOption.Default => None
-            case ResponseCodeOption.UNDEFINED(value) => Some(s"Response code must be an integer or the keyword 'default' and not[$value]")
-            case ResponseCodeUndefinedType(value) => Some(s"Response code must be an integer or the keyword 'default' and not[$value]")
-            case ResponseCodeInt(code) => {
-              if (code < 100) {
-                Some(s"Response code[$code] must be >= 100")
-              } else {
-                None
+  // START
+  private[this] def validateResponseCodes(): ValidatedNec[String, Unit] = {
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.flatMap { op =>
+          op.responses.map { r =>
+            r.code match {
+              case ResponseCodeOption.Default => ().validNec
+              case ResponseCodeOption.UNDEFINED(value) => s"Response code must be an integer or the keyword 'default' and not[$value]".invalidNec
+              case ResponseCodeUndefinedType(value) => s"Response code must be an integer or the keyword 'default' and not[$value]".invalidNec
+              case ResponseCodeInt(code) => {
+                if (code < 100) {
+                  s"Response code[$code] must be >= 100".invalidNec
+                } else {
+                  ().validNec
+                }
               }
             }
           }
         }
       }
-    }
+    )
+  }
 
-    val invalidMethods = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.method match {
-          case Method.UNDEFINED(name) => Some(opLabel(resource, op, s"Invalid HTTP method[$name]. Must be one of: " + Method.all.mkString(", ")))
-          case _ => None
-        }
-      }
-    }
-
-    val missingOrInvalidTypes = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.responses.map { r =>
-          validateConcreteType(opLabel(resource, op, s"response code[${responseCodeString(r.code)}]"), r.`type`)
-        }
-      }
-    }
-
-    val mixed2xxResponseTypes = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        val types = op.responses.flatMap { r =>
-          r.code match {
-            case ResponseCodeInt(value) => {
-              if (value >= 200 && value < 300) {
-                Some(r.`type`)
-              } else {
-                None
-              }
-            }
-            case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => None
+  private[this] def validateResponseMethods(): ValidatedNec[String, Unit] = {
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.map { op =>
+          op.method match {
+            case Method.UNDEFINED(name) => opLabel(resource, op, s"Invalid HTTP method[$name]. Must be one of: " + Method.all.mkString(", ")).invalidNec
+            case _ => ().validNec
           }
-        }.distinct
-
-        if (types.size <= 1) {
-          None
-        } else {
-          Some(s"Resource[${resource.`type`}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}")
         }
       }
-    }
+    )
+  }
 
+  private[this] def validateResponseTypes(): ValidatedNec[String, Unit] = {
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.flatMap { op =>
+          op.responses.map { r =>
+            validateConcreteType(opLabel(resource, op, s"response code[${responseCodeString(r.code)}]"), r.`type`)
+          }
+        }
+      }
+    )
+  }
+
+  private[this] def validateResponseMixed2xxTypes(): ValidatedNec[String, Unit] = {
+    sequence(
+      service.resources.flatMap { resource =>
+        resource.operations.map { op =>
+          val types = op.responses.flatMap { r =>
+            r.code match {
+              case ResponseCodeInt(value) => {
+                if (value >= 200 && value < 300) {
+                  Some(r.`type`)
+                } else {
+                  None
+                }
+              }
+              case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => None
+            }
+          }.distinct
+
+          if (types.size <= 1) {
+            ().validNec
+          } else {
+            s"Resource[${resource.`type`}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}".invalidNec
+          }
+        }
+      }
+    )
+  }
+
+  private[this] def validateResponseStatusCodesRequiringUnit(): ValidatedNec[String, Unit] = {
     val statusCodesRequiringUnit = Seq("204", "304")
-    val noContentWithTypes = service.resources.flatMap { resource =>
+    service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => statusCodesRequiringUnit.contains(responseCodeString(r.code)) && r.`type` != Primitives.Unit.toString).map { r =>
           opLabel(resource, op, s"response code[${responseCodeString(r.code)}] must return unit and not[${r.`type`}]")
         }
       }
+    }.distinct.toList match {
+      case Nil => ().validNec
+      case errors => sequence(errors.map(_.invalidNec))
     }
+  }
 
-    val invalidHeaders = for {
-      resource <- service.resources
-      op <- resource.operations
-      r <- op.responses
-    } yield {
-      validateHeaders(r.headers.getOrElse(Nil), opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
-    }
+  private[this] def validateResponseHeaders(): ValidatedNec[String, Unit] = {
+    sequence(
+      for {
+        resource <- service.resources
+        op <- resource.operations
+        r <- op.responses
+      } yield {
+        validateHeaders(r.headers.getOrElse(Nil), opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
+      }
+    )
+  }
 
-    invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes ++ invalidHeaders.flatten
+  // END
+
+  private[this] def validateResponses(): ValidatedNec[String, Unit] = {
+    sequence(Seq(
+      validateResponseCodes(),
+      validateResponseMethods(),
+      validateResponseTypes(),
+      validateResponseMixed2xxTypes(),
+      validateResponseStatusCodesRequiringUnit(),
+      validateResponseHeaders()
+    ))
   }
 
   private[this] def validateType(prefix: String, `type`: String)(
