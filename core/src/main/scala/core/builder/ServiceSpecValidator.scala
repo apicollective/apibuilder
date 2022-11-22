@@ -92,47 +92,47 @@ case class ServiceSpecValidator(
 
   def validateName(prefix: String, name: String): ValidatedNec[String, Unit] = {
     name.trim match {
-      case "" => s"$prefix name cannot be empty".invalidNec
+      case "" => s"$prefix cannot be empty".invalidNec
       case n => Text.validateName(n) match {
-        case Invalid(e) => s"$prefix name is invalid: ${e.toNonEmptyList.toList.mkString(" and ")}".invalidNec
+        case Invalid(e) => s"$prefix is invalid: ${formatErrors(e)}".invalidNec
         case Valid(_) => ().validNec
       }
     }
   }
 
   private[this] def validateInterfaces(): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       service.interfaces.map(validateInterface) ++ Seq(
         DuplicateErrorMessage.validate("Interface", service.interfaces.map(_.name))
       )
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateInterface(interface: Interface): ValidatedNec[String, Unit] = {
     val p = s"Interface[${interface.name}]"
-    Seq(
+    sequenceUnique(Seq(
       validateName(p, interface.name),
       validateFields(p, interface.fields)
-    ).sequence.map(_ => ())
+    ))
   }
 
   private[this] def validateModels(): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       service.models.map(validateModel) ++ Seq(
         DuplicateErrorMessage.validate("Model", service.models.map(_.name))
       )
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateModel(model: Model): ValidatedNec[String, Unit] = {
     val p = s"Model[${model.name}]"
 
-    (
+    sequenceUnique(
       Seq(
         validateName(p, model.name),
         validateFields(p, model.fields)
       ) ++ model.interfaces.map { n => validateInterfaceFields(p, n, model.fields) }
-    ).sequence.map(_ => ())
+    )
   }
 
   def validateAnnotation(prefix: String, anno: String): ValidatedNec[String, Unit] = {
@@ -144,14 +144,14 @@ case class ServiceSpecValidator(
   }
 
   def validateFields(prefix: String, fields: Seq[Field]): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       Seq(DuplicateErrorMessage.validate(s"$prefix field", fields.map(_.name))) ++
       fields.map { f => validateField(s"$prefix Field[${f.name}]", f) }
-    ).sequence.map(_ => ())
+    )
   }
 
   def validateField(prefix: String, field: Field): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       Seq(
         validateName(prefix, field.name),
         validateConcreteType(prefix, field.`type`),
@@ -159,7 +159,7 @@ case class ServiceSpecValidator(
         validateInRange(prefix, field.minimum, field.maximum, field.default),
         validateAnnotations(prefix, field.annotations)
       ) ++ field.default.toSeq.map { d => validateDefault(prefix, field.`type`, d) }
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): ValidatedNec[String, Unit] = {
@@ -181,20 +181,22 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateInterfaceFields(prefix: String, interface: Interface, fields: Seq[Field]): ValidatedNec[String, Unit] = {
-    interface.fields.map { interfaceField =>
-      fields.find(_.name == interfaceField.name) match {
-        case None => {
-          s"$prefix missing field '${interfaceField.name}' as defined in the interface '${interface.name}'".invalidNec
-        }
-        case Some(modelField) => {
-          val fieldPrefix = s"$prefix field '${modelField.name}'"
-          Seq(
-            validateInterfaceFieldsType(fieldPrefix, interface, interfaceField, modelField),
-            validateInterfaceFieldsRequired(fieldPrefix, interface, interfaceField, modelField)
-          ).sequence.map(_ => ())
+    sequenceUnique(
+      interface.fields.map { interfaceField =>
+        fields.find(_.name == interfaceField.name) match {
+          case None => {
+            s"$prefix missing field '${interfaceField.name}' as defined in the interface '${interface.name}'".invalidNec
+          }
+          case Some(modelField) => {
+            val fieldPrefix = s"$prefix field '${modelField.name}'"
+            sequenceUnique(Seq(
+              validateInterfaceFieldsType(fieldPrefix, interface, interfaceField, modelField),
+              validateInterfaceFieldsRequired(fieldPrefix, interface, interfaceField, modelField)
+            ))
+          }
         }
       }
-    }.sequence.map(_ => ())
+    )
   }
 
   private[this] def validateInterfaceFieldsType(prefix: String, interface: Interface, interfaceField: Field, modelField: Field): ValidatedNec[String, Unit] = {
@@ -225,7 +227,7 @@ case class ServiceSpecValidator(
   private[this] def validateEnumNames(): ValidatedNec[String, Unit] = {
     sequenceUnique(
       service.enums.map { enum =>
-        validateName(s"Enum[${enum.name}]", enum.name)
+        validateName(s"Enum[${enum.name}] name", enum.name)
       } ++ Seq(
         DuplicateErrorMessage.validate("Enum", service.enums.map(_.name))
       )
@@ -257,25 +259,25 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateAnnotations(prefix: String, annotations: Seq[String]): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       annotations.map { a => validateAnnotation(prefix, a) } ++ Seq(
         DuplicateErrorMessage.validate(s"$prefix Annotation", annotations)
       )
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateGlobalAnnotations(): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       service.annotations.map { anno =>
         validateName(s"Annotation[${anno.name}]", anno.name)
       } ++ Seq(
         DuplicateErrorMessage.validate("Annotation", service.annotations.map(_.name))
       )
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateUnions(): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       Seq(
         validateUnionNames(),
         validateUnionTypesNonEmpty(),
@@ -284,30 +286,37 @@ case class ServiceSpecValidator(
       ) ++ Seq(
         DuplicateErrorMessage.validate("Union", service.unions.map(_.name))
       )
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateUnionNames(): ValidatedNec[String, Unit] = {
-    service.unions.map { union =>
-      validateName(s"Union[${union.name}]", union.name)
-    }.sequence.map(_ => ())
+    sequenceUnique(
+      service.unions.map { union =>
+        validateName(s"Union[${union.name}]", union.name)
+      }
+    )
   }
 
   private[this] def validateUnionTypesNonEmpty(): ValidatedNec[String, Unit] = {
-    service.unions.map { union =>
-      if (union.types.isEmpty) {
-        s"Union[${union.name}] must have at least one type".invalidNec
-      } else {
-        ().validNec
+    sequenceUnique(
+      service.unions.map { union =>
+        if (union.types.isEmpty) {
+          s"Union[${union.name}] must have at least one type".invalidNec
+        } else {
+          ().validNec
+        }
       }
-    }.sequence.map(_ => ())
+    )
   }
 
   private[this] def validateUnionTypes(): ValidatedNec[String, Unit] = {
-    service.unions.filter(_.name.nonEmpty).map { union =>
-      validateUnionTypes(s"Union[${union.name}]", union.types)
-    }.sequence.map(_ => ())
+    sequenceUnique(
+      service.unions.filter(_.name.nonEmpty).map { union =>
+        validateUnionTypes(s"Union[${union.name}]", union.types)
+      }
+    )
   }
+
   private[this] def validateUnionDiscriminator(): ValidatedNec[String, Unit] = {
     service.unions.map { union =>
       union.discriminator match {
@@ -368,7 +377,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateUnionTypes(prefix: String, types: Seq[UnionType]): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       types.flatMap { t =>
         Seq(
           validateType(s"$prefix", t.`type`),
@@ -378,30 +387,32 @@ case class ServiceSpecValidator(
           validateUnionTypeDefaults(prefix, types)
         )
       }
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateUnionTypeDefaults(prefix: String, types: Seq[UnionType]): ValidatedNec[String, Unit] = {
     val defaultTypes = types.filter(_.default.getOrElse(false)).map(_.`type`)
     if (defaultTypes.size > 1) {
-      s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.sorted.mkString(", ")}".invalidNec
+      s"$prefix Only 1 type can be specified as default. Currently the following types are marked as default: ${defaultTypes.toList.distinct.sorted.mkString(", ")}".invalidNec
     } else {
       ().validNec
     }
   }
 
   private[this] def validateUnionTypeDiscriminatorNames(): ValidatedNec[String, Unit] = {
-    service.unions.map { union =>
-      val all = getAllDiscriminatorNames(union).distinct
-      if (all.length > 1) {
-        union.discriminator match {
-          case None => s"Union[${union.name}] does not specify a discriminator yet one of the types does. Either add the same discriminator to this union or remove from the member types".invalidNec
-          case Some(d) => s"Union[${union.name}] specifies a discriminator named '$d'. All member types must also specify this same discriminator".invalidNec
+    sequenceUnique(
+      service.unions.map { union =>
+        val all = getAllDiscriminatorNames(union).distinct
+        if (all.length > 1) {
+          union.discriminator match {
+            case None => s"Union[${union.name}] does not specify a discriminator yet one of the types does. Either add the same discriminator to this union or remove from the member types".invalidNec
+            case Some(d) => s"Union[${union.name}] specifies a discriminator named '$d'. All member types must also specify this same discriminator".invalidNec
+          }
+        } else {
+          ().validNec
         }
-      } else {
-        ().validNec
       }
-    }.sequence.map(_ => ())
+    )
   }
 
   private[this] def getAllDiscriminatorNames(union: Union, resolved: Set[String] = Set.empty): Seq[Option[String]] = {
@@ -414,22 +425,24 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateUnionTypeDiscriminatorValues(): ValidatedNec[String, Unit] = {
-    Seq(
+    sequenceUnique(Seq(
       validateUnionTypeDiscriminatorValuesValidNames(),
       validateUnionTypeDiscriminatorValuesAreDistinct(),
       validateUnionTypeDiscriminatorKeyValuesAreUniquePerModel()
-    ).sequence.map(_ => ())
+    ))
   }
 
   private[this] def validateUnionTypeDiscriminatorValuesValidNames(): ValidatedNec[String, Unit] = {
-    service.unions.flatMap { union =>
-      union.types.map { unionType =>
-        unionType.discriminatorValue match {
-          case None => ().validNec
-          case Some(value) => validateName(s"Union[${union.name}] type[${unionType.`type`}]", value)
+    sequenceUnique(
+      service.unions.flatMap { union =>
+        union.types.map { unionType =>
+          unionType.discriminatorValue match {
+            case None => ().validNec
+            case Some(value) => validateName(s"Union[${union.name}] type[${unionType.`type`}]", value)
+          }
         }
       }
-    }.sequence.map(_ => ())
+    )
   }
 
   private[this] def validateUnionCyclicReferences(): ValidatedNec[String, Unit] = {
@@ -456,7 +469,7 @@ case class ServiceSpecValidator(
 
     allCycles.groupBy(_.sorted).values.toSeq.map(_.head).toList match {
       case Nil => ().validNec
-      case deduped => {
+      case deduped => sequenceUnique(
         deduped.map { cycle =>
           if (cycle.size == 1) {
             s"Union[${cycle.head}] cannot contain itself as one of its types or sub-types".invalidNec
@@ -466,17 +479,19 @@ case class ServiceSpecValidator(
             s"Union[${reversed.head}] cannot contain itself as one of its types or sub-types: ${reversed.mkString("->")}".invalidNec
           }
         }
-      }.sequence.map(_ => ())
+      )
     }
   }
 
   private[this] def validateUnionTypeDiscriminatorValuesAreDistinct(): ValidatedNec[String, Unit] = {
-    service.unions.map { union =>
-      DuplicateErrorMessage.validate(
-        s"Union[${union.name}] discriminator value",
-        getAllDiscriminatorValues(union),
-      )
-    }.sequence.map(_ => ())
+    sequenceUnique(
+      service.unions.map { union =>
+        DuplicateErrorMessage.validate(
+          s"Union[${union.name}] discriminator value",
+          getAllDiscriminatorValues(union),
+        )
+      }
+    )
   }
 
   private[this] def getAllDiscriminatorValues(union: Union, resolved: Set[String] = Set.empty): Seq[String] = {
@@ -534,7 +549,7 @@ case class ServiceSpecValidator(
 
     (nameError.toSeq ++ valueError).toList match {
       case Nil => ().validNec
-      case errs => errs.map(_.invalidNec).sequence.map(_ => ())
+      case errs => sequenceUnique(errs.map(_.invalidNec))
     }
   }
 
@@ -605,7 +620,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateHeaders(headers: Seq[Header], location: String): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       headers.map { header =>
         validateConcreteType(s"$location[${header.name}]", header.`type`).andThen {
           case Kind.Enum(_) | Kind.Primitive("string") => ().validNec
@@ -617,7 +632,7 @@ case class ServiceSpecValidator(
       } ++ Seq(
         DuplicateErrorMessage.validate(location, headers.map(_.name))
       )
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] case class TypesUniqueValidator(label: String, names: Seq[String]) {
@@ -646,7 +661,7 @@ case class ServiceSpecValidator(
       }.map(_.name).filterNot(interfaceNames.contains)),
     )
 
-    (
+    sequenceUnique(
       validators.flatMap(_.all.toSeq)
         .groupBy { identity }
         .filter { case (_, v ) => v.size > 1 }
@@ -658,7 +673,7 @@ case class ServiceSpecValidator(
         }
         s"Name[$name] cannot be used as the name of $english type".invalidNec
       } ++ Seq(validateUnionAndInterfaceNames())
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateUnionAndInterfaceNames(): ValidatedNec[String, Unit] = {
