@@ -216,42 +216,44 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateEnums(): ValidatedNec[String, Unit] = {
-    Seq(
+    sequenceUnique(Seq(
       validateEnumNames(),
       validateEnumValues()
-    ).sequence.map(_ => ())
+    ))
   }
 
   private[this] def validateEnumNames(): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       service.enums.map { enum =>
         validateName(s"Enum[${enum.name}]", enum.name)
       } ++ Seq(
         DuplicateErrorMessage.validate("Enum", service.enums.map(_.name))
       )
-    ).sequence.map(_ => ())
+    )
   }
   private[this] def validateEnumValues(): ValidatedNec[String, Unit] = {
-    service.enums.filter(_.name.nonEmpty).flatMap { enum =>
-      (if (enum.values.isEmpty) {
-        Seq(s"Enum[${enum.name}] must have at least one value".invalidNec)
-      } else {
-        enum.values.map { value =>
-          validateName(s"Enum[${enum.name}] name[${value.name}]", value.name)
-        }
-      }) ++ Seq(validateEnumValuesUniqueness())
-    }.sequence.map(_ => ())
+    sequenceUnique (
+      service.enums.filter(_.name.nonEmpty).flatMap { enum =>
+        (if (enum.values.isEmpty) {
+          Seq(s"Enum[${enum.name}] must have at least one value".invalidNec)
+        } else {
+          enum.values.map { value =>
+            validateName(s"Enum[${enum.name}] name[${value.name}]", value.name)
+          }
+        }) ++ Seq(validateEnumValuesUniqueness())
+      }
+    )
   }
 
   private[this] def validateEnumValuesUniqueness(): ValidatedNec[String, Unit] = {
-    (
+    sequenceUnique(
       service.enums.map { enum =>
-        DuplicateErrorMessage.validate(s"Enum[${enum.name}]", (enum.values.map(_.name)))
+        DuplicateErrorMessage.validate(s"Enum[${enum.name}] value", enum.values.map(_.name))
       } ++ service.enums.map { enum =>
         // Check uniqueness of the serialization values
-        DuplicateErrorMessage.validate(s"Enum[${enum.name}]", enum.values.map { ev => ev.value.getOrElse(ev.name) })
+        DuplicateErrorMessage.validate(s"Enum[${enum.name}] value", enum.values.map { ev => ev.value.getOrElse(ev.name) })
       }
-    ).sequence.map(_ => ())
+    )
   }
 
   private[this] def validateAnnotations(prefix: String, annotations: Seq[String]): ValidatedNec[String, Unit] = {
@@ -666,7 +668,7 @@ case class ServiceSpecValidator(
     }.map(_.name).toList match {
       case Nil => ().validNec
       case names => {
-        sequence (
+        sequenceUnique (
           names.map { n =>
             s"'$n' is defined as both a union and an interface. You must either make the names unique, or document in the union interfaces field that the type extends the '$n' interface.".invalidNec
           }
@@ -700,7 +702,7 @@ case class ServiceSpecValidator(
           case Some(max) if bd > max => s"$prefix default[$bd] must be <= specified maximum[$max]".invalidNec
           case _ => ().validNec
         }
-        sequence(Seq(minErrors, maxErrors))
+        sequenceUnique(Seq(minErrors, maxErrors))
       }
     }
   }
@@ -733,16 +735,16 @@ case class ServiceSpecValidator(
       }
     }.distinct.toList match {
       case Nil => ().validNec
-      case invalid => sequence(invalid.map(_.invalidNec))
+      case invalid => sequenceUnique(invalid.map(_.invalidNec))
     }
 
     val duplicatePlurals = DuplicateErrorMessage.validate("Resource with plural", service.resources.map(_.plural))
 
-    sequence(datatypeErrors ++ missingOperations ++ Seq(duplicateModels, duplicatePlurals))
+    sequenceUnique(datatypeErrors ++ missingOperations ++ Seq(duplicateModels, duplicatePlurals))
   }
 
   private[this] def validateResourceLocations(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
           op.parameters.map { param =>
@@ -772,11 +774,11 @@ case class ServiceSpecValidator(
       }
     }
 
-    sequence(typesNotFound ++ invalidMethods)
+    sequenceUnique(typesNotFound ++ invalidMethods)
   }
 
   private[this] def validateResourceDefaults(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
           op.parameters.map { param =>
@@ -797,7 +799,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResourceNames(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.map { op =>
           DuplicateErrorMessage.validate(
@@ -810,7 +812,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateParameters(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.parameters.map { p =>
@@ -896,7 +898,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResponses(): ValidatedNec[String, Unit] = {
-    sequence(Seq(
+    sequenceUnique(Seq(
       validateResponseCodes(),
       validateResponseMethods(),
       validateResponseTypes(),
@@ -907,7 +909,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResponseCodes(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.flatMap { op =>
           op.responses.map { r =>
@@ -930,7 +932,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResponseMethods(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.map { op =>
           op.method match {
@@ -943,7 +945,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResponseTypes(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.flatMap { op =>
           op.responses.map { r =>
@@ -955,7 +957,7 @@ case class ServiceSpecValidator(
   }
 
   private[this] def validateResponseMixed2xxTypes(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       service.resources.flatMap { resource =>
         resource.operations.map { op =>
           val types = op.responses.flatMap { r =>
@@ -991,12 +993,12 @@ case class ServiceSpecValidator(
       }
     }.distinct.toList match {
       case Nil => ().validNec
-      case errors => sequence(errors.map(_.invalidNec))
+      case errors => sequenceUnique(errors.map(_.invalidNec))
     }
   }
 
   private[this] def validateResponseHeaders(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       for {
         resource <- service.resources
         op <- resource.operations

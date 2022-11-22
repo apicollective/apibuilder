@@ -20,6 +20,6 @@ private[builder] object DuplicateErrorMessage {
       .filter {
         _._2.size > 1
       }
-      .keys.toList.sorted
+      .keys.toList.distinct.sorted
   }
 }

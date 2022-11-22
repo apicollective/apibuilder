@@ -1,11 +1,12 @@
 package core
 
+import io.apibuilder.api.json.v0.models.Field
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 class DuplicateNamesSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
-  val idField = makeField(name = "id")
+  private[this] val idField: Field = makeField(name = "id")
 
   it("disallow model names when camel case vs. snake case") {
     TestHelper.serviceValidator(

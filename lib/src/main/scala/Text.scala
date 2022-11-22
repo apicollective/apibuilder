@@ -13,7 +13,7 @@ object Text extends ValidatedHelpers {
   }
 
   def validateName(name: String): ValidatedNec[String, Unit] = {
-    sequence(Seq(
+    sequenceUnique(Seq(
       validateAlphanumeic(name),
       validateInitialLetter(name)
     ))
@@ -28,13 +28,11 @@ object Text extends ValidatedHelpers {
   }
 
   private[this] def validateInitialLetter(name: String): ValidatedNec[String, Unit] = {
-    println(s"name: startsWithLetter($name): ${startsWithLetter(name)}")
     if (startsWithLetter(name) || (startsWithUnderscore(name) && name.length > 1)) {
       ().validNec
     } else if (name.isEmpty) {
       "Name cannot be blank".invalidNec
     } else {
-      println(s"$name msut start with ltetter")
       "Name must start with a letter".invalidNec
     }
   }

@@ -839,7 +839,7 @@ object InternalFieldForm extends ValidatedHelpers {
       example = JsonUtil.asOptString(json \ "example"),
       attributes = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray]),
       annotations = JsonUtil.asSeqOfString(json \ "annotations"),
-      warnings = sequence(Seq(warnings, JsonUtil.validate(
+      warnings = sequenceUnique(Seq(warnings, JsonUtil.validate(
         json,
         strings = Seq("name"),
         anys = Seq("type"),

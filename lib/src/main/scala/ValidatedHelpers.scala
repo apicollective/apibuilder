@@ -5,8 +5,11 @@ import cats.implicits._
 import cats.data.{NonEmptyChain, ValidatedNec}
 
 trait ValidatedHelpers {
-  def sequence(all: Iterable[ValidatedNec[String, Any]]): ValidatedNec[String, Unit] = {
-    all.toSeq.sequence.map(_ => ())
+  def sequenceUnique(all: Iterable[ValidatedNec[String, Any]]): ValidatedNec[String, Unit] = {
+    all.toSeq.sequence.map(_ => ()) match {
+      case Invalid(errors) => errors.toNonEmptyList.distinct.map(_.invalidNec).sequence.map(_ => ())
+      case Valid(t) => t.validNec
+    }
   }
 
   def formatErrors(value: ValidatedNec[String, Any]): String = {

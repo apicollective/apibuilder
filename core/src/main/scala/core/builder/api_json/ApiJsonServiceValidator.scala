@@ -80,7 +80,7 @@ case class ApiJsonServiceValidator(
 
       case Some(_: InternalServiceForm) => {
         validateStructure().andThen { _ =>
-          sequence(Seq(
+          sequenceUnique(Seq(
             validateInfo(),
             validateKey(),
             validateImports(),
@@ -144,7 +144,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateImports(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       internalService.get.imports.map(_.warnings) ++
       internalService.get.imports.flatMap { imp =>
         imp.uri match {
@@ -161,7 +161,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnions(): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       internalService.get.unions.map(_.warnings) ++ internalService.get.unions.map { union =>
         validateAttributes(s"Union[${union.name}]", union.attributes)
       } ++ internalService.get.unions.map(validateUnionTypes)
@@ -169,7 +169,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnionTypes(union: InternalUnionForm): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       union.types.map(_.warnings) ++ union.types.map { typ =>
         typ.datatype match {
           case Invalid(errors) => (s"Union[${union.name}] type[] " + errors.toNonEmptyList.toList.mkString(", ")).invalidNec
@@ -181,7 +181,7 @@ case class ApiJsonServiceValidator(
 
   private def validateAnnotations(): ValidatedNec[String, Unit] = {
     val annotations = internalService.get.annotations
-    sequence(
+    sequenceUnique(
       annotations.map(_.warnings) ++ annotations.filter(_.name.isEmpty).map(_ =>
         "Annotations must have a name".invalidNec
       )
@@ -190,7 +190,7 @@ case class ApiJsonServiceValidator(
 
   private def validateEnums(): ValidatedNec[String, Unit] = {
     val enums = internalService.get.enums
-    sequence(
+    sequenceUnique(
       enums.map(_.warnings) ++ enums.map { enum =>
         validateAttributes(s"Enum[${enum.name}]", enum.attributes)
       } ++ enums.map(validateEnumValues)
@@ -198,7 +198,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateEnumValues(`enum`: InternalEnumForm): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       `enum`.values.map(_.warnings) ++ `enum`.values.zipWithIndex.map { case (value, i) =>
         value.name match {
           case None => s"Enum[${`enum`.name}] value[$i]: Missing name".invalidNec
@@ -210,7 +210,7 @@ case class ApiJsonServiceValidator(
 
   private def validateInterfaces(): ValidatedNec[String, Unit] = {
     val interfaces = internalService.get.interfaces
-    sequence(
+    sequenceUnique(
       interfaces.map(_.warnings) ++ interfaces.map { interface =>
         validateAttributes(s"Interface[${interface.name}]", interface.attributes)
       }
@@ -218,7 +218,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateModels(models: Seq[InternalModelForm]): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       models.map(_.warnings) ++ models.map { model =>
         validateAttributes(s"Model[${model.name}]", model.attributes)
       } ++ Seq(validateFields(models))
@@ -227,7 +227,7 @@ case class ApiJsonServiceValidator(
 
   private def validateHeaders(): ValidatedNec[String, Unit] = {
     val headers = internalService.get.headers
-    sequence(
+    sequenceUnique(
       headers.map(_.warnings) ++ headers.filter(_.name.isDefined).map { header =>
         validateAttributes(s"Header[${header.name}]", header.attributes)
       }
@@ -264,11 +264,11 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    sequence(missingTypes ++ missingNames ++ attributeErrors ++ warnings)
+    sequenceUnique(missingTypes ++ missingNames ++ attributeErrors ++ warnings)
   }
 
   private def validateAttributes(prefix: String, attributes: Seq[InternalAttributeForm]): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       attributes.zipWithIndex.map { case (attr, i) =>
         val fieldErrors = attr.name match {
           case None => s"$prefix: Attribute $i must have a name".invalidNec
@@ -280,7 +280,7 @@ case class ApiJsonServiceValidator(
           }
         }
 
-        sequence(Seq(fieldErrors, addPrefixToError(prefix, attr.warnings)))
+        sequenceUnique(Seq(fieldErrors, addPrefixToError(prefix, attr.warnings)))
       }
     )
   }
@@ -309,11 +309,11 @@ case class ApiJsonServiceValidator(
       validateAttributes(s"Resource[${resource.datatype.label}]", resource.attributes)
     }
 
-    sequence(codeErrors ++ typeErrors ++ attributeErrors)
+    sequenceUnique(codeErrors ++ typeErrors ++ attributeErrors)
   }
 
   private def validateResourceBodies(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       resources.flatMap { resource =>
         resource.operations.filter(_.body.isDefined).map { op =>
           op.body.get.datatype match {
@@ -326,11 +326,11 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateResources(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    val resourceWarnings = sequence(resources.filter(_.warnings.nonEmpty).map { resource =>
+    val resourceWarnings = sequenceUnique(resources.filter(_.warnings.nonEmpty).map { resource =>
       (s"Resource[${resource.datatype.label}]" + formatErrors(resource.warnings)).invalidNec
     })
 
-    sequence(Seq(
+    sequenceUnique(Seq(
       resourceWarnings,
       validateOperations(resources),
       validateResourceBodies(resources),
@@ -358,15 +358,15 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    sequence(warnings ++ attributeErrors ++ bodyAttributeErrors)
+    sequenceUnique(warnings ++ attributeErrors ++ bodyAttributeErrors)
   }
 
   private def validateParameters(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    sequence(
+    sequenceUnique(
       resources.flatMap { resource =>
         resource.operations.flatMap { op =>
-          op.parameters.filter(_.warnings.nonEmpty).map { p =>
-            opLabel(resource, op, s"Parameter[${p.name}]").invalidNec
+          op.parameters.filter(_.warnings.nonEmpty).filter(_.name.nonEmpty).map { p =>
+            opLabel(resource, op, s"Parameter[${p.name.get}] ${formatErrors(p.warnings)}").invalidNec
           }
         }
       }
