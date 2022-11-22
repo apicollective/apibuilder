@@ -40,7 +40,9 @@ class ImporterSpec extends AnyFunSpec with Matchers with ServiceHelpers with Val
     it("parses service") {
       val path = TestHelper.writeToTempFile(Json.toJson(originalService).toString)
       val imp = Importer(FileServiceFetcher(), s"file://$path")
-      imp.validate should be(Nil)
+      expectValid {
+        imp.validate
+      }
 
       val service = imp.service
       service.name should be("Import Shared")

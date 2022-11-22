@@ -146,7 +146,7 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers {
     it("validates that resource types are well defined") {
       val json = baseJson.format("user")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("Resource[user] has an invalid type. Must resolve to a known enum, model or primitive")
+      validator.errors().mkString("") should be("Resource type[user] not found")
     }
 
     it("enums can be mapped to resources") {

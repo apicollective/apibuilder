@@ -1,20 +1,8 @@
-[error] 	core.ImporterSpec
-[error] 	core.ServiceValidatorSpec
-[error] 	core.ServiceResourcesSpec
-[error] 	core.UnionTypeDiscriminatorValueSpec
-[error] 	core.UnionTypeSpec
-[error] 	core.EnumSpec
-[error] 	core.BodyParameterSpec
 [error] 	core.ImportedResourcePathsSpec
 [error] 	core.ImportServiceServiceJsonSpec
-[error] 	core.ServiceEnumSpec
-[error] 	core.UnionTypeDefaultSpec
 
 ValidatedNec refactor:
-  - JsonUtil
   - private[this] lazy val errors: Seq[String]
-
-Remove play.api.Play.current
 
 Bindables with multiple services
 

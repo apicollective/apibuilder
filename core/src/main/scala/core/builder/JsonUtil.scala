@@ -131,7 +131,7 @@ object JsonUtil {
     if (allErrors.isEmpty) {
       ().validNec
     } else {
-      allErrors.map(_.invalidNec).sequence.map(_ => ())
+      allErrors.distinct.map(_.invalidNec).sequence.map(_ => ())
     }
   }
 

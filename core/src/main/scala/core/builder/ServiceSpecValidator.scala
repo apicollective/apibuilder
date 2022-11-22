@@ -111,7 +111,7 @@ case class ServiceSpecValidator(
   private[this] def validateInterface(interface: Interface): ValidatedNec[String, Unit] = {
     val p = s"Interface[${interface.name}]"
     sequenceUnique(Seq(
-      validateName(p, interface.name),
+      validateName(s"$p name", interface.name),
       validateFields(p, interface.fields)
     ))
   }
@@ -129,7 +129,7 @@ case class ServiceSpecValidator(
 
     sequenceUnique(
       Seq(
-        validateName(p, model.name),
+        validateName(s"$p name", model.name),
         validateFields(p, model.fields)
       ) ++ model.interfaces.map { n => validateInterfaceFields(p, n, model.fields) }
     )
@@ -153,7 +153,7 @@ case class ServiceSpecValidator(
   def validateField(prefix: String, field: Field): ValidatedNec[String, Unit] = {
     sequenceUnique(
       Seq(
-        validateName(prefix, field.name),
+        validateName(s"$prefix name", field.name),
         validateConcreteType(prefix, field.`type`),
         validateRange(prefix, field.minimum, field.maximum),
         validateInRange(prefix, field.minimum, field.maximum, field.default),
@@ -269,7 +269,7 @@ case class ServiceSpecValidator(
   private[this] def validateGlobalAnnotations(): ValidatedNec[String, Unit] = {
     sequenceUnique(
       service.annotations.map { anno =>
-        validateName(s"Annotation[${anno.name}]", anno.name)
+        validateName(s"Annotation[${anno.name}] name", anno.name)
       } ++ Seq(
         DuplicateErrorMessage.validate("Annotation", service.annotations.map(_.name))
       )
@@ -282,7 +282,8 @@ case class ServiceSpecValidator(
         validateUnionNames(),
         validateUnionTypesNonEmpty(),
         validateUnionTypes(),
-        validateUnionDiscriminator()
+        validateUnionDiscriminator(),
+        validateUnionCyclicReferences()
       ) ++ Seq(
         DuplicateErrorMessage.validate("Union", service.unions.map(_.name))
       )
@@ -438,7 +439,7 @@ case class ServiceSpecValidator(
         union.types.map { unionType =>
           unionType.discriminatorValue match {
             case None => ().validNec
-            case Some(value) => validateName(s"Union[${union.name}] type[${unionType.`type`}]", value)
+            case Some(value) => validateName(s"Union[${union.name}] type[${unionType.`type`}] discriminator_value[$value]", value)
           }
         }
       }
