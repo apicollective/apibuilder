@@ -288,7 +288,7 @@ case class ApiJsonServiceValidator(
   private def validateResponses(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
     val codeErrors = resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.declaredResponses.filter(r => r.warnings.nonEmpty).map { r =>
+        op.declaredResponses.filter(r => r.warnings.isInvalid).map { r =>
           opLabel(resource, op, s"${r.code}: " + formatErrors(r.warnings)).invalidNec
         }
       }
@@ -326,7 +326,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateResources(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
-    val resourceWarnings = sequenceUnique(resources.filter(_.warnings.nonEmpty).map { resource =>
+    val resourceWarnings = sequenceUnique(resources.filter(_.warnings.isInvalid).map { resource =>
       (s"Resource[${resource.datatype.label}]" + formatErrors(resource.warnings)).invalidNec
     })
 
@@ -341,7 +341,7 @@ case class ApiJsonServiceValidator(
 
   private def validateOperations(resources: Seq[InternalResourceForm]): ValidatedNec[String, Unit] = {
     val warnings = resources.flatMap { resource =>
-      resource.operations.filter(_.warnings.nonEmpty).map { op =>
+      resource.operations.filter(_.warnings.isInvalid).map { op =>
         opLabel(resource, op, formatErrors(op.warnings)).invalidNec
       }
     }
@@ -365,7 +365,7 @@ case class ApiJsonServiceValidator(
     sequenceUnique(
       resources.flatMap { resource =>
         resource.operations.flatMap { op =>
-          op.parameters.filter(_.warnings.nonEmpty).filter(_.name.nonEmpty).map { p =>
+          op.parameters.filter(_.warnings.isInvalid).filter(_.name.nonEmpty).map { p =>
             opLabel(resource, op, s"Parameter[${p.name.get}] ${formatErrors(p.warnings)}").invalidNec
           }
         }
