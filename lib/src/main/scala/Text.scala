@@ -3,7 +3,7 @@ package lib
 import cats.implicits._
 import cats.data.ValidatedNec
 
-object Text {
+object Text extends ValidatedHelpers {
 
   /**
    * We require names to be alpha numeric and to start with a letter
@@ -13,10 +13,10 @@ object Text {
   }
 
   def validateName(name: String): ValidatedNec[String, Unit] = {
-    (
+    sequence(Seq(
       validateAlphanumeic(name),
       validateInitialLetter(name)
-    ).mapN { case (_, _) => () }
+    ))
   }
 
   private[this] def validateAlphanumeic(name: String): ValidatedNec[String, Unit] = {
@@ -28,11 +28,13 @@ object Text {
   }
 
   private[this] def validateInitialLetter(name: String): ValidatedNec[String, Unit] = {
+    println(s"name: startsWithLetter($name): ${startsWithLetter(name)}")
     if (startsWithLetter(name) || (startsWithUnderscore(name) && name.length > 1)) {
       ().validNec
     } else if (name.isEmpty) {
       "Name cannot be blank".invalidNec
     } else {
+      println(s"$name msut start with ltetter")
       "Name must start with a letter".invalidNec
     }
   }
@@ -49,11 +51,10 @@ object Text {
   private[this] val StartsWithLetterRx = "^[a-zA-Z].*".r
 
   def startsWithLetter(value: String): Boolean = {
-    val result = value match {
+    value match {
       case StartsWithLetterRx() => true
       case _ => false
     }
-    result
   }
 
   private[this] val StartsWithUnderscoreRx = "^_.*".r

@@ -605,7 +605,7 @@ case class ServiceSpecValidator(
   private[this] def validateHeaders(headers: Seq[Header], location: String): ValidatedNec[String, Unit] = {
     (
       headers.map { header =>
-        validateConcreteType(s"$location[${header.name}] type[${header.`type`}]", header.`type`).andThen {
+        validateConcreteType(s"$location[${header.name}]", header.`type`).andThen {
           case Kind.Enum(_) | Kind.Primitive("string") => ().validNec
           case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => ().validNec
           case Kind.Interface(_) | Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
@@ -707,7 +707,7 @@ case class ServiceSpecValidator(
 
   private[this] def validateResources(): ValidatedNec[String, Unit] = {
     val datatypeErrors = service.resources.map { resource =>
-      validateConcreteType(s"Resource[${resource.`type`}]", resource.`type`).andThen {
+      validateConcreteType("Resource", resource.`type`).andThen {
         case Kind.Interface(_) | Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
           ().validNec
         }
@@ -761,7 +761,7 @@ case class ServiceSpecValidator(
       resource.operations.map { op =>
         op.body match {
           case None => ().validNec
-          case Some(body) => validateConcreteType(opLabel(resource, op, s"body: Type[${body.`type`}]"), body.`type`)
+          case Some(body) => validateConcreteType(opLabel(resource, op, "body"), body.`type`)
         }
       }
     }
@@ -1042,9 +1042,9 @@ case class ServiceSpecValidator(
     ).map(_.trim).filter(_.nonEmpty).mkString(" ")
   }
 
-  private[this] def validateConcreteType(prefix: String, value: String): ValidatedNec[String, Kind] = {
-    validateType(prefix, value) {
-      case _: Kind.Interface => s"$prefix is an interface and cannot be used as a field type. Specify the specific model you need or use a union type".invalidNec
+  private[this] def validateConcreteType(prefix: String, typeName: String): ValidatedNec[String, Kind] = {
+    validateType(prefix, typeName) {
+      case _: Kind.Interface => s"$prefix type[$typeName] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type".invalidNec
       case _: Kind.Primitive => ().validNec
       case _: Kind.Enum => ().validNec
       case _: Kind.Model => ().validNec

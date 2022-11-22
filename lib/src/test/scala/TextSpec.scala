@@ -1,9 +1,10 @@
 package lib
 
+import helpers.ValidatedTestHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class TextSpec extends AnyFunSpec with Matchers {
+class TextSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   describe("splitIntoWords") {
 
@@ -41,16 +42,34 @@ class TextSpec extends AnyFunSpec with Matchers {
     Text.isValidName("some_vendor") should be(true)
   }
 
-  it("validateName") {
-    Text.validateName("") should be(Seq("Name cannot be blank"))
-    Text.validateName("_vendor") should be(Seq.empty)
-    Text.validateName("1vendor") should be(Seq("Name must start with a letter"))
-    Text.validateName("1") should be(Seq("Name must start with a letter"))
-    Text.validateName("_") should be(Seq("Name must start with a letter"))
-    Text.validateName("vendor") should be(Seq.empty)
-    Text.validateName("Vendor") should be(Seq.empty)
-    Text.validateName("some service") should be(Seq("Name can only contain a-z, A-Z, 0-9, - and _ characters"))
-    Text.validateName("me.apidoc.models.service") should be(Seq.empty)
+  describe("validateName") {
+
+    it("invalid") {
+      def setup(value: String) = {
+        expectInvalid(
+          Text.validateName(value)
+        )
+      }
+
+      setup("") should be(Seq("Name cannot be blank"))
+      setup("1vendor") should be(Seq("Name must start with a letter"))
+      setup("1") should be(Seq("Name must start with a letter"))
+      setup("_") should be(Seq("Name must start with a letter"))
+      setup("some service") should be(Seq("Name can only contain a-z, A-Z, 0-9, - and _ characters"))
+    }
+
+    it("valid") {
+      def setup(value: String) = {
+        expectValid(
+          Text.validateName(value)
+        )
+      }
+
+      setup("_vendor")
+      setup("vendor")
+      setup("Vendor")
+      setup("me.apidoc.models.service")
+    }
   }
 
   describe("isAlphaNumeric") {
