@@ -233,7 +233,7 @@ class UnionTypeSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers
     it("non text discriminator") {
       val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson("!@KL#", "type"))
       validator.errors() should be(Seq(
-        "Union[user] discriminator[!@KL#]: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter"
+        "Union[user] discriminator[!@KL#] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter"
       ))
     }
 
@@ -349,7 +349,7 @@ class UnionTypeSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers
     fetcher.add(uri, validator.service())
 
     TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).errors() should be(
-      Seq("Union[expandable_user] Type[test.common.models.reference] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
+      Seq("Union[expandable_user] type[test.common.models.reference] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
     )
 
   }

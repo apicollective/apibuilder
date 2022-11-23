@@ -363,7 +363,7 @@ case class ServiceSpecValidator(
     validateType(prefix, typ).andThen { _ =>
       localTypeResolver.parse(typ) match {
         case Some(_) => ().validNec
-        case None => s"$prefix is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.".invalidNec
+        case None => s"$prefix type[$typ] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.".invalidNec
       }
     }
   }
@@ -381,9 +381,9 @@ case class ServiceSpecValidator(
     sequenceUnique(
       types.flatMap { t =>
         Seq(
-          validateType(s"$prefix", t.`type`),
+          validateType(prefix, t.`type`),
           validateTypeNotUnit(prefix, t.`type`),
-          validateUnionTypeLocal(s"$prefix Type[${t.`type`}]", t.`type`),
+          validateUnionTypeLocal(prefix, t.`type`),
           DuplicateErrorMessage.validate(s"$prefix Type", types.map(_.`type`)),
           validateUnionTypeDefaults(prefix, types)
         )
