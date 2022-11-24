@@ -21,7 +21,6 @@ case class ApiJsonServiceValidator(
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
   private lazy val service: Service = ServiceBuilder(migration = migration).apply(config, internalService.get)
-  println(s"Op paths: " + service.resources.flatMap(_.operations).flatMap(_.path))
 
   override def validate(): ValidatedNec[String, Service] = {
     errors match {
