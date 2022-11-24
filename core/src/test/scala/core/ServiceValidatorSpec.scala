@@ -87,9 +87,9 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
   }
 
   it("base_url is optional") {
-    TestHelper.expectSingleError(
+    setupValidApiJson(
       makeApiJson().copy(baseUrl = None)
-    ) should be(Nil)
+    )
   }
 
   it("defaults to a NoContent response") {
