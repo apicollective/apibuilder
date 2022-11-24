@@ -123,28 +123,11 @@ private[api_json] case class TypeResolver(
     provider.enums
   )
 
-  def toType(name: String): Option[Kind] = {
-    resolver.parse(name)
-  }
-
-  def parseWithError(internal: InternalDatatype): Kind = {
-    parse(internal).getOrElse {
-      sys.error(s"Unrecognized datatype[${internal.label}]")
-    }
-  }
-
   /**
     * Resolves the type name into instances of a first class Type.
     */
   def parse(internal: InternalDatatype): Option[Kind] = {
     resolver.parse(internal.label)
-  }
-
-  def assertValidDefault(kind: Kind, value: String): Unit = {
-    validate(kind, value) match {
-      case None => {}
-      case Some(msg) => sys.error(msg)
-    }
   }
 
   def validate(
