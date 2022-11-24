@@ -80,20 +80,19 @@ case class ApiJsonServiceValidator(
         }
       }
 
-      case Some(_: InternalServiceForm) => {
+      case Some(form: InternalServiceForm) => {
         validateStructure().andThen { _ =>
           // TODO: Pass in arguments to all validate methods
-          val svc = internalService.get
           sequenceUnique(Seq(
-            validateInfo(svc.info),
+            validateInfo(form.info),
             validateKey(),
             validateImports(),
-            validateAttributes("Service", svc.attributes),
+            validateAttributes("Service", form.attributes),
             validateHeaders(),
-            validateResources(svc.resources),
+            validateResources(form.resources),
             validateInterfaces(),
             validateUnions(),
-            validateModels(svc.models),
+            validateModels(form.models),
             validateEnums(),
             validateAnnotations(),
             DuplicateJsonParser.validateDuplicates(apiJson)
