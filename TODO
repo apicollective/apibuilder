@@ -1,9 +1,3 @@
-[error] 	core.ImportedResourcePathsSpec
-[error] 	core.ImportServiceServiceJsonSpec
-
-ValidatedNec refactor:
-  - private[this] lazy val errors: Seq[String]
-
 Bindables with multiple services
 
   When one service (service A) extends models from another (service

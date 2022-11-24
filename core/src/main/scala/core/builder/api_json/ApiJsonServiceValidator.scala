@@ -20,14 +20,40 @@ case class ApiJsonServiceValidator(
   migration: VersionMigration
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
-  private lazy val service: Service = ServiceBuilder(migration = migration).apply(config, internalService.getOrElse {
-    sys.error(s"Failed to get service. Errors: ${errors.mkString(" ,")}")
-  })
-
   override def validate(): ValidatedNec[String, Service] = {
-    errors match {
-      case Nil => service.validNec
-      case _ => errors.map(_.invalidNec).sequence.map(_.head)
+    internalService match {
+      case None => {
+        if (apiJson.trim == "") {
+          "No Data".invalidNec
+        } else {
+          parseError.getOrElse(Nil).toList match {
+            case Nil => "Invalid JSON".invalidNec
+            case errs => errs.mkString(", ").invalidNec
+          }
+        }
+      }
+
+      case Some(form: InternalServiceForm) => {
+        validateStructure().andThen { _ =>
+          // TODO: Pass in arguments to all validate methods
+          sequenceUnique(Seq(
+            validateInfo(form.info),
+            validateKey(),
+            validateImports(),
+            validateAttributes("Service", form.attributes),
+            validateHeaders(),
+            validateResources(form.resources),
+            validateInterfaces(),
+            validateUnions(),
+            validateModels(form.models),
+            validateEnums(),
+            validateAnnotations(),
+            DuplicateJsonParser.validateDuplicates(apiJson)
+          ))
+        }.map { _ =>
+          ServiceBuilder(migration = migration).apply(config, form)
+        }
+      }
     }
   }
 
@@ -67,44 +93,6 @@ case class ApiJsonServiceValidator(
 
   // TODO: Remove the variables internalService and errors
   private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_, fetcher))
-
-  private lazy val errors: Seq[String] = {
-    internalService match {
-      case None => {
-        if (apiJson.trim == "") {
-          Seq("No Data")
-        } else {
-          parseError.getOrElse(Nil).toList match {
-            case Nil => Seq("Invalid JSON")
-            case errs => errs
-          }
-        }
-      }
-
-      case Some(form: InternalServiceForm) => {
-        validateStructure().andThen { _ =>
-          // TODO: Pass in arguments to all validate methods
-          sequenceUnique(Seq(
-            validateInfo(form.info),
-            validateKey(),
-            validateImports(),
-            validateAttributes("Service", form.attributes),
-            validateHeaders(),
-            validateResources(form.resources),
-            validateInterfaces(),
-            validateUnions(),
-            validateModels(form.models),
-            validateEnums(),
-            validateAnnotations(),
-            DuplicateJsonParser.validateDuplicates(apiJson)
-          ))
-        } match {
-          case Invalid(errors) => errors.toNonEmptyList.toList // TODO: Remove this and use a proper type
-          case Valid(_) => Nil
-        }
-      }
-    }
-  }
 
   private def validateInfo(info: Option[InternalInfoForm]): ValidatedNec[String, Unit] = {
     info match {
