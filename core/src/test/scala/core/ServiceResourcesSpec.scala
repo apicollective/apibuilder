@@ -43,29 +43,32 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
     }
   """
 
-    def setupPath(value: String) = {
-      val json = baseJson.format(value)
-      setupValidApiJson(json).resources.head.operations.head.path
-    }
-
-    def setupInvalidPath(value: String) = {
-      TestHelper.expectSingleError(baseJson.format(value))
-    }
-
     it("models can be resources, with valid paths") {
-      setupPath("user") should be ("/users/:id")
+      val json = baseJson.format("user")
+      val resource = setupValidApiJson(json).resources.head
+      val op = resource.operations.head
+      op.path should be ("/users/:id")
     }
 
     it("enums can be resources, with valid paths") {
-      setupPath("user_type") should be ("/user_types/:id")
+      val json = baseJson.format("user_type")
+      val resource = setupValidApiJson(json).resources.head
+      val op = resource.operations.head
+      op.path should be ("/user_types/:id")
     }
 
     it("lists cannot be resources") {
-      setupInvalidPath("[user]") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
+      val json = baseJson.format("[user]")
+      TestHelper.expectSingleError(json) should be(
+        "Resource[[user]] has an invalid type: must be a singleton (not a list nor map)"
+      )
     }
 
     it("maps cannot be resources") {
-      setupInvalidPath("[user]") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
+      val json = baseJson.format("[user]")
+      TestHelper.expectSingleError(json) should be(
+        "Resource[[user]] has an invalid type: must be a singleton (not a list nor map)"
+      )
     }
 
   }
@@ -136,11 +139,15 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
     """
 
     it("validates that resource types are well defined") {
-      TestHelper.expectSingleError(baseJson.format("user")) should be("Resource type[user] not found")
+      val json = baseJson.format("user")
+      TestHelper.expectSingleError(json) should be(
+        "Resource type[user] not found"
+      )
     }
 
     it("enums can be mapped to resources") {
-      TestHelper.expectSingleError(baseJson.format("user_type")) should be("")
+      val json = baseJson.format("user_type")
+      setupValidApiJson(json)
     }
 
   }
