@@ -1,13 +1,13 @@
 package core
 
 import _root_.builder.OriginalValidator
-import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
+import helpers.ValidatedTestHelpers
 import io.apibuilder.api.json.v0.models.ApiJson
 import io.apibuilder.api.json.v0.models.json._
-import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.api.v0.models.OriginalType
 import io.apibuilder.spec.v0.models._
-import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text, ValidatedHelpers}
+import lib.{FileUtils, ServiceConfiguration, Text, ValidatedHelpers}
 import play.api.libs.json.Json
 
 import java.io.File
@@ -15,33 +15,15 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import java.util.UUID
 
-object TestHelper extends ValidatedHelpers {
+object TestHelper extends ValidatedHelpers with ValidatedTestHelpers {
 
-  trait ServiceValidatorForSpecs extends ServiceValidator[Service] {
-    def service(): Service
-    def errors(): Seq[String]
-  }
-
-  /**
-    * Exposes a 'service' method to simplify access to service object
-    * in tests
-    */
-  case class TestServiceValidator(validator: ServiceValidator[Service]) extends ServiceValidatorForSpecs {
-
-    private[this] lazy val validateResult = validator.validate()
-
-    override def validate(): ValidatedNec[String, Service] = validateResult
-
-    override def errors(): Seq[String] = validateResult match {
-      case Invalid(errors) => errors.toNonEmptyList.toList
-      case Valid(_) => Seq.empty
+  def expectSingleError(json: String): String = {
+    expectInvalid {
+      TestHelper.serviceValidatorFromApiJson(json)
+    }.toList match {
+      case one :: Nil => one
+      case other => sys.error(s"Expected 1 error but got[${other.length}")
     }
-
-    override lazy val service: Service = validateResult match {
-      case Invalid(errors) => sys.error(formatErrors(errors))
-      case Valid(service) => service
-    }
-
   }
 
   val serviceConfig: ServiceConfiguration = ServiceConfiguration(
@@ -56,16 +38,18 @@ object TestHelper extends ValidatedHelpers {
     version = "0.0.41"
   )
 
+  private[this] val apiJsonValidator = OriginalValidator(apibuilderConfig, OriginalType.ApiJson, MockServiceFetcher())
+
   private lazy val specService: Service = {
-    val contents = readFile("spec/apibuilder-spec.json")
-    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), MockServiceFetcher())
-    TestServiceValidator(validator).service
+    expectValid {
+      apiJsonValidator.validate(readFile("spec/apibuilder-spec.json"))
+    }
   }
 
   private lazy val commonService: Service = {
-    val contents = readFile("spec/apibuilder-common.json")
-    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), MockServiceFetcher())
-    TestServiceValidator(validator).service
+    expectValid {
+      apiJsonValidator.validate(readFile("spec/apibuilder-common.json"))
+    }
   }
 
   private lazy val generatorService: Service = {
@@ -78,9 +62,9 @@ object TestHelper extends ValidatedHelpers {
       fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
     }
 
-    val contents = readFile("spec/apibuilder-generator.json")
-    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), fetcher)
-    TestServiceValidator(validator).service
+    expectValid {
+      OriginalValidator(apibuilderConfig, OriginalType.ApiJson, fetcher).validate(readFile("spec/apibuilder-generator.json"))
+    }
   }
 
   def responseCode(responseCode: ResponseCode): String = {
@@ -95,7 +79,7 @@ object TestHelper extends ValidatedHelpers {
   def serviceValidator(
     apiJson: ApiJson,
     fetcher: ServiceFetcher = FileServiceFetcher(),
-  ): ServiceValidatorForSpecs = {
+  ): ValidatedNec[String, Service] = {
     serviceValidatorFromApiJson(
       contents = Json.toJson(apiJson).toString,
       fetcher = fetcher,
@@ -106,15 +90,13 @@ object TestHelper extends ValidatedHelpers {
     contents: String,
     migration: VersionMigration = VersionMigration(internal = false),
     fetcher: ServiceFetcher = MockServiceFetcher(),
-  ): ServiceValidatorForSpecs = {
-    TestServiceValidator(
-      OriginalValidator(
-        serviceConfig,
-        Original(OriginalType.ApiJson, contents),
-        fetcher,
-        migration
-      )
-    )
+  ): ValidatedNec[String, Service] = {
+    OriginalValidator(
+      serviceConfig,
+      `type` = OriginalType.ApiJson,
+      fetcher,
+      migration
+    ).validate(contents)
   }
 
   def writeToTempFile(contents: String): String = {
@@ -131,11 +113,11 @@ object TestHelper extends ValidatedHelpers {
 
   def readFile(path: String): String = FileUtils.readToString(new File(path))
 
-  def parseFile(filename: String): ServiceValidatorForSpecs = {
+  def parseFile(filename: String): ValidatedNec[String, Service] = {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/apibuilder-api.json") {
       Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
-        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+        fetcher.add(s"/apibuilder-spec/$version/service.json", specService)
         fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
         fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
         fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
@@ -149,18 +131,8 @@ object TestHelper extends ValidatedHelpers {
   private def parseFile(
     filename: String,
     fetcher: ServiceFetcher
-  ): ServiceValidatorForSpecs = {
-    val contents = readFile(filename)
-    val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
-    validator.validate() match {
-      case Invalid(errors) => {
-        sys.error(s"Invalid api.json file[$filename]: " + formatErrors(errors))
-      }
-      case Valid(_) => {}
-    }
-    TestServiceValidator(
-      validator
-    )
+  ): ValidatedNec[String, Service] = {
+    OriginalValidator(serviceConfig, OriginalType.ApiJson, fetcher).validate(readFile(filename))
   }
 
   def assertEqualsFile(filename: String, contents: String): Unit = {

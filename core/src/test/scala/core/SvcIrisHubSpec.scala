@@ -1,19 +1,20 @@
 package core
 
 import cats.data.Validated.{Invalid, Valid}
+import helpers.ValidatedTestHelpers
 import io.apibuilder.spec.v0.models.Method
 import lib.ValidatedHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers {
+class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers with ValidatedTestHelpers {
 
   private[this] val Filenames: Seq[String] = Seq("svc-iris-hub-0-0-1.json")
   private[this] val Dir: String = "core/src/test/resources"
 
   it("should parse valid json") {
     Filenames.foreach { name =>
-      TestHelper.parseFile(s"${Dir}/${name}").validate() match {
+      TestHelper.parseFile(s"${Dir}/${name}") match {
         case Invalid(errors) => {
           fail(s"Error parsing json file ${name}:\n  - " + formatErrors(errors))
         }
@@ -23,7 +24,9 @@ class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers {
   }
 
   it("parses models") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service()
+    val service = expectValid {
+      TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json")
+    }
     val modelNames = service.models.map(_.name)
     modelNames.contains("foo") should be(false)
     modelNames.contains("agreement") should be(true)
@@ -35,7 +38,9 @@ class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers {
   }
 
   it("parses operations") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service()
+    val service = expectValid {
+      TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json")
+    }
     val itemResource = service.resources.find(_.`type` == "item").getOrElse {
       sys.error("Could not find item resource")
     }
@@ -57,7 +62,9 @@ class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers {
   }
 
   it("all POST operations return either a 2xx and a 409") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service()
+    val service = expectValid {
+      TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json")
+    }
     service.resources.foreach { resource =>
       resource.operations.filter(_.method == Method.Post).foreach { op =>
         if (op.responses.map(r => TestHelper.responseCode(r.code)).toSeq.sorted != Seq("201", "409") && op.responses.map(r => TestHelper.responseCode(r.code)).toSeq.sorted != Seq("202", "409")) {

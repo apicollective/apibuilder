@@ -1,72 +1,60 @@
 package core
 
-import io.apibuilder.spec.v0.models.ParameterLocation
+import helpers.ValidatedTestHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
+class ApiJsonStructureSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   it("name is required") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "apidoc": { "version": "0.9.6" }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Missing name")
+    """) shouldBe "Missing name"
   }
 
   it("name must be a string") {
-    val json = """
+    TestHelper.expectSingleError(
+      """
     {
       "name": { "foo": "bar" },
       "apidoc": { "version": "0.9.6" }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("name must be a string")
+    """) shouldBe "name must be a string"
   }
 
   it("base_url must be a string") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
       "base_url": { "foo": "bar" }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("base_url, if present, must be a string")
+    """) should be("base_url, if present, must be a string")
   }
 
   it("description must be a string") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
       "description": ["test"]
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("description, if present, must be a string")
+    """) should be("description, if present, must be a string")
   }
 
   it("imports, headers must be arrays") {
     val json = """
-    {
-      "name": "test",
-      "apidoc": { "version": "0.9.6" },
-      "%s": { "foo": "bar" }
-    }
+      {
+        "name": "test",
+        "apidoc": { "version": "0.9.6" },
+        "%s": { "foo": "bar" }
+      }
     """
 
     Seq("imports", "headers").foreach { field =>
-      val validator = TestHelper.serviceValidatorFromApiJson(json.format(field))
-      validator.errors().mkString("") should be(s"$field, if present, must be an array")
+      TestHelper.expectSingleError(json.format(field)) should be(s"$field, if present, must be an array")
     }
   }
 
@@ -80,40 +68,33 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
     """
 
     Seq("enums", "models", "unions", "resources").foreach { field =>
-      val validator = TestHelper.serviceValidatorFromApiJson(json.format(field))
-      validator.errors().mkString should be(s"$field, if present, must be an object")
+      TestHelper.expectSingleError(json.format(field)) should be(s"$field, if present, must be an object")
     }
   }
 
   it("validates unknown keys") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
       "resource": []
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Unrecognized element[resource]")
+    """) should be("Unrecognized element[resource]")
   }
 
   it("validates multiple unknown keys") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
       "resource": [],
       "foo": []
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Unrecognized elements[foo, resource]")
+    """) should be("Unrecognized elements[foo, resource]")
   }
 
   it("validates models") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -123,14 +104,11 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Model[user] description, if present, must be a string")
+    """) should be("Model[user] description, if present, must be a string")
   }
 
   it("validates model fields are objects") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -140,14 +118,11 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Model[user] elements of fields must be objects")
+    """) should be("Model[user] elements of fields must be objects")
   }
 
   it("validates enums") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -157,14 +132,11 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Enum[user] description, if present, must be a string Enum[user] Missing values")
+    """) should be("Enum[user] description, if present, must be a string Enum[user] Missing values")
   }
 
   it("validates enum values are objects") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -174,14 +146,11 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Enum[user] elements of values must be objects")
+    """) should be("Enum[user] elements of values must be objects")
   }
 
   it("validates unions") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -191,14 +160,11 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Union[user] description, if present, must be a string Union[user] Missing types")
+    """) should be("Union[user] description, if present, must be a string Union[user] Missing types")
   }
 
   it("validates union types are objects") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -208,14 +174,11 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Union[user] elements of types must be objects")
+    """) should be("Union[user] elements of types must be objects")
   }
 
   it("validates responses") {
-    val json = """
+    TestHelper.expectSingleError("""
     {
       "name": "test",
       "apidoc": { "version": "0.9.6" },
@@ -239,10 +202,7 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
         }
       }
     }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString(" ") should be("Resource[user] GET /users Unrecognized element[response]")
+    """) should be("Resource[user] GET /users Unrecognized element[response]")
   }
 
   it("supports top level attributes") {
@@ -255,8 +215,9 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.service().attributes.map(_.name) should equal(Seq("foo"))
+    expectValid {
+      TestHelper.serviceValidatorFromApiJson(json)
+    }.attributes.map(_.name) should equal(Seq("foo"))
   }
 
 
