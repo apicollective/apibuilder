@@ -353,8 +353,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
     """
 
-    val validator = TestHelper.expectSingleError(json)
-    validator should be("Resource[user] GET /users/:id path parameter[id] is specified as optional. All path parameters are required")
+    TestHelper.expectSingleError(json) should be("Resource[user] GET /users/:id path parameter[id] is specified as optional. All path parameters are required")
   }
 
   it("infers datatype for a path parameter from the associated model") {
@@ -430,8 +429,9 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
 
     it("maps of primitives are valid in query parameters") {
-      val validator = TestHelper.expectSingleError(baseJson.format("map[string]"))
-      validator should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters.")
+      TestHelper.expectSingleError(baseJson.format("map[string]")) should be(
+        "Resource[tag] GET /tags Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters."
+      )
     }
 
     it("lists of models are not valid in query parameters") {
@@ -441,13 +441,11 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
 
     it("models are not valid in query parameters") {
-      val validator = TestHelper.expectSingleError(baseJson.format("tag"))
-      validator should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Interface, model and union types are not supported as query parameters.")
+      TestHelper.expectSingleError(baseJson.format("tag")) should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Interface, model and union types are not supported as query parameters.")
     }
 
     it("validates type name in collection") {
-      val validator = TestHelper.expectSingleError(baseJson.format("[foo]"))
-      validator should be("Resource[tag] GET /tags Parameter[tags] type[[foo]] not found")
+      TestHelper.expectSingleError(baseJson.format("[foo]")) should be("Resource[tag] GET /tags Parameter[tags] type[[foo]] not found")
     }
   }
 
@@ -523,7 +521,6 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
     """
 
-    val validator = TestHelper.expectSingleError(json)
-    validator should be("Resource with plural[users] appears more than once")
+    TestHelper.expectSingleError(json) should be("Resource with plural[users] appears more than once")
   }
 }

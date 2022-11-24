@@ -216,8 +216,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers with ApiJsonHel
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
   }
 
   it("fails incorrectly named path parameters in the middle of the path") {
@@ -244,8 +243,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers with ApiJsonHel
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
   }
 
   it("fails incorrectly named path parameters at the end of the path") {
@@ -272,7 +270,6 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers with ApiJsonHel
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
   }
 }
