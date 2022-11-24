@@ -216,7 +216,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
     """
 
-    TestHelper.expectSingleError(json.format("user")) should be(Nil)
+    setupValidApiJson(json.format("user"))
     TestHelper.expectSingleError(json.format("unknown_model")) should be(
       "Resource[user] GET /users/:guid response code[200] type[unknown_model] not found"
     )
@@ -253,7 +253,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
     """
 
-    TestHelper.expectSingleError(json) should be(Nil)
+    setupValidApiJson(json)
   }
 
   it("includes path parameter in operations") {
