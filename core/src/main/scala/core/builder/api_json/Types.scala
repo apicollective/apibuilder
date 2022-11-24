@@ -116,19 +116,10 @@ private[api_json] case class TypeResolver(
   provider: TypesProvider
 ) {
 
-  private val resolver = provider.resolver
-
   private lazy val validator = TypeValidator(
     defaultNamespace = defaultNamespace,
     provider.enums
   )
-
-  /**
-    * Resolves the type name into instances of a first class Type.
-    */
-  def parse(internal: InternalDatatype): Option[Kind] = {
-    resolver.parse(internal.label)
-  }
 
   def validate(
     kind: Kind,
