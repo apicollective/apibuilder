@@ -1,5 +1,6 @@
 package builder.api_json
 
+import cats.data.Validated.{Invalid, Valid}
 import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderInterface, TypesProviderModel, TypesProviderUnion}
 import lib.{DatatypeResolver, Kind}
 
@@ -84,23 +85,23 @@ private[api_json] case class RecursiveTypesProvider(
 
   private def resolve(
     importUris: Seq[String],
-    imported: Set[String] = Set.empty
+    imported: List[String] = List.empty
   ): Seq[TypesProvider] = {
-    importUris.headOption match {
-      case None => Seq.empty
-      case Some(uri) => {
+    importUris match {
+      case Nil => Nil
+      case uri :: rest => {
         if (imported.contains(uri.toLowerCase.trim)) {
           // already imported
-          resolve(importUris.drop(1), imported)
+          resolve(rest, imported)
         } else {
           val importer = Importer(internal.fetcher, uri)
           importer.validate match {
-            case Nil => {
-              Seq(TypesProvider.FromService(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
+            case Valid(_) => {
+              Seq(TypesProvider.FromService(importer.service)) ++ resolve(rest, imported ++ List(uri))
             }
-            case errors => {
+            case Invalid(_) => {
               // There are errors w/ this import - skip it
-              resolve(importUris.drop(1), imported ++ Set(uri))
+              resolve(rest, imported ++ List(uri))
             }
           }
         }
