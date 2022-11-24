@@ -65,6 +65,7 @@ case class ApiJsonServiceValidator(
     }
   }
 
+  // TODO: Remove the variables internalService and errors
   private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_, fetcher))
 
   private lazy val errors: Seq[String] = {
