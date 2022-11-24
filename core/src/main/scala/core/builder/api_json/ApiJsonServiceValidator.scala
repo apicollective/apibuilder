@@ -8,7 +8,7 @@ import cats.data.Validated.{Invalid, Valid}
 import core.{DuplicateJsonParser, Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey, ValidatedHelpers}
 import io.apibuilder.spec.v0.models.Service
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
 
 import scala.util.{Failure, Success, Try}
@@ -21,7 +21,7 @@ case class ApiJsonServiceValidator(
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
   override def validate(): ValidatedNec[String, Service] = {
-    internalService match {
+    serviceForm.map(InternalServiceForm(_, fetcher)) match {
       case None => {
         if (apiJson.trim == "") {
           "No Data".invalidNec
@@ -34,20 +34,19 @@ case class ApiJsonServiceValidator(
       }
 
       case Some(form: InternalServiceForm) => {
-        validateStructure().andThen { _ =>
-          // TODO: Pass in arguments to all validate methods
+        validateStructure(form.json).andThen { _ =>
           sequenceUnique(Seq(
             validateInfo(form.info),
-            validateKey(),
-            validateImports(),
+            validateKey(form.key),
+            validateImports(form.imports),
             validateAttributes("Service", form.attributes),
-            validateHeaders(),
+            validateHeaders(form.headers),
             validateResources(form.resources),
-            validateInterfaces(),
-            validateUnions(),
+            validateInterfaces(form.interfaces),
+            validateUnions(form.unions),
             validateModels(form.models),
-            validateEnums(),
-            validateAnnotations(),
+            validateEnums(form.enums),
+            validateAnnotations(form.annotations),
             DuplicateJsonParser.validateDuplicates(apiJson)
           ))
         }.map { _ =>
@@ -91,9 +90,6 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  // TODO: Remove the variables internalService and errors
-  private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_, fetcher))
-
   private def validateInfo(info: Option[InternalInfoForm]): ValidatedNec[String, Unit] = {
     info match {
       case None => ().validNec
@@ -111,8 +107,8 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateKey(): ValidatedNec[String, Unit] = {
-    internalService.get.key match {
+  private def validateKey(key: Option[String]): ValidatedNec[String, Unit] = {
+    key match {
       case None => ().validNec
       case Some(key) => {
         val generated = UrlKey.generate(key)
@@ -125,9 +121,9 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateStructure(): ValidatedNec[String, Unit] = {
+  private def validateStructure(json: JsValue): ValidatedNec[String, Unit] = {
     JsonUtil.validate(
-      internalService.get.json,
+      json,
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace", "$schema"),
       optionalArraysOfObjects = Seq("imports", "headers", "attributes"),
@@ -135,10 +131,10 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def validateImports(): ValidatedNec[String, Unit] = {
+  private def validateImports(imports: Seq[InternalImportForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
-      internalService.get.imports.map(_.warnings) ++
-      internalService.get.imports.flatMap { imp =>
+      imports.map(_.warnings) ++
+      imports.flatMap { imp =>
         imp.uri match {
           case None => Seq(().validNec)
           case Some(uri) => {
@@ -152,11 +148,11 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def validateUnions(): ValidatedNec[String, Unit] = {
+  private def validateUnions(unions: Seq[InternalUnionForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
-      internalService.get.unions.map(_.warnings) ++ internalService.get.unions.map { union =>
+      unions.map(_.warnings) ++ unions.map { union =>
         validateAttributes(s"Union[${union.name}]", union.attributes)
-      } ++ internalService.get.unions.map(validateUnionTypes)
+      } ++ unions.map(validateUnionTypes)
     )
   }
 
@@ -171,8 +167,7 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def validateAnnotations(): ValidatedNec[String, Unit] = {
-    val annotations = internalService.get.annotations
+  private def validateAnnotations(annotations: Seq[InternalAnnotationForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
       annotations.map(_.warnings) ++ annotations.filter(_.name.isEmpty).map(_ =>
         "Annotations must have a name".invalidNec
@@ -180,8 +175,7 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def validateEnums(): ValidatedNec[String, Unit] = {
-    val enums = internalService.get.enums
+  private def validateEnums(enums: Seq[InternalEnumForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
       enums.map(_.warnings) ++ enums.map { enum =>
         validateAttributes(s"Enum[${enum.name}]", enum.attributes)
@@ -200,8 +194,7 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def validateInterfaces(): ValidatedNec[String, Unit] = {
-    val interfaces = internalService.get.interfaces
+  private def validateInterfaces(interfaces: Seq[InternalInterfaceForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
       interfaces.map(_.warnings) ++ interfaces.map { interface =>
         validateAttributes(s"Interface[${interface.name}]", interface.attributes)
@@ -217,8 +210,7 @@ case class ApiJsonServiceValidator(
     )
   }
 
-  private def validateHeaders(): ValidatedNec[String, Unit] = {
-    val headers = internalService.get.headers
+  private def validateHeaders(headers: Seq[InternalHeaderForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
       headers.map(_.warnings) ++ headers.filter(_.name.isDefined).map { header =>
         validateAttributes(s"Header[${header.name}]", header.attributes)
@@ -244,13 +236,13 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    val attributeErrors = internalService.get.models.flatMap { model =>
+    val attributeErrors = models.flatMap { model =>
       model.fields.filter(_.name.isDefined).map { f =>
         validateAttributes(s"Model[${model.name}] field[${f.name.get}]", f.attributes)
       }
     }
 
-    val warnings = internalService.get.models.flatMap { model =>
+    val warnings = models.flatMap { model =>
       model.fields.filter(f => f.warnings.isInvalid && f.name.isDefined).map { f =>
         (s"Model[${model.name}] field[${f.name.get}]: " + formatErrors(f.warnings)).invalidNec
       }
@@ -297,7 +289,7 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    val attributeErrors = internalService.get.resources.map { resource =>
+    val attributeErrors = resources.map { resource =>
       validateAttributes(s"Resource[${resource.datatype.label}]", resource.attributes)
     }
 
