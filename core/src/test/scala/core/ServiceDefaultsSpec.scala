@@ -1,9 +1,11 @@
 package core
 
+import cats.data.Validated.{Invalid, Valid}
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
+class ServiceDefaultsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   it("accepts defaults for date-iso8601") {
     val json = """
@@ -19,10 +21,8 @@ class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
 
-    val createdAt = validator.service().models.head.fields.find { _.name == "created_at" }.get
+    val createdAt = setupValidApiJson(json).models.head.fields.find { _.name == "created_at" }.get
     createdAt.default should be(Some("2014-01-01"))
   }
 
@@ -41,14 +41,14 @@ class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
 
-    val isActiveField = validator.service().models.head.fields.find { _.name == "is_active" }.get
+    val service = setupValidApiJson(json)
+
+    val isActiveField = service.models.head.fields.find { _.name == "is_active" }.get
     isActiveField.default should be(Some("true"))
     isActiveField.required should be(true)
 
-    val isAthleteField = validator.service().models.head.fields.find { _.name == "is_athlete" }.get
+    val isAthleteField = service.models.head.fields.find { _.name == "is_athlete" }.get
     isAthleteField.default should be(Some("false"))
     isAthleteField.required should be(true)
   }
@@ -67,8 +67,8 @@ class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("Model[user] Field[is_active] Value[1] is not a valid boolean. Must be one of: true, false")
+
+    TestHelper.expectSingleError(json) should be("Model[user] Field[is_active] Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
   it("fields with defaults may be marked optional") {
@@ -87,8 +87,7 @@ class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(jsonOpt)
-    validator.errors().mkString("") should be("")
+    setupValidApiJson(jsonOpt)
   }
 
   it("fields with defaults may be marked required") {
@@ -107,8 +106,7 @@ class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(jsonReq)
-    validator.errors().mkString("") should be("")
+    setupValidApiJson(jsonReq)
   }
 
   def buildMinMaxErrors(
@@ -134,7 +132,11 @@ class ServiceDefaultsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    TestHelper.serviceValidatorFromApiJson(json).errors()
+
+    TestHelper.serviceValidatorFromApiJson(json) match {
+      case Invalid(errors) => errors.toNonEmptyList.toList
+      case Valid(_) => Nil
+    }
   }
 
   it("numeric default is in between min, max") {

@@ -1,10 +1,11 @@
 package core
 
+import helpers.ApiJsonHelpers
 import io.apibuilder.spec.v0.models.Method
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class BrokenSpec extends AnyFunSpec with Matchers {
+class BrokenSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   it("support arrays as types in fields") {
     val json = """
@@ -21,9 +22,8 @@ class BrokenSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
-    val fields = validator.service().models.head.fields
+
+    val fields = setupValidApiJson(json).models.head.fields
     fields.find { _.name == "guid" }.get.`type` should be("uuid")
     fields.find { _.name == "tags" }.get.`type` should be("[string]")
   }
@@ -59,10 +59,10 @@ class BrokenSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
 
-    val operation = validator.service().resources.head.operations.head
+    val service = setupValidApiJson(json)
+
+    val operation = service.resources.head.operations.head
     operation.method should be(Method.Post)
     operation.parameters.find { _.name == "guid" }.get.`type` should be("uuid")
 
