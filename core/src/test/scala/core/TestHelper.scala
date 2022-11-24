@@ -26,6 +26,10 @@ object TestHelper extends ValidatedHelpers with ValidatedTestHelpers {
     }
   }
 
+  def expectSingleError(json: ApiJson): String = {
+    expectSingleError(Json.prettyPrint(Json.toJson(json)))
+  }
+
   val serviceConfig: ServiceConfiguration = ServiceConfiguration(
     orgKey = "test",
     orgNamespace = "test.apibuilder",

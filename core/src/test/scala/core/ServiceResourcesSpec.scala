@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceResourcesSpec extends AnyFunSpec with Matchers {
+class ServiceResourcesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   describe("with service") {
     val baseJson = """
@@ -42,36 +43,29 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers {
     }
   """
 
-    it("models can be resources, with valid paths") {
-      val json = baseJson.format("user")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
+    def setupPath(value: String) = {
+      val json = baseJson.format(value)
+      setupValidApiJson(json).resources.head.operations.head.path
+    }
 
-      val resource = validator.service().resources.head
-      val op = resource.operations.head
-      op.path should be ("/users/:id")
+    def setupInvalidPath(value: String) = {
+      TestHelper.expectSingleError(baseJson.format(value))
+    }
+
+    it("models can be resources, with valid paths") {
+      setupPath("users") should be ("/users/:id")
     }
 
     it("enums can be resources, with valid paths") {
-      val json = baseJson.format("user_type")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
-
-      val resource = validator.service().resources.head
-      val op = resource.operations.head
-      op.path should be ("/user_types/:id")
+      setupPath("user_type") should be ("/user_types/:id")
     }
 
     it("lists cannot be resources") {
-      val json = baseJson.format("[user]")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
+      setupInvalidPath("[user]") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
     }
 
     it("maps cannot be resources") {
-      val json = baseJson.format("[user]")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
+      setupInvalidPath("[user]") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
     }
 
   }
@@ -108,9 +102,7 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val operations = validator.service().resources.head.operations
+    val operations = setupValidApiJson(json).resources.head.operations
     operations.head.path should be("/")
     operations.last.path should be("/foo")
   }
@@ -144,15 +136,11 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers {
     """
 
     it("validates that resource types are well defined") {
-      val json = baseJson.format("user")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("Resource type[user] not found")
+      TestHelper.expectSingleError(baseJson.format("user")) should be("Resource type[user] not found")
     }
 
     it("enums can be mapped to resources") {
-      val json = baseJson.format("user_type")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
+      TestHelper.expectSingleError(baseJson.format("user_type")) should be("")
     }
 
   }

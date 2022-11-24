@@ -2,6 +2,7 @@ package helpers
 
 import core.TestHelper
 import io.apibuilder.api.json.v0.models._
+import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.Service
 import play.api.libs.json.{JsValue, Json}
 
@@ -14,6 +15,10 @@ trait ApiJsonHelpers extends ValidatedTestHelpers {
       TestHelper.serviceValidatorFromApiJson(json)
     }
     service
+  }
+
+  def setupValidApiJson(apiJson: ApiJson): Service = {
+    setupValidApiJson(Json.prettyPrint(Json.toJson(apiJson)))
   }
 
   def expectErrorsApiJson(apiJson: ApiJson): Seq[String] = {
