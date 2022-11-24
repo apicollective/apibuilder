@@ -82,16 +82,18 @@ case class ApiJsonServiceValidator(
 
       case Some(_: InternalServiceForm) => {
         validateStructure().andThen { _ =>
+          // TODO: Pass in arguments to all validate methods
+          val svc = internalService.get
           sequenceUnique(Seq(
-            validateInfo(),
+            validateInfo(svc.info),
             validateKey(),
             validateImports(),
-            validateAttributes("Service", internalService.get.attributes),
+            validateAttributes("Service", svc.attributes),
             validateHeaders(),
-            validateResources(internalService.get.resources),
+            validateResources(svc.resources),
             validateInterfaces(),
             validateUnions(),
-            validateModels(internalService.get.models),
+            validateModels(svc.models),
             validateEnums(),
             validateAnnotations(),
             DuplicateJsonParser.validateDuplicates(apiJson)
@@ -104,8 +106,8 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validateInfo(): ValidatedNec[String, Unit] = {
-    internalService.get.info match {
+  private def validateInfo(info: Option[InternalInfoForm]): ValidatedNec[String, Unit] = {
+    info match {
       case None => ().validNec
       case Some(info) => {
         info.license match {
