@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class InlineModelsSpec extends AnyFunSpec with Matchers {
+class InlineModelsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   def buildJson(
     typ: String =
@@ -48,7 +49,7 @@ class InlineModelsSpec extends AnyFunSpec with Matchers {
   }
 
   it("supports an inline model field") {
-    val service = TestHelper.serviceValidatorFromApiJson(buildJson()).service()
+    val service = setupValidApiJson(buildJson())
     val model = service.models.find(_.name == "user_post_error").getOrElse {
       sys.error("No user_post_error model created")
     }
@@ -106,7 +107,7 @@ class InlineModelsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val service = TestHelper.serviceValidatorFromApiJson(json).service()
+    val service = setupValidApiJson(json)
     val model = service.models.find(_.name == "user_post_error").getOrElse {
       sys.error("No user_post_error model created")
     }

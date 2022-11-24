@@ -1,9 +1,10 @@
 package core
 
+import helpers.ValidatedTestHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class UtilSpec extends AnyFunSpec with Matchers {
+class UtilSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   it("namedParametersInPath") {
     Util.namedParametersInPath("/users") should be(Seq.empty)
@@ -14,7 +15,9 @@ class UtilSpec extends AnyFunSpec with Matchers {
   }
 
   it("isValidEnumValue") {
-    val service = TestHelper.parseFile(s"spec/apibuilder-api.json").service()
+    val service = expectValid {
+      TestHelper.parseFile(s"spec/apibuilder-api.json")
+    }
     val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
       sys.error("No visibility enum found")
     }
