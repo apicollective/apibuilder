@@ -1,10 +1,10 @@
 package builder.api_json
 
 import cats.data.Validated.{Invalid, Valid}
-import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderInterface, TypesProviderModel, TypesProviderUnion}
-import lib.{DatatypeResolver, Kind}
+import core._
+import lib.Kind
 
-private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {
+private[api_json] case class InternalApiJsonFormTypesProvider(internal: InternalApiJsonForm) extends TypesProvider {
 
   override def enums: Seq[TypesProviderEnum] = internal.enums.map { enum =>
     TypesProviderEnum(
@@ -70,7 +70,7 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
   * service multiple times (based on uniqueness of the import URIs)
   */
 private[api_json] case class RecursiveTypesProvider(
-  internal: InternalServiceForm
+  internal: InternalApiJsonForm
 ) extends TypesProvider {
 
   override def enums: Seq[TypesProviderEnum] = providers.flatMap(_.enums)
@@ -81,7 +81,7 @@ private[api_json] case class RecursiveTypesProvider(
 
   override def interfaces: Seq[TypesProviderInterface] = providers.flatMap(_.interfaces)
 
-  private lazy val providers = Seq(InternalServiceFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
+  private lazy val providers = Seq(InternalApiJsonFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
   private def resolve(
     importUris: Seq[String],

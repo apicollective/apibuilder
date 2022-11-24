@@ -13,10 +13,10 @@ import play.api.libs.json._
  * Just parses json with minimal validation - build to provide a way to
  * generate meaningful validation messages back to user. Basic flow
  *
- * JSON => InternalService => Service
+ * JSON => InternalApiJsonForm => Service
  *
  */
-private[api_json] case class InternalServiceForm(
+private[api_json] case class InternalApiJsonForm(
   original: JsValue,
   fetcher: ServiceFetcher,
 ) {

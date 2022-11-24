@@ -24,14 +24,14 @@ case class ApiJsonServiceValidator(
     parseRawJson(rawJson).andThen { form =>
       sequenceUnique(Seq(
         validateStructure(form.json),
-        validateInternalServiceForm(form)
+        validateInternalApiJsonForm(form)
       )).map { _ =>
         ServiceBuilder(migration = migration).apply(config, form)
       }
     }
   }
 
-  private[this] def parseRawJson(rawJson: String): ValidatedNec[String, InternalServiceForm] = {
+  private[this] def parseRawJson(rawJson: String): ValidatedNec[String, InternalApiJsonForm] = {
     if (rawJson.trim == "") {
       "No Data".invalidNec
     } else {
@@ -39,7 +39,7 @@ case class ApiJsonServiceValidator(
         case Success(v) => {
           v.asOpt[JsObject] match {
             case Some(o) => JsMerge.merge(o).map { js =>
-              InternalServiceForm(js, fetcher)
+              InternalApiJsonForm(js, fetcher)
             }
             case None => "Must upload a Json Object".invalidNec
           }
@@ -84,7 +84,7 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private[this] def validateInternalServiceForm(form: InternalServiceForm): ValidatedNec[String, Unit] = {
+  private[this] def validateInternalApiJsonForm(form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
     sequenceUnique(Seq(
       validateInfo(form.info),
       validateKey(form.key),

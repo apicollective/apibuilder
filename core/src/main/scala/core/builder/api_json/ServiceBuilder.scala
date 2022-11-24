@@ -20,12 +20,12 @@ case class ServiceBuilder(
     fetcher: ServiceFetcher
   ): Service = {
     val jsValue = Json.parse(apiJson)
-    apply(config, InternalServiceForm(jsValue, fetcher))
+    apply(config, InternalApiJsonForm(jsValue, fetcher))
   }
 
   def apply(
     config: ServiceConfiguration,
-    internal: InternalServiceForm
+    internal: InternalApiJsonForm
   ): Service = {
 
     val name = internal.name.getOrElse(sys.error("Missing name"))
