@@ -12,7 +12,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     templateOp: Operation,
     resourcePath: String = "/partner/statements"
   ): SpecOperation = {
-    expectValid(
+    expectValidApiJson(
       makeApiJson(
         templates = Some(makeTemplates(
           resources = Some(Map(
@@ -75,7 +75,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
     val resource = makeResource(
       templates = Some(Seq(makeTemplateDeclaration(name = "statement")))
     )
-    val operations = expectValid(
+    val operations = expectValidApiJson(
       makeApiJson(
         templates = Some(makeTemplates(
           resources = Some(Map(
@@ -108,7 +108,7 @@ class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       )
     }
 
-    val operations = expectValid(
+    val operations = expectValidApiJson(
       makeApiJson(
         templates = Some(makeTemplates(
           models = Some(Map(

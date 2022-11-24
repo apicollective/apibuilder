@@ -1,12 +1,12 @@
 package core
 
-import helpers.ValidatedTestHelpers
-import lib.Methods
+import helpers.ApiJsonHelpers
 import io.apibuilder.spec.v0.models.{ParameterLocation, Service}
+import lib.Methods
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class BodyParameterSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
+class BodyParameterSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   private[this] val baseJson = """
     {
@@ -49,9 +49,7 @@ class BodyParameterSpec extends AnyFunSpec with Matchers with ValidatedTestHelpe
   """
 
   private[this] def setupValid(json: String): Service = {
-    val service = expectValid {
-      TestHelper.serviceValidatorFromApiJson(json)
-    }
+    val service = setupValidApiJson(json)
     service.models.find(_.name == "message").getOrElse {
       sys.error("missing model message")
     }

@@ -33,13 +33,13 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   )
 
   it("validates interface name") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(interfaces = Map("  " -> makeInterface()))
     ) should be(
       Seq("Interface[  ] name cannot be empty")
     )
 
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(interfaces = Map("!" -> makeInterface()))
     ) should be(
       Seq("Interface[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter")
@@ -47,14 +47,14 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("supports interface with no fields") {
-    expectValid(
+    expectValidApiJson(
       makeApiJson(interfaces = Map("test" -> makeInterface(fields = None)))
     )
   }
 
   it("validates fields") {
     def test(field: Field) = {
-      expectErrors(
+      expectErrorsApiJson(
         makeApiJson(
           interfaces = Map("test" -> makeInterface(
             fields = Some(Seq(field))
@@ -71,7 +71,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("validates that interfaces specified refer to a known interface") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(models = Map("user" -> user))
     ) should be(
       Seq("Model[user] Interface[person] not found")
@@ -79,7 +79,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("validates field types if declared are consistent") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         interfaces = Map("person" -> person),
         models = Map("user" -> user.copy(
@@ -92,7 +92,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("validates field type is not an interface") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         interfaces = Map("person" -> person),
         models = Map("user" -> makeModel(
@@ -107,7 +107,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("validates field 'required' if declared is consistent") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         interfaces = Map("person" -> person),
         models = Map("user" -> user.copy(
@@ -120,7 +120,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("union and interface can have the same name (both essentially define interfaces and can be combined in generators)") {
-    val svc = expectValid {
+    val svc = expectValidApiJson {
       servicePersonUnionAndInterface(Seq("person"))
     }
     svc.unions.head.name should be("person")
@@ -129,7 +129,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("union and interface can have the same name only if interface is specified") {
-    expectErrors {
+    expectErrorsApiJson {
       servicePersonUnionAndInterface(Nil)
     } should be(
       Seq("'person' is defined as both a union and an interface. You must either make the names unique, or document in the union interfaces field that the type extends the 'person' interface.")
@@ -137,7 +137,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("model fields can reference a union w /interface") {
-    val svc = expectValid {
+    val svc = expectValidApiJson {
       servicePersonUnionAndInterface(
         interfaces = Seq("person"),
         userModel = makeModel(
@@ -150,7 +150,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("model and interface cannot have the same name") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         interfaces = Map("person" -> person),
         models = Map("person" -> makeModel()),
