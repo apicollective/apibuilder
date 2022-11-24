@@ -22,9 +22,10 @@ case class ApiJsonServiceValidator(
 
   override def validate(): ValidatedNec[String, Service] = {
     parseRawJson(rawJson).andThen { form =>
-      validateStructure(form.json).andThen { _ =>
+      sequenceUnique(Seq(
+        validateStructure(form.json),
         validateInternalServiceForm(form)
-      }.map { _ =>
+      )).map { _ =>
         ServiceBuilder(migration = migration).apply(config, form)
       }
     }
