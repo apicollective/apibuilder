@@ -15,76 +15,49 @@ import scala.util.{Failure, Success, Try}
 
 case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
-  apiJson: String,
+  rawJson: String,
   fetcher: ServiceFetcher,
   migration: VersionMigration
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
   override def validate(): ValidatedNec[String, Service] = {
-    serviceForm.map(InternalServiceForm(_, fetcher)) match {
-      case None => {
-        if (apiJson.trim == "") {
-          "No Data".invalidNec
-        } else {
-          parseError.getOrElse(Nil).toList match {
-            case Nil => "Invalid JSON".invalidNec
-            case errs => errs.mkString(", ").invalidNec
-          }
-        }
-      }
-
-      case Some(form: InternalServiceForm) => {
-        validateStructure(form.json).andThen { _ =>
-          sequenceUnique(Seq(
-            validateInfo(form.info),
-            validateKey(form.key),
-            validateImports(form.imports),
-            validateAttributes("Service", form.attributes),
-            validateHeaders(form.headers),
-            validateResources(form.resources),
-            validateInterfaces(form.interfaces),
-            validateUnions(form.unions),
-            validateModels(form.models),
-            validateEnums(form.enums),
-            validateAnnotations(form.annotations),
-            DuplicateJsonParser.validateDuplicates(apiJson)
-          ))
-        }.map { _ =>
-          ServiceBuilder(migration = migration).apply(config, form)
-        }
+    serviceForm(rawJson).map(InternalServiceForm(_, fetcher)).andThen { form =>
+      validateStructure(form.json).andThen { _ =>
+        sequenceUnique(Seq(
+          validateInfo(form.info),
+          validateKey(form.key),
+          validateImports(form.imports),
+          validateAttributes("Service", form.attributes),
+          validateHeaders(form.headers),
+          validateResources(form.resources),
+          validateInterfaces(form.interfaces),
+          validateUnions(form.unions),
+          validateModels(form.models),
+          validateEnums(form.enums),
+          validateAnnotations(form.annotations),
+          DuplicateJsonParser.validateDuplicates(rawJson)
+        ))
+      }.map { _ =>
+        ServiceBuilder(migration = migration).apply(config, form)
       }
     }
   }
 
-  private var parseError: Option[Seq[String]] = None
-
-  lazy val serviceForm: Option[JsObject] = {
-    Try(Json.parse(apiJson)) match {
-      case Success(v) => {
-        v.asOpt[JsObject] match {
-          case Some(o) => {
-            JsMerge.merge(o) match {
-              case Invalid(errors) => {
-                parseError = Some(errors.toNonEmptyList.toList)
-                None
-              }
-              case Valid(js) => Some(js)
-            }
-          }
-          case None => {
-            parseError = Some(Seq("Must upload a Json Object"))
-            None
+  private[this] def serviceForm(rawJson: String): ValidatedNec[String, JsObject] = {
+    if (rawJson.trim == "") {
+      "No Data".invalidNec
+    } else {
+      Try(Json.parse(rawJson)) match {
+        case Success(v) => {
+          v.asOpt[JsObject] match {
+            case Some(o) => JsMerge.merge(o)
+            case None => "Must upload a Json Object".invalidNec
           }
         }
-      }
-      case Failure(ex) => ex match {
-        case e: JsonParseException => {
-          parseError = Some(Seq(e.getMessage))
-          None
-        }
-        case e: JsonProcessingException => {
-          parseError = Some(Seq(e.getMessage))
-          None
+        case Failure(ex) => ex match {
+          case e: JsonParseException => e.getMessage.invalidNec
+          case e: JsonProcessingException => e.getMessage.invalidNec
+          case _ => "Unknown error parsing JSON".invalidNec
         }
       }
     }
