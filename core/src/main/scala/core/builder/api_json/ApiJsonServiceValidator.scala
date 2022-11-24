@@ -23,20 +23,7 @@ case class ApiJsonServiceValidator(
   override def validate(): ValidatedNec[String, Service] = {
     parseRawJson(rawJson).andThen { form =>
       validateStructure(form.json).andThen { _ =>
-        sequenceUnique(Seq(
-          validateInfo(form.info),
-          validateKey(form.key),
-          validateImports(form.imports),
-          validateAttributes("Service", form.attributes),
-          validateHeaders(form.headers),
-          validateResources(form.resources),
-          validateInterfaces(form.interfaces),
-          validateUnions(form.unions),
-          validateModels(form.models),
-          validateEnums(form.enums),
-          validateAnnotations(form.annotations),
-          DuplicateJsonParser.validateDuplicates(rawJson)
-        ))
+        validateInternalServiceForm(form)
       }.map { _ =>
         ServiceBuilder(migration = migration).apply(config, form)
       }
@@ -96,6 +83,22 @@ case class ApiJsonServiceValidator(
     }
   }
 
+  private[this] def validateInternalServiceForm(form: InternalServiceForm): ValidatedNec[String, Unit] = {
+    sequenceUnique(Seq(
+      validateInfo(form.info),
+      validateKey(form.key),
+      validateImports(form.imports),
+      validateAttributes("Service", form.attributes),
+      validateHeaders(form.headers),
+      validateResources(form.resources),
+      validateInterfaces(form.interfaces),
+      validateUnions(form.unions),
+      validateModels(form.models),
+      validateEnums(form.enums),
+      validateAnnotations(form.annotations),
+      DuplicateJsonParser.validateDuplicates(rawJson)
+    ))
+  }
   private def validateStructure(json: JsValue): ValidatedNec[String, Unit] = {
     JsonUtil.validate(
       json,
