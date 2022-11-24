@@ -1,29 +1,23 @@
 package io.apibuilder.swagger
 
 import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
 import helpers.ValidatedTestHelpers
 import io.apibuilder.spec.v0.models.Method.{Delete, Get}
 import io.apibuilder.spec.v0.models.ParameterLocation.{Path, Query}
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
-import lib.{ServiceConfiguration, ValidatedHelpers}
+import lib.{FileUtils, ServiceConfiguration, ValidatedHelpers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
 
+import java.io.File
+
 class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers with ValidatedHelpers {
-  private val resourcesDir = "swagger/src/test/resources/"
+  private[this] val resourcesDir = "swagger/src/test/resources/"
 
-  private def readFile(path: String): String = {
-    val source = scala.io.Source.fromFile(path)
-    try {
-      source.getLines().mkString("\n")
-    } finally {
-      source.close()
-    }
-  }
-
-  private def printRequired(value: Boolean): String = {
+  private[this] def printRequired(value: Boolean): String = {
     if (value) {
       "(required)"
     } else {
@@ -31,9 +25,9 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     }
   }
 
-  private def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
-  private def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
-  private def checkResource(actual: Resource, target: Resource): Unit = {
+  private[this] def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
+  private[this] def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
+  private[this] def checkResource(actual: Resource, target: Resource): Unit = {
     // first test ordering of operations
     actual.operations.map(_.path) shouldBe target.operations.map(_.path)
     actual.operations.map(_.method) shouldBe target.operations.map(_.method)
@@ -51,7 +45,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     )
   }
 
-  private def checkJson[T](actual: T, target: T)(implicit writer: Writes[T]): Unit = {
+  private[this] def checkJson[T](actual: T, target: T)(implicit writer: Writes[T]): Unit = {
     val errors = JsonDiff.diff(
       Json.toJson(actual),
       Json.toJson(target),
@@ -64,15 +58,21 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     }
   }
 
-  private def checkEnum(actual: Enum, target: Enum): Unit = {
+  private[this] def checkEnum(actual: Enum, target: Enum): Unit = {
     actual should be(target)
   }
 
-  val config: ServiceConfiguration = ServiceConfiguration(
-    orgKey = "apibuilder",
-    orgNamespace = "me.apibuilder",
-    version = "0.0.2-dev"
+  private[this] val validator: SwaggerServiceValidator = SwaggerServiceValidator(
+    ServiceConfiguration(
+      orgKey = "apibuilder",
+      orgNamespace = "me.apibuilder",
+      version = "0.0.2-dev"
+    )
   )
+
+  private[this] def validate(path: String): ValidatedNec[String, Service] = {
+    validator.validate(FileUtils.readToString(new File(path)))
+  }
 
   describe("Swagger parser") {
 
@@ -82,7 +82,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
@@ -388,7 +388,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
@@ -453,7 +453,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
@@ -703,7 +703,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
@@ -916,7 +916,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
@@ -1100,7 +1100,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          SwaggerServiceValidator(config, readFile(path)).validate() match {
+          validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
@@ -1114,7 +1114,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
   }
 
   def assertRefsSpec(path: String) = {
-    SwaggerServiceValidator(config, readFile(path)).validate() match {
+    validate(path) match {
       case Invalid(errors) => {
         fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
       }

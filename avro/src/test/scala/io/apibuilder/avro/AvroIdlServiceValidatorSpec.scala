@@ -1,20 +1,15 @@
 package io.apibuilder.avro
 
 import helpers.ValidatedTestHelpers
-import lib.ServiceConfiguration
+import lib.{FileUtils, ServiceConfiguration}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.io.File
+
 class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
-  private def readFile(path: String): String = {
-    val source = scala.io.Source.fromFile(path)
-    try {
-      source.getLines().mkString("\n")
-    } finally {
-      source.close()
-    }
-  }
+  private def readFile(path: String): String = FileUtils.readToString(new File(path))
 
   val config: ServiceConfiguration = ServiceConfiguration(
     orgKey = "gilt",
@@ -24,7 +19,7 @@ class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
 
   it("parses") {
     expectValid {
-      AvroIdlServiceValidator(config, readFile("avro/example.avdl")).validate()
+      AvroIdlServiceValidator(config).validate(readFile("avro/example.avdl"))
     }
   }
 
