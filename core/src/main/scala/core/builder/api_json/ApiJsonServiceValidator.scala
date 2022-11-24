@@ -20,7 +20,9 @@ case class ApiJsonServiceValidator(
   migration: VersionMigration
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
-  private lazy val service: Service = ServiceBuilder(migration = migration).apply(config, internalService.get)
+  private lazy val service: Service = ServiceBuilder(migration = migration).apply(config, internalService.getOrElse {
+    sys.error(s"Failed to get service. Errors: ${errors.mkString(" ,")}")
+  })
 
   override def validate(): ValidatedNec[String, Service] = {
     errors match {
