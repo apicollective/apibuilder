@@ -297,9 +297,7 @@ case class InternalResourceForm(
   attributes: Seq[InternalAttributeForm],
   templates: Seq[InternalTemplateDeclarationForm],
   warnings: ValidatedNec[String, Unit]
-) {
-  println(s"Created resource with path: $path")
-}
+)
 
 case class InternalOperationForm(
   method: Option[String],
@@ -313,7 +311,7 @@ case class InternalOperationForm(
   warnings: ValidatedNec[String, Unit]
 ) {
 
-  lazy val label: String = "%s %s".format(method.getOrElse(""), path).trim
+  lazy val label: String = Seq(method, path).flatten.mkString(" ")
 
 }
 
