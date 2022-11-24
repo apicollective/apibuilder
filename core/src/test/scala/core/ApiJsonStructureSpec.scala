@@ -123,16 +123,18 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers with ValidatedTestHe
 
   it("validates enums") {
     TestHelper.expectSingleError("""
-    {
-      "name": "test",
-      "apidoc": { "version": "0.9.6" },
-      "enums": {
-        "user": {
-          "description": []
+      {
+        "name": "test",
+        "apidoc": { "version": "0.9.6" },
+        "enums": {
+          "user": {
+            "description": [],
+            "values": [{ "name": "test" }]
+          }
         }
       }
-    }
-    """) should be("Enum[user] description, if present, must be a string Enum[user] Missing values")
+      """
+    ) should be("Enum[user] description, if present, must be a string")
   }
 
   it("validates enum values are objects") {
@@ -150,17 +152,23 @@ class ApiJsonStructureSpec extends AnyFunSpec with Matchers with ValidatedTestHe
   }
 
   it("validates unions") {
-    TestHelper.expectSingleError("""
-    {
-      "name": "test",
-      "apidoc": { "version": "0.9.6" },
-      "unions": {
-        "user": {
-          "description": []
+    expectInvalid {
+      TestHelper.serviceValidatorFromApiJson(
+        """
+        {
+          "name": "test",
+          "apidoc": { "version": "0.9.6" },
+          "unions": {
+            "user": {
+              "description": []
+            }
+          }
         }
-      }
-    }
-    """) should be("Union[user] description, if present, must be a string Union[user] Missing types")
+      """)
+    } should be(Seq(
+      "Union[user] description, if present, must be a string",
+      "Union[user] Missing types"
+    ))
   }
 
   it("validates union types are objects") {

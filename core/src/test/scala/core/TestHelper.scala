@@ -21,7 +21,10 @@ object TestHelper extends ValidatedHelpers with ValidatedTestHelpers {
     expectInvalid {
       TestHelper.serviceValidatorFromApiJson(json)
     }.toList match {
-      case one :: Nil => one
+      case one :: Nil => {
+        println(s"msg: $one")
+        one
+      }
       case other => sys.error(s"Expected 1 error but got[${other.length}")
     }
   }

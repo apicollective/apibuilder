@@ -1,7 +1,5 @@
 package core
 
-import cats.data.Validated.{Invalid, Valid}
-import helpers.ApiJsonHelpers
 import io.apibuilder.spec.v0.models.json._
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -10,7 +8,7 @@ import play.api.libs.json.Json
 /**
  * Tests that you can use an interface from an imported service
  */
-class InterfaceImportsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
+class InterfaceImportsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
   private[this] val importedServiceFile: String = TestHelper.writeToTempFile(
     Json.toJson(
@@ -26,18 +24,20 @@ class InterfaceImportsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
 
   it("models can declare an interface from an imported service") {
     def setup(importUris: Seq[String]) = {
-      makeApiJson(
-        name = "svc",
-        imports = importUris.map { uri => makeImport(uri = uri) },
-        models = Map("test" -> makeModelWithField(interfaces = Some(Seq("definitions.interfaces.user")))),
+      TestHelper.serviceValidator(
+        makeApiJson(
+          name = "svc",
+          imports = importUris.map { uri => makeImport(uri = uri) },
+          models = Map("test" -> makeModelWithField(interfaces = Some(Seq("definitions.interfaces.user")))),
+        )
       )
     }
 
-    TestHelper.expectSingleError(setup(Nil)) should equal(
-      "Model[test] Interface[definitions.interfaces.user] not found"
+    expectInvalid(setup(Nil)) should equal(
+      Seq("Model[test] Interface[definitions.interfaces.user] not found")
     )
 
-    setupValidApiJson(setup(Seq(s"file://$importedServiceFile"))).models.head.interfaces should equal(
+    expectValid(setup(Seq(s"file://$importedServiceFile"))).models.head.interfaces should equal(
       Seq("definitions.interfaces.user")
     )
   }

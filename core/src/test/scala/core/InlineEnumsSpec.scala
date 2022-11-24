@@ -85,7 +85,7 @@ $extras
         """.stripMargin.trim
     )
 
-    TestHelper.serviceValidatorFromApiJson(json) should equal(
+    TestHelper.expectSingleError(json) should equal(
       "Enum[user_post_error_code] appears more than once"
     )
   }
