@@ -21,7 +21,9 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers with ApiJsonHelper
       }
     }
     """
-    setupValidApiJson(json)
+    TestHelper.expectSingleError(json) shouldBe(
+      "Model[user] Field[id] annotation[nope] is invalid. Annotations must be defined."
+    )
   }
 
   it("a defined annotation is allowed") {
