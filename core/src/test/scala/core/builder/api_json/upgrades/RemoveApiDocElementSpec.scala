@@ -21,7 +21,7 @@ class RemoveApiDocElementSpec extends AnyFunSpec with Matchers with ApiJsonHelpe
         |  }
         |}
         |""".stripMargin
-    ).apidoc.get.version should be("1.0")
+    ).apidoc shouldBe None
   }
 
 }
