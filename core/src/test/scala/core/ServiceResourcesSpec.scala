@@ -53,7 +53,7 @@ class ServiceResourcesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
     }
 
     it("models can be resources, with valid paths") {
-      setupPath("users") should be ("/users/:id")
+      setupPath("user") should be ("/users/:id")
     }
 
     it("enums can be resources, with valid paths") {
