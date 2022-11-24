@@ -9,17 +9,17 @@ import java.io.File
 
 class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
-  private def readFile(path: String): String = FileUtils.readToString(new File(path))
-
-  val config: ServiceConfiguration = ServiceConfiguration(
-    orgKey = "gilt",
-    orgNamespace = "io.apibuilder",
-    version = "0.0.1-dev"
+  private[this] val validator: AvroIdlServiceValidator = AvroIdlServiceValidator(
+    ServiceConfiguration(
+      orgKey = "gilt",
+      orgNamespace = "io.apibuilder",
+      version = "0.0.1-dev"
+    )
   )
 
   it("parses") {
     expectValid {
-      AvroIdlServiceValidator(config).validate(readFile("avro/example.avdl"))
+      validator.validate(FileUtils.readToString(new File("avro/example.avdl")))
     }
   }
 
