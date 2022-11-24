@@ -21,7 +21,7 @@ case class ApiJsonServiceValidator(
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
   override def validate(): ValidatedNec[String, Service] = {
-    serviceForm(rawJson).map(InternalServiceForm(_, fetcher)).andThen { form =>
+    parseRawJson(rawJson).andThen { form =>
       validateStructure(form.json).andThen { _ =>
         sequenceUnique(Seq(
           validateInfo(form.info),
@@ -43,14 +43,16 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private[this] def serviceForm(rawJson: String): ValidatedNec[String, JsObject] = {
+  private[this] def parseRawJson(rawJson: String): ValidatedNec[String, InternalServiceForm] = {
     if (rawJson.trim == "") {
       "No Data".invalidNec
     } else {
       Try(Json.parse(rawJson)) match {
         case Success(v) => {
           v.asOpt[JsObject] match {
-            case Some(o) => JsMerge.merge(o)
+            case Some(o) => JsMerge.merge(o).map { js =>
+              InternalServiceForm(js, fetcher)
+            }
             case None => "Must upload a Json Object".invalidNec
           }
         }
