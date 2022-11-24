@@ -297,7 +297,9 @@ case class InternalResourceForm(
   attributes: Seq[InternalAttributeForm],
   templates: Seq[InternalTemplateDeclarationForm],
   warnings: ValidatedNec[String, Unit]
-)
+) {
+  println(s"Created resource with path: $path")
+}
 
 case class InternalOperationForm(
   method: Option[String],
