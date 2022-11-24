@@ -71,14 +71,12 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
 
     val validator = OriginalValidator(
       config = serviceConfig,
-      original = version.original.getOrElse {
-        sys.error("Missing original")
-      },
+      `type` = original.`type`,
       fetcher = databaseServiceFetcher.instance(Authorization.All)
     )
 
     val svc = expectValid {
-      validator.validate()
+      validator.validate(original.data)
     }
     svc.name must be(service.name)
     svc.namespace must be(serviceConfig.applicationNamespace(svc.name))

@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceCommonReturnTypeSpec extends AnyFunSpec with Matchers {
+class ServiceCommonReturnTypeSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   it("all 2xx return types must share a common types") {
     val json = """
@@ -38,8 +39,8 @@ class ServiceCommonReturnTypeSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors().mkString should be("")
-    TestHelper.serviceValidatorFromApiJson(json.format("[user]")).errors().mkString should be("Resource[user] cannot have varying response types for 2xx response codes: [user], user")
+    setupValidApiJson(json.format("user"))
+    TestHelper.expectSingleError(json.format("[user]")) should be("Resource[user] cannot have varying response types for 2xx response codes: [user], user")
   }
 
 }

@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceMethodsSpec extends AnyFunSpec with Matchers {
+class ServiceMethodsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   it("missing method") {
     val json = """
@@ -30,8 +31,7 @@ class ServiceMethodsSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("Resource[user] /users Missing method")
+    TestHelper.expectSingleError(json) should be("Resource[user] /users Missing method")
   }
 
 }
