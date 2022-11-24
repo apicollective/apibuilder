@@ -4,6 +4,6 @@ import cats.data.ValidatedNec
 
 trait ServiceValidator[T] {
 
-  def validate(): ValidatedNec[String, T]
+  def validate(rawInput: String): ValidatedNec[String, T]
 
 }

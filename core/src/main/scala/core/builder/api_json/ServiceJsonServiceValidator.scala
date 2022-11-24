@@ -1,20 +1,19 @@
 package builder.api_json
 
-import cats.implicits._
 import cats.data.ValidatedNec
+import cats.implicits._
+import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import lib.ServiceValidator
-import play.api.libs.json.{Json, JsError, JsSuccess}
-import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
+import play.api.libs.json.{JsError, JsSuccess, Json}
+
 import scala.util.{Failure, Success, Try}
 
-case class ServiceJsonServiceValidator(
-  json: String
-) extends ServiceValidator[Service] {
+object ServiceJsonServiceValidator extends ServiceValidator[Service] {
 
-  def validate(): ValidatedNec[String, Service] = {
-    Try(Json.parse(json)) match {
+  def validate(rawInput: String): ValidatedNec[String, Service] = {
+    Try(Json.parse(rawInput)) match {
       case Success(js) => {
         js.validate[Service] match {
           case e: JsError => {

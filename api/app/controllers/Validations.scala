@@ -36,9 +36,9 @@ class Validations @Inject() (
       case Some(fileType) => {
         OriginalValidator(
           config = config,
-          original = Original(fileType, contents),
+          `type` = fileType,
           fetcher = databaseServiceFetcher.instance(request.authorization)
-        ).validate() match {
+        ).validate(contents) match {
           case Invalid(errors) => {
             UnprocessableEntity(Json.toJson(Validation(
               valid = false,

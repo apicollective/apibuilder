@@ -1,34 +1,34 @@
 package builder
 
-import cats.data.ValidatedNec
 import builder.api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
-import io.apibuilder.api.v0.models.{Original, OriginalType}
-import io.apibuilder.spec.v0.models.Service
+import cats.data.ValidatedNec
 import core.{ServiceFetcher, VersionMigration}
-import lib.{ServiceConfiguration, ServiceValidator}
+import io.apibuilder.api.v0.models.OriginalType
 import io.apibuilder.avro.AvroIdlServiceValidator
+import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.swagger.SwaggerServiceValidator
+import lib.{ServiceConfiguration, ServiceValidator}
 
 object OriginalValidator {
 
   def apply(
     config: ServiceConfiguration,
-    original: Original,
+    `type`: OriginalType,
     fetcher: ServiceFetcher,
     migration: VersionMigration = VersionMigration(internal = false)
   ): ServiceValidator[Service] = {
-    val validator = original.`type` match {
+    val validator = `type` match {
       case OriginalType.ApiJson => {
-        ApiJsonServiceValidator(config, original.data, fetcher, migration)
+        ApiJsonServiceValidator(config, fetcher, migration)
       }
       case OriginalType.AvroIdl => {
-        AvroIdlServiceValidator(config, original.data)
+        AvroIdlServiceValidator(config)
       }
       case OriginalType.ServiceJson => {
-        ServiceJsonServiceValidator(original.data)
+        ServiceJsonServiceValidator
       }
       case OriginalType.Swagger => {
-        SwaggerServiceValidator(config, original.data)
+        SwaggerServiceValidator(config)
       }
       case OriginalType.UNDEFINED(other) => {
         sys.error(s"Invalid original type[$other]")
@@ -39,8 +39,8 @@ object OriginalValidator {
 
   case class WithServiceSpecValidator(underlying: ServiceValidator[Service]) extends ServiceValidator[Service] {
 
-    override def validate(): ValidatedNec[String, Service] = {
-      underlying.validate().andThen { service =>
+    override def validate(rawInput: String): ValidatedNec[String, Service] = {
+      underlying.validate(rawInput).andThen { service =>
         ServiceSpecValidator(service).validate()
       }
     }
