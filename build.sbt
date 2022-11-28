@@ -111,7 +111,7 @@ lazy val api = project
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
     ),
     Test / javaOptions ++= Seq(
-      "-Dconfig.resource=api.test.conf"
+      "-Dconfig.resource=application.test.conf"
     )
   )
 
