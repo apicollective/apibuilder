@@ -1,7 +1,7 @@
 package modules.clients
 
-import io.apibuilder.generator.v0.mock.{Client => MockClient, MockGenerators}
 import io.apibuilder.generator.v0.interfaces.Client
+import io.apibuilder.generator.v0.mock.{MockGenerators, Client => MockClient}
 
 import javax.inject.{Inject, Singleton}
 
