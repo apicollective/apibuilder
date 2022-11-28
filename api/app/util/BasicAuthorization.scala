@@ -10,7 +10,7 @@ object BasicAuthorization {
   case class User(user: String, password: String) extends Authorization
 
   def get(value: Option[String]): Option[Authorization] = {
-    value.flatMap { get(_) }
+    value.flatMap(get)
   }
 
   /**

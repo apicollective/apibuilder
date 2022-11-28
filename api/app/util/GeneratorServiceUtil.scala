@@ -1,25 +1,24 @@
 package util
 
+import db.generators.{GeneratorsDao, ServicesDao}
+import db.{Authorization, UsersDao}
+import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
+import lib.Pager
+import modules.clients.GeneratorClientFactory
+import play.api.{Environment, Logger, Mode}
+
 import java.util.UUID
 import javax.inject.Inject
-import db.{Authorization, UsersDao}
-import db.generators.{GeneratorsDao, ServicesDao}
-import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
-import io.apibuilder.generator.v0.Client
-import lib.Pager
-import play.api.{Environment, Logger, Mode}
-import play.api.libs.ws.WSClient
-
 import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
 import scala.util.{Failure, Success, Try}
 
 class GeneratorServiceUtil @Inject() (
-  wSClient: WSClient,
   servicesDao: ServicesDao,
   generatorsDao: GeneratorsDao,
   usersDao: UsersDao,
-  env: Environment
+  env: Environment,
+  generatorClientFactory: GeneratorClientFactory
 ) {
 
   private[this] val log: Logger = Logger(this.getClass)
@@ -61,7 +60,7 @@ class GeneratorServiceUtil @Inject() (
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ): Unit = {
-    val client = new Client(wSClient, service.uri)
+    val client = generatorClientFactory.instance(service.uri)
 
     var iteration = 0
     val limit = 100

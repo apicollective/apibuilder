@@ -6,7 +6,7 @@ import db.Authorization
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
+class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHelpers {
 
   "upsert" must {
 

@@ -5,7 +5,7 @@ import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService, GeneratorSe
 import io.apibuilder.generator.v0.models.Generator
 import java.util.UUID
 
-trait Helpers extends db.Helpers {
+trait GeneratorHelpers extends db.Helpers {
 
   def createGeneratorService(
     form: GeneratorServiceForm = createGeneratorServiceForm()

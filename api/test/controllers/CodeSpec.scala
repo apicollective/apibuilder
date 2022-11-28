@@ -15,7 +15,7 @@ import util.RandomPortFinder
 
 import scala.util.Try
 
-class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with db.generators.Helpers {
+class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with db.generators.GeneratorHelpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

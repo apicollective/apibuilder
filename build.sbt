@@ -109,6 +109,9 @@ lazy val api = project
       "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
+    ),
+    Test / javaOptions ++= Seq(
+      "-Dconfig.resource=api.test.conf"
     )
   )
 
