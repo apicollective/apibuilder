@@ -15,7 +15,7 @@ class Organizations @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   attributesDao: AttributesDao,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     guid: Option[UUID],

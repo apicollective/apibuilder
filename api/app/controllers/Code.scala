@@ -32,7 +32,7 @@ class Code @Inject() (
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
   userAgentGenerator: UserAgent,
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   case class CodeParams(
     orgKey: String,

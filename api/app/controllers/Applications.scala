@@ -15,7 +15,7 @@ class Applications @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     orgKey: String,

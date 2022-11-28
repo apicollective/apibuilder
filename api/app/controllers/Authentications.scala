@@ -13,7 +13,7 @@ class Authentications @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   sessionsDao: SessionsDao,
   usersDao: UsersDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def getSessionById(sessionId: String) = Anonymous { _ =>
     sessionsDao.findById(sessionId) match {

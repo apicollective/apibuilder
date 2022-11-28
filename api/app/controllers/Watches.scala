@@ -13,7 +13,7 @@ import java.util.UUID
 class Watches @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   watchesDao: WatchesDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     guid: Option[UUID],

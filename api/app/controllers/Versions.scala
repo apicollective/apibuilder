@@ -21,7 +21,7 @@ class Versions @Inject() (
   databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator,
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   private[this] val DefaultVisibility = Visibility.Organization
 
