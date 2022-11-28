@@ -1,12 +1,13 @@
 package modules.clients
 
+import io.apibuilder.generator.v0.interfaces.{Client => ClientInterface}
 import io.apibuilder.generator.v0.{Client => GeneratorClient}
 import play.api.libs.ws.WSClient
 
 import javax.inject.Inject
 
 trait GeneratorClientFactory {
-  def instance(baseUrl: String): GeneratorClient
+  def instance(baseUrl: String): ClientInterface
 }
 
 class ProductionGeneratorClientFactory @Inject() (

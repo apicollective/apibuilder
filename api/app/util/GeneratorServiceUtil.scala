@@ -31,11 +31,11 @@ class GeneratorServiceUtil @Inject() (
     servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync }
   }
 
-  def syncAll()(implicit ec: scala.concurrent.ExecutionContext): Unit = {
+  def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     Pager.eachPage { offset =>
       servicesDao.findAll(
         Authorization.All,
-        limit = 200,
+        limit = pageSize,
         offset = offset
       )
     } { service =>
