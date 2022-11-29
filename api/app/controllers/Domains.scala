@@ -13,7 +13,7 @@ import play.api.libs.json._
 class Domains @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   organizationDomainsDao: OrganizationDomainsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def post(orgKey: String) = Identified(parse.json) { request =>
     withOrgAdmin(request.user, orgKey) { org =>

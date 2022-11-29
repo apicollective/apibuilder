@@ -6,6 +6,11 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.io.File
+import lib.ServiceConfiguration
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+
+class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
 class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
@@ -20,6 +25,7 @@ class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
   it("parses") {
     expectValid {
       validator.validate(FileUtils.readToString(new File("avro/example.avdl")))
+      AvroIdlServiceValidator(config, readFile("avro/example.avdl")).validate()
     }
   }
 

@@ -19,7 +19,7 @@ class Users @Inject() (
   sessionHelper: SessionHelper,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

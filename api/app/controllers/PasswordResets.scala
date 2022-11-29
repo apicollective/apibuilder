@@ -16,7 +16,7 @@ class PasswordResets @Inject() (
   sessionHelper: SessionHelper,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def post() = Anonymous(parse.json) { request =>
     request.body.validate[PasswordReset] match {

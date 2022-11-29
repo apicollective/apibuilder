@@ -4,6 +4,7 @@ import builder.OriginalValidator
 import db.Authorization
 import helpers.ValidatedTestHelpers
 import io.apibuilder.api.v0.models.OriginalType
+import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models.Service
 import play.api.Application
 

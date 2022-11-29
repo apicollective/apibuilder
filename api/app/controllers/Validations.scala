@@ -15,7 +15,7 @@ import play.api.libs.json._
 class Validations @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   databaseServiceFetcher: DatabaseServiceFetcher
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",
@@ -38,7 +38,11 @@ class Validations @Inject() (
           config = config,
           `type` = fileType,
           fetcher = databaseServiceFetcher.instance(request.authorization)
+<<<<<<< HEAD
         ).validate(contents) match {
+=======
+        ).validate() match {
+>>>>>>> main
           case Invalid(errors) => {
             UnprocessableEntity(Json.toJson(Validation(
               valid = false,

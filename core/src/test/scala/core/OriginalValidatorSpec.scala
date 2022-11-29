@@ -2,6 +2,8 @@ package core
 
 import _root_.builder.OriginalValidator
 import helpers.ValidatedTestHelpers
+import lib.{FileUtils, ServiceConfiguration}
+import io.apibuilder.api.v0.models.Original
 import io.apibuilder.api.v0.models.OriginalType.Swagger
 import lib.{FileUtils, ServiceConfiguration}
 import org.scalatest.funspec.AnyFunSpec

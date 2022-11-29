@@ -1,5 +1,6 @@
 package builder
 
+import cats.data.ValidatedNec
 import builder.api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
 import cats.data.ValidatedNec
 import core.{ServiceFetcher, VersionMigration}

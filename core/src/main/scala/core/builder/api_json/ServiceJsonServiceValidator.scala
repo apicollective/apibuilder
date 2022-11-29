@@ -3,6 +3,8 @@ package builder.api_json
 import cats.data.ValidatedNec
 import cats.implicits._
 import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
+import cats.implicits._
+import cats.data.ValidatedNec
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import lib.ServiceValidator

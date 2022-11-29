@@ -14,7 +14,7 @@ class MembershipRequests @Inject() (
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao,
   usersDao: UsersDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   case class MembershipRequestForm(
     org_guid: java.util.UUID,

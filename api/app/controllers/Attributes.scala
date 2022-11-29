@@ -13,7 +13,7 @@ import java.util.UUID
 class Attributes @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   attributesDao: AttributesDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     guid: Option[UUID],

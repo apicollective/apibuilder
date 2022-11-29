@@ -10,7 +10,7 @@ import io.apibuilder.spec.v0.models.json._
 import lib.{FileUtils, ServiceConfiguration, ValidatedHelpers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
+import play.api.libs.json._
 
 import java.io.File
 
@@ -916,7 +916,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
         filename =>
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
-          validate(path) match {
+         validate(path) match {
             case Invalid(errors) => {
               fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }

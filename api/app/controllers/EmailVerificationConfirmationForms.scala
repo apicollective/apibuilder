@@ -12,7 +12,7 @@ import play.api.libs.json._
 class EmailVerificationConfirmationForms @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   emailVerificationsDao: EmailVerificationsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def post() = Anonymous(parse.json) { request =>
     request.body.validate[EmailVerificationConfirmationForm] match {

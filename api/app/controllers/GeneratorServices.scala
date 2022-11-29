@@ -17,7 +17,7 @@ class GeneratorServices @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   servicesDao: ServicesDao,
   generatorServiceUtil: GeneratorServiceUtil
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

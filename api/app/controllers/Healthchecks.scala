@@ -11,7 +11,7 @@ class Healthchecks @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   private[this] val Result = Json.toJson(Map("status" -> "healthy"))
 
