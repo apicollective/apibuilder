@@ -6,7 +6,7 @@ import db.Authorization
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
+class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHelpers {
 
   "upsert" must {
 
@@ -55,7 +55,9 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
       val service = createGeneratorService()
       val form = createGeneratorForm(
         service,
-        attributes = Seq("foo", "bar")
+        makeGenerator(
+          attributes = Seq("foo", "bar")
+        )
       )
 
       generatorsDao.upsert(testUser, form)

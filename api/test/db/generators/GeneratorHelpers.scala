@@ -2,10 +2,12 @@ package db.generators
 
 import db.Authorization
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService, GeneratorServiceForm, GeneratorWithService}
+import io.apibuilder.generator.v0.mock.Factories
 import io.apibuilder.generator.v0.models.Generator
+
 import java.util.UUID
 
-trait Helpers extends db.Helpers {
+trait GeneratorHelpers extends db.Helpers {
 
   def createGeneratorService(
     form: GeneratorServiceForm = createGeneratorServiceForm()
@@ -39,18 +41,20 @@ trait Helpers extends db.Helpers {
 
   def createGeneratorForm(
     service: GeneratorService = createGeneratorService(),
-    attributes: Seq[String] = Nil
+    generator: Generator = makeGenerator()
   ): GeneratorForm = {
-    val value = UUID.randomUUID.toString.toLowerCase
     GeneratorForm(
       serviceGuid = service.guid,
-      generator = Generator(
-        key = "test_" + value,
-        name = "Test " + value,
-        description = None,
-        language = None,
-        attributes = attributes
-      )
+      generator = generator
+    )
+  }
+
+  def makeGenerator(attributes: Seq[String] = Nil): Generator = {
+    val value = UUID.randomUUID.toString.toLowerCase
+    Factories.makeGenerator().copy(
+      key = "test_" + value,
+      name = "Test " + value,
+      attributes = attributes
     )
   }
 

@@ -11,7 +11,6 @@ import lib.{FileUtils, ServiceConfiguration, ValidatedHelpers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
-
 import java.io.File
 
 class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers with ValidatedHelpers {

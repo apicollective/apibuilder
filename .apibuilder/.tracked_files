@@ -23,6 +23,8 @@ apicollective:
     - api/app/generated/ApicollectiveApibuilderGeneratorV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderGeneratorV0Client.scala
+    play_2_8_mock_client:
+    - generated/app/ApicollectiveApibuilderGeneratorV0MockClient.scala
   apibuilder-internal:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderInternalV0Conversions.scala
@@ -35,3 +37,5 @@ apicollective:
     - api/app/generated/ApicollectiveApibuilderSpecV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderSpecV0Client.scala
+    play_2_8_mock_client:
+    - generated/app/ApicollectiveApibuilderSpecV0MockClient.scala

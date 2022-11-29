@@ -6,7 +6,7 @@ import db.Authorization
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
+class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHelpers {
 
   "validate" in {
     val form = createGeneratorServiceForm()
