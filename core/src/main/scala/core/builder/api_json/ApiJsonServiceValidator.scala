@@ -19,11 +19,11 @@ case class ApiJsonServiceValidator(
   migration: VersionMigration
 ) extends ServiceValidator[Service] with ValidatedHelpers {
 
-  override def validate(): ValidatedNec[String, Service] = {
+  override def validate(rawJson: String): ValidatedNec[String, Service] = {
     parseRawJson(rawJson).andThen { form =>
       sequenceUnique(Seq(
         validateStructure(form.json),
-        validateInternalApiJsonForm(form)
+        validateInternalApiJsonForm(rawJson, form)
       )).map { _ =>
         ServiceBuilder(migration = migration).apply(config, form)
       }
