@@ -1,10 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.Json
 
-class InlineUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class InlineUnionsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
 
 
@@ -39,7 +39,7 @@ class InlineUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelp
     }
     """
 
-    val service = TestHelper.serviceValidatorFromApiJson(json).service()
+    val service = setupValidApiJson(json)
     service.models.find(_.name == "guest_user").getOrElse {
       sys.error("No guest_user model created")
     }.fields.map(_.name) should equal(
@@ -129,7 +129,7 @@ class InlineUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelp
                  |  }
                  |}
     """.stripMargin
-    val service = TestHelper.serviceValidatorFromApiJson(json).service()
+    val service = setupValidApiJson(json)
 
     service.models.find(_.name == "simple_user_error").getOrElse {
       sys.error("No simple_user_error model created")

@@ -1,9 +1,11 @@
 package core
 
+import cats.data.Validated.{Invalid, Valid}
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class NestedUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class NestedUnionsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
     it("validates discriminator values are unique") {
       def setup(
@@ -31,7 +33,10 @@ class NestedUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelp
             )
           )
         )
-        TestHelper.serviceValidator(service).errors()
+        TestHelper.serviceValidator(service) match {
+          case Invalid(e) => e.toNonEmptyList.toList
+          case Valid(_) => Nil
+        }
       }
 
       setup("user", "guest", None) shouldBe Nil
@@ -72,7 +77,10 @@ class NestedUnionsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelp
           )
         )
       )
-      TestHelper.serviceValidator(service).errors()
+      TestHelper.serviceValidator(service) match {
+        case Invalid(e) => e.toNonEmptyList.toList
+        case Valid(_) => Nil
+      }
     }
 
     setup(None, None, None) shouldBe Nil

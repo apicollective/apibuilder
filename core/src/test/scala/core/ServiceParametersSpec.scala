@@ -1,9 +1,11 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceParametersSpec extends AnyFunSpec with Matchers {
+class ServiceParametersSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
+
   it("fails object type path parameters") {
     val baseJson = """
     {
@@ -28,8 +30,7 @@ class ServiceParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() shouldBe List("Resource[user] GET /foo/:id path parameter[id] has an invalid type[object]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo/:id path parameter[id] has an invalid type[object]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
   }
 
   it("fails unit type path parameters") {
@@ -56,8 +57,7 @@ class ServiceParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() shouldBe List("Resource[user] GET /foo/:id path parameter[id] has an invalid type[unit]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo/:id path parameter[id] has an invalid type[unit]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
   }
 
   it("fails object type query parameters") {
@@ -84,8 +84,7 @@ class ServiceParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() shouldBe List("Resource[user] GET /foo Parameter[id] has an invalid type[object]. Valid types for query parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo Parameter[id] has an invalid type[object]. Valid types for query parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
   }
 
   it("fails unit type header parameters") {
@@ -112,8 +111,7 @@ class ServiceParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() shouldBe List("Resource[user] GET /foo Parameter[id] has an invalid type[unit]. Valid types for header parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo Parameter[id] has an invalid type[unit]. Valid types for header parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
   }
 
   it("fails [object] type query parameters") {
@@ -140,7 +138,6 @@ class ServiceParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() shouldBe List("Resource[user] GET /foo Parameter[id] has an invalid type[[object]]. Valid nested types for lists in query parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid.")
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo Parameter[id] has an invalid type[[object]]. Valid nested types for lists in query parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
   }
 }

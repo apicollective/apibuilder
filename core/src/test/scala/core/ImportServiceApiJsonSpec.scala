@@ -1,10 +1,10 @@
 package core
 
-import builder.OriginalValidator
+import helpers.ValidatedTestHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ImportServiceApiJsonSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class ImportServiceApiJsonSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers with ValidatedTestHelpers {
 
   describe("validation") {
 
@@ -16,22 +16,25 @@ class ImportServiceApiJsonSpec extends AnyFunSpec with Matchers with helpers.Api
         "info": {},
         "imports": [ { "foo": "bar" } ]
       }"""
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString(",") should be("Import Unrecognized element[foo],Import Missing uri")
+      expectInvalid {
+        TestHelper.serviceValidatorFromApiJson(json)
+      }.mkString(",") should be("Import Unrecognized element[foo],Import Missing uri")
     }
 
     it("import uri cannot be empty") {
       def testUri(uri: String) = {
-        TestHelper.serviceValidator(
-          makeApiJson(
-            imports = Seq(makeImport(uri = uri))
+        expectInvalid {
+          TestHelper.serviceValidator(
+            makeApiJson(
+              imports = Seq(makeImport(uri = uri))
+            )
           )
-        )
+        }
       }
 
-      testUri("  ").errors() should be(Seq("Import uri must be a non empty string"))
-      testUri("foobar").errors() should be(Seq("URI[foobar] must start with http://, https://, or file://"))
-      testUri("https://app.apibuilder.io/").errors() should be(Seq("URI[https://app.apibuilder.io/] cannot end with a '/'"))
+      testUri("  ") should be(Seq("Import uri must be a non empty string"))
+      testUri("foobar") should be(Seq("URI[foobar] must start with http://, https://, or file://"))
+      testUri("https://app.apibuilder.io/") should be(Seq("URI[https://app.apibuilder.io/] cannot end with a '/'"))
     }
 
   }

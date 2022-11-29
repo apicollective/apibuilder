@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceInternalReferencesSpec extends AnyFunSpec with Matchers {
+class ServiceInternalReferencesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   it("Validates circular reference") {
     val json = """
@@ -25,13 +26,12 @@ class ServiceInternalReferencesSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val service = setupValidApiJson(json)
 
-    val barField = validator.service().models.find(_.name == "foo").get.fields.find(_.name == "bar").get
+    val barField = service.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
     barField.`type` should be("bar")
 
-    val fooField = validator.service().models.find(_.name == "bar").get.fields.find(_.name == "foo").get
+    val fooField = service.models.find(_.name == "bar").get.fields.find(_.name == "foo").get
     fooField.`type` should be("foo")
   }
 
@@ -59,9 +59,8 @@ class ServiceInternalReferencesSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val model = validator.service().models.find(_.name == "user_variant").get
+    val service = setupValidApiJson(json)
+    val model = service.models.find(_.name == "user_variant").get
     val parentField = model.fields.find(_.name == "parent").get
     parentField.`type` should be("user_variant")
   }

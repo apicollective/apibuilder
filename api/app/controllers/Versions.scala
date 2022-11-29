@@ -1,7 +1,11 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
+import _root_.util.ApiBuilderServiceImportResolver
+import builder.OriginalValidator
+import cats.data.Validated.{Invalid, Valid}
+import db._
 import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.{ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
 import io.apibuilder.spec.v0.models.{Field, Service, UnionType}
 import lib._
 import builder.OriginalValidator
@@ -12,6 +16,10 @@ import play.api.mvc._
 import play.api.libs.json._
 import _root_.util.ApiBuilderServiceImportResolver
 import cats.data.Validated.{Invalid, Valid}
+import play.api.libs.json._
+import play.api.mvc._
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Versions @Inject() (
@@ -110,11 +118,12 @@ class Versions @Inject() (
             }
             case s: JsSuccess[VersionForm] => {
               val form = s.get
+              val original = OriginalUtil.toOriginal(form.originalForm)
               OriginalValidator(
                 config = toServiceConfiguration(org, versionName),
-                original = OriginalUtil.toOriginal(form.originalForm),
+                `type` = original.`type`,
                 fetcher = databaseServiceFetcher.instance(request.authorization)
-              ).validate() match {
+              ).validate(original.data) match {
                 case Invalid(errors) => {
                   Conflict(Json.toJson(Validation.errors(errors)))
                 }
@@ -158,11 +167,12 @@ class Versions @Inject() (
             }
             case s: JsSuccess[VersionForm] => {
               val form = s.get
+              val original = OriginalUtil.toOriginal(form.originalForm)
               OriginalValidator(
                 config = toServiceConfiguration(org, versionName),
-                original = OriginalUtil.toOriginal(form.originalForm),
+                `type` = original.`type`,
                 fetcher = databaseServiceFetcher.instance(request.authorization)
-              ).validate() match {
+              ).validate(original.data) match {
                 case Invalid(errors) => {
                   Conflict(Json.toJson(Validation.errors(errors)))
                 }

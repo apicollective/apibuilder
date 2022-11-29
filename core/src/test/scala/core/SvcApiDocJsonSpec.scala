@@ -1,13 +1,16 @@
 package core
 
+import helpers.ValidatedTestHelpers
 import io.apibuilder.spec.v0.models.{Method, Response, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class SvcApiDocJsonSpec extends AnyFunSpec with Matchers {
+class SvcApiDocJsonSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   private val Path = "spec/apibuilder-api.json"
-  private lazy val service = TestHelper.parseFile(Path).service()
+  private lazy val service = expectValid {
+    TestHelper.parseFile(Path)
+  }
 
   it("parses models") {
     val models = service.models.map(_.name)

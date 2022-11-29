@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class UnionTypeDefaultSpec extends AnyFunSpec with Matchers {
+class UnionTypeDefaultSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   private[this] val baseJson =
     """
@@ -45,9 +46,8 @@ class UnionTypeDefaultSpec extends AnyFunSpec with Matchers {
     )
 
     it("reports error if default specified") {
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors() should be(
-        Seq("Union[user] types cannot specify default as the union type does not have a 'discriminator' specified: registered_user")
+      TestHelper.expectSingleError(json) should be(
+        "Union[user] types cannot specify default as the union type does not have a 'discriminator' specified: registered_user"
       )
     }
   }
@@ -72,42 +72,35 @@ class UnionTypeDefaultSpec extends AnyFunSpec with Matchers {
     )
 
     it("Not required to specify a default") {
-      val validator = TestHelper.serviceValidatorFromApiJson(
-        json.format("", "")
-      )
-      validator.errors() should be(Nil)
+      setupValidApiJson(json.format("", ""))
     }
 
     it("Only one type can be the default") {
-      val validator = TestHelper.serviceValidatorFromApiJson(
+      TestHelper.expectSingleError(
         json.format(True, True)
-      )
-      validator.errors() should be(
-        Seq("Union[user] Only 1 type can be specified as default. Currently the following types are marked as default: guest_user, registered_user")
+      ) should be(
+        "Union[user] Only 1 type can be specified as default. Currently the following types are marked as default: guest_user, registered_user"
       )
     }
 
     it("Accepts default false for all types") {
-      val validator = TestHelper.serviceValidatorFromApiJson(
+      setupValidApiJson(
         json.format(False, False)
-      )
-      validator.errors() should be(Nil)
-      validator.service().unions.find(_.name == "user").get.types.forall(_.default.get == false)
+      ).unions.find(_.name == "user").get.types.forall(_.default.get == false)
     }
 
     it("Correctly processes single default") {
-      val validator = TestHelper.serviceValidatorFromApiJson(
+      val service = setupValidApiJson(
         json.format(True, False)
       )
-      validator.service().unions.find(_.name == "user").get.types.map(_.default.get) should equal(Seq(true, false))
-      val types = validator.service().unions.find(_.name == "user").get.types
+      service.unions.find(_.name == "user").get.types.map(_.default.get) should equal(Seq(true, false))
+      val types = service.unions.find(_.name == "user").get.types
       types.find(_.`type` == "registered_user").get.default should equal(Some(true))
       types.find(_.`type` == "guest_user").get.default should equal(Some(false))
 
-      val validator2 = TestHelper.serviceValidatorFromApiJson(
+      val types2 = setupValidApiJson(
         json.format(False, True)
-      )
-      val types2 = validator2.service().unions.find(_.name == "user").get.types
+      ).unions.find(_.name == "user").get.types
       types2.find(_.`type` == "registered_user").get.default should equal(Some(false))
       types2.find(_.`type` == "guest_user").get.default should equal(Some(true))
     }

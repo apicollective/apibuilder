@@ -1,10 +1,12 @@
 package core
 
+import helpers.{ServiceHelpers, ValidatedTestHelpers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 class ServiceHeadersSpec extends AnyFunSpec with Matchers
-  with helpers.ServiceHelpers
+  with ServiceHelpers
+  with ValidatedTestHelpers
 {
 
   it("headers can reference imported enums") {
@@ -34,10 +36,9 @@ class ServiceHeadersSpec extends AnyFunSpec with Matchers
     val fetcher = MockServiceFetcher()
     fetcher.add(makeImportUri(enumsService), enumsService)
 
-    val validator = TestHelper.serviceValidatorFromApiJson(service, fetcher = fetcher)
-    validator.errors().mkString("") should be("")
-    val ct = validator.service().headers.find(_.name == "Content-Type").get
-    ct.`type` should be(s"${enumsService.namespace}.enums.content_type")
+    expectValid {
+      TestHelper.serviceValidatorFromApiJson(service, fetcher = fetcher)
+    }.headers.find(_.name == "Content-Type").get.`type` should be(s"${enumsService.namespace}.enums.content_type")
   }
 
 }

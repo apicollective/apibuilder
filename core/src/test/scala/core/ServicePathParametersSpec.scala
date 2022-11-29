@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.funspec.AnyFunSpec
 
-class ServicePathParametersSpec extends AnyFunSpec with Matchers {
+class ServicePathParametersSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   describe("with a service") {
     val baseJson = """
@@ -55,49 +56,49 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
 
     it("numbers can be path parameters") {
       val json = baseJson.format("GET", "/:id")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("strings can be path parameters") {
       val json = baseJson.format("GET", "/:name")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("supports file extensions") {
       val json = baseJson.format("GET", "/:id.html")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("parameters not defined on the model are accepted (assumed strings)") {
       val json = baseJson.format("GET", "/:some_string")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("enums can be path parameters - assumed type is string") {
       val json = baseJson.format("GET", "/:age_group")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("dates can be path parameters") {
       val json = baseJson.format("GET", "/:created_at_date")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("date-time can be path parameters") {
       val json = baseJson.format("GET", "/:created_at_date_time")
-      TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+      setupValidApiJson(json)
     }
 
     it("other models cannot be path parameters") {
       val json = baseJson.format("GET", "/:tag")
-      TestHelper.serviceValidatorFromApiJson(json).errors().mkString("") should be(
+      TestHelper.expectSingleError(json) should be(
         "Resource[user] GET /users/:tag path parameter[tag] has an invalid type[tag]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
       )
     }
 
     it("unsupported types declared as parameters are validated") {
       val json = baseJson.format("POST", "/:tags")
-      TestHelper.serviceValidatorFromApiJson(json).errors().mkString("") should be(
+      TestHelper.expectSingleError(json) should be(
         "Resource[user] POST /users/:tags path parameter[tags] has an invalid type[map[string]]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
       )
     }
@@ -147,9 +148,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
 
     it("can identify common type for path parameter if all union types have the same type") {
       val json = baseJson.format("guid")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors() should be(Nil)
-      val userResource = validator.service().resources.head
+      val userResource = setupValidApiJson(json).resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
       param.name should be("guid")
@@ -158,9 +157,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
 
     it("uses default 'string' if path parameter type varies across union type") {
       val json = baseJson.format("age")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors() should be(Nil)
-      val userResource = validator.service().resources.head
+      val userResource = setupValidApiJson(json).resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
       param.name should be("age")
@@ -193,8 +190,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() shouldBe List.empty
+    setupValidApiJson(json)
   }
 
   it("fails missing path parameters") {
@@ -220,8 +216,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
   }
 
   it("fails incorrectly named path parameters in the middle of the path") {
@@ -248,8 +243,7 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
   }
 
   it("fails incorrectly named path parameters at the end of the path") {
@@ -276,7 +270,6 @@ class ServicePathParametersSpec extends AnyFunSpec with Matchers {
     """
 
     val json = baseJson.format("age")
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
+    TestHelper.expectSingleError(json) shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
   }
 }

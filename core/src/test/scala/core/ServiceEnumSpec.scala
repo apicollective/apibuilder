@@ -1,12 +1,14 @@
 package core
 
-import core.TestHelper.ServiceValidatorForSpecs
+import cats.data.ValidatedNec
+import helpers.{ApiJsonHelpers, ValidatedTestHelpers}
 import io.apibuilder.api.json.v0.models.{EnumValue, Field, Parameter}
+import io.apibuilder.spec.v0.models.Service
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.JsString
 
-class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class ServiceEnumSpec extends AnyFunSpec with Matchers with ApiJsonHelpers with ValidatedTestHelpers {
 
   private[this] val ageGroupField: Field = makeField(name = "age_group", `type` = "age_group")
   private[this] val ageGroupParameter: Parameter = makeParameter(name = "age_group", `type` = "age_group")
@@ -17,7 +19,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
     field: Field = ageGroupField,
     parameter: Parameter = ageGroupParameter,
   )(
-    f: ServiceValidatorForSpecs => T
+    f: ValidatedNec[String, Service] => T
   ) = {
     f(
       TestHelper.serviceValidator(
@@ -45,8 +47,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
           default = Some(JsString("Twenties")),
         )
       ) { v =>
-        v.errors() should be(Nil)
-        v.service().models.head.fields.find(_.name == "age_group").get.default should be(Some("Twenties"))
+        expectValid(v).models.head.fields.find(_.name == "age_group").get.default should be(Some("Twenties"))
       }
     }
 
@@ -56,7 +57,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
           default = Some(JsString("other")),
         )
       ) { v =>
-        v.errors() should be(
+        expectInvalid(v) should be(
           Seq("Model[user] Field[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
         )
       }
@@ -68,7 +69,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
           default = Some(JsString("other")),
         )
       ) { v =>
-        v.errors() should be(
+        expectInvalid(v) should be(
           Seq("Resource[user] GET /users param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
         )
       }
@@ -78,8 +79,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
 
   it("field can be defined as an enum") {
     setup() { v =>
-      v.errors() should be(Nil)
-      v.service().models.head.fields.find {
+      expectValid(v).models.head.fields.find {
         _.name == "age_group"
       }.get.`type` should be("age_group")
     }
@@ -89,7 +89,7 @@ class ServiceEnumSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpe
     setup(
       twentiesEnumValue = twentiesEnumValue.copy(name = "1")
     ) { v =>
-      v.errors() should be(
+      expectInvalid(v) should be(
         Seq("Enum[age_group] name[1] is invalid: Name must start with a letter")
       )
     }

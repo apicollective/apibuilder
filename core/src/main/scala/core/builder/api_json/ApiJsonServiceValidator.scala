@@ -15,7 +15,6 @@ import scala.util.{Failure, Success, Try}
 
 case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
-  rawJson: String,
   fetcher: ServiceFetcher,
   migration: VersionMigration
 ) extends ServiceValidator[Service] with ValidatedHelpers {
@@ -84,7 +83,7 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private[this] def validateInternalApiJsonForm(form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
+  private[this] def validateInternalApiJsonForm(rawInput: String, form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
     sequenceUnique(Seq(
       validateInfo(form.info),
       validateKey(form.key),
@@ -97,7 +96,7 @@ case class ApiJsonServiceValidator(
       validateModels(form.models),
       validateEnums(form.enums),
       validateAnnotations(form.annotations),
-      DuplicateJsonParser.validateDuplicates(rawJson)
+      DuplicateJsonParser.validateDuplicates(rawInput)
     ))
   }
   private def validateStructure(json: JsValue): ValidatedNec[String, Unit] = {

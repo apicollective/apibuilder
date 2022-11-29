@@ -85,20 +85,14 @@ class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with ApiJson
       )
     )
 
-    lazy val validator = OriginalValidator(
+    val validator = OriginalValidator(
       config = TestHelper.serviceConfig,
-      original = Original(OriginalType.ApiJson, Json.toJson(importServiceApiJson).toString),
+      `type` = OriginalType.ApiJson,
       fetcher = FileServiceFetcher(),
     )
 
-    lazy val validService = expectValid {
-      validator.validate()
-    }
-
-    it("parses service definition with imports") {
-      expectValid {
-        validator.validate()
-      }
+    val validService = expectValid {
+      validator.validate( Json.toJson(importServiceApiJson).toString)
     }
 
     it("infers datatype for an imported field") {

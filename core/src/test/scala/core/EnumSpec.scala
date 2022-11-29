@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class EnumSpec extends AnyFunSpec with Matchers {
+class EnumSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   private[this] val baseJson: String = """
     {
@@ -25,9 +26,8 @@ class EnumSpec extends AnyFunSpec with Matchers {
         |}
       """.stripMargin
     )
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() should be(
-      Seq("Enum[status] name[!] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter")
+    TestHelper.expectSingleError(json) should be(
+      "Enum[status] name[!] is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter"
     )
   }
 
@@ -41,7 +41,7 @@ class EnumSpec extends AnyFunSpec with Matchers {
         |}
       """.stripMargin
     )
-    TestHelper.serviceValidatorFromApiJson(json).errors() should be(Nil)
+    setupValidApiJson(json)
   }
 
   it("values must be unique") {
@@ -55,9 +55,8 @@ class EnumSpec extends AnyFunSpec with Matchers {
         |}
       """.stripMargin
     )
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors() should be(
-      Seq("Enum[status] value[open] appears more than once")
+    TestHelper.expectSingleError(json)should be(
+      "Enum[status] value[open] appears more than once"
     )
   }
 
@@ -72,8 +71,7 @@ class EnumSpec extends AnyFunSpec with Matchers {
         |}
       """.stripMargin
     )
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.service().enums.headOption.getOrElse {
+    setupValidApiJson(json).enums.headOption.getOrElse {
       sys.error("Missing enum")
     }.values.map(_.value) should equal(
       Seq(Some("is_open"), None)

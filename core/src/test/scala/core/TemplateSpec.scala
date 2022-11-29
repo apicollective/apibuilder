@@ -12,7 +12,7 @@ class TemplateSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("model and template.models cannot have the same name") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         templates = Some(makeTemplates(models = Some(Map(
           "person" -> makeModel()
@@ -25,7 +25,7 @@ class TemplateSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("interface and template.models cannot have the same name") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         templates = Some(makeTemplates(models = Some(Map(
           "person" -> makeModel()
@@ -41,7 +41,7 @@ class TemplateSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
     val fieldName = randomName()
     val modelName = randomName()
 
-    expectValid(
+    expectValidApiJson(
       makeApiJson(
         templates = Some(makeTemplates(
           models = Some(Map(
@@ -57,7 +57,7 @@ class TemplateSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
   }
 
   it("duplicates cycles") {
-    expectErrors(
+    expectErrorsApiJson(
       makeApiJson(
         templates = Some(makeTemplates(models = Some(Map(
           "person" -> makeModel(
