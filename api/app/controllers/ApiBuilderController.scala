@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
   *   - anonymous / api key / session based access
   *   - utilities to check for organization role
   */
-trait ApibuilderController extends BaseController {
+trait ApiBuilderController extends BaseController {
 
   protected def apiBuilderControllerComponents: ApiBuilderControllerComponents
 

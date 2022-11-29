@@ -1,10 +1,10 @@
 package core
 
+import _root_.builder.JsonUtil
 import io.apibuilder.spec.v0.models.Service
 import lib.{DatatypeResolver, Kind, PrimitiveMetadata, Primitives}
 
 import java.util.UUID
-import builder.JsonUtil
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
 import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}

@@ -13,7 +13,7 @@ import java.util.UUID
 class Tokens @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   tokensDao: TokensDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def getUsersByUserGuid(
     userGuid: java.util.UUID,

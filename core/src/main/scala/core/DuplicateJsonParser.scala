@@ -1,5 +1,7 @@
 package core
 
+import cats.implicits._
+import cats.data.ValidatedNec
 import io.circe.ParsingFailure
 import io.circe.jawn.JawnParser
 
@@ -8,12 +10,12 @@ import io.circe.jawn.JawnParser
 
 object DuplicateJsonParser {
 
-  def validateDuplicates(value: String): Seq[String] = {
+  def validateDuplicates(value: String): ValidatedNec[String, Unit] = {
     val parser = new JawnParser(maxValueSize = None, allowDuplicateKeys = false)
 
     parser.parse(value) match {
-      case Left(er: ParsingFailure) => Seq(er.message)
-      case _ => Nil
+      case Left(er: ParsingFailure) => er.message.invalidNec
+      case _ => ().validNec
     }
   }
 }

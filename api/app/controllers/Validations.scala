@@ -6,6 +6,7 @@ import lib.{DatabaseServiceFetcher, FileUtils, OriginalUtil, ServiceConfiguratio
 
 import javax.inject.{Inject, Singleton}
 import builder.OriginalValidator
+import cats.data.Validated.{Invalid, Valid}
 import play.api.libs.Files
 import play.api.mvc._
 import play.api.libs.json._
@@ -14,7 +15,7 @@ import play.api.libs.json._
 class Validations @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   databaseServiceFetcher: DatabaseServiceFetcher
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",
@@ -38,13 +39,13 @@ class Validations @Inject() (
           original = Original(fileType, contents),
           fetcher = databaseServiceFetcher.instance(request.authorization)
         ).validate() match {
-          case Left(errors) => {
+          case Invalid(errors) => {
             UnprocessableEntity(Json.toJson(Validation(
               valid = false,
-              errors = errors
+              errors = errors.toNonEmptyList.toList
             )))
           }
-          case Right(_) => {
+          case Valid(_) => {
             Ok(Json.toJson(Validation(
               valid = true,
               errors = Nil

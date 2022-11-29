@@ -1,6 +1,8 @@
 package builder
 
-import play.api.libs.json.{JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue, JsNull}
+import cats.implicits._
+import cats.data.ValidatedNec
+import play.api.libs.json.{JsArray, JsBoolean, JsLookupResult, JsNull, JsNumber, JsObject, JsString, JsValue}
 
 import scala.util.{Failure, Success, Try}
 
@@ -24,7 +26,7 @@ object JsonUtil {
     optionalNumbers: Seq[String] = Nil,
     optionalAnys: Seq[String] = Nil,
     prefix: Option[String] = None
-  ): Seq[String] = {
+  ): ValidatedNec[String, Unit] = {
     val keys = strings ++ anys ++ optionalStrings ++ arrayOfAnys ++ arrayOfObjects ++ optionalArraysOfStrings ++ optionalArraysOfObjects ++ optionalObjects ++ objects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
 
     val unrecognized = json.asOpt[JsObject] match {
@@ -32,7 +34,7 @@ object JsonUtil {
       case Some(v) => unrecognizedFieldsErrors(v, keys, prefix)
     }
 
-    unrecognized ++
+    val allErrors = unrecognized ++
     strings.flatMap { field =>
       (json \ field).toOption match {
         case Some(o: JsString) => {
@@ -124,6 +126,12 @@ object JsonUtil {
         case Some(_) => Some(withPrefix(prefix, s"$field, must be an object"))
         case None => Some(withPrefix(prefix, s"Missing $field"))
       }
+    }
+
+    if (allErrors.isEmpty) {
+      ().validNec
+    } else {
+      allErrors.distinct.map(_.invalidNec).sequence.map(_ => ())
     }
   }
 

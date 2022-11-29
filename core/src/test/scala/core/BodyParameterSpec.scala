@@ -49,7 +49,7 @@ class BodyParameterSpec extends AnyFunSpec with Matchers {
 
   it("validates that body refers to a known model") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """{ "type": "foo" }""", "boolean"))
-    validator.errors().mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Type[foo] not found")
+    validator.errors().mkString("") should be("Resource[message] POST /messages/:mimeType body type[foo] not found")
   }
 
   it("support primitive types in body") {

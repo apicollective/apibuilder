@@ -1,15 +1,17 @@
 package io.apibuilder.swagger
 
+import cats.data.Validated.{Invalid, Valid}
+import helpers.ValidatedTestHelpers
 import io.apibuilder.spec.v0.models.Method.{Delete, Get}
 import io.apibuilder.spec.v0.models.ParameterLocation.{Path, Query}
 import io.apibuilder.spec.v0.models._
 import io.apibuilder.spec.v0.models.json._
-import lib.ServiceConfiguration
+import lib.{ServiceConfiguration, ValidatedHelpers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsArray, JsNull, JsObject, JsString, Json, Writes}
 
-class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
+class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers with ValidatedHelpers {
   private val resourcesDir = "swagger/src/test/resources/"
 
   private def readFile(path: String): String = {
@@ -81,10 +83,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate() match {
-            case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            case Invalid(errors) => {
+              fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
-            case Right(service) => {
+            case Valid(service) => {
               service.name should be("Swagger Petstore")
               service.namespace should be("me.apibuilder.swagger.petstore.v0")
               service.organization.key should be("apibuilder")
@@ -387,10 +389,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate() match {
-            case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            case Invalid(errors) => {
+              fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
-            case Right(service) => {
+            case Valid(service) => {
               service.models.map(_.name).sorted should be(Seq("ModelA", "ModelB"))
               checkModel(
                 service.models.find(_.name == "ModelA").get,
@@ -452,10 +454,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate() match {
-            case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            case Invalid(errors) => {
+              fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
-            case Right(service) => {
+            case Valid(service) => {
               service.name should be("Swagger Petstore")
               service.namespace should be("me.apibuilder.swagger.petstore.v0")
               service.organization.key should be("apibuilder")
@@ -702,10 +704,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate() match {
-            case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            case Invalid(errors) => {
+              fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
-            case Right(service) => {
+            case Valid(service) => {
               service.name should be("Swagger Petstore")
               service.namespace should be("me.apibuilder.swagger.petstore.v0")
               service.organization.key should be("apibuilder")
@@ -915,10 +917,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate() match {
-            case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            case Invalid(errors) => {
+              fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
-            case Right(service) => {
+            case Valid(service) => {
               service.name should be("Swagger Petstore")
               service.namespace should be("me.apibuilder.swagger.petstore.v0")
               service.organization.key should be("apibuilder")
@@ -1099,10 +1101,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
           val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate() match {
-            case Left(errors) => {
-              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            case Invalid(errors) => {
+              fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
             }
-            case Right(service) => {
+            case Valid(service) => {
               service.resources.map(_.`type`) should be (Seq("placeholder"))
               service.models.map(_.name) should be (Seq("placeholder"))
             }
@@ -1113,10 +1115,10 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers {
 
   def assertRefsSpec(path: String) = {
     SwaggerServiceValidator(config, readFile(path)).validate() match {
-      case Left(errors) => {
-        fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+      case Invalid(errors) => {
+        fail(s"Service validation failed for path[$path]: " + formatErrors(errors))
       }
-      case Right(service) => {
+      case Valid(service) => {
         service.name should be("Inventory API")
         service.namespace should be("me.apibuilder.inventory.api.v0")
         service.organization.key should be("apibuilder")

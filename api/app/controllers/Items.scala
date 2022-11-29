@@ -11,7 +11,7 @@ import javax.inject.{Inject, Singleton}
 class Items @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   itemsDao: ItemsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     q: Option[String],

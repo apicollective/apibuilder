@@ -1,13 +1,13 @@
 package db
 
 import java.util.UUID
-
 import builder.OriginalValidator
+import helpers.ValidatedTestHelpers
 import lib.ServiceConfiguration
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with ValidatedTestHelpers {
 
   private[this] val Original = createOriginal()
 
@@ -76,13 +76,12 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
       },
       fetcher = databaseServiceFetcher.instance(Authorization.All)
     )
-    validator.validate() match {
-      case Left(errors) => fail(errors.mkString("\n"))
-      case Right(svc) => {
-        svc.name must be(service.name)
-        svc.namespace must be(serviceConfig.applicationNamespace(svc.name))
-      }
+
+    val svc = expectValid {
+      validator.validate()
     }
+    svc.name must be(service.name)
+    svc.namespace must be(serviceConfig.applicationNamespace(svc.name))
   }
 
   "trims version number" in {

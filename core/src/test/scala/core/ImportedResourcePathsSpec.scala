@@ -1,9 +1,10 @@
 package core
 
+import helpers.ValidatedTestHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ImportedResourcePathsSpec extends AnyFunSpec with Matchers {
+class ImportedResourcePathsSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   it("generates appropriate path for resources from imported models") {
     val common = """
@@ -39,11 +40,9 @@ class ImportedResourcePathsSpec extends AnyFunSpec with Matchers {
     val fetcher = MockServiceFetcher()
     fetcher.add(uri, TestHelper.serviceValidatorFromApiJson(common).service())
 
-    val validator = TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher)
-    validator.errors() should be(Nil)
-
-    val userResource = validator.service().resources.head
-    userResource.operations.map(_.path) should be(Seq("/users"))
+    expectValid {
+      TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).validate()
+    }.resources.head.operations.map(_.path) should be(Seq("/users"))
   }
 
 }

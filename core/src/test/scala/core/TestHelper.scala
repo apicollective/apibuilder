@@ -1,11 +1,13 @@
 package core
 
 import _root_.builder.OriginalValidator
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
 import io.apibuilder.api.json.v0.models.ApiJson
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models._
-import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text}
+import lib.{FileUtils, ServiceConfiguration, ServiceValidator, Text, ValidatedHelpers}
 import play.api.libs.json.Json
 
 import java.io.File
@@ -13,7 +15,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import java.util.UUID
 
-object TestHelper {
+object TestHelper extends ValidatedHelpers {
 
   trait ServiceValidatorForSpecs extends ServiceValidator[Service] {
     def service(): Service
@@ -28,16 +30,16 @@ object TestHelper {
 
     private[this] lazy val validateResult = validator.validate()
 
-    override def validate(): Either[Seq[String], Service] = validateResult
+    override def validate(): ValidatedNec[String, Service] = validateResult
 
     override def errors(): Seq[String] = validateResult match {
-      case Left(errors) => errors
-      case Right(_) => Seq.empty
+      case Invalid(errors) => errors.toNonEmptyList.toList
+      case Valid(_) => Seq.empty
     }
 
     override lazy val service: Service = validateResult match {
-      case Left(errors) => sys.error(errors.mkString(", "))
-      case Right(service) => service
+      case Invalid(errors) => sys.error(formatErrors(errors))
+      case Valid(service) => service
     }
 
   }
@@ -151,10 +153,10 @@ object TestHelper {
     val contents = readFile(filename)
     val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
     validator.validate() match {
-      case Left(errors) => {
-        sys.error(s"Invalid api.json file[$filename]: " + errors.mkString("\n"))
+      case Invalid(errors) => {
+        sys.error(s"Invalid api.json file[$filename]: " + formatErrors(errors))
       }
-      case Right(_) => {}
+      case Valid(_) => {}
     }
     TestServiceValidator(
       validator

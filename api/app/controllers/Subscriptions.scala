@@ -13,7 +13,7 @@ import java.util.UUID
 class Subscriptions @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   subscriptionsDao: SubscriptionsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     guid: Option[UUID],

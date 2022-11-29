@@ -2,18 +2,24 @@ package builder
 
 import lib.Text
 
+import cats.implicits._
+import cats.data.ValidatedNec
+
 private[builder] object DuplicateErrorMessage {
-  def message(label: String, values: Iterable[String]): Seq[String] = {
-    findDuplicates(values).map { n =>
-      s"$label[$n] appears more than once"
+  def validate(label: String, values: Iterable[String]): ValidatedNec[String, Unit] = {
+    findDuplicates(values) match {
+      case Nil => ().validNec
+      case dups => dups.map { n =>
+        s"$label[$n] appears more than once".invalidNec
+      }.sequence.map(_ => ())
     }
   }
 
-  def findDuplicates(values: Iterable[String]): List[String] = {
+  private[this] def findDuplicates(values: Iterable[String]): List[String] = {
     values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim)
       .filter {
         _._2.size > 1
       }
-      .keys.toList.sorted
+      .keys.toList.distinct.sorted
   }
 }

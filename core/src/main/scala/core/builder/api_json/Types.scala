@@ -1,9 +1,10 @@
 package builder.api_json
 
-import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderInterface, TypesProviderModel, TypesProviderUnion}
-import lib.{DatatypeResolver, Kind}
+import cats.data.Validated.{Invalid, Valid}
+import core._
+import lib.Kind
 
-private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {
+private[api_json] case class InternalApiJsonFormTypesProvider(internal: InternalApiJsonForm) extends TypesProvider {
 
   override def enums: Seq[TypesProviderEnum] = internal.enums.map { enum =>
     TypesProviderEnum(
@@ -69,7 +70,7 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
   * service multiple times (based on uniqueness of the import URIs)
   */
 private[api_json] case class RecursiveTypesProvider(
-  internal: InternalServiceForm
+  internal: InternalApiJsonForm
 ) extends TypesProvider {
 
   override def enums: Seq[TypesProviderEnum] = providers.flatMap(_.enums)
@@ -80,27 +81,27 @@ private[api_json] case class RecursiveTypesProvider(
 
   override def interfaces: Seq[TypesProviderInterface] = providers.flatMap(_.interfaces)
 
-  private lazy val providers = Seq(InternalServiceFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
+  private lazy val providers = Seq(InternalApiJsonFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
   private def resolve(
     importUris: Seq[String],
-    imported: Set[String] = Set.empty
+    imported: List[String] = List.empty
   ): Seq[TypesProvider] = {
-    importUris.headOption match {
-      case None => Seq.empty
-      case Some(uri) => {
+    importUris match {
+      case Nil => Nil
+      case uri :: rest => {
         if (imported.contains(uri.toLowerCase.trim)) {
           // already imported
-          resolve(importUris.drop(1), imported)
+          resolve(rest, imported)
         } else {
           val importer = Importer(internal.fetcher, uri)
           importer.validate match {
-            case Nil => {
-              Seq(TypesProvider.FromService(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
+            case Valid(_) => {
+              Seq(TypesProvider.FromService(importer.service)) ++ resolve(rest, imported ++ List(uri))
             }
-            case errors => {
+            case Invalid(_) => {
               // There are errors w/ this import - skip it
-              resolve(importUris.drop(1), imported ++ Set(uri))
+              resolve(rest, imported ++ List(uri))
             }
           }
         }
@@ -115,36 +116,10 @@ private[api_json] case class TypeResolver(
   provider: TypesProvider
 ) {
 
-  private val resolver = provider.resolver
-
   private lazy val validator = TypeValidator(
     defaultNamespace = defaultNamespace,
     provider.enums
   )
-
-  def toType(name: String): Option[Kind] = {
-    resolver.parse(name)
-  }
-
-  def parseWithError(internal: InternalDatatype): Kind = {
-    parse(internal).getOrElse {
-      sys.error(s"Unrecognized datatype[${internal.label}]")
-    }
-  }
-
-  /**
-    * Resolves the type name into instances of a first class Type.
-    */
-  def parse(internal: InternalDatatype): Option[Kind] = {
-    resolver.parse(internal.label)
-  }
-
-  def assertValidDefault(kind: Kind, value: String): Unit = {
-    validate(kind, value) match {
-      case None => {}
-      case Some(msg) => sys.error(msg)
-    }
-  }
 
   def validate(
     kind: Kind,

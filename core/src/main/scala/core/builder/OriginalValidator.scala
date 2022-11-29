@@ -1,5 +1,6 @@
 package builder
 
+import cats.data.ValidatedNec
 import builder.api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
 import io.apibuilder.api.v0.models.{Original, OriginalType}
 import io.apibuilder.spec.v0.models.Service
@@ -9,8 +10,6 @@ import io.apibuilder.avro.AvroIdlServiceValidator
 import io.apibuilder.swagger.SwaggerServiceValidator
 
 object OriginalValidator {
-
-  // TODO: if valid, need to use ServiceSpecValidator.scala
 
   def apply(
     config: ServiceConfiguration,
@@ -40,15 +39,9 @@ object OriginalValidator {
 
   case class WithServiceSpecValidator(underlying: ServiceValidator[Service]) extends ServiceValidator[Service] {
 
-    override def validate(): Either[Seq[String], Service] = {
-      underlying.validate() match {
-        case Left(errors) => Left(errors)
-        case Right(service) => {
-          ServiceSpecValidator(service).errors match {
-            case Nil => Right(service)
-            case errors => Left(errors)
-          }
-        }
+    override def validate(): ValidatedNec[String, Service] = {
+      underlying.validate().andThen { service =>
+        ServiceSpecValidator(service).validate()
       }
     }
 

@@ -1,19 +1,22 @@
 package builder.api_json
 
+import cats.implicits._
+import cats.data.ValidatedNec
 import builder.JsonUtil
 import builder.api_json.upgrades.AllUpgrades
+import cats.data.Validated.{Invalid, Valid}
 import core.ServiceFetcher
-import lib.Text
+import lib.{Text, ValidatedHelpers}
 import play.api.libs.json._
 
 /**
  * Just parses json with minimal validation - build to provide a way to
  * generate meaningful validation messages back to user. Basic flow
  *
- * JSON => InternalService => Service
+ * JSON => InternalApiJsonForm => Service
  *
  */
-private[api_json] case class InternalServiceForm(
+private[api_json] case class InternalApiJsonForm(
   original: JsValue,
   fetcher: ServiceFetcher,
 ) {
@@ -153,7 +156,7 @@ private[api_json] case class InternalServiceForm(
 
 case class InternalImportForm(
   uri: Option[String],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalApidocForm(
@@ -163,7 +166,7 @@ case class InternalApidocForm(
 case class InternalInfoForm(
   contact: Option[InternalInfoContactForm],
   license: Option[InternalInfoLicenseForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalInfoContactForm(
@@ -188,7 +191,7 @@ case class InternalInterfaceForm(
   deprecation: Option[InternalDeprecationForm],
   fields: Seq[InternalFieldForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalTemplateForm(
@@ -197,7 +200,7 @@ case class InternalTemplateForm(
 )
 case class InternalTemplateDeclarationForm(
   name: Option[String],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 object InternalTemplateDeclarationForm {
@@ -230,7 +233,7 @@ case class InternalModelForm(
   attributes: Seq[InternalAttributeForm],
   interfaces: Seq[String],
   templates: Seq[InternalTemplateDeclarationForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalEnumForm(
@@ -240,7 +243,7 @@ case class InternalEnumForm(
   deprecation: Option[InternalDeprecationForm],
   values: Seq[InternalEnumValueForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalEnumValueForm(
@@ -249,7 +252,7 @@ case class InternalEnumValueForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalUnionForm(
@@ -261,28 +264,28 @@ case class InternalUnionForm(
   types: Seq[InternalUnionTypeForm],
   interfaces: Seq[String],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalUnionTypeForm(
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
   discriminatorValue: Option[String],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalHeaderForm(
   name: Option[String],
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   required: Boolean,
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   default: Option[String],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalResourceForm(
@@ -293,7 +296,7 @@ case class InternalResourceForm(
   operations: Seq[InternalOperationForm],
   attributes: Seq[InternalAttributeForm],
   templates: Seq[InternalTemplateDeclarationForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalOperationForm(
@@ -305,7 +308,7 @@ case class InternalOperationForm(
   body: Option[InternalBodyForm],
   declaredResponses: Seq[InternalResponseForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 ) {
 
   lazy val label: String = "%s %s".format(method.getOrElse(""), path).trim
@@ -314,7 +317,7 @@ case class InternalOperationForm(
 
 case class InternalFieldForm(
   name: Option[String] = None,
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   required: Boolean = true,
@@ -324,7 +327,7 @@ case class InternalFieldForm(
   maximum: Option[Long] = None,
   attributes: Seq[InternalAttributeForm] = Nil,
   annotations: Seq[String],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalAttributeForm(
@@ -332,19 +335,19 @@ case class InternalAttributeForm(
   value: Option[JsObject] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalAnnotationForm(
   name: String,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalParameterForm(
   name: Option[String] = None,
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   location: Option[String] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
@@ -354,31 +357,28 @@ case class InternalParameterForm(
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
   attributes: Seq[InternalAttributeForm] = Nil,
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalBodyForm(
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
-  warnings: Seq[String]
+  warnings: ValidatedNec[String, Unit]
 )
 
 case class InternalResponseForm(
   code: String,
-  datatype: Either[Seq[String], InternalDatatype],
+  datatype: ValidatedNec[String, InternalDatatype],
   headers: Seq[InternalHeaderForm] = Nil,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,
   attributes: Seq[InternalAttributeForm] = Nil,
-  warnings: Seq[String] = Seq.empty
+  warnings: ValidatedNec[String, Unit]
 ) {
 
-  lazy val datatypeLabel: Option[String] = datatype match {
-    case Left(_) => None
-    case Right(dt) => Some(dt.name)
-  }
+  lazy val datatypeLabel: Option[String] = datatype.toOption.map(_.name)
 
 }
 
@@ -421,6 +421,7 @@ object InternalInfoForm {
 
 }
 
+
 object InternalDeprecationForm {
 
   def apply(value: JsValue): InternalDeprecationForm = {
@@ -445,10 +446,7 @@ object InternalUnionForm {
          a.value.flatMap { value =>
            value.asOpt[JsObject].map { json =>
              val internalDatatype = internalDatatypeBuilder.parseTypeFromObject(json)
-             val datatypeName = internalDatatype match {
-               case Left(_) => None
-               case Right(dt) => Some(dt.name)
-             }
+             val datatypeName = internalDatatype.toOption.map(_.name)
 
              InternalUnionTypeForm(
                datatype = internalDatatype,
@@ -620,17 +618,13 @@ object InternalHeaderForm {
       el match {
         case o: JsObject => {
           val datatype = internalDatatypeBuilder.parseTypeFromObject(o)
-          val isRequired = datatype match {
-            case Left(_) => true
-            case Right(dt) => dt.required
-          }
 
           val headerName = JsonUtil.asOptString(o \ "name")
           Some(
             InternalHeaderForm(
               name = headerName,
               datatype = datatype,
-              required = isRequired,
+              required = InternalDatatype.isRequired(datatype),
               description = JsonUtil.asOptString(o \ "description"),
               deprecation = InternalDeprecationForm.fromJsValue(o),
               default = JsonUtil.asOptString(o \ "default"),
@@ -654,7 +648,7 @@ object InternalHeaderForm {
   }.toSeq
 }
 
-object InternalResourceForm {
+object InternalResourceForm extends ValidatedHelpers {
 
   def apply(
     internalDatatypeBuilder: InternalDatatypeBuilder,
@@ -694,8 +688,8 @@ object InternalResourceForm {
     }
 
     internalDatatypeBuilder.fromString(typeName) match {
-      case Left(errors) => sys.error(s"Invalid datatype[$typeName]: ${errors.mkString(", ")}")
-      case Right(datatype) => {
+      case Invalid(errors) => sys.error(s"Invalid datatype[$typeName]: ${formatErrors(errors)}")
+      case Valid(datatype) => {
         InternalResourceForm(
           datatype = datatype,
           description = JsonUtil.asOptString(value \ "description"),
@@ -741,9 +735,9 @@ object InternalOperationForm {
                 }
                 case _ => {
                   InternalResponseForm(
-                    datatype = Right(InternalDatatype.Unit),
+                    datatype = InternalDatatype.Unit.validNec,
                     code = code,
-                    warnings = Seq("value must be an object")
+                    warnings = "value must be an object".invalidNec
                   )
                 }
               }
@@ -811,7 +805,7 @@ object InternalResponseForm {
   }
 }
 
-object InternalFieldForm {
+object InternalFieldForm extends ValidatedHelpers {
 
   def parse(internalDatatypeBuilder: InternalDatatypeBuilder, value: JsValue): Seq[InternalFieldForm] = {
     (value \ "fields").asOpt[JsArray] match {
@@ -826,30 +820,26 @@ object InternalFieldForm {
 
   def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalFieldForm = {
     val warnings = if (JsonUtil.hasKey(json, "enum") || JsonUtil.hasKey(json, "values")) {
-      Seq("Enumerations are now first class objects and must be defined in an explicit enum section")
+      "Enumerations are now first class objects and must be defined in an explicit enum section".invalidNec
     } else {
-      Seq.empty
+      ().validNec
     }
 
     val datatype = internalDatatypeBuilder.parseTypeFromObject(json)
-    val isRequired = datatype match {
-      case Left(_) => true
-      case Right(dt) => dt.required
-    }
 
     InternalFieldForm(
       name = JsonUtil.asOptString(json \ "name"),
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      required = isRequired,
+      required = InternalDatatype.isRequired(datatype),
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
       attributes = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray]),
       annotations = JsonUtil.asSeqOfString(json \ "annotations"),
-      warnings = warnings ++ JsonUtil.validate(
+      warnings = sequenceUnique(Seq(warnings, JsonUtil.validate(
         json,
         strings = Seq("name"),
         anys = Seq("type"),
@@ -859,7 +849,7 @@ object InternalFieldForm {
         optionalNumbers = Seq("minimum", "maximum"),
         optionalArraysOfObjects = Seq("attributes"),
         optionalAnys = Seq("default", "annotations")
-      )
+      )))
     )
   }
 
@@ -912,10 +902,6 @@ object InternalParameterForm {
 
   def apply(internalDatatypeBuilder: InternalDatatypeBuilder, json: JsObject): InternalParameterForm = {
     val datatype = internalDatatypeBuilder.parseTypeFromObject(json)
-    val isRequired = datatype match {
-      case Left(_) => true
-      case Right(dt) => dt.required
-    }
 
     InternalParameterForm(
       name = JsonUtil.asOptString(json \ "name"),
@@ -923,7 +909,7 @@ object InternalParameterForm {
       location = JsonUtil.asOptString(json \ "location"),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      required = isRequired,
+      required = InternalDatatype.isRequired(datatype),
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),

@@ -42,7 +42,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
     expectErrors(
       makeApiJson(interfaces = Map("!" -> makeInterface()))
     ) should be(
-      Seq("Interface[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter")
+      Seq("Interface[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter")
     )
   }
 
@@ -63,7 +63,7 @@ class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
       )
     }
     test(makeField(name = "!")) should be(
-      Seq("Interface[test] Field[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters and Name must start with a letter")
+      Seq("Interface[test] Field[!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter")
     )
     test(makeField(name = "id", `type` = "foo")) should be(
       Seq("Interface[test] Field[id] type[foo] not found")

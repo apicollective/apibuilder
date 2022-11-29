@@ -1,6 +1,6 @@
 package builder.api_json.upgrades
 
-import helpers.{ServiceHelpers, ValidatedHelpers}
+import helpers.{ServiceHelpers, ValidatedTestHelpers}
 import io.apibuilder.spec.v0.models.json._
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -9,7 +9,7 @@ import play.api.libs.json.Json
 import scala.annotation.nowarn
 
 @nowarn("msg=value apidoc in class Service is deprecated: This field is no longer used in API Builder and may be removed in the future.")
-class ServiceParserSpec extends AnyFunSpec with Matchers with ServiceHelpers with ValidatedHelpers {
+class ServiceParserSpec extends AnyFunSpec with Matchers with ServiceHelpers with ValidatedTestHelpers {
 
   private[this] def parser: ServiceParser = ServiceParser()
 

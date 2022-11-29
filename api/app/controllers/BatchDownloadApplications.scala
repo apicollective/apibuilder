@@ -12,7 +12,7 @@ import services.BatchDownloadApplicationsService
 class BatchDownloadApplications @Inject() (
   override val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   service: BatchDownloadApplicationsService,
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def post(orgKey: String) = Anonymous(parse.json[BatchDownloadApplicationsForm]) { request =>
     service.process(request.authorization, orgKey, request.body) match {

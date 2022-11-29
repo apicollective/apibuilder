@@ -218,7 +218,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
 
     TestHelper.serviceValidatorFromApiJson(json.format("user")).errors() should be(Nil)
     TestHelper.serviceValidatorFromApiJson(json.format("unknown_model")).errors() should be(
-      Seq("Resource[user] GET /users/:guid response code[200] has an invalid type[unknown_model].")
+      Seq("Resource[user] GET /users/:guid response code[200] type[unknown_model] not found")
     )
   }
 
@@ -452,7 +452,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
 
     it("validates type name in collection") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[foo]"))
-      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type: [foo]")
+      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] type[[foo]] not found")
     }
 
   }

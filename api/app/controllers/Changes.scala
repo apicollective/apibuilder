@@ -10,7 +10,7 @@ import play.api.libs.json._
 class Changes @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   changesDao: ChangesDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     orgKey: Option[String],

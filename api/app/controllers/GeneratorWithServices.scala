@@ -11,7 +11,7 @@ import javax.inject.{Inject, Singleton}
 class GeneratorWithServices @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   generatorsDao: GeneratorsDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def get(
     guid: Option[UUID],

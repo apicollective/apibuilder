@@ -13,7 +13,7 @@ class PasswordResetRequests @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   passwordResetRequestsDao: PasswordResetRequestsDao,
   usersDao: UsersDao
-) extends ApibuilderController {
+) extends ApiBuilderController {
 
   def post() = Anonymous(parse.json) { request =>
     request.body.validate[PasswordResetRequest] match {

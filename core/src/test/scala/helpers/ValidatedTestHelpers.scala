@@ -3,7 +3,7 @@ package helpers
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 
-trait ValidatedHelpers {
+trait ValidatedTestHelpers {
 
   def expectValid[T](r: ValidatedNec[_, T]): T = {
     r match {

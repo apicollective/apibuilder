@@ -1,10 +1,12 @@
 package core
 
+import cats.data.Validated.{Invalid, Valid}
 import io.apibuilder.spec.v0.models.Method
+import lib.ValidatedHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class SvcIrisHubSpec extends AnyFunSpec with Matchers {
+class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers {
 
   private[this] val Filenames: Seq[String] = Seq("svc-iris-hub-0-0-1.json")
   private[this] val Dir: String = "core/src/test/resources"
@@ -12,11 +14,10 @@ class SvcIrisHubSpec extends AnyFunSpec with Matchers {
   it("should parse valid json") {
     Filenames.foreach { name =>
       TestHelper.parseFile(s"${Dir}/${name}").validate() match {
-        case Left(errors) => {
-          fail(s"Error parsing json file ${name}:\n  - " + errors.mkString("\n  - "))
+        case Invalid(errors) => {
+          fail(s"Error parsing json file ${name}:\n  - " + formatErrors(errors))
         }
-        case Right(_) => {
-        }
+        case Valid(_) => {}
       }
     }
   }
