@@ -34,7 +34,8 @@ class GeneratorServiceUtilSpec extends PlaySpec with GuiceOneAppPerSuite with Ge
 
     find(s1.guid) mustBe None
 
-    util.syncAll(pageSize = 10)
+    util.syncAll(pageSize = 1)
     find(s1.guid).value.service.guid mustBe s1.guid
+    find(s2.guid).value.service.guid mustBe s2.guid
   }
 }

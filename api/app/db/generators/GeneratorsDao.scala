@@ -1,15 +1,17 @@
 package db.generators
 
+import cats.implicits._
 import db.{Authorization, Filters}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
+
 import javax.inject.{Inject, Singleton}
-
 import anorm._
+import cats.data.ValidatedNec
 import play.api.db._
-import java.util.UUID
 
+import java.util.UUID
 import play.api.libs.json.Json
 
 import scala.util.{Failure, Success, Try}
@@ -51,7 +53,7 @@ class GeneratorsDao @Inject() (
        and deleted_at is null
   """
 
-  def upsert(user: User, form: GeneratorForm): Either[Seq[String], GeneratorWithService] = {
+  def upsert(user: User, form: GeneratorForm): ValidatedNec[String, GeneratorWithService] = {
     findByKey(form.generator.key) match {
       case None => {
         val gen = db.withConnection { implicit c =>
@@ -68,7 +70,7 @@ class GeneratorsDao @Inject() (
             }
           }
         }
-        Right(gen)
+        gen.validNec
       }
       case Some(existing) => {
         if (existing.service.guid == form.serviceGuid) {
@@ -78,16 +80,14 @@ class GeneratorsDao @Inject() (
               softDelete(c, user, existing.service.guid, existing.generator.key)
               create(c, user, form)
             }
-            Right(
-              findByGuid(generatorGuid).getOrElse {
-                sys.error("Failed to create generator")
-              }
-            )
+            findByGuid(generatorGuid).getOrElse {
+              sys.error("Failed to create generator")
+            }.validNec
           } else {
-            Right(existing)
+            existing.validNec
           }
         } else {
-          Left(Seq(s"Another service already has a generator with the key[${form.generator.key}]"))
+          s"Another service already has a generator with the key[${form.generator.key}]".invalidNec
         }
       }
     }
