@@ -1,11 +1,11 @@
 package core
 
+import helpers.ValidatedTestHelpers
 import io.apibuilder.spec.v0.models.{Contact, Info, License}
-import lib.VersionTag
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class InfoSpec extends AnyFunSpec with Matchers {
+class InfoSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   describe("with info") {
 
@@ -23,9 +23,9 @@ class InfoSpec extends AnyFunSpec with Matchers {
 
     it("accepts empty objects") {
       val json = baseJson.format("")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
-      validator.service().info should be(Info(license = None, contact = None))
+      expectValid {
+        TestHelper.serviceValidatorFromApiJson(json)
+      }.info should be(Info(license = None, contact = None))
     }
 
     it("contact") {
@@ -33,43 +33,47 @@ class InfoSpec extends AnyFunSpec with Matchers {
         "contact": {
           "name": "Foo",
           "email": "Foo@test.apibuilder.me",
-          "url": "http://www.apidoc.me"
+          "url": "https://www.apibuilder.io"
         }
       """)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
+
       val contact = Contact(
         name = Some("Foo"),
         email = Some("Foo@test.apibuilder.me"),
-        url = Some("http://www.apidoc.me")
+        url = Some("https://www.apibuilder.io")
       )
-      validator.service().info should be(Info(contact = Some(contact)))
+      expectValid {
+        TestHelper.serviceValidatorFromApiJson(json)
+      }.info should be(Info(contact = Some(contact)))
     }
 
     it("license") {
       val json = baseJson.format("""
         "license": {
           "name": "MIT",
-          "url": "http://opensource.org/licenses/MIT"
+          "url": "https://opensource.org/licenses/MIT"
         }
       """)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("")
-      val license = License(
-        name = "MIT",
-        url = Some("http://opensource.org/licenses/MIT")
-      )
-      validator.service().info should be(Info(license = Some(license)))
+
+      expectValid {
+        TestHelper.serviceValidatorFromApiJson(json)
+      }.info should be(Info(license = Some(
+        License(
+          name = "MIT",
+          url = Some("https://opensource.org/licenses/MIT")
+        )
+      )))
     }
 
     it("validates license requires name") {
       val json = baseJson.format("""
         "license": {
-          "url": "http://opensource.org/licenses/MIT"
+          "url": "https://opensource.org/licenses/MIT"
         }
       """)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors().mkString("") should be("License must have a name")
+      expectInvalid {
+        TestHelper.serviceValidatorFromApiJson(json)
+      } should be(Seq("License must have a name"))
     }
 
   }

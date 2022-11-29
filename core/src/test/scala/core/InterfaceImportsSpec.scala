@@ -33,13 +33,11 @@ class InterfaceImportsSpec extends AnyFunSpec with Matchers with helpers.ApiJson
       )
     }
 
-    setup(Nil).errors() should equal(
+    expectInvalid(setup(Nil)) should equal(
       Seq("Model[test] Interface[definitions.interfaces.user] not found")
     )
 
-    val v = setup(Seq(s"file://$importedServiceFile"))
-    v.errors() should equal(Nil)
-    v.service().models.head.interfaces should equal(
+    expectValid(setup(Seq(s"file://$importedServiceFile"))).models.head.interfaces should equal(
       Seq("definitions.interfaces.user")
     )
   }

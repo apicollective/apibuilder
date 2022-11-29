@@ -373,15 +373,16 @@ class VersionsDao @Inject() (
           )
           logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
 
+          val original = version.original.getOrElse {
+            sys.error("Missing version")
+          }
           val validator = OriginalValidator(
             config = serviceConfig,
-            original = version.original.getOrElse {
-              sys.error("Missing version")
-            },
+            `type` = original.`type`,
             fetcher = databaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
-          validator.validate() match {
+          validator.validate(original.data) match {
             case Invalid(errors) => {
               logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + formatErrors(errors))
               bad += 1

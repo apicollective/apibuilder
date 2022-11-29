@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class InlineEnumsSpec extends AnyFunSpec with Matchers {
+class InlineEnumsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   def buildJson(
     typ: String =
@@ -49,24 +50,24 @@ $extras
   }
 
   it("returns a good error message on invalid type") {
-    TestHelper.serviceValidatorFromApiJson(buildJson("[]")).errors() should equal(
-      Seq("Resource[user] POST /users 422: value must be an object")
+    TestHelper.expectSingleError(buildJson("[]")) should equal(
+      "Resource[user] POST /users 422: value must be an object"
     )
 
-    TestHelper.serviceValidatorFromApiJson(buildJson(
+    TestHelper.expectSingleError(buildJson(
       """
         |{ "type": {} }
       """.stripMargin
-    )).errors() should equal(
-      Seq("Resource[user] POST /users 422 type: must specify field 'enum', 'model' or 'union'")
+    )) should equal(
+      "Resource[user] POST /users 422 type: must specify field 'enum', 'model' or 'union'"
     )
 
-    TestHelper.serviceValidatorFromApiJson(buildJson(
+    TestHelper.expectSingleError(buildJson(
       """
         |{ "type": [] }
       """.stripMargin
-    )).errors() should equal(
-      Seq("Resource[user] POST /users 422 type: must be a string or an object")
+    )) should equal(
+      "Resource[user] POST /users 422 type: must be a string or an object"
     )
   }
 
@@ -84,13 +85,13 @@ $extras
         """.stripMargin.trim
     )
 
-    TestHelper.serviceValidatorFromApiJson(json).errors() should equal(
-      Seq("Enum[user_post_error_code] appears more than once")
+    TestHelper.expectSingleError(json) should equal(
+      "Enum[user_post_error_code] appears more than once"
     )
   }
 
   it("supports an inline enum") {
-    val service = TestHelper.serviceValidatorFromApiJson(buildJson()).service()
+    val service = setupValidApiJson(buildJson())
     val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
@@ -103,7 +104,7 @@ $extras
   }
 
   it("supports an inline enum defined as a list") {
-    val service = TestHelper.serviceValidatorFromApiJson(buildJson(
+    val service = setupValidApiJson(buildJson(
       """
         |{
         |  "type": {
@@ -114,7 +115,7 @@ $extras
         |  }
         |}
       """.stripMargin.trim
-    )).service()
+    ))
     val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
@@ -126,7 +127,7 @@ $extras
   }
 
   it("supports an inline enum defined as a map") {
-    val service = TestHelper.serviceValidatorFromApiJson(buildJson(
+    val service = setupValidApiJson(buildJson(
       """
         |{
         |  "type": {
@@ -137,7 +138,7 @@ $extras
         |  }
         |}
       """.stripMargin.trim
-    )).service()
+    ))
     val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }

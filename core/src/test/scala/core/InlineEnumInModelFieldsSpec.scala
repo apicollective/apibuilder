@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class InlineEnumInModelFieldsSpec extends AnyFunSpec with Matchers {
+class InlineEnumInModelFieldsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   def buildJson(
     required: Boolean
@@ -34,7 +35,7 @@ class InlineEnumInModelFieldsSpec extends AnyFunSpec with Matchers {
   }
 
   it("supports an inline model field") {
-    val service = TestHelper.serviceValidatorFromApiJson(buildJson(required = true)).service()
+    val service = setupValidApiJson(buildJson(required = true))
     val `enum` = service.enums.headOption.getOrElse {
       sys.error("No enum created")
     }
@@ -55,7 +56,7 @@ class InlineEnumInModelFieldsSpec extends AnyFunSpec with Matchers {
   }
 
   it("supports optional inline model field") {
-    val service = TestHelper.serviceValidatorFromApiJson(buildJson(required = false)).service()
+    val service = setupValidApiJson(buildJson(required = false))
     service.models.headOption.getOrElse {
       sys.error("No model created")
     }.fields.headOption.getOrElse {

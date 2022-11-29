@@ -1,13 +1,18 @@
 package builder.api_json.upgrades
 
 import core.TestHelper
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class RemoveApiDocElementSpec extends AnyFunSpec with Matchers {
+import scala.annotation.nowarn
+
+
+@nowarn("msg=value apidoc in class Service is deprecated")
+class RemoveApiDocElementSpec extends AnyFunSpec with Matchers with ApiJsonHelpers{
 
   it("accepts json with apidoc node") {
-    TestHelper.serviceValidatorFromApiJson(
+    setupValidApiJson(
       """
         |{
         |  "name": "API Builder",
@@ -16,7 +21,7 @@ class RemoveApiDocElementSpec extends AnyFunSpec with Matchers {
         |  }
         |}
         |""".stripMargin
-    ).errors().mkString("") should be("")
+    ).apidoc shouldBe None
   }
 
 }

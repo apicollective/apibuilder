@@ -1,10 +1,11 @@
 package core
 
+import helpers.ApiJsonHelpers
 import io.apibuilder.spec.v0.models.Method
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class DeprecationSpec extends AnyFunSpec with Matchers {
+class DeprecationSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   private val userModel = """{ "fields": [{ "name": "id", "type": "long" }] }"""
 
@@ -33,10 +34,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    validator.service().enums.find(_.name == "old_content_type").get.deprecation.flatMap(_.description) should be(Some("blah"))
-    validator.service().enums.find(_.name == "content_type").get.deprecation.flatMap(_.description) should be(None)
+    val service = setupValidApiJson(json)
+    service.enums.find(_.name == "old_content_type").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    service.enums.find(_.name == "content_type").get.deprecation.flatMap(_.description) should be(None)
   }
 
   it("enum value") {
@@ -56,9 +56,8 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val ct = validator.service().enums.find(_.name == "content_type").get
+    val service = setupValidApiJson(json)
+    val ct = service.enums.find(_.name == "content_type").get
 
     ct.values.find(_.name == "application_json").get.deprecation.flatMap(_.description) should be(Some("blah"))
     ct.values.find(_.name == "application_xml").get.deprecation.flatMap(_.description) should be(None)
@@ -105,10 +104,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    validator.service().unions.find(_.name == "old_content_type").get.deprecation.flatMap(_.description) should be(Some("blah"))
-    validator.service().unions.find(_.name == "content_type").get.deprecation.flatMap(_.description) should be(None)
+    val service = setupValidApiJson(json)
+    service.unions.find(_.name == "old_content_type").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    service.unions.find(_.name == "content_type").get.deprecation.flatMap(_.description) should be(None)
   }
 
   it("union type") {
@@ -144,9 +142,8 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val union = validator.service().unions.find(_.name == "content_type").get
+    val service = setupValidApiJson(json)
+    val union = service.unions.find(_.name == "content_type").get
     union.types.find(_.`type` == "api_json").get.deprecation.flatMap(_.description) should be(Some("blah"))
     union.types.find(_.`type` == "avro_idl").get.deprecation.flatMap(_.description) should be(None)
   }
@@ -176,10 +173,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    validator.service().models.find(_.name == "api_json").get.deprecation.flatMap(_.description) should be(Some("blah"))
-    validator.service().models.find(_.name == "avro_idl").get.deprecation.flatMap(_.description) should be(None)
+    val service = setupValidApiJson(json)
+    service.models.find(_.name == "api_json").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    service.models.find(_.name == "avro_idl").get.deprecation.flatMap(_.description) should be(None)
   }
 
   it("field") {
@@ -201,9 +197,8 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val user = validator.service().models.find(_.name == "user").get
+    val service = setupValidApiJson(json)
+    val user = service.models.find(_.name == "user").get
     user.fields.find(_.name == "id").get.deprecation.flatMap(_.description) should be(None)
     user.fields.find(_.name == "email").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
@@ -236,10 +231,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    validator.service().resources.find(_.`type` == "user").get.deprecation.flatMap(_.description) should be(None)
-    validator.service().resources.find(_.`type` == "old_user").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    val service = setupValidApiJson(json)
+    service.resources.find(_.`type` == "user").get.deprecation.flatMap(_.description) should be(None)
+    service.resources.find(_.`type` == "old_user").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
   it("operation") {
@@ -263,9 +257,8 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    val resource = validator.service().resources.find(_.`type` == "user").get
+    val service = setupValidApiJson(json)
+    val resource = service.resources.find(_.`type` == "user").get
     resource.operations.find(_.method == Method.Get).get.deprecation.flatMap(_.description) should be(None)
     resource.operations.find(_.method == Method.Delete).get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
@@ -296,10 +289,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val service = setupValidApiJson(json)
 
-    val resource = validator.service().resources.find(_.`type` == "user").get
+    val resource = service.resources.find(_.`type` == "user").get
     val op = resource.operations.head
     op.parameters.find(_.name == "id").get.deprecation.flatMap(_.description) should be(None)
     op.parameters.find(_.name == "guid").get.deprecation.flatMap(_.description) should be(Some("blah"))
@@ -331,10 +323,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val service = setupValidApiJson(json)
 
-    val resource = validator.service().resources.find(_.`type` == "user").get
+    val resource = service.resources.find(_.`type` == "user").get
     val op = resource.operations.head
     op.responses.find(r => TestHelper.responseCode(r.code) == "200").get.deprecation.flatMap(_.description) should be(None)
     op.responses.find(r => TestHelper.responseCode(r.code) == "201").get.deprecation.flatMap(_.description) should be(Some("blah"))
@@ -367,10 +358,9 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val service = setupValidApiJson(json)
 
-    val resource = validator.service().resources.find(_.`type` == "user").get
+    val resource = service.resources.find(_.`type` == "user").get
     resource.operations.find(_.method == Method.Post).get.body.get.deprecation.flatMap(_.description) should be(None)
     resource.operations.find(_.method == Method.Put).get.body.get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
@@ -388,11 +378,10 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
+    val service = setupValidApiJson(json)
 
-    validator.service().headers.find(_.`name` == "Content-Type").get.deprecation.flatMap(_.description) should be(None)
-    validator.service().headers.find(_.`name` == "Old-Content-Type").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    service.headers.find(_.`name` == "Content-Type").get.deprecation.flatMap(_.description) should be(None)
+    service.headers.find(_.`name` == "Old-Content-Type").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
 
@@ -408,9 +397,8 @@ class DeprecationSpec extends AnyFunSpec with Matchers {
     }
     """
 
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString("") should be("")
-    validator.service().headers.find(_.`name` == "Content-Type").get.deprecation.get.description should be(None)
+    val service = setupValidApiJson(json)
+    service.headers.find(_.`name` == "Content-Type").get.deprecation.get.description should be(None)
   }
 
 }

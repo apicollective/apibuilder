@@ -1,28 +1,27 @@
 package core
 
+import helpers.ApiJsonHelpers
 import io.apibuilder.api.json.v0.models.Field
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class DuplicateNamesSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class DuplicateNamesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   private[this] val idField: Field = makeField(name = "id")
 
   it("disallow model names when camel case vs. snake case") {
-    TestHelper.serviceValidator(
+    TestHelper.expectSingleError(
       makeApiJson(
         models = Map(
           "some_user" -> makeModel(fields = Seq(idField)),
           "someUser" -> makeModel(fields = Seq(idField)),
         )
       )
-    ).errors() should be(
-      Seq("Model[some_user] appears more than once")
-    )
+    ) should be("Model[some_user] appears more than once")
   }
 
   it("disallow enum values when camel case vs. snake case") {
-    TestHelper.serviceValidator(
+    TestHelper.expectSingleError(
       makeApiJson(
         enums = Map(
           "foo" -> makeEnum(values = Seq(
@@ -31,13 +30,11 @@ class DuplicateNamesSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHe
           )),
         ),
       )
-    ).errors() should be(
-      Seq("Enum[foo] value[some_id] appears more than once")
-    )
+    ) should be("Enum[foo] value[some_id] appears more than once")
   }
 
   it("disallow model field names when camel case vs. snake case") {
-    TestHelper.serviceValidator(
+    TestHelper.expectSingleError(
       makeApiJson(
         models = Map(
           "user" -> makeModel(fields = Seq(
@@ -46,9 +43,7 @@ class DuplicateNamesSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHe
           ))
         )
       )
-    ).errors() should be(
-      Seq("Model[user] field[some_id] appears more than once")
-    )
+    ) should be("Model[user] field[some_id] appears more than once")
   }
 
   it("disallow parameters duplicate param names when camel case vs. snake case") {
@@ -84,8 +79,8 @@ class DuplicateNamesSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHe
     }
     """
 
-    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors() should be(
-      Seq("Resource[user] GET /users/:guid Parameter[some_id] appears more than once")
+    TestHelper.expectSingleError(json.format("user")) should be(
+      "Resource[user] GET /users/:guid Parameter[some_id] appears more than once"
     )
   }
 }

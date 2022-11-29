@@ -38,10 +38,12 @@ class ImportedResourcePathsSpec extends AnyFunSpec with Matchers with ValidatedT
     """
 
     val fetcher = MockServiceFetcher()
-    fetcher.add(uri, TestHelper.serviceValidatorFromApiJson(common).service())
+    fetcher.add(uri, expectValid {
+      TestHelper.serviceValidatorFromApiJson(common)
+    })
 
     expectValid {
-      TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).validate()
+      TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher)
     }.resources.head.operations.map(_.path) should be(Seq("/users"))
   }
 

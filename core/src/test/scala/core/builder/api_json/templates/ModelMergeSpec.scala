@@ -41,7 +41,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
         annotations = annotations,
       )
 
-      expectValid(apiJson).models.head
+      expectValidApiJson(apiJson).models.head
     }
 
     "fields" must {
@@ -63,7 +63,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       }
 
       "preserve field order from declared mode" in {
-        expectValid {
+        expectValidApiJson {
           makeApiJson(
             templates = Some(makeTemplates(
               models = Some(Map(
@@ -345,7 +345,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
               templates = Some(Seq(makeTemplateDeclaration(name)))
             ))
           )
-          expectValid(apiJson)
+          expectValidApiJson(apiJson)
         }
 
         "inherit" in {
@@ -362,7 +362,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
                 templates = Some(templates.map { name => makeTemplateDeclaration(name) })
               ))
             )
-            expectValid(apiJson).models.head.fields.map(_.name)
+            expectValidApiJson(apiJson).models.head.fields.map(_.name)
           }
 
           setup(Nil) mustBe Nil
@@ -393,7 +393,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
   "validates field type" in {
     val model =  makeModel(templates = Some(Seq(makeTemplateDeclaration("group"))))
-    expectErrors {
+    expectErrorsApiJson {
       makeApiJson(
         templates = Some(makeTemplates(
           models = Some(Map(

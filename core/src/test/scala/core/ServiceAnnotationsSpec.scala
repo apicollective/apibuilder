@@ -1,10 +1,10 @@
 package core
 
-import io.apibuilder.spec.v0.models.ParameterLocation
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
+class ServiceAnnotationsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
   it("fields specifying an undefined annotation are NOT allowed") {
     val json =
@@ -21,8 +21,9 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should not be("")
+    TestHelper.expectSingleError(json) shouldBe(
+      "Model[user] Field[id] annotation[nope] is invalid. Annotations must be defined."
+    )
   }
 
   it("a defined annotation is allowed") {
@@ -36,8 +37,7 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
+    setupValidApiJson(json)
   }
 
   it("a defined annotation must have a name") {
@@ -51,8 +51,7 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Annotations must have a name")
+    TestHelper.expectSingleError(json) should be("Annotations must have a name")
   }
 
   it("a defined annotation must have a name without special characters") {
@@ -66,8 +65,7 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("Annotation[@!#?@!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter")
+    TestHelper.expectSingleError(json) should be("Annotation[@!#?@!] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters, Name must start with a letter")
   }
 
   it("fields specifying a defined annotation are allowed") {
@@ -88,8 +86,7 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
+    setupValidApiJson(json)
   }
 
   it("fields specifying duplicated annotations are NOT allowed") {
@@ -110,9 +107,7 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().nonEmpty should be(true)
-    validator.errors().mkString should be("Model[user] Field[id] Annotation[nodupes] appears more than once")
+    TestHelper.expectSingleError(json) should be("Model[user] Field[id] Annotation[nodupes] appears more than once")
   }
 
   it("fields with multiple annotations allowed") {
@@ -134,9 +129,8 @@ class ServiceAnnotationsSpec extends AnyFunSpec with Matchers {
       }
     }
     """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors().mkString should be("")
-    validator.service().annotations.size should be(2)
-    validator.service().models.head.fields.head.annotations.size should be(2)
+    val service = setupValidApiJson(json)
+    service.annotations.size should be(2)
+    service.models.head.fields.head.annotations.size should be(2)
   }
 }

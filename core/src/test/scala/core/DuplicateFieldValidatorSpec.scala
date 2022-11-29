@@ -1,9 +1,10 @@
 package core
 
+import helpers.ApiJsonHelpers
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class DuplicateFieldValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
+class DuplicateFieldValidatorSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
     it("detects duplicate fields") {
       def setup(name1: String, name2: String) = {
@@ -21,10 +22,14 @@ class DuplicateFieldValidatorSpec extends AnyFunSpec with Matchers with helpers.
             |  }
             |}
             |""".stripMargin
-        ).errors()
+        )
       }
 
-      setup("user1", "user2") shouldBe Nil
-      setup("user", "user") shouldBe Seq("Invalid json, duplicate key name found: user")
+      expectValid {
+        setup("user1", "user2")
+      }
+      expectInvalid {
+        setup("user", "user")
+      } shouldBe Seq("Invalid json, duplicate key name found: user")
     }
 }

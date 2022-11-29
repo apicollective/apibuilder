@@ -1,28 +1,36 @@
 package helpers
 
-import java.util.UUID
 import core.TestHelper
 import io.apibuilder.api.json.v0.models._
 import io.apibuilder.api.json.v0.models.json._
 import io.apibuilder.spec.v0.models.Service
 import play.api.libs.json.{JsValue, Json}
 
-trait ApiJsonHelpers {
+import java.util.UUID
 
-  def expectErrors(apiJson: ApiJson): Seq[String] = {
-    val errors = TestHelper.serviceValidator(apiJson).errors()
-    if (errors.isEmpty) {
-      sys.error("Expected errors but found none")
+trait ApiJsonHelpers extends ValidatedTestHelpers {
+
+  def setupValidApiJson(json: String): Service = {
+    val service = expectValid {
+      TestHelper.serviceValidatorFromApiJson(json)
     }
-    errors
+    service
   }
 
-  def expectValid(apiJson: ApiJson): Service = {
-    val validator = TestHelper.serviceValidator(apiJson)
-    if (validator.errors().nonEmpty) {
-      sys.error(s"Error: ${validator.errors()}")
+  def setupValidApiJson(apiJson: ApiJson): Service = {
+    setupValidApiJson(Json.prettyPrint(Json.toJson(apiJson)))
+  }
+
+  def expectErrorsApiJson(apiJson: ApiJson): Seq[String] = {
+    expectInvalid {
+      TestHelper.serviceValidator(apiJson)
     }
-    validator.service()
+  }
+
+  def expectValidApiJson(apiJson: ApiJson): Service = {
+    expectValid {
+      TestHelper.serviceValidator(apiJson)
+    }
   }
 
   // random string that will start with a letter as we expect valid identifiers
@@ -266,12 +274,9 @@ trait ApiJsonHelpers {
   }
 
   def toService(apiJson: ApiJson): Service = {
-    val validator = TestHelper.serviceValidator(apiJson)
-    if (validator.errors().nonEmpty) {
-      println(Json.prettyPrint(Json.toJson(apiJson)))
-      sys.error(s"Cannot convert to API Builder Spec Service Model:\n  - ${validator.errors().mkString("\n  - ")}")
+    expectValid {
+      TestHelper.serviceValidator(apiJson)
     }
-    validator.service()
   }
 
 }
