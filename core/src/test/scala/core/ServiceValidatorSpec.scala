@@ -445,12 +445,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     }
 
     it("validates type name in collection") {
-<<<<<<< HEAD
       TestHelper.expectSingleError(baseJson.format("[foo]")) should be("Resource[tag] GET /tags Parameter[tags] type[[foo]] not found")
-=======
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[foo]"))
-      validator.errors().mkString("") should be("Resource[tag] GET /tags Parameter[tags] type[[foo]] not found")
->>>>>>> main
     }
   }
 

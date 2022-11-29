@@ -340,13 +340,9 @@ class UnionTypeSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
     val fetcher = MockServiceFetcher()
     fetcher.add(uri, service)
 
-<<<<<<< HEAD
     expectInvalid {
       TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher)
     } should be(
-=======
-    TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).errors() should be(
->>>>>>> main
       Seq("Union[expandable_user] type[test.common.models.reference] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
     )
 

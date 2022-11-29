@@ -1,15 +1,15 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Original, Validation}
-import io.apibuilder.api.v0.models.json._
-import lib.{DatabaseServiceFetcher, FileUtils, OriginalUtil, ServiceConfiguration}
-
-import javax.inject.{Inject, Singleton}
 import builder.OriginalValidator
 import cats.data.Validated.{Invalid, Valid}
+import io.apibuilder.api.v0.models.Validation
+import io.apibuilder.api.v0.models.json._
+import lib.{DatabaseServiceFetcher, FileUtils, OriginalUtil, ServiceConfiguration}
 import play.api.libs.Files
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Validations @Inject() (
@@ -38,11 +38,7 @@ class Validations @Inject() (
           config = config,
           `type` = fileType,
           fetcher = databaseServiceFetcher.instance(request.authorization)
-<<<<<<< HEAD
         ).validate(contents) match {
-=======
-        ).validate() match {
->>>>>>> main
           case Invalid(errors) => {
             UnprocessableEntity(Json.toJson(Validation(
               valid = false,
