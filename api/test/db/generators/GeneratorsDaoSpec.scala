@@ -55,7 +55,9 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
       val service = createGeneratorService()
       val form = createGeneratorForm(
         service,
-        attributes = Seq("foo", "bar")
+        makeGenerator(
+          attributes = Seq("foo", "bar")
+        )
       )
 
       generatorsDao.upsert(testUser, form)
