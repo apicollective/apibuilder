@@ -24,25 +24,19 @@ istioIngress:
   gateways:
     - key: api-apibuilder-io
       tld: apibuilder.io
+      selector: ingressgateway-apibuilder-io
       dns: true
       hosts:
         - api.apibuilder.io
-    - key: apibuilder-api-flow-pub
-      tld: flo.pub
-      dns: true
-      hosts:
-        - apibuilder-api.flo.pub
-
+  
 istioService:
   live:
     hosts:
       - apibuilder
       - api.apibuilder.io
-      - apibuilder-api.flo.pub
     gateways:
       - mesh
       - api-apibuilder-io
-      - apibuilder-api-flow-pub
     stages:
       - deployment: live
         weight: 100
