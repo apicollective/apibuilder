@@ -578,15 +578,16 @@
     <li><em>casts</em> a JSON object used to map types in the template to concrete types to use for this resource.</li>
   </ul>
 
-  Example attribute:
+  Example template declaration:
 
   <pre>
-    {
-    "name": "my_regex_validation",
-    "value": {
-    "regex": "[a-z]"
-    }
-    }
+    "templates": [ {
+      "name": "currency_setting",
+      "cast": {
+        "currency_setting":  "organization_currency_setting",
+        "currency_setting_form":  "organization_currency_setting_form"
+      }
+    } ],
   </pre>
 
   <a id="attribute"></a>
