@@ -112,8 +112,8 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
 
       override def merge(original: Field, tpl: Field): Field = {
         Field(
-          name = original.name,
-          `type` = original.`type`,
+          name = tpl.name,
+          `type` = tpl.`type`,
           description = original.description.orElse(tpl.description),
           deprecation = original.deprecation.orElse(tpl.deprecation),
           default = original.default.orElse(tpl.default),
