@@ -336,14 +336,13 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       }
 
       "templates" must {
-        def setupTemplate(template: Model, name: String = randomName(), modelFields: Seq[Field] = Nil) = {
+        def setupTemplate(template: Model, name: String = randomName()) = {
           val apiJson = makeApiJson(
             templates = Some(makeTemplates(
               models = Some(Map(name -> template))
             )),
             models = Map(randomName() -> makeModel(
-              templates = Some(Seq(makeTemplateDeclaration(name))),
-              fields = modelFields
+              templates = Some(Seq(makeTemplateDeclaration(name)))
             ))
           )
           expectValidApiJson(apiJson)
@@ -374,32 +373,18 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setup(Seq("a", "b", "c")) mustBe Seq("a", "b", "c")
         }
 
-        "setup interfaces" must {
-          def setupInterfaceTest(modelFields: Seq[Field]) = {
-            val apiJson = setupTemplate(
-              name = "foo",
-              template = makeModel(
-                fields = Seq(makeField("foo", required = false))
-              ),
-              modelFields = modelFields
+        "setup interfaces" in {
+          val apiJson = setupTemplate(
+            name = "foo",
+            template = makeModel(
+              fields = Seq(makeField("foo"))
             )
-            apiJson.models.head.interfaces mustBe Seq("foo")
-            apiJson.interfaces.head
-          }
+          )
+          apiJson.models.head.interfaces mustBe Seq("foo")
 
-          "inherit same fields" in {
-            val i = setupInterfaceTest(Nil)
-            i.name mustBe "foo"
-            i.fields.map(_.name) mustBe Seq("foo")
-          }
-
-          "not inherit different fields" in {
-            val i = setupInterfaceTest(Seq(
-              makeField("foo", required = true)
-            ))
-            i.name mustBe "foo"
-            i.fields mustBe Nil
-          }
+          val i = apiJson.interfaces.head
+          i.name mustBe "foo"
+          i.fields.map(_.name) mustBe Seq("foo")
         }
       }
     }

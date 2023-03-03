@@ -18,7 +18,7 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     ).mapN { case (_, models) =>
       ModelMergeData(
         models = models,
-        interfaces = data.interfaces ++ buildInterfaces(data, models.values.toSeq)
+        interfaces = data.interfaces ++ buildInterfaces(data)
       )
     }
   }
@@ -66,32 +66,16 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     )
   }
 
-  private[this] def buildInterfaces(data: ModelMergeData, models: Seq[Model]): Map[String, Interface] = {
+  private[this] def buildInterfaces(data: ModelMergeData): Map[String, Interface] = {
     templates.filterNot { case (name, _) => data.interfaces.contains(name) }.map { case (name, t) =>
       name -> Interface(
         plural = t.plural,
         description = t.description,
         deprecation = t.deprecation,
-        fields = Some(fieldsWithSameInterface(models, t.fields)),
+        fields = Some(t.fields),
         attributes = t.attributes,
       )
     }
-  }
-
-  private[this] def fieldsWithSameInterface(models: Seq[Model], fields: Seq[Field]): Seq[Field] = {
-    fields.filter { f =>
-      models.forall(hasFieldWithSameInterface(_, f))
-    }
-  }
-  private[this] def hasFieldWithSameInterface(model: Model, field: Field): Boolean = {
-    model.fields.find(_.name == field.name) match {
-      case None => false
-      case Some(f) => withSameInterface(f, field)
-    }
-  }
-
-  private[this] def withSameInterface(f1: Field, f2: Field): Boolean = {
-    f1.name == f2.name && f1.`type` == f2.`type` && f1.required == f2.required
   }
 
   def mergeTemplates(original: Option[Seq[TemplateDeclaration]], template: Option[Seq[TemplateDeclaration]]): Option[Seq[TemplateDeclaration]] = {
