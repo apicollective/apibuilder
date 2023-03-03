@@ -62,9 +62,9 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
 
       override def merge(original: Parameter, tpl: Parameter): Parameter = {
         Parameter(
-          name = tpl.name,
-          `type` = tpl.`type`,
-          location = tpl.location,
+          name = original.name,
+          `type` = original.`type`,
+          location = original.location,
           description = original.description.orElse(tpl.description),
           deprecation = original.deprecation.orElse(tpl.deprecation),
           required = original.required,
