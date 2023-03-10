@@ -336,13 +336,14 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
       }
 
       "templates" must {
-        def setupTemplate(template: Model, name: String = randomName()) = {
+        def setupTemplate(template: Model, name: String = randomName(), modelFields: Seq[Field] = Nil) = {
           val apiJson = makeApiJson(
             templates = Some(makeTemplates(
               models = Some(Map(name -> template))
             )),
             models = Map(randomName() -> makeModel(
-              templates = Some(Seq(makeTemplateDeclaration(name)))
+              templates = Some(Seq(makeTemplateDeclaration(name))),
+              fields = modelFields
             ))
           )
           expectValidApiJson(apiJson)
@@ -373,18 +374,50 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
           setup(Seq("a", "b", "c")) mustBe Seq("a", "b", "c")
         }
 
-        "setup interfaces" in {
-          val apiJson = setupTemplate(
-            name = "foo",
-            template = makeModel(
-              fields = Seq(makeField("foo"))
+        "setup interfaces" must {
+          def setupInterfaceTest(modelFields: Seq[Field]) = {
+            val apiJson = setupTemplate(
+              name = "foo",
+              template = makeModel(
+                fields = Seq(makeField("foo", required = false))
+              ),
+              modelFields = modelFields
             )
-          )
-          apiJson.models.head.interfaces mustBe Seq("foo")
+            apiJson.models.head.interfaces mustBe Seq("foo")
+            apiJson.interfaces.head
+          }
 
-          val i = apiJson.interfaces.head
-          i.name mustBe "foo"
-          i.fields.map(_.name) mustBe Seq("foo")
+          "inherit same fields" in {
+            val i = setupInterfaceTest(Nil)
+            i.name mustBe "foo"
+            i.fields.map(_.name) mustBe Seq("foo")
+          }
+
+          "not inherit different fields" in {
+            val i = setupInterfaceTest(Seq(
+              makeField("foo", required = true)
+            ))
+            i.name mustBe "foo"
+            i.fields mustBe Nil
+          }
+
+          "only considers models declaring the template" in {
+            val accountModel = makeModel(fields = Seq(makeField("id")))
+            val apiJson = makeApiJson(
+              templates = Some(makeTemplates(
+                models = Some(Map("account" -> accountModel))
+              )),
+              models = Map(
+                "channel_account" -> makeModel(templates = Some(Seq(makeTemplateDeclaration("account")))),
+                "foo" -> makeModel(fields = Seq(makeField("foo")))
+              )
+            )
+
+            val service = expectValidApiJson(apiJson)
+            val i = service.interfaces.head
+            i.name mustBe "account"
+            i.fields.map(_.name) mustBe Seq("id")
+          }
         }
       }
     }
