@@ -400,6 +400,24 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
             i.name mustBe "foo"
             i.fields mustBe Nil
           }
+
+          "only considers models declaring the template" in {
+            val accountModel = makeModel(fields = Seq(makeField("id")))
+            val apiJson = makeApiJson(
+              templates = Some(makeTemplates(
+                models = Some(Map("account" -> accountModel))
+              )),
+              models = Map(
+                "channel_account" -> makeModel(templates = Some(Seq(makeTemplateDeclaration("account")))),
+                "foo" -> makeModel(fields = Seq(makeField("foo")))
+              )
+            )
+
+            val service = expectValidApiJson(apiJson)
+            val i = service.interfaces.head
+            i.name mustBe "account"
+            i.fields.map(_.name) mustBe Seq("id")
+          }
         }
       }
     }

@@ -88,13 +88,6 @@ case class ModelMerge(templates: Map[String, Model]) extends TemplateMerge[Model
     }
   }
 
-  private[this] def info(f: Field): String = {
-    s"${f.name}: ${f.`type`} " + (f.required match {
-      case true => "not null"
-      case false => "null"
-    })
-  }
-
   private[this] def fieldsWithSameInterface(models: Seq[ModelWithName], fields: Seq[Field]): Seq[Field] = {
     fields.filter { f =>
       models.forall(hasFieldWithSameInterface(_, f))
