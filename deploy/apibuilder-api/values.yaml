@@ -10,10 +10,9 @@ image:
 resources:
   limits:
     memory: "4Gi"
-    cpu: 1
   requests:
     memory: "4Gi"
-    cpu: .05
+    cpu: 1
 
 jvmOpts:
   memory: 3072m
