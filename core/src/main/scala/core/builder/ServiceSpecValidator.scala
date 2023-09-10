@@ -919,7 +919,6 @@ case class ServiceSpecValidator(
       validateResponseMethods(),
       validateResponseTypes(),
       validateResponseMixed2xxTypes(),
-      validateResponseStatusCodesRequiringUnit(),
       validateResponseHeaders()
     ))
   }
@@ -997,20 +996,6 @@ case class ServiceSpecValidator(
         }
       }
     )
-  }
-
-  private[this] def validateResponseStatusCodesRequiringUnit(): ValidatedNec[String, Unit] = {
-    val statusCodesRequiringUnit = Seq("204", "304")
-    service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.responses.filter(r => statusCodesRequiringUnit.contains(responseCodeString(r.code)) && r.`type` != Primitives.Unit.toString).map { r =>
-          opLabel(resource, op, s"response code[${responseCodeString(r.code)}] must return unit and not[${r.`type`}]")
-        }
-      }
-    }.distinct.toList match {
-      case Nil => ().validNec
-      case errors => sequenceUnique(errors.map(_.invalidNec))
-    }
   }
 
   private[this] def validateResponseHeaders(): ValidatedNec[String, Unit] = {

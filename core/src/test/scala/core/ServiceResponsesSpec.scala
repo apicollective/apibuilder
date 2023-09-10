@@ -37,13 +37,6 @@ class ServiceResponsesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
     }
   """
 
-  it("Returns error message if user specifies non Unit Response type") {
-    Seq(204, 304).foreach { code =>
-      val json = baseJson.format("DELETE", s""", "responses": { "$code": { "type": "user" } } """)
-      TestHelper.expectSingleError(json) should be(s"Resource[user] DELETE /users/:id response code[$code] must return unit and not[user]")
-    }
-  }
-
   it("verifies that response defaults to type 204 Unit") {
     val json = baseJson.format("DELETE", "")
     val response = setupValidApiJson(json).resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").get
