@@ -4,7 +4,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "2.13.11"
 
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
