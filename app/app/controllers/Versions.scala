@@ -20,7 +20,7 @@ class Versions @Inject() (
   private[this] val DefaultVersion = "0.0.1-dev"
   private[this] val LatestVersion = "latest"
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirectToLatest(orgKey: String, applicationKey: String) = Action {
     Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))

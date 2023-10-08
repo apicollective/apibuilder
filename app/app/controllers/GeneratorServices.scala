@@ -9,7 +9,7 @@ class GeneratorServices @Inject() (
                                     apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(guid: UUID, page: Int = 0) = Anonymous.async { implicit request =>
     for {

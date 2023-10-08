@@ -17,7 +17,7 @@ class Members @Inject() (
                           apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
     request.withMember {

@@ -24,7 +24,7 @@ class MembershipRequests @Inject() (
 
   object MembershipRequestForm {
 
-      implicit val membershipRequestFormReads = Json.reads[MembershipRequestForm]
+      private[controllers] implicit val membershipRequestFormReads: Reads[MembershipRequestForm] = Json.reads[MembershipRequestForm]
 
   }
 

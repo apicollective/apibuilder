@@ -8,7 +8,7 @@ class ApplicationController @Inject() (
                                         apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect() = Action { request =>
     Redirect(request.path + "/")

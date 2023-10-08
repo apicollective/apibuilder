@@ -14,7 +14,7 @@ class Domains @Inject() (
                           apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(orgKey: String) = IdentifiedOrg { implicit request =>
     request.withMember {

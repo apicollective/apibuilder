@@ -1,10 +1,10 @@
 package actors
 
-import akka.actor.{ActorLogging, ActorSystem}
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import db._
 import io.apibuilder.api.v0.models.Publication
 import lib.{AppConfig, Email, Person, Role}
-import akka.actor.Actor
+
 import java.util.UUID
 
 object EmailActor {
@@ -35,8 +35,6 @@ class EmailActor @javax.inject.Inject() (
   passwordResetRequestsDao: db.PasswordResetRequestsDao,
   usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
-
-  private[this] implicit val ec = system.dispatchers.lookup("email-actor-context")
 
   def receive = {
 

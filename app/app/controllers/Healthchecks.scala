@@ -10,7 +10,7 @@ class Healthchecks @Inject() (
                                apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index() = Anonymous.async { implicit request =>
     for {

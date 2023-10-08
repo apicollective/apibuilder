@@ -1,12 +1,12 @@
 package actors
 
 import java.util.UUID
-
 import akka.actor._
 import db.VersionsDao
 import lib.Role
 import play.api.Mode
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
 import scala.util.{Failure, Success, Try}
 
@@ -39,7 +39,7 @@ class MainActor @javax.inject.Inject() (
   @javax.inject.Named("user-actor") userActor: akka.actor.ActorRef
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  private[this] implicit val ec = system.dispatchers.lookup("main-actor-context")
+  private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("main-actor-context")
 
   private[this] case object Startup
 

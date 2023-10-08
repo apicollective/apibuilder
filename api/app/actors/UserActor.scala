@@ -1,10 +1,10 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, ActorSystem}
-import db.{EmailVerificationsDao, MembershipRequestsDao, OrganizationsDao, UsersDao}
-import lib.Role
-import play.api.Logger
+import akka.actor.{Actor, ActorLogging}
+import db.UsersDao
+
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 object UserActor {
 
@@ -14,13 +14,10 @@ object UserActor {
 
 }
 
-@javax.inject.Singleton
-class UserActor @javax.inject.Inject() (
-  system: ActorSystem,
+@Singleton
+class UserActor @Inject() (
   usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
-
-  private[this] implicit val ec = system.dispatchers.lookup("user-actor-context")
 
   def receive = {
 
