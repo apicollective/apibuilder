@@ -6,6 +6,8 @@ organization := "io.apibuilder"
 
 ThisBuild / scalaVersion := "2.13.8"
 
+ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
+
 lazy val allScalacOptions = Seq(
   "-deprecation",
   "-feature",
@@ -37,6 +39,10 @@ lazy val avro = project
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json"        % playJsonVersion,
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+    ),
+    Test / javaOptions ++= Seq(
+      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
     )
   )
 
@@ -50,7 +56,11 @@ lazy val swagger = project
       "io.swagger" % "swagger-parser" % "1.0.61",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
-   )
+    ),
+    Test / javaOptions ++= Seq(
+      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
+    )
   )
 
 val circeVersion = "0.14.3"
@@ -88,6 +98,10 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     scalacOptions ++= allScalacOptions,
+    Test / javaOptions ++= Seq(
+      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
+    ),
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     testOptions += Tests.Argument("-oF"),
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
@@ -98,9 +112,10 @@ lazy val api = project
     resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release",
     libraryDependencies ++= Seq(
       filters,
-      guice,
       jdbc,
       ws,
+      "com.google.inject" % "guice" % "5.1.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.postgresql"    %  "postgresql"     % "42.5.0",
@@ -130,7 +145,8 @@ lazy val app = project
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      guice,
+      "com.google.inject" % "guice" % "5.1.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.apache.commons" % "commons-compress" % "1.22",
@@ -165,6 +181,10 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
   ),
   scalacOptions ++= allScalacOptions,
+  Test / javaOptions ++= Seq(
+     "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+    "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
+  ),
   Compile / doc / sources := Seq.empty,
   Compile / packageDoc / publishArtifact := false
 ) ++ publishSettings
