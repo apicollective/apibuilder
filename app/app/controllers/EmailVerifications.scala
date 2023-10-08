@@ -1,8 +1,9 @@
 package controllers
 
 import javax.inject.Inject
-
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
+
+import scala.concurrent.ExecutionContext
 
 class EmailVerifications @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents

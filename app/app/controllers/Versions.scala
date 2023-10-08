@@ -10,7 +10,7 @@ import play.api.data._
 import play.api.libs.json._
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class Versions @Inject() (
                            val apiBuilderControllerComponents: ApiBuilderControllerComponents,

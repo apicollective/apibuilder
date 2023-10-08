@@ -3,9 +3,8 @@ package controllers
 import io.apibuilder.api.v0.models.AttributeForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
-
 import play.api.data.Forms._
 import play.api.data._
 

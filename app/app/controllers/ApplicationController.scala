@@ -1,7 +1,9 @@
 package controllers
 
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ApplicationController @Inject() (
                                         val apiBuilderControllerComponents: ApiBuilderControllerComponents,

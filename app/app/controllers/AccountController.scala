@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class AccountController @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents

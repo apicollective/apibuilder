@@ -2,13 +2,12 @@ package controllers
 
 import java.util.UUID
 import javax.inject.Inject
-
 import io.apibuilder.api.v0.models.TokenForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class TokensController @Inject() (
                                    val apiBuilderControllerComponents: ApiBuilderControllerComponents,

@@ -2,6 +2,7 @@ package controllers
 
 import java.util.UUID
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class MembershipRequestReviews @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents

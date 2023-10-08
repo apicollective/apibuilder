@@ -1,11 +1,12 @@
 package controllers
 
-import lib.{ApiClientProvider, PaginatedCollection, Pagination, Util}
+import lib.{PaginatedCollection, Pagination, Util}
+
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class SearchController @Inject() (
                                    val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                   apiClientProvider: ApiClientProvider,
                                    util: Util
 ) extends ApiBuilderController {
   

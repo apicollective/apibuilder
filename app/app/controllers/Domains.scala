@@ -6,7 +6,7 @@ import models._
 import play.api.data._
 import play.api.data.Forms._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
 
 class Domains @Inject() (

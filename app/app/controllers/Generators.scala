@@ -5,7 +5,7 @@ import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 import play.api.data.Forms._
 import play.api.data._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
 
 class Generators @Inject() (
