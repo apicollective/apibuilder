@@ -9,8 +9,6 @@ class AppConfig @Inject() (
 
   val apibuilderWwwHost: String = config.requiredString("apibuilder.app.host")
 
-  val apibuilderVersion: String = config.requiredString("git.version")
-
   val subjectPrefix: String = config.requiredString("mail.subjectPrefix")
 
   val emailDefaultFromEmail: String = config.requiredString("mail.defaultFromEmail")
