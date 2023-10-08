@@ -114,6 +114,7 @@ lazy val api = project
       filters,
       jdbc,
       ws,
+      guice,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
@@ -139,12 +140,14 @@ lazy val app = project
   .enablePlugins(SbtTwirl)
   .settings(commonSettings: _*)
   .settings(
+    scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
+      guice,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
@@ -156,6 +159,11 @@ lazy val app = project
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars" % "bootstrap-social" % "5.0.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+    ),
+    Test / javaOptions ++= Seq(
+      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
+      "-Dconfig.resource=application.test.conf"
     )
   )
 
