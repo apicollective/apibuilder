@@ -190,7 +190,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   ),
   scalacOptions ++= allScalacOptions,
   Test / javaOptions ++= Seq(
-     "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+    "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
     "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
   ),
   Compile / doc / sources := Seq.empty,
