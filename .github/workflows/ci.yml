@@ -25,4 +25,4 @@ jobs:
     - name: Build
       run: |
         docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest
-        sbt ++${{ matrix.scala }} clean coverage test coverageReport
+        sbt ++${{ matrix.scala }} clean test
