@@ -13,21 +13,21 @@ class UserAgentSpec extends PlaySpec with GuiceOneAppPerSuite {
       applicationKey = "apibuilder",
       versionName = "1.2.3",
       generatorKey = Some("play_client")
-    ) must fullyMatch regex("apibuilder 0\\.[0-9]+\\.[0-9]+ localhost 9000/apicollective/apibuilder/1\\.2\\.3/play_client")
+    ) must fullyMatch regex("apibuilder localhost 9000/apicollective/apibuilder/1\\.2\\.3/play_client")
 
     userAgent.generate(
       orgKey = "apicollective",
       applicationKey = "apibuilder",
       versionName = "1:0",
       generatorKey = Some("play_client")
-    ) must fullyMatch regex("apibuilder 0\\.[0-9]+\\.[0-9]+ localhost 9000/apicollective/apibuilder/1 0/play_client")
+    ) must fullyMatch regex("apibuilder localhost 9000/apicollective/apibuilder/1 0/play_client")
 
     userAgent.generate(
       orgKey = "apicollective",
       applicationKey = "apibuilder",
       versionName = "1:0",
       generatorKey = None
-    ) must fullyMatch regex("apibuilder 0\\.[0-9]+\\.[0-9]+ localhost 9000/apicollective/apibuilder/1 0")
+    ) must fullyMatch regex("apibuilder localhost 9000/apicollective/apibuilder/1 0")
   }
 
 }
