@@ -13,7 +13,7 @@ services:
 before_script:
   - docker run -d -p 127.0.0.1:7659:5432 flowcommerce/apibuilder-postgresql:latest
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean compile test
+  - CONF_APIBUILDER_API_HOST=http://localhost:9001 sbt ++$TRAVIS_SCALA_VERSION clean compile test
 branches:
   only:
     - main
