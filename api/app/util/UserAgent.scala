@@ -20,7 +20,6 @@ class UserAgent @Inject() (
   ): String = {
     Seq(
       "apibuilder",
-      appConfig.apibuilderVersion,
       Seq(
         Some("https://" + appConfig.apibuilderWwwHost),
         Some(orgKey),

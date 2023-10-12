@@ -6,7 +6,7 @@ import models._
 import play.api.data._
 import play.api.data.Forms._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
 
 class Domains @Inject() (
@@ -14,7 +14,7 @@ class Domains @Inject() (
                           apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(orgKey: String) = IdentifiedOrg { implicit request =>
     request.withMember {

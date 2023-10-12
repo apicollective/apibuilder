@@ -1,16 +1,15 @@
 package controllers
 
 import models.MainTemplate
-import javax.inject.Inject
 
-import lib.ApiClientProvider
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class Healthchecks @Inject() (
-                               val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                               apiClientProvider: ApiClientProvider
+                               val apiBuilderControllerComponents: ApiBuilderControllerComponents
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index() = Anonymous.async { implicit request =>
     for {

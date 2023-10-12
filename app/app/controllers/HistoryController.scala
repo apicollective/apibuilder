@@ -1,14 +1,15 @@
 package controllers
 
-import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+import lib.{PaginatedCollection, Pagination}
+
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class HistoryController @Inject() (
-                                    val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                    apiClientProvider: ApiClientProvider
+                                    val apiBuilderControllerComponents: ApiBuilderControllerComponents
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(
     orgKey: Option[String],

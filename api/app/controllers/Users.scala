@@ -5,12 +5,13 @@ import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import util.SessionHelper
 import db.{UserPasswordsDao, UsersDao}
+
 import javax.inject.Inject
+import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json, Reads}
 
-import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
 import java.util.UUID
-
 import play.api.libs.ws.WSClient
+
 import scala.concurrent.Future
 
 class Users @Inject() (
@@ -24,10 +25,10 @@ class Users @Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] case class UserAuthenticationForm(email: String, password: String)
-  private[this] implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
+  private[this] implicit val userAuthenticationFormReads: Reads[UserAuthenticationForm] = Json.reads[UserAuthenticationForm]
 
   private[this] case class GithubAuthenticationForm(token: String)
-  private[this] implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
+  private[this] implicit val githubAuthenticationFormReads: Reads[GithubAuthenticationForm] = Json.reads[GithubAuthenticationForm]
 
   def get(
     guid: Option[UUID],

@@ -6,9 +6,10 @@ import models._
 import play.api.data._
 import play.api.data.Forms._
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 import org.joda.time.DateTime
+
 import java.util.UUID
 import javax.inject.Inject
 
@@ -17,7 +18,7 @@ class Members @Inject() (
                           apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
     request.withMember {

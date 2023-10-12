@@ -1,14 +1,16 @@
 package controllers
 
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class ApplicationController @Inject() (
                                         val apiBuilderControllerComponents: ApiBuilderControllerComponents,
                                         apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect() = Action { request =>
     Redirect(request.path + "/")

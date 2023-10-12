@@ -1,23 +1,18 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{AttributeValueForm, User}
-import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import models.{MainTemplate, SettingSection, SettingsMenu}
-
-import scala.concurrent.Future
-import java.util.UUID
-import javax.inject.Inject
-
+import io.apibuilder.api.v0.models.AttributeValueForm
+import models.{SettingSection, SettingsMenu}
 import play.api.data.Forms._
 import play.api.data._
-import play.api.mvc.{Action, BaseController, ControllerComponents}
+
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class OrganizationAttributesController @Inject() (
-                                                   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                                   apiClientProvider: ApiClientProvider
+                                                   val apiBuilderControllerComponents: ApiBuilderControllerComponents
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
     Redirect(routes.AttributesController.index())

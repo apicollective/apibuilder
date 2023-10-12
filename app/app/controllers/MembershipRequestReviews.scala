@@ -2,12 +2,13 @@ package controllers
 
 import java.util.UUID
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class MembershipRequestReviews @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def accept(orgKey: String, membershipRequestGuid: UUID) = IdentifiedOrg.async { implicit request =>
     request.withAdmin {

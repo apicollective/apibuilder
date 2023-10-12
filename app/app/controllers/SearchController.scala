@@ -1,15 +1,16 @@
 package controllers
 
-import lib.{ApiClientProvider, PaginatedCollection, Pagination, Util}
+import lib.{PaginatedCollection, Pagination, Util}
+
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class SearchController @Inject() (
                                    val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                   apiClientProvider: ApiClientProvider,
                                    util: Util
 ) extends ApiBuilderController {
   
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(q: Option[String], org: Option[String], page: Int = 0) = Anonymous.async { implicit request =>
     val finalQuery = Seq(

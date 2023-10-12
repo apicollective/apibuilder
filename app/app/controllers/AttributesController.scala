@@ -3,9 +3,8 @@ package controllers
 import io.apibuilder.api.v0.models.AttributeForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
-
 import play.api.data.Forms._
 import play.api.data._
 
@@ -14,7 +13,7 @@ class AttributesController @Inject() (
                                        apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(page: Int = 0) = Anonymous.async { implicit request =>
     for {

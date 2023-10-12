@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '13' ]
-        scala: [ '2.13.8' ]
+        java: [ '17' ]
+        scala: [ '2.13.11' ]
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK
@@ -25,4 +25,4 @@ jobs:
     - name: Build
       run: |
         docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest
-        sbt ++${{ matrix.scala }} clean coverage test coverageReport
+        sbt ++${{ matrix.scala }} clean test

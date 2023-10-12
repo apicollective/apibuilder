@@ -1,6 +1,7 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{ApplicationForm, MoveForm, Visibility}
+
 import javax.inject.Inject
 import lib.ApiClientProvider
 import models._
@@ -8,14 +9,14 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc.Result
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationSettings @Inject() (
                                       val apiBuilderControllerComponents: ApiBuilderControllerComponents,
                                       apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] def withRedirect(
     result: Either[String, MainTemplate]

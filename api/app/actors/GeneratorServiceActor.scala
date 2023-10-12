@@ -24,7 +24,7 @@ class GeneratorServiceActor @javax.inject.Inject() (
   processor: GeneratorServiceActorProcessor,
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  private[this] implicit val ec = system.dispatchers.lookup("generator-service-actor-context")
+  private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("generator-service-actor-context")
 
   system.scheduler.scheduleAtFixedRate(1.hour, 1.hour, self, GeneratorServiceActorMessage.SyncAll)
 
