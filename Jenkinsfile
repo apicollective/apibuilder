@@ -40,40 +40,41 @@ pipeline {
 
     stage('Build and push docker image release') {
       when { branch 'main' }
-      stage('API builder api')
-        steps {
-          container('kaniko') {
-            script {
-              semver = VERSION.printable()
+      parallel {
+        stage('API builder api') {
+          steps {
+            container('kaniko') {
+              script {
+                semver = VERSION.printable()
 
-              sh """
-                /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
-                --snapshot-mode=redo --use-new-run  \
-                --destination ${env.ORG}/apibuilder-api:$semver
-              """             
+                sh """
+                  /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
+                  --snapshot-mode=redo --use-new-run  \
+                  --destination ${env.ORG}/apibuilder-api:$semver
+                """             
+              }
             }
           }
         }
-      }
 
-      stage('API builder app')
-        when { branch 'main' }
-        agent {
-          kubernetes {
-            label 'worker-apibuilder-app'
-            inheritFrom 'kaniko-slim'
+        stage('API builder app') {
+          agent {
+            kubernetes {
+              label 'worker-apibuilder-app'
+              inheritFrom 'kaniko-slim'
+            }
           }
-        }
-        steps {
-          container('kaniko') {
-            script {
-              semver = VERSION.printable()
+          steps {
+            container('kaniko') {
+              script {
+                semver = VERSION.printable()
 
-              sh """
-                /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
-                --snapshot-mode=redo --use-new-run  \
-                --destination ${env.ORG}/apibuilder-app:$semver
-              """                    
+                sh """
+                  /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
+                  --snapshot-mode=redo --use-new-run  \
+                  --destination ${env.ORG}/apibuilder-app:$semver
+                """                    
+              }
             }
           }
         }
@@ -127,7 +128,6 @@ pipeline {
             }
           }
         }
-        
       }
     }
   }
