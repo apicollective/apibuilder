@@ -70,7 +70,7 @@ pipeline {
                 semver = VERSION.printable()
 
                 sh """
-                  /kaniko/executor -f `pwd`/api/Dockerfile -c `pwd` \
+                  /kaniko/executor -f `pwd`/app/Dockerfile -c `pwd` \
                   --snapshot-mode=redo --use-new-run  \
                   --destination ${env.ORG}/apibuilder-app:$semver
                 """                    
