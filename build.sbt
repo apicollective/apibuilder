@@ -122,6 +122,9 @@ lazy val api = project
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
     ),
+    bashScriptExtraDefines ++= Seq(
+      """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""
+    ),
     Test / javaOptions ++= Seq(
       "-Dconfig.resource=application.test.conf"
     )
@@ -157,6 +160,9 @@ lazy val app = project
       "org.webjars" % "bootstrap-social" % "5.0.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     ),
+    bashScriptExtraDefines ++= Seq(
+      """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""
+    ),
     Test / javaOptions ++= Seq(
       "-Dconfig.resource=application.test.conf"
     )
@@ -186,7 +192,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   scalacOptions ++= allScalacOptions,
   Test / javaOptions ++= Seq(
     "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
-    "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
+    "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
+    "--add-opens=java.base/java.lang=ALL-UNNAMED"
   ),
   Compile / doc / sources := Seq.empty,
   Compile / packageDoc / publishArtifact := false
