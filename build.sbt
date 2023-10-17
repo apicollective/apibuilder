@@ -6,7 +6,7 @@ organization := "io.apibuilder"
 
 ThisBuild / scalaVersion := "2.13.11"
 
-ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
+//ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 lazy val allScalacOptions = Seq(
   "-deprecation",
@@ -98,10 +98,6 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     scalacOptions ++= allScalacOptions,
-    Test / javaOptions ++= Seq(
-      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
-      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
-    ),
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     testOptions += Tests.Argument("-oF"),
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
@@ -147,6 +143,7 @@ lazy val app = project
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
+      guice,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
@@ -161,8 +158,6 @@ lazy val app = project
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     ),
     Test / javaOptions ++= Seq(
-      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
-      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
       "-Dconfig.resource=application.test.conf"
     )
   )
@@ -224,5 +219,3 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
   </developers>
   )
 )
-
-publishSettings
