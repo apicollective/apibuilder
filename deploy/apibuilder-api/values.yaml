@@ -17,6 +17,8 @@ resources:
 jvmOpts:
   memory: 3072m
 
+istio:
+  alb: true
 
 istioIngress:
   enabled: true
