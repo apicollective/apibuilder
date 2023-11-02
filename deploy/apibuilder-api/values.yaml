@@ -10,6 +10,7 @@ image:
 resources:
   limits:
     memory: "4Gi"
+    cpu: 3
   requests:
     memory: "4Gi"
     cpu: 1
