@@ -126,7 +126,7 @@ lazy val api = project
       """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""
     ),
     Test / javaOptions ++= Seq(
-      "-Dconfig.resource=application.conf"
+      "-Dconfig.resource=application.test.conf"
     )
   )
 
