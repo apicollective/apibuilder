@@ -164,7 +164,7 @@ lazy val app = project
       """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""
     ),
     Test / javaOptions ++= Seq(
-      "-Dconfig.resource=application.test.conf"
+      "-Dconfig.resource=application.conf"
     )
   )
 

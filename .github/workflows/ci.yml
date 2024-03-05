@@ -24,5 +24,5 @@ jobs:
         distribution: 'zulu'
     - name: Build
       run: |
-        docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest
-        sbt ++${{ matrix.scala }} clean test
+        docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest-pg15
+        CONF_APIBUILDER_API_HOST="http://localhost:9001" sbt ++${{ matrix.scala }} clean test
