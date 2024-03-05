@@ -23,8 +23,6 @@ jobs:
         java-version: ${{ matrix.java }}
         distribution: 'zulu'
     - name: Build
-      env:
-        CONF_APIBUILDER_API_HOST: http://localhost:9001
       run: |
         docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest-pg15
-        sbt ++${{ matrix.scala }} clean test
+        CONF_APIBUILDER_API_HOST="http://localhost:9001" sbt ++${{ matrix.scala }} clean test
