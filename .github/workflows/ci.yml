@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+env:
+  CONF_APIBUILDER_API_HOST: "http://localhost:9001"
+  CONF_DB_DEFAULT_URL: "jdbc:postgresql://127.0.0.1:7659/apibuilderdb"
+
 jobs:
   build:
     runs-on: ubuntu-latest
