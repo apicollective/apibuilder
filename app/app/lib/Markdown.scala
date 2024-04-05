@@ -22,8 +22,7 @@ object Markdown {
   private[this] val renderer = HtmlRenderer.builder(options).build
 
   def toHtml(value: String): String = {
-    val document = parser.parse(value)
-    renderer.render(document)
+    renderer.render(parser.parse(value))
   }
 
 }
