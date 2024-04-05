@@ -154,7 +154,7 @@ lazy val app = project
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.apache.commons" % "commons-compress" % "1.22",
       "com.github.tototoshi" %% "scala-csv" % "1.3.10",
-      "org.pegdown" % "pegdown" % "1.6.0",
+      "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
       "org.webjars" %% "webjars-play" % "2.8.18",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars" % "bootstrap-social" % "5.0.0",
