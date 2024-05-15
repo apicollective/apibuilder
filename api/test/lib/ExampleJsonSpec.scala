@@ -64,6 +64,48 @@ class ExampleJsonSpec  extends PlaySpec
     exampleMinimal.sample("foo", Some("bar")) must be(None)
   }
 
+  "recursive model" in {
+    val svc = service.withModel("user", _.withField("user", "user"))
+
+    ExampleJson.allFields(svc).sample("user").get must equal(
+      Json.obj(
+        "user" -> Json.obj(
+          "user" -> JsNull
+        )
+      )
+    )
+  }
+
+  "recursive union without discriminator" in {
+    val svc = service.withModel("human", _.withField("user", "user")).withUnion("user", _.withType("human"))
+
+    ExampleJson.allFields(svc).sample("user").get must equal(
+      Json.obj(
+        "human" -> Json.obj(
+          "user" -> Json.obj(
+            "human" -> Json.obj(
+              "user" -> JsNull
+            )
+          )
+        )
+      )
+    )
+  }
+
+  "recursive union with discriminator" in {
+    val svc = service.withModel("human", _.withField("user", "user")).withUnion("user", _.withType("human"), Some("discriminator"))
+
+    ExampleJson.allFields(svc).sample("user").get must equal(
+      Json.obj(
+        "discriminator" -> "human",
+        "user" -> Json.obj(
+          "discriminator" -> "human",
+          "user" -> JsNull
+        )
+      )
+    )
+  }
+
   "unknown union type" in {
     val svc = service.withUnion("primitive", _.withType("integer"))
     ExampleJson.allFields(svc).sample("primitive", Some("bar")) must be(None)
