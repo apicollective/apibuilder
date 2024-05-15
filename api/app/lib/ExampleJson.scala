@@ -28,9 +28,9 @@ case class ExampleJson(service: Service, selection: Selection) {
   def sample(typ: String, subTyp: Option[String] = None): Option[JsValue] = {
     try {
       subTyp match {
-        case Some(subType) => makeUnion(typ, subType)
+        case Some(subType) => makeUnion(typ, subType, Set.empty)
         case None => Some(
-          mockValue(TextDatatype.parse(typ), None)
+          mockValue(TextDatatype.parse(typ), None, Set.empty)
         )
       }
     } catch {
@@ -60,13 +60,13 @@ case class ExampleJson(service: Service, selection: Selection) {
     
   }
 
-  private[this] def makeModel(model: Model, parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private[this] def makeModel(model: Model, parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
     val value = JsObject(
       Map(
         model.fields.
           filter { f => selection == Selection.All || f.required }.
           map { field =>
-            (field.name, mockValue(field))
+            (field.name, mockValue(field, typeAcc))
           }: _*
       )
     )
@@ -83,19 +83,19 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def makeUnion(unionName: String, unionTypeName: String): Option[JsValue] = {
+  private[this] def makeUnion(unionName: String, unionTypeName: String, typeAcc: Set[String]): Option[JsValue] = {
     val unions = for {
       union <- service.unions if union.name == unionName
       unionType <- union.types if (unionType.`type` == unionTypeName)
-    } yield makeUnion(union, Some(unionType))
+    } yield makeUnion(union, Some(unionType), typeAcc + unionName)
     unions.headOption
   }
 
-  private[this] def makeUnion(union: Union, unionType: Option[UnionType] = None): JsValue = {
+  private[this] def makeUnion(union: Union, unionType: Option[UnionType], typeAcc: Set[String]): JsValue = {
     unionType.orElse(union.types.headOption).fold {
       Json.obj(): JsValue
     } { unionType =>
-      mockValue(TextDatatype.parse(unionType.`type`), Some(union -> unionType)) match {
+      mockValue(TextDatatype.parse(unionType.`type`), Some(union -> unionType), typeAcc) match {
         case js: JsBoolean => primitiveUnionWrapper(union, unionType, js)
         case js: JsNumber => primitiveUnionWrapper(union, unionType, js)
         case js: JsString => primitiveUnionWrapper(union, unionType, js)
@@ -118,28 +118,29 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(types: Seq[TextDatatype], parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private[this] def mockValue(types: Seq[TextDatatype], parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
     types.toList match {
       case Nil => JsNull
-      case TextDatatype.Singleton(one) :: Nil => singleton(one, parentUnion)
-      case TextDatatype.Singleton(one) :: _ => sys.error("Singleton must be leaf")
-      case TextDatatype.List :: rest => Json.toJson(Seq(mockValue(rest, None)))
-      case TextDatatype.Map :: rest => Json.obj("foo" -> mockValue(rest, None))
+      case TextDatatype.Singleton(one) :: Nil if typeAcc.contains(one) => JsNull
+      case TextDatatype.Singleton(one) :: Nil => singleton(one, parentUnion, typeAcc)
+      case TextDatatype.Singleton(_) :: _ => sys.error("Singleton must be leaf")
+      case TextDatatype.List :: rest => Json.toJson(Seq(mockValue(rest, None, typeAcc)))
+      case TextDatatype.Map :: rest => Json.obj("foo" -> mockValue(rest, None, typeAcc))
     }
   }
 
-  private[this] def singleton(typ: String, parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private[this] def singleton(typ: String, parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
     Primitives(typ) match {
       case None => {
         service.enums.find(_.name == typ) match {
           case Some(e) => makeEnum(e, parentUnion)
           case None => {
             service.models.find(_.name == typ) match {
-              case Some(m) => makeModel(m, parentUnion)
+              case Some(m) => makeModel(m, parentUnion, typeAcc)
 
               case None => {
                 service.unions.find(_.name == typ) match {
-                  case Some(u) => makeUnion(u)
+                  case Some(u) => makeUnion(u, None, typeAcc)
                   case None => throw new UnknownType(typ)
                 }
               }
@@ -152,22 +153,23 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(field: Field): JsValue = {
+  private[this] def mockValue(field: Field, typeAcc: Set[String]): JsValue = {
     val types = TextDatatype.parse(field.`type`)
     types.toList match {
       case Nil => JsNull
-      case TextDatatype.Singleton(one) :: Nil => singleton(field)
+      case TextDatatype.Singleton(_) :: Nil if typeAcc.contains(field.`type`) => JsNull
+      case TextDatatype.Singleton(_) :: Nil => singleton(field, typeAcc + field.`type`)
       case TextDatatype.Singleton(_) :: _ => sys.error("Singleton must be leaf")
       case TextDatatype.List :: rest => {
         field.default match {
           case None => {
-            Json.toJson(Seq(mockValue(rest, None)))
+            Json.toJson(Seq(mockValue(rest, None, typeAcc)))
           }
           case Some(default) => {
             try {
               Json.parse(default).as[JsArray]
             } catch {
-              case _: Throwable => Json.toJson(Seq(mockValue(rest, None)))
+              case _: Throwable => Json.toJson(Seq(mockValue(rest, None, typeAcc)))
             }
           }
         }
@@ -175,13 +177,13 @@ case class ExampleJson(service: Service, selection: Selection) {
       case TextDatatype.Map :: rest => {
         field.default match {
           case None => {
-            Json.obj("foo" -> mockValue(rest, None))
+            Json.obj("foo" -> mockValue(rest, None, typeAcc))
           }
           case Some(default) => {
             try {
               Json.parse(default).as[JsObject]
             } catch {
-              case _: Throwable => Json.obj("foo" -> mockValue(rest, None))
+              case _: Throwable => Json.obj("foo" -> mockValue(rest, None, typeAcc))
             }
           }
         }
@@ -189,17 +191,17 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def singleton(field: Field): JsValue = {
+  private[this] def singleton(field: Field, typeAcc: Set[String]): JsValue = {
     Primitives(field.`type`) match {
       case None => {
         service.enums.find(_.name == field.`type`) match {
           case Some(e) => makeEnum(e, None)
           case None => {
             service.models.find(_.name == field.`type`) match {
-              case Some(m) => makeModel(m, None)
+              case Some(m) => makeModel(m, None, typeAcc)
               case None => {
                 service.unions.find(_.name == field.`type`) match {
-                  case Some(u) => makeUnion(u)
+                  case Some(u) => makeUnion(u, None, typeAcc)
                   case None => throw new UnknownType(field.`type`)
                 }
               }
