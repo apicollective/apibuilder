@@ -353,6 +353,7 @@ class VersionsDao @Inject() (
         isNotNull("originals.data").
         orderBy("versions.created_at desc").
         limit(limit).
+        withDebugging().
         offset(offset).
         as(parser.*)
 
