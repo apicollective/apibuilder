@@ -37,8 +37,6 @@ class VersionsDao @Inject() (
   private[this] val LatestVersion = "latest"
   private[this] val LatestVersionFilter = "~"
 
-  private[this] val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
-
   private[this] val HasServiceJsonClause: String =
     """
       |exists (
@@ -349,7 +347,7 @@ class VersionsDao @Inject() (
             |      and services.version = {latest_version}
             |)
           """.stripMargin
-        ).bind("latest_version", ServiceVersionNumber).
+        ).bind("latest_version", Migration.ServiceVersionNumber).
         isNotNull("originals.data").
         orderBy("versions.created_at desc").
         limit(limit).
@@ -372,7 +370,7 @@ class VersionsDao @Inject() (
             orgNamespace = org.namespace,
             version = versionName
           )
-          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
+          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${Migration.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
 
           val original = version.original.getOrElse {
             sys.error("Missing version")
@@ -420,7 +418,7 @@ class VersionsDao @Inject() (
   ): Unit =  {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
       Symbol("version_guid") -> versionGuid,
-      Symbol("version") -> ServiceVersionNumber,
+      Symbol("version") -> Migration.ServiceVersionNumber,
       Symbol("user_guid") -> user.guid
     )
   }
@@ -434,7 +432,7 @@ class VersionsDao @Inject() (
     SQL(InsertServiceQuery).on(
       Symbol("guid") -> UUID.randomUUID,
       Symbol("version_guid") -> versionGuid,
-      Symbol("version") -> ServiceVersionNumber,
+      Symbol("version") -> Migration.ServiceVersionNumber,
       Symbol("json") -> Json.toJson(service).as[JsObject].toString.trim,
       Symbol("user_guid") -> user.guid
     ).execute()

@@ -48,8 +48,7 @@
             "dao_user_class": "java.util.UUID",
             "order_by": { "optional": true },
             "id_generator": {
-              "class": "util.IdGenerator",
-              "prefix": "mig"
+              "class": "util.IdGenerator"
             }
           }
         },

@@ -115,10 +115,10 @@ lazy val api = project
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.postgresql"    %  "postgresql"     % "42.5.0",
+      "org.postgresql"    %  "postgresql"     % "42.7.3",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
-      "io.flow"           %% "lib-postgresql-play-play28" % "0.3.63",
+      "io.flow"           %% "lib-postgresql-play-play28" % "0.5.53",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
     ),

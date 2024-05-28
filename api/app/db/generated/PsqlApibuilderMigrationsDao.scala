@@ -245,7 +245,7 @@ class MigrationsDao @Inject() (
   override val db: Database
 ) extends BaseMigrationsDao {
 
-  private[this] val idGenerator = util.IdGenerator("mig")
+  private[this] val idGenerator = util.IdGenerator()
 
   def randomId(): String = idGenerator.randomId()
 

@@ -1,9 +1,11 @@
 package util
 
-object IdGenerator {
+import java.util.UUID
+
+case class IdGenerator() {
 
   def randomId(): String = {
-    "TODO"
+    UUID.randomUUID().toString
   }
 
 }
