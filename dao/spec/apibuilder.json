@@ -1,0 +1,46 @@
+{
+  "name": "apibuilder",
+
+  "models": {
+
+    "migration": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "version_guid", "type": "uuid" },
+        { "name": "num_attempts", "type": "long", "minimum": 0 },
+        { "name": "errors", "type": "[string]", "required": false }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "package": "db.generated",
+            "dao_user_class": "java.util.UUID",
+            "order_by": { "optional": true },
+            "id_generator": {
+              "class": "util.IdGenerator",
+              "prefix": "mig"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "pkey": "id",
+            "authorization": { "type": "disabled" },
+            "indexes": [
+              { "fields":  ["version_guid"] },
+              { "fields":  ["num_attempts", "created_at"] }
+            ],
+            "foreign_keys": [
+              {
+                "fields": ["version_guid"],
+                "references": "versions"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
