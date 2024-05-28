@@ -8,6 +8,13 @@ import play.api.db._
 
 import javax.inject.Inject
 
+/**
+ * TODO: Test this class
+ * Setup a separate actor to:
+ *   - delete if service_version < latest
+ *   - attempt migration for num_attempts = 0
+ *   - record errors
+ */
 object Migration {
   val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
 }
