@@ -165,7 +165,7 @@ class ApplicationsDao @Inject() (
 
     withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateQuery).on(
-        Symbol("guid") -> app.guid,
+        "guid" -> app.guid,
         Symbol("name") -> form.name.trim,
         Symbol("visibility") -> form.visibility.toString,
         Symbol("description") -> form.description.map(_.trim),
