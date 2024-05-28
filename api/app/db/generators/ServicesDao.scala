@@ -64,9 +64,9 @@ class ServicesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("uri") -> form.uri.trim,
-        Symbol("created_by_guid") -> user.guid
+        "guid" -> guid,
+        "uri" -> form.uri.trim,
+        "created_by_guid" -> user.guid
       ).execute()
     }
 

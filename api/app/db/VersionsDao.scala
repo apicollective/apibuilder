@@ -135,11 +135,11 @@ class VersionsDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> guid,
-      Symbol("application_guid") -> application.guid,
-      Symbol("version") -> version.trim,
-      Symbol("version_sort_key") -> VersionTag(version.trim).sortKey,
-      Symbol("created_by_guid") -> user.guid
+      "guid" -> guid,
+      "application_guid" -> application.guid,
+      "version" -> version.trim,
+      "version_sort_key" -> VersionTag(version.trim).sortKey,
+      "created_by_guid" -> user.guid
     ).execute()
 
     originalsDao.create(c, user, guid, original)
@@ -155,8 +155,8 @@ class VersionsDao @Inject() (
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
 
       SQL(DeleteQuery).on(
-        Symbol("guid") -> version.guid,
-        Symbol("deleted_by_guid") -> deletedBy.guid
+        "guid" -> version.guid,
+        "deleted_by_guid" -> deletedBy.guid
       ).execute()
     }
   }
@@ -417,9 +417,9 @@ class VersionsDao @Inject() (
     versionGuid: UUID
   ): Unit =  {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
-      Symbol("version_guid") -> versionGuid,
-      Symbol("version") -> Migration.ServiceVersionNumber,
-      Symbol("user_guid") -> user.guid
+      "version_guid" -> versionGuid,
+      "version" -> Migration.ServiceVersionNumber,
+      "user_guid" -> user.guid
     )
   }
 
@@ -430,11 +430,11 @@ class VersionsDao @Inject() (
     service: Service
   ): Unit =  {
     SQL(InsertServiceQuery).on(
-      Symbol("guid") -> UUID.randomUUID,
-      Symbol("version_guid") -> versionGuid,
-      Symbol("version") -> Migration.ServiceVersionNumber,
-      Symbol("json") -> Json.toJson(service).as[JsObject].toString.trim,
-      Symbol("user_guid") -> user.guid
+      "guid" -> UUID.randomUUID,
+      "version_guid" -> versionGuid,
+      "version" -> Migration.ServiceVersionNumber,
+      "json" -> Json.toJson(service).as[JsObject].toString.trim,
+      "user_guid" -> user.guid
     ).execute()
   }
 

@@ -145,17 +145,17 @@ class UserPasswordsDao @Inject() (
     val hashedPassword = algorithm.hash(cleartextPassword)
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> guid,
-      Symbol("user_guid") -> userGuid,
-      Symbol("algorithm_key") -> algorithm.key,
-      Symbol("hash") -> new String(Base64.encodeBase64(hashedPassword.hash.getBytes)),
-      Symbol("created_by_guid") -> creatingUserGuid,
-      Symbol("updated_by_guid") -> creatingUserGuid
+      "guid" -> guid,
+      "user_guid" -> userGuid,
+      "algorithm_key" -> algorithm.key,
+      "hash" -> new String(Base64.encodeBase64(hashedPassword.hash.getBytes)),
+      "created_by_guid" -> creatingUserGuid,
+      "updated_by_guid" -> creatingUserGuid
     ).execute()
   }
 
   private[this] def softDeleteByUserGuid(implicit c: Connection, user: User, userGuid: UUID): Unit = {
-    SQL(SoftDeleteByUserGuidQuery).on(Symbol("deleted_by_guid") -> user.guid, Symbol("user_guid") -> userGuid).execute()
+    SQL(SoftDeleteByUserGuidQuery).on("deleted_by_guid" -> user.guid, "user_guid" -> userGuid).execute()
   }
 
   def isValid(userGuid: UUID, cleartextPassword: String): Boolean = {

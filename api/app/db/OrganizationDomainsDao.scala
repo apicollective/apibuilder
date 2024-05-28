@@ -44,10 +44,10 @@ class OrganizationDomainsDao @Inject() (
     )
 
     SQL(UpsertQuery).on(
-      Symbol("guid") -> domain.guid,
-      Symbol("organization_guid") -> domain.organizationGuid,
-      Symbol("domain") -> domain.domain.name,
-      Symbol("created_by_guid") -> createdBy.guid
+      "guid" -> domain.guid,
+      "organization_guid" -> domain.organizationGuid,
+      "domain" -> domain.domain.name,
+      "created_by_guid" -> createdBy.guid
     ).execute()
 
     domain

@@ -19,7 +19,7 @@ class TasksDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
     """
 
     injector.instanceOf[DBApi].database("default").withConnection { implicit c =>
-      SQL(query).on(Symbol("guid") -> task.guid).execute()
+      SQL(query).on("guid" -> task.guid).execute()
     }
   }
 

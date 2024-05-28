@@ -131,11 +131,11 @@ class UsersDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
-        Symbol("guid") -> user.guid,
-        Symbol("email") -> form.email.trim.toLowerCase,
-        Symbol("name") -> form.name.map(_.trim),
-        Symbol("nickname") -> form.nickname.trim.toLowerCase,
-        Symbol("updated_by_guid") -> updatingUser.guid
+        "guid" -> user.guid,
+        "email" -> form.email.trim.toLowerCase,
+        "name" -> form.name.map(_.trim),
+        "nickname" -> form.nickname.trim.toLowerCase,
+        "updated_by_guid" -> updatingUser.guid
       ).execute()
     }
 
@@ -214,14 +214,14 @@ class UsersDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> guid,
-      Symbol("email") -> email.trim.toLowerCase,
-      Symbol("nickname") -> nickname.trim.toLowerCase,
-      Symbol("name") -> toOptionString(name),
-      Symbol("avatar_url") -> toOptionString(avatarUrl),
-      Symbol("gravatar_id") -> toOptionString(gravatarId),
-      Symbol("created_by_guid") -> Constants.DefaultUserGuid.toString,
-      Symbol("updated_by_guid") -> Constants.DefaultUserGuid.toString
+      "guid" -> guid,
+      "email" -> email.trim.toLowerCase,
+      "nickname" -> nickname.trim.toLowerCase,
+      "name" -> toOptionString(name),
+      "avatar_url" -> toOptionString(avatarUrl),
+      "gravatar_id" -> toOptionString(gravatarId),
+      "created_by_guid" -> Constants.DefaultUserGuid.toString,
+      "updated_by_guid" -> Constants.DefaultUserGuid.toString
     ).execute()
 
     guid

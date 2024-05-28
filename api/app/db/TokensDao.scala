@@ -66,11 +66,11 @@ class TokensDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("user_guid") -> form.userGuid,
-        Symbol("description") -> form.description,
-        Symbol("token") -> TokenGenerator.generate(),
-        Symbol("created_by_guid") -> user.guid
+        "guid" -> guid,
+        "user_guid" -> form.userGuid,
+        "description" -> form.description,
+        "token" -> TokenGenerator.generate(),
+        "created_by_guid" -> user.guid
       ).execute()
     }
 

@@ -43,10 +43,10 @@ class OrganizationLogsDao @Inject() (
     )
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> log.guid,
-      Symbol("organization_guid") -> log.organizationGuid,
-      Symbol("message") -> log.message,
-      Symbol("created_by_guid") -> createdBy
+      "guid" -> log.guid,
+      "organization_guid" -> log.organizationGuid,
+      "message" -> log.message,
+      "created_by_guid" -> createdBy
     ).execute()
 
     log

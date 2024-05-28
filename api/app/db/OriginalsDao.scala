@@ -32,10 +32,10 @@ class OriginalsDao @Inject() () {
     original: Original
   ): Unit = {
     SQL(InsertQuery).on(
-      Symbol("version_guid") -> versionGuid,
-      Symbol("type") -> original.`type`.toString,
-      Symbol("data") -> original.data,
-      Symbol("created_by_guid") -> user.guid
+      "version_guid" -> versionGuid,
+      "type" -> original.`type`.toString,
+      "data" -> original.data,
+      "created_by_guid" -> user.guid
     ).execute()
   }
 
@@ -45,8 +45,8 @@ class OriginalsDao @Inject() () {
     guid: UUID
   ): Unit = {
     SQL(SoftDeleteByVersionGuidQuery).on(
-      Symbol("version_guid") -> guid,
-      Symbol("deleted_by_guid") -> user.guid
+      "version_guid" -> guid,
+      "deleted_by_guid" -> user.guid
     ).execute()
   }
 }

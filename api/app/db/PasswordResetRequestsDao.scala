@@ -50,11 +50,11 @@ class PasswordResetRequestsDao @Inject() (
     val guid = UUID.randomUUID
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("user_guid") -> user.guid,
-        Symbol("token") -> TokenGenerator.generate(TokenLength),
-        Symbol("expires_at") -> DateTime.now.plusHours(HoursUntilTokenExpires),
-        Symbol("created_by_guid") -> createdBy.getOrElse(user).guid
+        "guid" -> guid,
+        "user_guid" -> user.guid,
+        "token" -> TokenGenerator.generate(TokenLength),
+        "expires_at" -> DateTime.now.plusHours(HoursUntilTokenExpires),
+        "created_by_guid" -> createdBy.getOrElse(user).guid
       ).execute()
     }
 
