@@ -2,7 +2,7 @@ package actors
 
 import java.util.UUID
 import akka.actor._
-import db.VersionsDao
+import db.{InternalMigrationsDao, VersionsDao}
 import lib.Role
 import play.api.Mode
 
@@ -32,7 +32,7 @@ object MainActor {
 class MainActor @javax.inject.Inject() (
   app: play.api.Application,
   system: ActorSystem,
-  versionsDao: VersionsDao,
+  internalMigrationsDao: InternalMigrationsDao,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
   @javax.inject.Named("task-actor") taskActor: akka.actor.ActorRef,
@@ -41,10 +41,10 @@ class MainActor @javax.inject.Inject() (
 
   private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("main-actor-context")
 
-  private[this] case object Startup
+  private[this] case object QueueVersionsToMigrate
 
   system.scheduler.scheduleOnce(FiniteDuration(5, SECONDS)) {
-    self ! Startup
+    self ! QueueVersionsToMigrate
   }
 
   def receive = akka.event.LoggingReceive {
@@ -89,28 +89,18 @@ class MainActor @javax.inject.Inject() (
       userActor ! UserActor.Messages.UserCreated(guid)
     }
 
-    case m @ Startup => withVerboseErrorHandler(m) {
+    case m @ QueueVersionsToMigrate => withVerboseErrorHandler(m) {
       app.mode match {
         case Mode.Test => {
           // No-op
+          internalMigrationsDao.queueVersions()
         }
         case Mode.Prod | Mode.Dev => {
-          ensureServices()
+          internalMigrationsDao.queueVersions()
         }
       }
     }
 
     case m: Any => logUnhandledMessage(m)
-  }
-
-  private[this] def ensureServices(): Unit = {
-    log.info("[MainActor] Starting ensureServices()")
-
-    Try {
-      versionsDao.migrate()
-    } match {
-      case Success(result) => log.info("ensureServices() completed: " + result)
-      case Failure(ex) => log.error(s"Error migrating versions: ${ex.getMessage}")
-    }
   }
 }

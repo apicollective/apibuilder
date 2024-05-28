@@ -1,24 +1,12 @@
 package db
 
 import anorm._
-import builder.OriginalValidator
-import builder.api_json.upgrades.ServiceParser
-import cats.data.Validated.{Invalid, Valid}
-import core.{ServiceFetcher, VersionMigration}
-import db.generated.MigrationsDao
-import io.apibuilder.api.v0.models._
-import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
-import io.apibuilder.spec.v0.models.Service
-import io.apibuilder.spec.v0.models.json._
+import db.generated.{MigrationForm, MigrationsDao}
 import io.flow.postgresql.Query
-import lib.{Constants, ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
-import play.api.Logger
+import lib.Constants
 import play.api.db._
-import play.api.libs.json._
 
-import java.util.UUID
-import javax.inject.{Inject, Named}
-import scala.annotation.tailrec
+import javax.inject.Inject
 
 object Migration {
   val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
@@ -54,7 +42,13 @@ class InternalMigrationsDao @Inject()(
         .as(SqlParser.get[_root_.java.util.UUID](1).*)
     }
     if (versionGuids.nonEmpty) {
-      migrationsDao.insertBatch(Constants.DefaultUserGuid)
+      migrationsDao.insertBatch(Constants.DefaultUserGuid, versionGuids.map { vGuid =>
+        MigrationForm(
+          versionGuid = vGuid,
+          numAttempts = 0,
+          errors = None
+        )
+      })
 
     }
   }
