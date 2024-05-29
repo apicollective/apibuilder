@@ -43,30 +43,17 @@ class MainActor @javax.inject.Inject() (
   private[this] case object QueueVersionsToMigrate
   private[this] case object MigrateVersions
 
-  system.scheduler.scheduleOnce(FiniteDuration(5, SECONDS)) {
-    self ! QueueVersionsToMigrate
-  }
-
-
-  private[this] def schedule(
+  private[this] def scheduleOnce(
                               msg: Any,
-                              interval: FiniteDuration
-                            )(implicit
-                              initialInterval: FiniteDuration = interval
-                            ): Cancellable = {
-    context.system.scheduler.scheduleWithFixedDelay(interval, interval, self, msg)
+                              delay: FiniteDuration = FiniteDuration(5, SECONDS)
+                            ): Unit = {
+    system.scheduler.scheduleOnce(delay) {
+      self ! msg
+    }
   }
 
-  private[this] val cancellables: Seq[Cancellable] = {
-    Seq(
-      schedule(MigrateVersions, FiniteDuration(1, MINUTES)),
-    )
-  }
-
-  override def postStop(): Unit = {
-    cancellables.foreach(_.cancel())
-    super.postStop()
-  }
+  scheduleOnce(QueueVersionsToMigrate)
+  scheduleOnce(MigrateVersions)
 
   def receive = akka.event.LoggingReceive {
 
@@ -120,7 +107,11 @@ class MainActor @javax.inject.Inject() (
     case m @ MigrateVersions => withVerboseErrorHandler(m) {
       app.mode match {
         case Mode.Test => // No-op
-        case Mode.Prod | Mode.Dev => internalMigrationsDao.migrateBatch(50)
+        case Mode.Prod | Mode.Dev => {
+          if (internalMigrationsDao.migrateBatch(50)) {
+            scheduleOnce(MigrateVersions)
+          }
+        }
       }
     }
 
