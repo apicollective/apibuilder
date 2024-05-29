@@ -40,7 +40,7 @@ class InternalMigrationsDao @Inject()(
       |  )
       |limit 250
       |""".stripMargin
-  ).bind("service_version", Migration.ServiceVersionNumber).withDebugging()
+  ).bind("service_version", Migration.ServiceVersionNumber)
 
   def queueVersions(): Unit = {
     val versionGuids = db.withConnection { implicit c =>
@@ -55,7 +55,7 @@ class InternalMigrationsDao @Inject()(
           errors = None
         )
       })
-
+      queueVersions()
     }
   }
 
