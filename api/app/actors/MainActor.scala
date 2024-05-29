@@ -41,10 +41,10 @@ class MainActor @javax.inject.Inject() (
 
   private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("main-actor-context")
 
-  private[this] case object QueueVersionsToMigrate
+  private[this] case object MigrateVersions
 
   system.scheduler.scheduleOnce(FiniteDuration(5, SECONDS)) {
-    self ! QueueVersionsToMigrate
+    self ! MigrateVersions
   }
 
   def receive = akka.event.LoggingReceive {
@@ -89,14 +89,14 @@ class MainActor @javax.inject.Inject() (
       userActor ! UserActor.Messages.UserCreated(guid)
     }
 
-    case m @ QueueVersionsToMigrate => withVerboseErrorHandler(m) {
+    case m @ MigrateVersions => withVerboseErrorHandler(m) {
       app.mode match {
         case Mode.Test => {
           // No-op
-          internalMigrationsDao.queueVersions()
         }
         case Mode.Prod | Mode.Dev => {
           internalMigrationsDao.queueVersions()
+          internalMigrationsDao.migrateAll()
         }
       }
     }
