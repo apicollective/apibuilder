@@ -30,7 +30,7 @@ class InternalMigrationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     count mustBe 1
   }
 
-  "migrateAll" in {
+  "migrateBatch" in {
     val version = createVersion()
     deleteCachedServices(version.guid)
 
@@ -39,7 +39,7 @@ class InternalMigrationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     exists mustBe false
 
     internalMigrationsDao.queueVersions()
-    internalMigrationsDao.migrateAll()
+    internalMigrationsDao.migrateBatch(1000L)
 
     exists mustBe true
   }

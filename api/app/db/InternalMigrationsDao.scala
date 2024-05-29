@@ -61,9 +61,10 @@ class InternalMigrationsDao @Inject()(
     }
   }
 
-  def migrateAll(): Unit = {
-    migrationsDao.iterateAll(
-      numAttempts = Some(0)
+  def migrateBatch(limit: Long): Unit = {
+    migrationsDao.findAll(
+      numAttempts = Some(0),
+      limit = Some(limit)
     ).foreach { migration =>
       versionsDao.migrateVersionGuid(migration.versionGuid) match {
         case Valid(_) => migrationsDao.delete(Constants.DefaultUserGuid, migration)
