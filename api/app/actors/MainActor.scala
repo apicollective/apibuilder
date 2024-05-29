@@ -43,10 +43,7 @@ class MainActor @javax.inject.Inject() (
   private[this] case object QueueVersionsToMigrate
   private[this] case object MigrateVersions
 
-  private[this] def scheduleOnce(
-                              msg: Any,
-                              delay: FiniteDuration = FiniteDuration(5, SECONDS)
-                            ): Unit = {
+  private[this] def scheduleOnce(msg: Any)(implicit delay: FiniteDuration = FiniteDuration(10, SECONDS)): Unit = {
     system.scheduler.scheduleOnce(delay) {
       self ! msg
     }
@@ -109,7 +106,7 @@ class MainActor @javax.inject.Inject() (
         case Mode.Test => // No-op
         case Mode.Prod | Mode.Dev => {
           if (internalMigrationsDao.migrateBatch(50)) {
-            scheduleOnce(MigrateVersions)
+            scheduleOnce(MigrateVersions)(FiniteDuration(1, MINUTES))
           }
         }
       }
