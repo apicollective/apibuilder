@@ -156,7 +156,7 @@ lazy val app = project
       "com.github.tototoshi" %% "scala-csv" % "1.3.10",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
       "org.webjars" %% "webjars-play" % "2.9.1",
-      "org.webjars" % "bootstrap" % "3.4.1",`
+      "org.webjars" % "bootstrap" % "3.4.1",
       "org.webjars" % "bootstrap-social" % "5.0.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     ),
