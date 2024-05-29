@@ -1,13 +1,13 @@
 package db
 
-import io.apibuilder.api.v0.models.Publication
+import io.apibuilder.api.v0.models.{Organization, Publication}
 import lib.Role
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class SubsriptionDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  lazy val org = createOrganization()
+  private[this] lazy val org: Organization = createOrganization()
 
   "when a user loses admin role, we remove subscriptions that require admin" in {
     val user = createRandomUser()
