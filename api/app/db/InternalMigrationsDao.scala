@@ -59,4 +59,12 @@ class InternalMigrationsDao @Inject()(
     }
   }
 
+  def process(): Unit = {
+    migrationsDao.iterateAll(
+      numAttempts = Some(0)
+    ).foreach { migration =>
+
+    }
+  }
+
 }

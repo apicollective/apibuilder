@@ -3,9 +3,12 @@ package db
 import anorm._
 import builder.OriginalValidator
 import builder.api_json.upgrades.ServiceParser
+import cats.implicits._
 import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
 import core.{ServiceFetcher, VersionMigration}
 import io.apibuilder.api.v0.models._
+import io.apibuilder.common.v0.models.{Audit, Reference}
 import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
@@ -18,8 +21,6 @@ import play.api.libs.json._
 import java.util.UUID
 import javax.inject.{Inject, Named}
 import scala.annotation.tailrec
-
-case class MigrationStats(good: Long, bad: Long)
 
 class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
@@ -240,7 +241,6 @@ class VersionsDao @Inject() (
     offset: Long = 0
   ): Seq[Version] = {
     db.withConnection { implicit c =>
-
       authorization.applicationFilter(BaseQuery).
         and(HasServiceJsonClause).
         equals("versions.guid", guid).
@@ -252,6 +252,8 @@ class VersionsDao @Inject() (
         limit(limit).
         offset(offset).
         as(parser.*)
+    }.flatMap { v =>
+      v.toVersion.toOption
     }
   }
 
@@ -282,26 +284,55 @@ class VersionsDao @Inject() (
       )
     }
   }
-  
-  private[this] val parser: RowParser[Version] = {
-    SqlParser.get[_root_.java.util.UUID]("guid") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
-      SqlParser.str("version") ~
-      io.apibuilder.api.v0.anorm.parsers.Original.parserWithPrefix("original").? ~
-      SqlParser.str("service_json") ~
-      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
-      case guid ~ organization ~ application ~ version ~ original ~ serviceJson ~ audit => {
-        io.apibuilder.api.v0.models.Version(
+
+  private[this] case class TmpVersion(
+                                       guid: UUID,
+                                       organization: Reference,
+                                       application: Reference,
+                                       version: String,
+                                       original: Option[Original],
+                                       serviceJson: Option[String],
+                                       audit: Audit
+                                     ) {
+    def toVersion: ValidatedNec[String, Version] = {
+      service.map { svc =>
+        Version(
           guid = guid,
           organization = organization,
           application = application,
           version = version,
           original = original,
-          service = serviceParser.fromString(serviceJson) match {
-            case Invalid(errs) => sys.error(s"Failed to parse service for version: $guid: ${errs.toNonEmptyList.toList.mkString(", ")}")
-            case Valid(s) => s
-          },
+          service = svc,
+          audit = audit
+        )
+      }
+
+    }
+
+    private[this] def service: ValidatedNec[String, Service] = {
+      serviceJson match {
+        case None => "Version does not have service json".invalidNec
+        case Some(json) => serviceParser.fromString(json)
+      }
+    }
+  }
+
+  private[this] val parser: RowParser[TmpVersion] = {
+    SqlParser.get[_root_.java.util.UUID]("guid") ~
+      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
+      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
+      SqlParser.str("version") ~
+      io.apibuilder.api.v0.anorm.parsers.Original.parserWithPrefix("original").? ~
+      SqlParser.str("service_json").? ~
+      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
+      case guid ~ organization ~ application ~ version ~ original ~ serviceJson ~ audit => {
+        TmpVersion(
+          guid = guid,
+          organization = organization,
+          application = application,
+          version = version,
+          original = original,
+          serviceJson = serviceJson,
           audit = audit
         )
       }
@@ -329,8 +360,7 @@ class VersionsDao @Inject() (
     finalStats
   }
 
-  @tailrec
-  private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+  def migrateVersionGuid(): MigrationStats = {
     var good = 0L
     var bad = 0L
 
