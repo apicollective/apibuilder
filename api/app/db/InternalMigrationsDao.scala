@@ -28,7 +28,6 @@ class InternalMigrationsDao @Inject()(
     """
       |select v.guid
       |  from versions v
-      |  join originals on originals.version_guid = v.guid and originals.deleted_at is null
       |  left join migrations m on m.version_guid = v.guid
       | where v.deleted_at is null
       |   and m.id is null
@@ -41,7 +40,7 @@ class InternalMigrationsDao @Inject()(
       |  )
       |limit 250
       |""".stripMargin
-  ).bind("service_version", Migration.ServiceVersionNumber)
+  ).bind("service_version", Migration.ServiceVersionNumber).withDebugging()
 
   def queueVersions(): Unit = {
     val versionGuids = db.withConnection { implicit c =>
