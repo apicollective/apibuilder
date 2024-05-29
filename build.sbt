@@ -119,7 +119,7 @@ lazy val api = project
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.5.53",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
-      "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
+      "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1" % Test
     ),
     bashScriptExtraDefines ++= Seq(
       """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""

@@ -1,7 +1,5 @@
       "org.webjars" % "bootstrap" % "3.4.1",
       webjars
-wiremock
-scalatest
 
 Bindables with multiple services
 
