@@ -4,7 +4,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-ThisBuild / scalaVersion := "2.13.11"
+ThisBuild / scalaVersion := "2.13.14"
 
 //ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
@@ -26,7 +26,7 @@ lazy val lib = project
 
 val avroVersion = "1.11.1"
 
-val playJsonVersion = "2.9.3"
+val playJsonVersion = "2.10.5"
 
 lazy val avro = project
   .in(file("avro"))
@@ -63,7 +63,7 @@ lazy val swagger = project
     )
   )
 
-val circeVersion = "0.14.3"
+val circeVersion = "0.14.7"
 lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)
@@ -117,7 +117,7 @@ lazy val api = project
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.postgresql"    %  "postgresql"     % "42.7.3",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
-      "com.sendgrid"      %  "sendgrid-java"  % "4.1.2",
+      "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.5.53",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
@@ -152,11 +152,11 @@ lazy val app = project
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.apache.commons" % "commons-compress" % "1.22",
+      "org.apache.commons" % "commons-compress" % "1.26.2",
       "com.github.tototoshi" %% "scala-csv" % "1.3.10",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
-      "org.webjars" %% "webjars-play" % "2.8.18",
-      "org.webjars" % "bootstrap" % "3.3.7",
+      "org.webjars" %% "webjars-play" % "2.9.1",
+      "org.webjars" % "bootstrap" % "3.4.1",`
       "org.webjars" % "bootstrap-social" % "5.0.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
     ),
@@ -184,9 +184,9 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.4",
-    "com.typesafe.play" %% "play-json-joda" % "2.9.3",
+    "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
     "org.atteo" % "evo-inflector" % "1.3",
-    "org.typelevel" %% "cats-core" % "2.9.0",
+    "org.typelevel" %% "cats-core" % "2.12.0",
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
   ),
   scalacOptions ++= allScalacOptions,
