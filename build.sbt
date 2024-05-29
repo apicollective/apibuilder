@@ -93,8 +93,7 @@ lazy val api = project
   .in(file("api"))
   .dependsOn(generated, core % "compile->compile;test->test")
   .aggregate(generated, core)
-  .enablePlugins(PlayScala)
-  .enablePlugins(JavaAgent)
+  .enablePlugins(PlayScala, JavaAgent)
   .settings(commonSettings: _*)
   .settings(
     scalacOptions ++= allScalacOptions,
@@ -134,9 +133,7 @@ lazy val app = project
   .in(file("app"))
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
-  .enablePlugins(PlayScala)
-  .enablePlugins(JavaAgent)
-  .enablePlugins(SbtTwirl)
+  .enablePlugins(PlayScala, JavaAgent, SbtTwirl)
   .settings(commonSettings: _*)
   .settings(
     scalacOptions ++= allScalacOptions,
