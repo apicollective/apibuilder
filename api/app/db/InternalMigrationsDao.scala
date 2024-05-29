@@ -1,6 +1,7 @@
 package db
 
 import anorm._
+import cats.data.Validated.{Invalid, Valid}
 import db.generated.{MigrationForm, MigrationsDao}
 import io.flow.postgresql.Query
 import lib.Constants
@@ -21,7 +22,8 @@ object Migration {
 
 class InternalMigrationsDao @Inject()(
   @NamedDatabase("default") db: Database,
-  migrationsDao: MigrationsDao
+  migrationsDao: MigrationsDao,
+  versionsDao: VersionsDao
 ) {
 
   private[this] val VersionsNeedingUpgrade = Query(
@@ -63,7 +65,15 @@ class InternalMigrationsDao @Inject()(
     migrationsDao.iterateAll(
       numAttempts = Some(0)
     ).foreach { migration =>
-      println(s"Migrating ${migration}")
+      versionsDao.migrateVersionGuid(migration.versionGuid) match {
+        case Valid(_) => migrationsDao.delete(Constants.DefaultUserGuid, migration)
+        case Invalid(e) => {
+          migrationsDao.update(Constants.DefaultUserGuid, migration, migration.form.copy(
+            numAttempts = migration.numAttempts + 1,
+            errors = Some(e.toNonEmptyList.toList)
+          ))
+        }
+      }
     }
   }
 
