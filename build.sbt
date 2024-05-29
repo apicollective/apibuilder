@@ -38,7 +38,7 @@ lazy val avro = project
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json"        % playJsonVersion,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
@@ -55,7 +55,7 @@ lazy val swagger = project
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.61",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     ),
     Test / javaOptions ++= Seq(
       "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
@@ -118,7 +118,7 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
       "io.flow"           %% "lib-postgresql-play-play28" % "0.5.53",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
+      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % Test
     ),
     bashScriptExtraDefines ++= Seq(
@@ -155,7 +155,7 @@ lazy val app = project
       "org.webjars" %% "webjars-play" % "2.9.1",
       "org.webjars" % "bootstrap" % "3.4.1",
       "org.webjars" % "bootstrap-social" % "5.0.0",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     ),
     bashScriptExtraDefines ++= Seq(
       """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""
@@ -172,7 +172,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     )
   )
 
@@ -185,7 +185,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.atteo" % "evo-inflector" % "1.3",
     "org.typelevel" %% "cats-core" % "2.12.0",
     "org.slf4j" % "slf4j-api" % "2.0.13",
-    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+    "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
   ),
   scalacOptions ++= allScalacOptions,
   Test / javaOptions ++= Seq(
