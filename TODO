@@ -1,3 +1,6 @@
+      "org.webjars" % "bootstrap" % "3.4.1",
+      webjars
+
 Bindables with multiple services
 
   When one service (service A) extends models from another (service

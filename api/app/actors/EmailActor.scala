@@ -3,7 +3,7 @@ package actors
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import db._
 import io.apibuilder.api.v0.models.Publication
-import lib.{AppConfig, Email, Person, Role}
+import lib.{AppConfig, EmailUtil, Person, Role}
 
 import java.util.UUID
 
@@ -26,7 +26,7 @@ class EmailActor @javax.inject.Inject() (
   system: ActorSystem,
   appConfig: AppConfig,
   applicationsDao: db.ApplicationsDao,
-  email: Email,
+  email: EmailUtil,
   emails: Emails,
   emailVerificationsDao: db.EmailVerificationsDao,
   membershipsDao: db.MembershipsDao,

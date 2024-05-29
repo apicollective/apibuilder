@@ -29,11 +29,11 @@ object Emails {
 
 @Singleton
 class Emails @Inject() (
-  appConfig: AppConfig,
-  email: Email,
-  applicationsDao: ApplicationsDao,
-  membershipsDao: MembershipsDao,
-  subscriptionsDao: SubscriptionsDao
+                         appConfig: AppConfig,
+                         email: EmailUtil,
+                         applicationsDao: ApplicationsDao,
+                         membershipsDao: MembershipsDao,
+                         subscriptionsDao: SubscriptionsDao
 ) extends Logging {
 
   def deliver(

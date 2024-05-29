@@ -9,6 +9,8 @@ import javax.inject.Inject
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import com.sendgrid._
+import com.sendgrid.helpers.mail._
+import com.sendgrid.helpers.mail.objects._
 
 
 case class Person(email: String, name: Option[String] = None)
@@ -20,7 +22,7 @@ object Person {
   )
 }
 
-class Email @Inject() (
+class EmailUtil @Inject()(
   appConfig: AppConfig
 ) {
 
@@ -29,7 +31,7 @@ class Email @Inject() (
     name = Some(appConfig.emailDefaultFromName)
   )
 
-  val localDeliveryDir: Option[Path] = appConfig.mailLocalDeliveryDir.map(Paths.get(_))
+  private[this] val localDeliveryDir: Option[Path] = appConfig.mailLocalDeliveryDir.map(Paths.get(_))
 
   // Initialize sendgrid on startup to verify that all of our settings
   // are here. If using localDeliveryDir, set password to a test
@@ -51,13 +53,13 @@ class Email @Inject() (
     val prefixedSubject = appConfig.subjectPrefix + " " + subject
 
     val from = fromPerson.name match {
-      case Some(n) => new com.sendgrid.Email(fromPerson.email, n)
-      case None => new com.sendgrid.Email(fromPerson.email)
+      case Some(n) => new Email(fromPerson.email, n)
+      case None => new Email(fromPerson.email)
     }
 
     val recipient = to.name match {
-      case Some(n) => new com.sendgrid.Email(to.email, n)
-      case None => new com.sendgrid.Email(to.email)
+      case Some(n) => new Email(to.email, n)
+      case None => new Email(to.email)
     }
 
     val content = new Content("text/html", body)

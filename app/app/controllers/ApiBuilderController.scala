@@ -7,6 +7,7 @@ import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import lib.{ApibuilderRequestData, RequestAuthenticationUtil}
 import models.MainTemplate
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc.Results.Redirect
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -110,7 +111,7 @@ class IdentifiedActionBuilder @Inject()(
     )
 
     data.user match {
-      case None => sys.error("TODO: Redirect to login")
+      case None => Future.successful(Redirect("/login"))
       case Some(_) => block(IdentifiedRequest(data, request))
     }
   }
@@ -147,7 +148,7 @@ class AnonymousOrgActionBuilder @Inject()(
 
     data.org match {
       case None => {
-        sys.error("TODO: Redirect to home page - invalid request")
+        Future.successful(Redirect("/"))
       }
       case Some(_) => {
         block(AnonymousOrgRequest(data, request))
@@ -206,7 +207,7 @@ class IdentifiedOrgActionBuilder @Inject()(
     )
 
     data.user match {
-      case None => sys.error("TODO: Redirect to login")
+      case None => Future.successful(Redirect("/login"))
       case Some(_) => {
         data.org match {
           case None => {
