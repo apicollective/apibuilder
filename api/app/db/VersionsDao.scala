@@ -3,9 +3,8 @@ package db
 import anorm._
 import builder.OriginalValidator
 import builder.api_json.upgrades.ServiceParser
-import cats.implicits._
-import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
+import cats.implicits._
 import core.{ServiceFetcher, VersionMigration}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.{Audit, Reference}
@@ -20,7 +19,6 @@ import play.api.libs.json._
 
 import java.util.UUID
 import javax.inject.{Inject, Named}
-import scala.annotation.tailrec
 
 class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
@@ -339,33 +337,14 @@ class VersionsDao @Inject() (
     }
   }
 
-  /**
-    * Upgrades all versions to the latest API Builder spec in multiple
-    * passes until we have either upgraded all of them or all
-    * remaining versions cannot be upgraded.
-    */
-  def migrate(): MigrationStats = {
-    var stats = migrateSingleRun()
-    var totalGood = stats.good
-    val totalRecords = stats.good + stats.bad
-
-    while (stats.good > 0) {
-      logger.info(s"migrate() interim statistics: ${stats}")
-      stats = migrateSingleRun()
-      totalGood += stats.good
-    }
-
-    val finalStats = MigrationStats(good = totalGood, bad = totalRecords - totalGood)
-    logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
-    finalStats
+  private[this] def validateOrg(org: Reference): ValidatedNec[String, Organization] = {
+    organizationsDao.findByGuid(Authorization.All, org.guid).toValidNec(s"Cannot find organization where guid = '${org.guid}'")
   }
 
-  def migrateVersionGuid(): MigrationStats = {
-    var good = 0L
-    var bad = 0L
-
-    val processed = db.withConnection { implicit c =>
-      val records = BaseQuery.
+  private[this] def lookupVersionToMigrate(guid: UUID): Option[TmpVersion] = {
+    db.withConnection { implicit c =>
+      BaseQuery.
+        equals("versions.guid", guid).
         isNull("versions.deleted_at").
         and(
           """
@@ -378,23 +357,26 @@ class VersionsDao @Inject() (
             |)
           """.stripMargin
         ).bind("latest_version", Migration.ServiceVersionNumber).
-        isNotNull("originals.data").
-        orderBy("versions.created_at desc").
-        limit(limit).
-        withDebugging().
-        offset(offset).
         as(parser.*)
+    }.headOption
+  }
 
-      records.foreach { version =>
+  def migrateVersionGuid(guid: UUID): ValidatedNec[String, Unit] = {
+    lookupVersionToMigrate(guid) match {
+      case None => {
+        ().validNec
+      }
+
+      case Some(version) => {
         val orgKey = version.organization.key
         val applicationKey = version.application.key
         val versionName = version.version
         val versionGuid = version.guid
 
-        try {
-          val org = organizationsDao.findByGuid(Authorization.All, version.organization.guid).getOrElse {
-            sys.error(s"failed to retrieve organization by guid ${version.organization.guid}")
-          }
+        (
+          validateOrg(version.organization),
+          version.original.toValidNec("Missing original"),
+        ).mapN { case (org, original) =>
           val serviceConfig = ServiceConfiguration(
             orgKey = orgKey,
             orgNamespace = org.namespace,
@@ -402,42 +384,19 @@ class VersionsDao @Inject() (
           )
           logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${Migration.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
 
-          val original = version.original.getOrElse {
-            sys.error("Missing version")
-          }
           val validator = OriginalValidator(
             config = serviceConfig,
             `type` = original.`type`,
             fetcher = databaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
-          validator.validate(original.data) match {
-            case Invalid(errors) => {
-              logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + formatErrors(errors))
-              bad += 1
-            }
-            case Valid(service) => {
+          validator.validate(original.data).map { service =>
+            db.withConnection { c =>
               insertService(c, usersDao.AdminUser, versionGuid, service)
-              good += 1
             }
-          }
-        } catch {
-          case e: Throwable => {
-            e.printStackTrace(System.err)
-            logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
-            bad += 1
           }
         }
       }
-      records
-    }
-
-    val finalStats = MigrationStats(good = stats.good + good, bad = stats.bad + bad)
-
-    if (processed.size < limit) {
-      finalStats
-    } else {
-      migrateSingleRun(limit, offset + limit, finalStats)
     }
   }
 
@@ -450,7 +409,7 @@ class VersionsDao @Inject() (
       "version_guid" -> versionGuid,
       "version" -> Migration.ServiceVersionNumber,
       "user_guid" -> user.guid
-    )
+    ).execute()
   }
 
   private[this] def insertService(
