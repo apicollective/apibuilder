@@ -112,18 +112,16 @@ class MainActor @javax.inject.Inject() (
 
     case m @ QueueVersionsToMigrate => withVerboseErrorHandler(m) {
       app.mode match {
-        case Mode.Test => {
-          // No-op
-        }
-        case Mode.Prod | Mode.Dev => {
-          internalMigrationsDao.queueVersions()
-        }
+        case Mode.Test => // No-op
+        case Mode.Prod | Mode.Dev => internalMigrationsDao.queueVersions()
       }
     }
 
     case m @ MigrateVersions => withVerboseErrorHandler(m) {
-      println(s"RECEIVED MigrateVersions")
-      internalMigrationsDao.migrateBatch(50)
+      app.mode match {
+        case Mode.Test => // No-op
+        case Mode.Prod | Mode.Dev => internalMigrationsDao.migrateBatch(50)
+      }
     }
 
     case m: Any => logUnhandledMessage(m)
