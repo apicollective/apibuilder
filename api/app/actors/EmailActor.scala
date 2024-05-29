@@ -23,17 +23,17 @@ object EmailActor {
 
 @javax.inject.Singleton
 class EmailActor @javax.inject.Inject() (
-                                          system: ActorSystem,
-                                          appConfig: AppConfig,
-                                          applicationsDao: db.ApplicationsDao,
-                                          email: EmailUtil,
-                                          emails: Emails,
-                                          emailVerificationsDao: db.EmailVerificationsDao,
-                                          membershipsDao: db.MembershipsDao,
-                                          membershipRequestsDao: db.MembershipRequestsDao,
-                                          organizationsDao: OrganizationsDao,
-                                          passwordResetRequestsDao: db.PasswordResetRequestsDao,
-                                          usersDao: UsersDao
+  system: ActorSystem,
+  appConfig: AppConfig,
+  applicationsDao: db.ApplicationsDao,
+  email: EmailUtil,
+  emails: Emails,
+  emailVerificationsDao: db.EmailVerificationsDao,
+  membershipsDao: db.MembershipsDao,
+  membershipRequestsDao: db.MembershipRequestsDao,
+  organizationsDao: OrganizationsDao,
+  passwordResetRequestsDao: db.PasswordResetRequestsDao,
+  usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
   def receive = {
