@@ -152,8 +152,8 @@ lazy val app = project
       "org.apache.commons" % "commons-compress" % "1.26.2",
       "com.github.tototoshi" %% "scala-csv" % "1.3.10",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
-      "org.webjars" %% "webjars-play" % "2.9.1",
-      "org.webjars" % "bootstrap" % "3.4.1",
+      "org.webjars" %% "webjars-play" % "3.0.1",
+      "org.webjars" % "bootstrap" % "5.3.3",
       "org.webjars" % "bootstrap-social" % "5.0.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     ),
