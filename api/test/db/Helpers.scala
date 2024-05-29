@@ -69,7 +69,7 @@ trait Helpers extends util.Daos with RandomHelpers {
     namespace: String = "test." + UUID.randomUUID.toString,
     visibility: Visibility = Visibility.Organization,
     domains: Option[Seq[String]] = None
-  ) = OrganizationForm(
+  ): OrganizationForm = OrganizationForm(
     name = name,
     key = key,
     namespace = namespace,
@@ -89,7 +89,7 @@ trait Helpers extends util.Daos with RandomHelpers {
     key: Option[String] = None,
     description: Option[String] = None,
     visibility: Visibility = Visibility.Organization
-  ) = ApplicationForm(
+  ): ApplicationForm = ApplicationForm(
     name = name,
     key = key,
     description = description,
@@ -99,7 +99,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createAttributeForm(
     name: String = createRandomName("attribute"),
     description: Option[String] = None
-  ) = AttributeForm(
+  ): AttributeForm = AttributeForm(
     name = name,
     description = description
   )
@@ -218,7 +218,7 @@ trait Helpers extends util.Daos with RandomHelpers {
     usersDao.create(form)
   }
 
-  def createUserForm() = UserForm(
+  def createUserForm(): UserForm = UserForm(
     email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     password = UUID.randomUUID.toString,
     name = None

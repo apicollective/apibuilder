@@ -108,11 +108,11 @@ class SubscriptionsDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("organization_guid") -> org.guid,
-        Symbol("publication") -> form.publication.toString,
-        Symbol("user_guid") -> form.userGuid,
-        Symbol("created_by_guid") -> createdBy.guid
+        "guid" -> guid,
+        "organization_guid" -> org.guid,
+        "publication" -> form.publication.toString,
+        "user_guid" -> form.userGuid,
+        "created_by_guid" -> createdBy.guid
       ).execute()
     }
 

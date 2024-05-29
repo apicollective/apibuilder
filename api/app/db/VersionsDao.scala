@@ -3,9 +3,11 @@ package db
 import anorm._
 import builder.OriginalValidator
 import builder.api_json.upgrades.ServiceParser
-import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
+import cats.implicits._
 import core.{ServiceFetcher, VersionMigration}
 import io.apibuilder.api.v0.models._
+import io.apibuilder.common.v0.models.{Audit, Reference}
 import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
@@ -17,9 +19,6 @@ import play.api.libs.json._
 
 import java.util.UUID
 import javax.inject.{Inject, Named}
-import scala.annotation.tailrec
-
-case class MigrationStats(good: Long, bad: Long)
 
 class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
@@ -36,8 +35,6 @@ class VersionsDao @Inject() (
 
   private[this] val LatestVersion = "latest"
   private[this] val LatestVersionFilter = "~"
-
-  private[this] val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
 
   private[this] val HasServiceJsonClause: String =
     """
@@ -137,11 +134,11 @@ class VersionsDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> guid,
-      Symbol("application_guid") -> application.guid,
-      Symbol("version") -> version.trim,
-      Symbol("version_sort_key") -> VersionTag(version.trim).sortKey,
-      Symbol("created_by_guid") -> user.guid
+      "guid" -> guid,
+      "application_guid" -> application.guid,
+      "version" -> version.trim,
+      "version_sort_key" -> VersionTag(version.trim).sortKey,
+      "created_by_guid" -> user.guid
     ).execute()
 
     originalsDao.create(c, user, guid, original)
@@ -157,8 +154,8 @@ class VersionsDao @Inject() (
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
 
       SQL(DeleteQuery).on(
-        Symbol("guid") -> version.guid,
-        Symbol("deleted_by_guid") -> deletedBy.guid
+        "guid" -> version.guid,
+        "deleted_by_guid" -> deletedBy.guid
       ).execute()
     }
   }
@@ -242,7 +239,6 @@ class VersionsDao @Inject() (
     offset: Long = 0
   ): Seq[Version] = {
     db.withConnection { implicit c =>
-
       authorization.applicationFilter(BaseQuery).
         and(HasServiceJsonClause).
         equals("versions.guid", guid).
@@ -254,6 +250,8 @@ class VersionsDao @Inject() (
         limit(limit).
         offset(offset).
         as(parser.*)
+    }.flatMap { v =>
+      v.toVersion.toOption
     }
   }
 
@@ -284,60 +282,69 @@ class VersionsDao @Inject() (
       )
     }
   }
-  
-  private[this] val parser: RowParser[Version] = {
-    SqlParser.get[_root_.java.util.UUID]("guid") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
-      SqlParser.str("version") ~
-      io.apibuilder.api.v0.anorm.parsers.Original.parserWithPrefix("original").? ~
-      SqlParser.str("service_json") ~
-      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
-      case guid ~ organization ~ application ~ version ~ original ~ serviceJson ~ audit => {
-        io.apibuilder.api.v0.models.Version(
+
+  private[this] case class TmpVersion(
+                                       guid: UUID,
+                                       organization: Reference,
+                                       application: Reference,
+                                       version: String,
+                                       original: Option[Original],
+                                       serviceJson: Option[String],
+                                       audit: Audit
+                                     ) {
+    def toVersion: ValidatedNec[String, Version] = {
+      service.map { svc =>
+        Version(
           guid = guid,
           organization = organization,
           application = application,
           version = version,
           original = original,
-          service = serviceParser.fromString(serviceJson) match {
-            case Invalid(errs) => sys.error(s"Failed to parse service for version: $guid: ${errs.toNonEmptyList.toList.mkString(", ")}")
-            case Valid(s) => s
-          },
+          service = svc,
+          audit = audit
+        )
+      }
+
+    }
+
+    private[this] def service: ValidatedNec[String, Service] = {
+      serviceJson match {
+        case None => "Version does not have service json".invalidNec
+        case Some(json) => serviceParser.fromString(json)
+      }
+    }
+  }
+
+  private[this] val parser: RowParser[TmpVersion] = {
+    SqlParser.get[_root_.java.util.UUID]("guid") ~
+      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
+      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
+      SqlParser.str("version") ~
+      io.apibuilder.api.v0.anorm.parsers.Original.parserWithPrefix("original").? ~
+      SqlParser.str("service_json").? ~
+      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
+      case guid ~ organization ~ application ~ version ~ original ~ serviceJson ~ audit => {
+        TmpVersion(
+          guid = guid,
+          organization = organization,
+          application = application,
+          version = version,
+          original = original,
+          serviceJson = serviceJson,
           audit = audit
         )
       }
     }
   }
 
-  /**
-    * Upgrades all versions to the latest API Builder spec in multiple
-    * passes until we have either upgraded all of them or all
-    * remaining versions cannot be upgraded.
-    */
-  def migrate(): MigrationStats = {
-    var stats = migrateSingleRun()
-    var totalGood = stats.good
-    val totalRecords = stats.good + stats.bad
-
-    while (stats.good > 0) {
-      logger.info(s"migrate() interim statistics: ${stats}")
-      stats = migrateSingleRun()
-      totalGood += stats.good
-    }
-
-    val finalStats = MigrationStats(good = totalGood, bad = totalRecords - totalGood)
-    logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
-    finalStats
+  private[this] def validateOrg(org: Reference): ValidatedNec[String, Organization] = {
+    organizationsDao.findByGuid(Authorization.All, org.guid).toValidNec(s"Cannot find organization where guid = '${org.guid}'")
   }
 
-  @tailrec
-  private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
-    var good = 0L
-    var bad = 0L
-
-    val processed = db.withConnection { implicit c =>
-      val records = BaseQuery.
+  private[this] def lookupVersionToMigrate(guid: UUID): Option[TmpVersion] = {
+    db.withConnection { implicit c =>
+      BaseQuery.
+        equals("versions.guid", guid).
         isNull("versions.deleted_at").
         and(
           """
@@ -349,66 +356,47 @@ class VersionsDao @Inject() (
             |      and services.version = {latest_version}
             |)
           """.stripMargin
-        ).bind("latest_version", ServiceVersionNumber).
-        isNotNull("originals.data").
-        orderBy("versions.created_at desc").
-        limit(limit).
-        offset(offset).
+        ).bind("latest_version", Migration.ServiceVersionNumber).
         as(parser.*)
+    }.headOption
+  }
 
-      records.foreach { version =>
+  def migrateVersionGuid(guid: UUID): ValidatedNec[String, Unit] = {
+    lookupVersionToMigrate(guid) match {
+      case None => {
+        ().validNec
+      }
+
+      case Some(version) => {
         val orgKey = version.organization.key
         val applicationKey = version.application.key
         val versionName = version.version
         val versionGuid = version.guid
 
-        try {
-          val org = organizationsDao.findByGuid(Authorization.All, version.organization.guid).getOrElse {
-            sys.error(s"failed to retrieve organization by guid ${version.organization.guid}")
-          }
+        (
+          validateOrg(version.organization),
+          version.original.toValidNec("Missing original"),
+        ).mapN { case (org, original) =>
           val serviceConfig = ServiceConfiguration(
             orgKey = orgKey,
             orgNamespace = org.namespace,
             version = versionName
           )
-          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber] (with serviceConfig=$serviceConfig)")
+          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${Migration.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
 
-          val original = version.original.getOrElse {
-            sys.error("Missing version")
-          }
           val validator = OriginalValidator(
             config = serviceConfig,
             `type` = original.`type`,
             fetcher = databaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
-          validator.validate(original.data) match {
-            case Invalid(errors) => {
-              logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: invalid JSON: " + formatErrors(errors))
-              bad += 1
-            }
-            case Valid(service) => {
+          validator.validate(original.data).map { service =>
+            db.withConnection { c =>
               insertService(c, usersDao.AdminUser, versionGuid, service)
-              good += 1
             }
-          }
-        } catch {
-          case e: Throwable => {
-            e.printStackTrace(System.err)
-            logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
-            bad += 1
           }
         }
       }
-      records
-    }
-
-    val finalStats = MigrationStats(good = stats.good + good, bad = stats.bad + bad)
-
-    if (processed.size < limit) {
-      finalStats
-    } else {
-      migrateSingleRun(limit, offset + limit, finalStats)
     }
   }
 
@@ -418,10 +406,10 @@ class VersionsDao @Inject() (
     versionGuid: UUID
   ): Unit =  {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
-      Symbol("version_guid") -> versionGuid,
-      Symbol("version") -> ServiceVersionNumber,
-      Symbol("user_guid") -> user.guid
-    )
+      "version_guid" -> versionGuid,
+      "version" -> Migration.ServiceVersionNumber,
+      "user_guid" -> user.guid
+    ).execute()
   }
 
   private[this] def insertService(
@@ -431,11 +419,11 @@ class VersionsDao @Inject() (
     service: Service
   ): Unit =  {
     SQL(InsertServiceQuery).on(
-      Symbol("guid") -> UUID.randomUUID,
-      Symbol("version_guid") -> versionGuid,
-      Symbol("version") -> ServiceVersionNumber,
-      Symbol("json") -> Json.toJson(service).as[JsObject].toString.trim,
-      Symbol("user_guid") -> user.guid
+      "guid" -> UUID.randomUUID,
+      "version_guid" -> versionGuid,
+      "version" -> Migration.ServiceVersionNumber,
+      "json" -> Json.toJson(service).as[JsObject].toString.trim,
+      "user_guid" -> user.guid
     ).execute()
   }
 

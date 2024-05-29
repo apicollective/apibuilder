@@ -41,9 +41,9 @@ private[db] class EmailVerificationConfirmationsDao @Inject() (
       val guid = UUID.randomUUID
       db.withConnection { implicit c =>
         SQL(InsertQuery).on(
-          Symbol("guid") -> guid,
-          Symbol("email_verification_guid") -> conf.guid,
-          Symbol("created_by_guid") -> createdBy
+          "guid" -> guid,
+          "email_verification_guid" -> conf.guid,
+          "created_by_guid" -> createdBy
         ).execute()
       }
 

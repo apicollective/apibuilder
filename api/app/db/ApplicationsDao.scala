@@ -165,11 +165,11 @@ class ApplicationsDao @Inject() (
 
     withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateQuery).on(
-        Symbol("guid") -> app.guid,
-        Symbol("name") -> form.name.trim,
-        Symbol("visibility") -> form.visibility.toString,
-        Symbol("description") -> form.description.map(_.trim),
-        Symbol("updated_by_guid") -> updatedBy.guid
+        "guid" -> app.guid,
+        "name" -> form.name.trim,
+        "visibility" -> form.visibility.toString,
+        "description" -> form.description.map(_.trim),
+        "updated_by_guid" -> updatedBy.guid
       ).execute()
     })
 
@@ -196,17 +196,17 @@ class ApplicationsDao @Inject() (
         case Some(newOrg) => {
           withTasks(updatedBy, app.guid, { implicit c =>
             SQL(InsertMoveQuery).on(
-              Symbol("guid") -> UUID.randomUUID,
-              Symbol("application_guid") -> app.guid,
-              Symbol("from_organization_guid") -> app.organization.guid,
-              Symbol("to_organization_guid") -> newOrg.guid,
-              Symbol("created_by_guid") -> updatedBy.guid
+              "guid" -> UUID.randomUUID,
+              "application_guid" -> app.guid,
+              "from_organization_guid" -> app.organization.guid,
+              "to_organization_guid" -> newOrg.guid,
+              "created_by_guid" -> updatedBy.guid
             ).execute()
 
             SQL(UpdateOrganizationQuery).on(
-              Symbol("guid") -> app.guid,
-              Symbol("org_guid") -> newOrg.guid,
-              Symbol("updated_by_guid") -> updatedBy.guid
+              "guid" -> app.guid,
+              "org_guid" -> newOrg.guid,
+              "updated_by_guid" -> updatedBy.guid
             ).execute()
           })
         }
@@ -230,9 +230,9 @@ class ApplicationsDao @Inject() (
 
     withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateVisibilityQuery).on(
-        Symbol("guid") -> app.guid,
-        Symbol("visibility") -> visibility.toString,
-        Symbol("updated_by_guid") -> updatedBy.guid
+        "guid" -> app.guid,
+        "visibility" -> visibility.toString,
+        "updated_by_guid" -> updatedBy.guid
       ).execute()
     })
 
@@ -254,14 +254,14 @@ class ApplicationsDao @Inject() (
 
     withTasks(createdBy, guid, { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("organization_guid") -> org.guid,
-        Symbol("name") -> form.name.trim,
-        Symbol("description") -> form.description.map(_.trim),
-        Symbol("key") -> key,
-        Symbol("visibility") -> form.visibility.toString,
-        Symbol("created_by_guid") -> createdBy.guid,
-        Symbol("updated_by_guid") -> createdBy.guid
+        "guid" -> guid,
+        "organization_guid" -> org.guid,
+        "name" -> form.name.trim,
+        "description" -> form.description.map(_.trim),
+        "key" -> key,
+        "visibility" -> form.visibility.toString,
+        "created_by_guid" -> createdBy.guid,
+        "updated_by_guid" -> createdBy.guid
       ).execute()
     })
 

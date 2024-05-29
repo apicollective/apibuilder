@@ -61,11 +61,11 @@ class MembershipRequestsDao @Inject() (
     val guid = UUID.randomUUID
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("organization_guid") -> organization.guid,
-        Symbol("user_guid") -> user.guid,
-        Symbol("role") -> role.key,
-        Symbol("created_by_guid") -> createdBy.guid
+        "guid" -> guid,
+        "organization_guid" -> organization.guid,
+        "user_guid" -> user.guid,
+        "role" -> role.key,
+        "created_by_guid" -> createdBy.guid
       ).execute()
     }
 

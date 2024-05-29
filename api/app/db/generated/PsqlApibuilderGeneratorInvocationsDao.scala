@@ -30,6 +30,7 @@ case class GeneratorInvocationForm(
 object GeneratorInvocationsTable {
   val Schema: String = "public"
   val Name: String = "generator_invocations"
+  val QualifiedName: String = s"$Schema.$Name"
 
   object Columns {
     val Id: String = "id"
@@ -42,14 +43,9 @@ object GeneratorInvocationsTable {
   }
 }
 
-@Singleton
-class GeneratorInvocationsDao @Inject() (
-  val db: Database
-) {
+trait BaseGeneratorInvocationsDao {
 
-  private[this] val idGenerator = IdGenerator("gni")
-
-  def randomId(): String = idGenerator.randomId()
+  def db: Database
 
   private[this] val BaseQuery = Query("""
       | select generator_invocations.id,
@@ -60,73 +56,6 @@ class GeneratorInvocationsDao @Inject() (
       |        generator_invocations.hash_code
       |   from generator_invocations
   """.stripMargin)
-
-  private[this] val InsertQuery = Query("""
-    | insert into generator_invocations
-    | (id, key, updated_by_guid, hash_code)
-    | values
-    | ({id}, {key}, {updated_by_guid}, {hash_code}::bigint)
-  """.stripMargin)
-
-  private[this] val UpdateQuery = Query("""
-    | update generator_invocations
-    |    set key = {key},
-    |        updated_by_guid = {updated_by_guid},
-    |        hash_code = {hash_code}::bigint
-    |  where id = {id}
-    |    and generator_invocations.hash_code != {hash_code}::bigint
-  """.stripMargin)
-
-  private[this] def bindQuery(query: Query, form: GeneratorInvocationForm): Query = {
-    query.
-      bind("key", form.key).
-      bind("hash_code", form.hashCode())
-  }
-
-  def insert(updatedBy: UUID, form: GeneratorInvocationForm): String = {
-    db.withConnection { c =>
-      insert(c, updatedBy, form)
-    }
-  }
-
-  def insert(c: Connection, updatedBy: UUID, form: GeneratorInvocationForm): String = {
-    val id = randomId()
-    bindQuery(InsertQuery, form).
-      bind("id", id).
-      bind("updated_by_guid", updatedBy).
-      anormSql.execute()(c)
-    id
-  }
-
-  def updateIfChangedById(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Unit = {
-    if (!findById(id).map(_.form).contains(form)) {
-      updateById(updatedBy, id, form)
-    }
-  }
-
-  def updateById(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Unit = {
-    db.withConnection { c =>
-      updateById(c, updatedBy, id, form)
-    }
-  }
-
-  def updateById(c: Connection, updatedBy: UUID, id: String, form: GeneratorInvocationForm): Unit = {
-    bindQuery(UpdateQuery, form).
-      bind("id", id).
-      bind("updated_by_guid", updatedBy).
-      anormSql.execute()(c)
-    ()
-  }
-
-  def update(updatedBy: UUID, existing: GeneratorInvocation, form: GeneratorInvocationForm): Unit = {
-    db.withConnection { c =>
-      update(c, updatedBy, existing, form)
-    }
-  }
-
-  def update(c: Connection, updatedBy: UUID, existing: GeneratorInvocation, form: GeneratorInvocationForm): Unit = {
-    updateById(c, updatedBy, existing.id, form)
-  }
 
   def findById(id: String): Option[GeneratorInvocation] = {
     db.withConnection { c =>
@@ -196,6 +125,144 @@ class GeneratorInvocationsDao @Inject() (
       as(GeneratorInvocationsDao.parser.*)(c)
   }
 
+}
+
+object GeneratorInvocationsDao {
+
+  val parser: RowParser[GeneratorInvocation] = {
+    SqlParser.str("id") ~
+    SqlParser.str("key") ~
+    SqlParser.str("updated_by_guid") ~
+    SqlParser.get[DateTime]("created_at") ~
+    SqlParser.get[DateTime]("updated_at") map {
+      case id ~ key ~ updatedByGuid ~ createdAt ~ updatedAt => GeneratorInvocation(
+        id = id,
+        key = key,
+        updatedByGuid = updatedByGuid,
+        createdAt = createdAt,
+        updatedAt = updatedAt
+      )
+    }
+  }
+
+}
+
+@Singleton
+class GeneratorInvocationsDao @Inject() (
+  override val db: Database
+) extends BaseGeneratorInvocationsDao {
+
+  private[this] val idGenerator = IdGenerator("gni")
+
+  def randomId(): String = idGenerator.randomId()
+
+  private[this] val InsertQuery = Query("""
+    | insert into generator_invocations
+    | (id, key, updated_by_guid, hash_code)
+    | values
+    | ({id}, {key}, {updated_by_guid}, {hash_code}::bigint)
+  """.stripMargin)
+
+  private[this] val UpdateQuery = Query("""
+    | update generator_invocations
+    |    set key = {key},
+    |        updated_by_guid = {updated_by_guid},
+    |        hash_code = {hash_code}::bigint
+    |  where id = {id}
+    |    and generator_invocations.hash_code != {hash_code}::bigint
+  """.stripMargin)
+
+  private[this] def bindQuery(query: Query, form: GeneratorInvocationForm): Query = {
+    query.
+      bind("key", form.key).
+      bind("hash_code", form.hashCode())
+  }
+
+  private[this] def toNamedParameter(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Seq[NamedParameter] = {
+    Seq(
+      scala.Symbol("id") -> id,
+      scala.Symbol("key") -> form.key,
+      scala.Symbol("updated_by_guid") -> updatedBy,
+      scala.Symbol("hash_code") -> form.hashCode()
+    )
+  }
+
+  def insert(updatedBy: UUID, form: GeneratorInvocationForm): String = {
+    db.withConnection { c =>
+      insert(c, updatedBy, form)
+    }
+  }
+
+  def insert(c: Connection, updatedBy: UUID, form: GeneratorInvocationForm): String = {
+    val id = randomId()
+    bindQuery(InsertQuery, form).
+      bind("id", id).
+      bind("updated_by_guid", updatedBy).
+      anormSql.execute()(c)
+    id
+  }
+
+  def insertBatch(updatedBy: UUID, forms: Seq[GeneratorInvocationForm]): Seq[String] = {
+    db.withConnection { c =>
+      insertBatchWithConnection(c, updatedBy, forms)
+    }
+  }
+
+  def insertBatchWithConnection(c: Connection, updatedBy: UUID, forms: Seq[GeneratorInvocationForm]): Seq[String] = {
+    if (forms.nonEmpty) {
+      val ids = forms.map(_ => randomId())
+      val params = ids.zip(forms).map { case (id, form) => toNamedParameter(updatedBy, id, form) }
+      BatchSql(InsertQuery.sql(), params.head, params.tail: _*).execute()(c)
+      ids
+    } else {
+      Nil
+    }
+  }
+
+  def updateIfChangedById(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Unit = {
+    if (!findById(id).map(_.form).contains(form)) {
+      updateById(updatedBy, id, form)
+    }
+  }
+
+  def updateById(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Unit = {
+    db.withConnection { c =>
+      updateById(c, updatedBy, id, form)
+    }
+  }
+
+  def updateById(c: Connection, updatedBy: UUID, id: String, form: GeneratorInvocationForm): Unit = {
+    bindQuery(UpdateQuery, form).
+      bind("id", id).
+      bind("updated_by_guid", updatedBy).
+      anormSql.execute()(c)
+    ()
+  }
+
+  def update(updatedBy: UUID, existing: GeneratorInvocation, form: GeneratorInvocationForm): Unit = {
+    db.withConnection { c =>
+      update(c, updatedBy, existing, form)
+    }
+  }
+
+  def update(c: Connection, updatedBy: UUID, existing: GeneratorInvocation, form: GeneratorInvocationForm): Unit = {
+    updateById(c, updatedBy, existing.id, form)
+  }
+
+  def updateBatch(updatedBy: UUID, idsAndForms: Seq[(String, GeneratorInvocationForm)]): Unit = {
+    db.withConnection { c =>
+      updateBatchWithConnection(c, updatedBy, idsAndForms)
+    }
+  }
+
+  def updateBatchWithConnection(c: Connection, updatedBy: UUID, idsAndForms: Seq[(String, GeneratorInvocationForm)]): Unit = {
+    if (idsAndForms.nonEmpty) {
+      val params = idsAndForms.map { case (id, form) => toNamedParameter(updatedBy, id, form) }
+      BatchSql(UpdateQuery.sql(), params.head, params.tail: _*).execute()(c)
+      ()
+    }
+  }
+
   def delete(deletedBy: UUID, generatorInvocation: GeneratorInvocation): Unit = {
     db.withConnection { c =>
       delete(c, deletedBy, generatorInvocation)
@@ -237,26 +304,6 @@ class GeneratorInvocationsDao @Inject() (
   def setJournalDeletedByUserId(c: Connection, deletedBy: UUID): Unit = {
     anorm.SQL(s"SET journal.deleted_by_user_id = '${deletedBy}'").executeUpdate()(c)
     ()
-  }
-
-}
-
-object GeneratorInvocationsDao {
-
-  val parser: RowParser[GeneratorInvocation] = {
-    SqlParser.str("id") ~
-    SqlParser.str("key") ~
-    SqlParser.str("updated_by_guid") ~
-    SqlParser.get[DateTime]("created_at") ~
-    SqlParser.get[DateTime]("updated_at") map {
-      case id ~ key ~ updatedByGuid ~ createdAt ~ updatedAt => GeneratorInvocation(
-        id = id,
-        key = key,
-        updatedByGuid = updatedByGuid,
-        createdAt = createdAt,
-        updatedAt = updatedAt
-      )
-    }
   }
 
 }

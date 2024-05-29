@@ -87,11 +87,11 @@ class MembershipsDao @Inject() (
     )
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> membership.guid,
-      Symbol("organization_guid") -> membership.organization.guid,
-      Symbol("user_guid") -> membership.user.guid,
-      Symbol("role") -> membership.role,
-      Symbol("created_by_guid") -> createdBy
+      "guid" -> membership.guid,
+      "organization_guid" -> membership.organization.guid,
+      "user_guid" -> membership.user.guid,
+      "role" -> membership.role,
+      "created_by_guid" -> createdBy
     ).execute()
 
     mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)

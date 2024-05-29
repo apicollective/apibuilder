@@ -168,12 +168,12 @@ class OrganizationsDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
-        Symbol("guid") -> existing.guid,
-        Symbol("name") -> form.name.trim,
-        Symbol("key") -> form.key.getOrElse(UrlKey.generate(form.name)).trim,
-        Symbol("namespace") -> form.namespace.trim,
-        Symbol("visibility") -> form.visibility.toString,
-        Symbol("user_guid") -> user.guid
+        "guid" -> existing.guid,
+        "name" -> form.name.trim,
+        "key" -> form.key.getOrElse(UrlKey.generate(form.name)).trim,
+        "namespace" -> form.namespace.trim,
+        "visibility" -> form.visibility.toString,
+        "user_guid" -> user.guid
       ).execute()
     }
 
@@ -205,12 +205,12 @@ class OrganizationsDao @Inject() (
     )
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> org.guid,
-      Symbol("name") -> org.name,
-      Symbol("namespace") -> org.namespace,
-      Symbol("visibility") -> org.visibility.toString,
-      Symbol("key") -> org.key,
-      Symbol("user_guid") -> user.guid
+      "guid" -> org.guid,
+      "name" -> org.name,
+      "namespace" -> org.namespace,
+      "visibility" -> org.visibility.toString,
+      "key" -> org.key,
+      "user_guid" -> user.guid
     ).execute()
 
     org.domains.foreach { domain =>

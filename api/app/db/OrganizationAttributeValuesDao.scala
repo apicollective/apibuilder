@@ -86,11 +86,11 @@ class OrganizationAttributeValuesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("organization_guid") -> organization.guid,
-        Symbol("attribute_guid") -> attribute.guid,
-        Symbol("value") -> form.value.trim,
-        Symbol("user_guid") -> user.guid
+        "guid" -> guid,
+        "organization_guid" -> organization.guid,
+        "attribute_guid" -> attribute.guid,
+        "value" -> form.value.trim,
+        "user_guid" -> user.guid
       ).execute()
     }
 
@@ -105,9 +105,9 @@ class OrganizationAttributeValuesDao @Inject() (
 
     db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
-        Symbol("guid") -> existing.guid,
-        Symbol("value") -> form.value.trim,
-        Symbol("user_guid") -> user.guid
+        "guid" -> existing.guid,
+        "value" -> form.value.trim,
+        "user_guid" -> user.guid
       ).execute()
     }
 

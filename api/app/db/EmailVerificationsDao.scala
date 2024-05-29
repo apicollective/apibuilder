@@ -58,12 +58,12 @@ class EmailVerificationsDao @Inject() (
     val guid = UUID.randomUUID
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        Symbol("guid") -> guid,
-        Symbol("user_guid") -> user.guid,
-        Symbol("email") -> email.trim,
-        Symbol("token") -> TokenGenerator.generate(TokenLength),
-        Symbol("expires_at") -> DateTime.now.plusHours(HoursUntilTokenExpires),
-        Symbol("created_by_guid") -> createdBy.guid
+        "guid" -> guid,
+        "user_guid" -> user.guid,
+        "email" -> email.trim,
+        "token" -> TokenGenerator.generate(TokenLength),
+        "expires_at" -> DateTime.now.plusHours(HoursUntilTokenExpires),
+        "created_by_guid" -> createdBy.guid
       ).execute()
     }
 

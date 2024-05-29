@@ -84,10 +84,10 @@ class TasksDao @Inject() (
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      Symbol("guid") -> guid,
-      Symbol("data") -> Json.toJson(data).toString,
-      Symbol("created_by_guid") -> createdBy.guid,
-      Symbol("updated_by_guid") -> createdBy.guid
+      "guid" -> guid,
+      "data" -> Json.toJson(data).toString,
+      "created_by_guid" -> createdBy.guid,
+      "updated_by_guid" -> createdBy.guid
     ).execute()
 
     guid
@@ -99,15 +99,15 @@ class TasksDao @Inject() (
 
   def purge(deletedBy: User, task: Task): Unit = {
     db.withConnection { implicit c =>
-      SQL(PurgeQuery).on(Symbol("guid") -> task.guid).execute()
+      SQL(PurgeQuery).on("guid" -> task.guid).execute()
     }
   }
 
   def incrementNumberAttempts(user: User, task: Task): Unit = {
     db.withConnection { implicit c =>
       SQL(IncrementNumberAttemptsQuery).on(
-        Symbol("guid") -> task.guid,
-        Symbol("updated_by_guid") -> user.guid
+        "guid" -> task.guid,
+        "updated_by_guid" -> user.guid
       ).execute()
     }
   }
@@ -121,9 +121,9 @@ class TasksDao @Inject() (
   def recordError(user: User, task: Task, error: String): Unit = {
     db.withConnection { implicit c =>
       SQL(RecordErrorQuery).on(
-        Symbol("guid") -> task.guid,
-        Symbol("last_error") -> error,
-        Symbol("updated_by_guid") -> user.guid
+        "guid" -> task.guid,
+        "last_error" -> error,
+        "updated_by_guid" -> user.guid
       ).execute()
     }
   }
