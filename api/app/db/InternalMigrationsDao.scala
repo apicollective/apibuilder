@@ -67,6 +67,7 @@ class InternalMigrationsDao @Inject()(
       limit = Some(limit)
     )
     all.foreach { migration =>
+      println(s"STARTING Migration of version[${migration.versionGuid}]")
       versionsDao.migrateVersionGuid(migration.versionGuid) match {
         case Valid(_) => migrationsDao.delete(Constants.DefaultUserGuid, migration)
         case Invalid(e) => {

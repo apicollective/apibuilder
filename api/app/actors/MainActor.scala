@@ -103,17 +103,29 @@ class MainActor @javax.inject.Inject() (
     }
 
     case m @ MigrateVersions => withVerboseErrorHandler(m) {
+      println(s"DEBUG_MigrateVersions - STARTING")
       app.mode match {
         case Mode.Test => // No-op
         case Mode.Prod | Mode.Dev => {
-          def reschedule = scheduleOnce(MigrateVersions)(FiniteDuration(1, MINUTES))
+          def reschedule(): Unit = {
+            println(s"DEBUG_MigrateVersions - SCHEDULING TO RUN IN 1 MINUTE")
+            scheduleOnce(MigrateVersions)(FiniteDuration(1, MINUTES))
+          }
 
           Try {
             internalMigrationsDao.migrateBatch(50)
           } match {
-            case Success(true) => reschedule
-            case Success(false) => ()
-            case Failure(_) => reschedule
+            case Success(true) => {
+              println(s"DEBUG_MigrateVersions - SUCCESS - true")
+              reschedule()
+            }
+            case Success(false) => {
+              println(s"DEBUG_MigrateVersions - SUCCESS - false")
+            }
+            case Failure(ex) => {
+              println(s"DEBUG_MigrateVersions - ERROR: ${ex.getMessage}")
+              reschedule()
+            }
           }
         }
       }
