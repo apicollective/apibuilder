@@ -7,7 +7,7 @@ import play.api.Mode
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{FiniteDuration, MINUTES, SECONDS}
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 object MainActor {
 
@@ -106,8 +106,8 @@ class MainActor @javax.inject.Inject() (
       app.mode match {
         case Mode.Test => // No-op
         case Mode.Prod | Mode.Dev => {
-          if (internalMigrationsDao.migrateBatch(50)) {
-            scheduleOnce(MigrateVersions)(FiniteDuration(1, MINUTES))
+          if (internalMigrationsDao.migrateBatch(60)) {
+            scheduleOnce(MigrateVersions)(FiniteDuration(20, SECONDS))
           }
         }
       }

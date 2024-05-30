@@ -5,6 +5,7 @@ import cats.data.Validated.{Invalid, Valid}
 import db.generated.{MigrationForm, MigrationsDao}
 import io.flow.postgresql.Query
 import lib.Constants
+import org.joda.time.DateTime
 import play.api.db._
 
 import javax.inject.Inject
@@ -63,12 +64,12 @@ class InternalMigrationsDao @Inject()(
   }
 
   def migrateBatch(limit: Long): Boolean = {
+    println(s"[${DateTime.now}] DEBUG STARTING migrateBatch($limit)")
     val all = migrationsDao.findAll(
       numAttempts = Some(0),
       limit = Some(limit)
     )
     all.foreach { migration =>
-      println(s"DEBUG STARTING Migration of version[${migration.versionGuid}]")
       Try {
         migrateOne(migration)
       } match {
