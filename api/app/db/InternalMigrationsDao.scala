@@ -8,6 +8,7 @@ import lib.Constants
 import play.api.db._
 
 import javax.inject.Inject
+import scala.util.{Failure, Success, Try}
 
 /**
  * TODO: Test this class
@@ -67,18 +68,28 @@ class InternalMigrationsDao @Inject()(
       limit = Some(limit)
     )
     all.foreach { migration =>
-      println(s"STARTING Migration of version[${migration.versionGuid}]")
-      versionsDao.migrateVersionGuid(migration.versionGuid) match {
-        case Valid(_) => migrationsDao.delete(Constants.DefaultUserGuid, migration)
-        case Invalid(e) => {
-          migrationsDao.update(Constants.DefaultUserGuid, migration, migration.form.copy(
-            numAttempts = migration.numAttempts + 1,
-            errors = Some(e.toNonEmptyList.toList)
-          ))
-        }
+      println(s"DEBUG STARTING Migration of version[${migration.versionGuid}]")
+      Try {
+        migrateOne(migration)
+      } match {
+        case Success(_) => ()
+        case Failure(ex) => setErrors(migration, Seq(ex.getMessage))
       }
     }
     all.nonEmpty
   }
 
+  private[this] def migrateOne(migration: _root_.db.generated.Migration): Unit = {
+    versionsDao.migrateVersionGuid(migration.versionGuid) match {
+      case Valid(_) => migrationsDao.delete(Constants.DefaultUserGuid, migration)
+      case Invalid(e) => setErrors(migration, e.toNonEmptyList.toList)
+    }
+  }
+
+  private[this] def setErrors(migration: _root_.db.generated.Migration, errors: Seq[String]): Unit = {
+    migrationsDao.update(Constants.DefaultUserGuid, migration, migration.form.copy(
+      numAttempts = migration.numAttempts + 1,
+      errors = Some(errors)
+    ))
+  }
 }

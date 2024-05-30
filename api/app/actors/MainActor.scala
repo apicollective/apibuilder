@@ -8,7 +8,6 @@ import play.api.Mode
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{FiniteDuration, MINUTES, SECONDS}
-import scala.util.{Try, Failure, Success}
 
 object MainActor {
 
@@ -107,25 +106,8 @@ class MainActor @javax.inject.Inject() (
       app.mode match {
         case Mode.Test => // No-op
         case Mode.Prod | Mode.Dev => {
-          def reschedule(): Unit = {
-            println(s"DEBUG_MigrateVersions - SCHEDULING TO RUN IN 1 MINUTE")
+          if (internalMigrationsDao.migrateBatch(50)) {
             scheduleOnce(MigrateVersions)(FiniteDuration(1, MINUTES))
-          }
-
-          Try {
-            internalMigrationsDao.migrateBatch(50)
-          } match {
-            case Success(true) => {
-              println(s"DEBUG_MigrateVersions - SUCCESS - true")
-              reschedule()
-            }
-            case Success(false) => {
-              println(s"DEBUG_MigrateVersions - SUCCESS - false")
-            }
-            case Failure(ex) => {
-              println(s"DEBUG_MigrateVersions - ERROR: ${ex.getMessage}")
-              reschedule()
-            }
           }
         }
       }
