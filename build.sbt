@@ -224,3 +224,4 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
   </developers>
   )
 )
+version := "0.16.19"
