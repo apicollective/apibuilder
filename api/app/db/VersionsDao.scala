@@ -364,7 +364,7 @@ class VersionsDao @Inject() (
   def migrateVersionGuid(guid: UUID): ValidatedNec[String, Unit] = {
     lookupVersionToMigrate(guid) match {
       case None => {
-        ().validNec
+        "Could not find version to migrate".invalidNec
       }
 
       case Some(version) => {
