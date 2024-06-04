@@ -15,7 +15,6 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
   private[this] def processDeletes: ProcessDeletes = app.injector.instanceOf[ProcessDeletes]
   private[this] def database: Database = app.injector.instanceOf[Database]
 
-
   private[this] def isDeleted(table: String, guid: UUID): Boolean = {
     database.withConnection { c =>
       Query(s"select case when deleted_at is null then false else true end from $table")
