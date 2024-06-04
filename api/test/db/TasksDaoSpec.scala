@@ -210,7 +210,7 @@ class TasksDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       val task = createTaskDataDiffVersion()
       tasksDao.softDelete(user, task)
       val ex = intercept[PSQLException] {
-        tasksDao.purge(user, task)
+        tasksDao.purge(task)
       }
       println(ex.getMessage)
       ex.getMessage.contains("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records") must be(true)
@@ -220,7 +220,7 @@ class TasksDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       val task = createTaskDataDiffVersion()
       tasksDao.softDelete(user, task)
       setDeletedAt(task, 45)
-      tasksDao.purge(user, task)
+      tasksDao.purge(task)
       tasksDao.findAll(
         guid = Some(task.guid),
         isDeleted = None
