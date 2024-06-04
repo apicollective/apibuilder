@@ -97,7 +97,7 @@ class TasksDao @Inject() (
     dbHelpers.delete(deletedBy, task.guid)
   }
 
-  def purge(deletedBy: User, task: Task): Unit = {
+  def purge(task: Task): Unit = {
     db.withConnection { implicit c =>
       SQL(PurgeQuery).on("guid" -> task.guid).execute()
     }

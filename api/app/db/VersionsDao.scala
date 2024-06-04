@@ -345,18 +345,6 @@ class VersionsDao @Inject() (
     db.withConnection { implicit c =>
       BaseQuery.
         equals("versions.guid", guid).
-        isNull("versions.deleted_at").
-        and(
-          """
-            |not exists (
-            |  select 1
-            |    from cache.services
-            |    where services.deleted_at is null
-            |      and services.version_guid = versions.guid
-            |      and services.version = {latest_version}
-            |)
-          """.stripMargin
-        ).bind("latest_version", Migration.ServiceVersionNumber).
         as(parser.*)
     }.headOption
   }
