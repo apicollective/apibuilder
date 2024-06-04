@@ -6,10 +6,28 @@ import play.api.db.Database
 
 import javax.inject.Inject
 
+object ProcessDeletes {
+  val OrganizationChildren: Seq[String] = Seq(
+    "public.applications",
+    "public.membership_requests",
+    "public.memberships",
+    "public.organization_attribute_values",
+    "public.organization_domains",
+    "public.subscriptions"
+  )
+  val ApplicationChildren: Seq[String] = Seq(
+    "public.changes", "public.versions", "public.watches"
+  )
+  val VersionChildren = Seq(
+    "cache.services", "public.originals"
+  )
+}
+
 class ProcessDeletes @Inject() (
                                db: Database,
                                usersDao: UsersDao
                                ) {
+  import ProcessDeletes._
 
   def all(): Unit = {
     organizations()
@@ -18,7 +36,7 @@ class ProcessDeletes @Inject() (
   }
 
   private[util] def organizations(): Unit = {
-    Seq("applications", "memberships", "membership_requests", "organization_attribute_values", "organization_domains", "subscriptions").foreach { table =>
+    OrganizationChildren.foreach { table =>
       exec(
         s"""
           |update $table
@@ -39,7 +57,7 @@ class ProcessDeletes @Inject() (
   }
 
   private[util] def applications(): Unit = {
-    Seq("versions", "watches").foreach { table =>
+    ApplicationChildren.foreach { table =>
       exec(
         s"""
           |update $table
@@ -57,7 +75,8 @@ class ProcessDeletes @Inject() (
        | where version_guid in (select guid from versions where deleted_at is not null)
        |""".stripMargin
     )
-    Seq("originals", "cache.services").foreach { table =>
+
+    VersionChildren.foreach { table =>
       exec(
         s"""
            |update $table
@@ -73,7 +92,6 @@ class ProcessDeletes @Inject() (
     db.withConnection { c =>
       Query(q)
         .bind("deleted_by_guid", usersDao.AdminUser.guid)
-        .withDebugging()
         .anormSql()
         .executeUpdate()(c)
     }

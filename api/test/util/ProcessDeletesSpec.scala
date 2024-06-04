@@ -65,4 +65,37 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
     isVersionDeleted(version) mustBe false
     isVersionDeleted(versionDeleted) mustBe true
   }
+
+  "have all child tables" must {
+    def getTables(columnName: String): Seq[String] = {
+      database.withConnection { c =>
+        Query(
+          """
+            |select c1.table_schema || '.' || c1.table_name
+            |  from information_schema.columns c1
+            |  join information_schema.columns c2 on c2.table_schema = c1.table_schema and c2.table_name = c1.table_name
+            | where c1.column_name = 'deleted_by_guid'
+            |   and c2.column_name = {column_name}
+            | order by 1
+            |""".stripMargin
+        )
+          .bind("column_name", columnName)
+          .as(SqlParser.str(1).*)(c)
+      }
+    }
+
+    "OrganizationChildren" in {
+      getTables("organization_guid") mustBe ProcessDeletes.OrganizationChildren
+    }
+
+    "ApplicationChildren" in {
+      val Ignore = Seq("public.application_moves")
+      getTables("application_guid")
+        .filterNot(Ignore.contains) mustBe ProcessDeletes.ApplicationChildren
+    }
+
+    "VersionChildren" in {
+      getTables("version_guid") mustBe ProcessDeletes.VersionChildren
+    }
+  }
 }
