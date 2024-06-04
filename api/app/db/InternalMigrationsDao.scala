@@ -32,6 +32,7 @@ class InternalMigrationsDao @Inject()(
     """
       |select v.guid
       |  from versions v
+      |  join applications apps on apps.guid = v.application_guid and apps.deleted_at is null
       |  left join migrations m on m.version_guid = v.guid
       | where v.deleted_at is null
       |   and m.id is null

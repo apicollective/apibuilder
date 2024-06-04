@@ -4,6 +4,7 @@ import akka.actor._
 import db.InternalMigrationsDao
 import lib.Role
 import play.api.Mode
+import util.ProcessDeletes
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
@@ -32,6 +33,7 @@ class MainActor @javax.inject.Inject() (
   app: play.api.Application,
   system: ActorSystem,
   internalMigrationsDao: InternalMigrationsDao,
+  processDeletes: ProcessDeletes,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
   @javax.inject.Named("task-actor") taskActor: akka.actor.ActorRef,
@@ -42,6 +44,7 @@ class MainActor @javax.inject.Inject() (
 
   private[this] case object QueueVersionsToMigrate
   private[this] case object MigrateVersions
+  private[this] case object CleanupDeletedApplications
 
   private[this] def scheduleOnce(msg: Any)(implicit delay: FiniteDuration = FiniteDuration(10, SECONDS)): Unit = {
     system.scheduler.scheduleOnce(delay) {
@@ -111,6 +114,11 @@ class MainActor @javax.inject.Inject() (
           }
         }
       }
+    }
+
+    case m @ CleanupDeletedApplications => withVerboseErrorHandler(m) {
+      println(s"DEBUG_CleanupDeletedApplications - STARTING")
+      processDeletes.all()
     }
 
     case m: Any => logUnhandledMessage(m)

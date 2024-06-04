@@ -110,7 +110,7 @@ class TaskActor @javax.inject.Inject() (
         isDeleted = Some(true),
         deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
       ).foreach { task =>
-        tasksDao.purge(usersDao.AdminUser, task)
+        tasksDao.purge(task)
       }
     }
 
