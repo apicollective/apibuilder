@@ -67,15 +67,14 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
   }
 
   "have all child tables" must {
-    def getTables(columnName: String): Seq[String] = {
+    def getTablesSoft(columnName: String): Seq[String] = {
       database.withConnection { c =>
         Query(
           """
             |select c1.table_schema || '.' || c1.table_name
             |  from information_schema.columns c1
-            |  join information_schema.columns c2 on c2.table_schema = c1.table_schema and c2.table_name = c1.table_name
-            | where c1.column_name = 'deleted_by_guid'
-            |   and c2.column_name = {column_name}
+            |  join information_schema.columns c2 on c2.table_schema = c1.table_schema and c2.table_name = c1.table_name and c2.column_name = 'deleted_by_guid'
+            | where c1.column_name = {column_name}
             | order by 1
             |""".stripMargin
         )
@@ -84,18 +83,50 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
       }
     }
 
-    "OrganizationChildren" in {
-      getTables("organization_guid") mustBe ProcessDeletes.OrganizationChildren
+    def getTablesHard(columnName: String): Seq[String] = {
+      database.withConnection { c =>
+        Query(
+          """
+            |select c1.table_schema || '.' || c1.table_name
+            |  from information_schema.columns c1
+            |  left join information_schema.columns c2 on c2.table_schema = c1.table_schema and c2.table_name = c1.table_name and c2.column_name = 'deleted_by_guid'
+            | where c1.column_name = {column_name}
+            |   and c2.table_name is null
+            | order by 1
+            |""".stripMargin
+        )
+          .bind("column_name", columnName)
+          .as(SqlParser.str(1).*)(c)
+      }
     }
 
-    "ApplicationChildren" in {
-      val Ignore = Seq("public.application_moves")
-      getTables("application_guid")
-        .filterNot(Ignore.contains) mustBe ProcessDeletes.ApplicationChildren
+    "Organization" must {
+      "soft" in {
+        getTablesSoft("organization_guid") mustBe ProcessDeletes.OrganizationSoft
+      }
+      "hard" in {
+        getTablesHard("organization_guid") mustBe ProcessDeletes.OrganizationHard
+      }
     }
 
-    "VersionChildren" in {
-      getTables("version_guid") mustBe ProcessDeletes.VersionChildren
+    "Application" must {
+      "soft" in {
+        val Ignore = Seq("public.application_moves")
+        getTablesSoft("application_guid")
+          .filterNot(Ignore.contains) mustBe ProcessDeletes.ApplicationSoft
+      }
+      "hard" in {
+        getTablesHard("application_guid") mustBe ProcessDeletes.ApplicationHard
+      }
+    }
+
+    "Version" must {
+      "soft" in {
+        getTablesSoft("version_guid") mustBe ProcessDeletes.VersionSoft
+      }
+      "hard" in {
+        getTablesHard("version_guid") mustBe ProcessDeletes.VersionHard
+      }
     }
   }
 }

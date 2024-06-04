@@ -7,7 +7,7 @@ import play.api.db.Database
 import javax.inject.Inject
 
 object ProcessDeletes {
-  val OrganizationChildren: Seq[String] = Seq(
+  val OrganizationSoft: Seq[String] = Seq(
     "public.applications",
     "public.membership_requests",
     "public.memberships",
@@ -15,12 +15,17 @@ object ProcessDeletes {
     "public.organization_domains",
     "public.subscriptions"
   )
-  val ApplicationChildren: Seq[String] = Seq(
+  val OrganizationHard: Seq[String] = Seq(
+    "public.organization_logs", "search.items"
+  )
+  val ApplicationSoft: Seq[String] = Seq(
     "public.changes", "public.versions", "public.watches"
   )
-  val VersionChildren = Seq(
+  val ApplicationHard: Seq[String] = Seq("search.items")
+  val VersionSoft: Seq[String] = Seq(
     "cache.services", "public.originals"
   )
+  val VersionHard: Seq[String] = Seq("public.migrations")
 }
 
 class ProcessDeletes @Inject() (
@@ -36,7 +41,7 @@ class ProcessDeletes @Inject() (
   }
 
   private[util] def organizations(): Unit = {
-    OrganizationChildren.foreach { table =>
+    OrganizationSoft.foreach { table =>
       exec(
         s"""
           |update $table
@@ -46,7 +51,8 @@ class ProcessDeletes @Inject() (
           |""".stripMargin
       )
     }
-    Seq("organization_logs").foreach { table =>
+
+    OrganizationHard.foreach { table =>
       exec(
         s"""
            |delete from $table
@@ -57,7 +63,7 @@ class ProcessDeletes @Inject() (
   }
 
   private[util] def applications(): Unit = {
-    ApplicationChildren.foreach { table =>
+    ApplicationSoft.foreach { table =>
       exec(
         s"""
           |update $table
@@ -67,22 +73,34 @@ class ProcessDeletes @Inject() (
           |""".stripMargin
       )
     }
+
+    ApplicationHard.foreach { table =>
+      exec(
+        s"""
+           |delete from $table
+           | where application_guid in (select guid from applications where deleted_at is not null)
+           |""".stripMargin
+      )
+    }
   }
 
   private[util] def versions(): Unit = {
-    exec("""
-       |delete from migrations
-       | where version_guid in (select guid from versions where deleted_at is not null)
-       |""".stripMargin
-    )
-
-    VersionChildren.foreach { table =>
+    VersionSoft.foreach { table =>
       exec(
         s"""
            |update $table
            |   set deleted_at=now(),deleted_by_guid={deleted_by_guid}::uuid
            | where deleted_at is null
            |   and version_guid in (select guid from versions where deleted_at is not null)
+           |""".stripMargin
+      )
+    }
+
+    VersionHard.foreach { table =>
+      exec(
+        s"""
+           |delete from $table
+           | where version_guid in (select guid from versions where deleted_at is not null)
            |""".stripMargin
       )
     }
