@@ -53,7 +53,7 @@ class MainActor @javax.inject.Inject() (
   }
 
   scheduleOnce(QueueVersionsToMigrate)
-  scheduleOnce(MigrateVersions)
+  scheduleOnce(CleanupDeletedApplications)
 
   def receive = akka.event.LoggingReceive {
 
@@ -119,6 +119,7 @@ class MainActor @javax.inject.Inject() (
     case m @ CleanupDeletedApplications => withVerboseErrorHandler(m) {
       println(s"DEBUG_CleanupDeletedApplications - STARTING")
       processDeletes.all()
+      scheduleOnce(MigrateVersions)
     }
 
     case m: Any => logUnhandledMessage(m)
