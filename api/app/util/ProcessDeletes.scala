@@ -19,7 +19,7 @@ object ProcessDeletes {
     "public.organization_logs", "search.items"
   )
   val ApplicationSoft: Seq[String] = Seq(
-    "public.changes", "public.versions", "public.watches"
+    "public.application_moves", "public.changes", "public.versions", "public.watches"
   )
   val ApplicationHard: Seq[String] = Seq("search.items")
   val VersionSoft: Seq[String] = Seq(

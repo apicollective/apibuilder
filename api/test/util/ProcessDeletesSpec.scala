@@ -111,9 +111,7 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
 
     "Application" must {
       "soft" in {
-        val Ignore = Seq("public.application_moves")
-        getTablesSoft("application_guid")
-          .filterNot(Ignore.contains) mustBe ProcessDeletes.ApplicationSoft
+        getTablesSoft("application_guid") mustBe ProcessDeletes.ApplicationSoft
       }
       "hard" in {
         getTablesHard("application_guid") mustBe ProcessDeletes.ApplicationHard
