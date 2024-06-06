@@ -1,6 +1,6 @@
 package util
 
-import actors.{Emails, Search}
+import actors.Emails
 import db.{ApplicationsDao, AttributesDao, ChangesDao, EmailVerificationsDao, ItemsDao, MembershipRequestsDao, MembershipsDao, OrganizationAttributeValuesDao, OrganizationDomainsDao, OrganizationLogsDao, OrganizationsDao, OriginalsDao, PasswordResetRequestsDao, SubscriptionsDao, TasksDao, TokensDao, UserPasswordsDao, UsersDao, VersionsDao}
 import db.generated.SessionsDao
 import db.generators.{GeneratorsDao, ServicesDao}
