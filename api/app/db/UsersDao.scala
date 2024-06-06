@@ -1,22 +1,21 @@
 package db
 
-import io.apibuilder.api.v0.models.{Error, User, UserForm, UserUpdateForm}
-import io.flow.postgresql.Query
-import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
-import javax.inject.{Inject, Named, Singleton}
-
+import io.apibuilder.api.v0.models.{Error, User, UserForm, UserUpdateForm}
+import io.apibuilder.task.v0.models.TaskType
+import io.flow.postgresql.Query
+import lib.{Constants, Misc, UrlKey, Validation}
 import play.api.db._
-import java.util.UUID
-
 import play.api.inject.Injector
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 object UsersDao {
 
-  val AdminUserEmails: Seq[String] = Seq("admin@apibuilder.io")
+  private val AdminUserEmails: Seq[String] = Seq("admin@apibuilder.io")
 
   val AdminUserGuid: UUID = UUID.fromString("f3973f60-be9f-11e3-b1b6-0800200c9a66")
 
@@ -25,11 +24,10 @@ object UsersDao {
 @Singleton
 class UsersDao @Inject() (
   @NamedDatabase("default") db: Database,
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   injector: Injector,
   emailVerificationsDao: EmailVerificationsDao,
-  organizationsDao: OrganizationsDao,
-  userPasswordsDao: UserPasswordsDao
+  userPasswordsDao: UserPasswordsDao,
+  internalTasksDao: InternalTasksDao,
 ) {
 
   // TODO: Inject directly - here because of circular references
@@ -153,7 +151,7 @@ class UsersDao @Inject() (
     gravatarId: Option[String]
   ): User = {
     val nickname = generateNickname(login)
-    val guid = db.withConnection { implicit c =>
+    val guid = db.withTransaction { implicit c =>
       doInsert(
         nickname = nickname,
         email = email,
@@ -162,8 +160,6 @@ class UsersDao @Inject() (
         gravatarId = gravatarId
       )
     }
-
-    mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create user")
@@ -197,8 +193,6 @@ class UsersDao @Inject() (
       id
     }
 
-    mainActor ! actors.MainActor.Messages.UserCreated(guid)
-
     findByGuid(guid).getOrElse {
       sys.error("Failed to create user")
     }
@@ -224,16 +218,9 @@ class UsersDao @Inject() (
       "updated_by_guid" -> Constants.DefaultUserGuid.toString
     ).execute()
 
-    guid
-  }
+    internalTasksDao.queueWithConnection(c, TaskType.UserCreated, guid.toString)
 
-  def processUserCreated(guid: UUID): Unit =  {
-    findByGuid(guid).foreach { user =>
-      organizationsDao.findAllByEmailDomain(user.email).foreach { org =>
-        membershipRequestsDao.upsert(user, org, user, Role.Member)
-      }
-      emailVerificationsDao.create(user, user, user.email)
-    }
+    guid
   }
 
   def findByToken(token: String): Option[User] = {

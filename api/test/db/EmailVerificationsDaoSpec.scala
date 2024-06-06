@@ -1,13 +1,14 @@
 package db
 
 import java.util.UUID
-
 import io.apibuilder.api.v0.models.UserForm
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import processor.UserCreatedProcessor
 
 class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
+  def userCreatedProcessor: UserCreatedProcessor = injector.instanceOf[UserCreatedProcessor]
   def emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
 
   "upsert" in {
@@ -112,8 +113,8 @@ class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
       password = "testing"
     ))
 
-    usersDao.processUserCreated(user.guid)
-    usersDao.processUserCreated(nonMatchingUser.guid)
+    userCreatedProcessor.processRecord(user.guid)
+    userCreatedProcessor.processRecord(nonMatchingUser.guid)
 
     membershipsDao.isUserMember(user, org) must be(false)
     membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
