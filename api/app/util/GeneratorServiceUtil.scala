@@ -12,6 +12,7 @@ import play.api.Logger
 
 import java.util.UUID
 import javax.inject.Inject
+import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
 import scala.util.{Failure, Success, Try}
@@ -67,6 +68,7 @@ class GeneratorServiceUtil @Inject() (
     )
   }
 
+  @tailrec
   private[this] def doSync(
     client: Client,
     service: GeneratorService,

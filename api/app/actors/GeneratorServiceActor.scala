@@ -1,8 +1,6 @@
 package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
-import db.generators.ServicesDao
-import play.api.Mode
 import util.GeneratorServiceUtil
 
 import java.util.UUID
@@ -36,7 +34,6 @@ class GeneratorServiceActor @javax.inject.Inject() (
 }
 
 class GeneratorServiceActorProcessor @Inject() (
-  servicesDao: ServicesDao,
   util: GeneratorServiceUtil
 ) {
   def processMessage(msg: GeneratorServiceActorMessage)(implicit ec: ExecutionContext): Unit = {

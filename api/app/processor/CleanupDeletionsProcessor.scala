@@ -28,7 +28,7 @@ object DeleteMetadata {
   val VersionSoft: Seq[String] = Seq(
     "cache.services", "public.originals"
   )
-  val VersionHard: Seq[String] = Seq("public.migrations")
+  val VersionHard: Seq[String] = Nil
 }
 
 class CleanupDeletionsProcessor @Inject()(
