@@ -4,6 +4,7 @@ import anorm.SqlParser
 import db.Helpers
 import io.apibuilder.api.v0.models.{Application, Organization}
 import io.flow.postgresql.Query
+import org.joda.time.DateTime
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.db.Database
@@ -12,7 +13,7 @@ import java.util.UUID
 
 class PurgeOldDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
 
-  private[this] def processor: CleanupDeletionsProcessor = app.injector.instanceOf[CleanupDeletionsProcessor]
+  private[this] def processor: PurgeOldDeletedProcessor = app.injector.instanceOf[PurgeOldDeletedProcessor]
   private[this] def database: Database = app.injector.instanceOf[Database]
 
   private[this] def isDeleted(table: String, guid: UUID): Boolean = {
@@ -20,13 +21,15 @@ class PurgeOldDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite wit
       Query(s"select count(*) from $table")
         .equals("guid", guid)
         .as(SqlParser.int(1).*)(c)
-    }.headOption.exists(_ > 0)
+    }.head == 0
   }
 
-  private[this] def softDelete(table: String, guid: UUID): Unit = {
+  private[this] def softDelete(table: String, guid: UUID, deletedAt: DateTime): Unit = {
     database.withConnection { c =>
-      Query(s"update $table set deleted_at = now() - interval '1 year'")
+      Query(s"update $table set deleted_at = {deleted_at}::timestamptz, deleted_by_guid = {deleted_by_guid}::uuid")
         .equals("guid", guid)
+        .bind("deleted_at", deletedAt)
+        .bind("deleted_by_guid", testUser.guid)
         .anormSql()
         .executeUpdate()(c)
     }
@@ -39,17 +42,18 @@ class PurgeOldDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite wit
     def setup(): (Organization, Application) = {
       val org = createOrganization()
       val app = createApplication(org)
+      softDelete("applications", app.guid, DateTime.now.minusYears(1))
       (org, app)
     }
 
     val (_, app) = setup()
     val (orgDeleted, appDeleted) = setup()
-    softDelete("organizations", orgDeleted.guid)
+    softDelete("organizations", orgDeleted.guid, DateTime.now.minusYears(1))
 
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe false
 
-    processor.organizations()
+    processor.processRecord("periodic")
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe true
   }
