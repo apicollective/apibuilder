@@ -15,7 +15,7 @@ class ApplicationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
   organizationsDao: OrganizationsDao,
-  tasksDao: TasksDao
+  tasksDao: InternalTasksDao
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
@@ -365,7 +365,7 @@ class ApplicationsDao @Inject() (
   ): Unit = {
     val taskGuid = db.withTransaction { implicit c =>
       f(c)
-      tasksDao.insert(c, user, TaskDataIndexApplication(guid))
+      tasksDao.queueWithConnection(c, user, TaskDataIndexApplication(guid))
     }
     mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
   }
