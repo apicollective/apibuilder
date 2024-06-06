@@ -4,6 +4,7 @@ import anorm.JodaParameterMetaData._
 import anorm._
 import io.flow.postgresql.{OrderBy, Query}
 import java.sql.Connection
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.db.Database
@@ -13,13 +14,13 @@ case class Task(
   id: String,
   `type`: String,
   typeId: String,
-  organizationGuid: Option[String],
+  organizationGuid: Option[UUID],
   numAttempts: Int,
   nextAttemptAt: DateTime,
   errors: Option[Seq[String]],
   stacktrace: Option[String],
   data: JsValue,
-  updatedByUserId: String,
+  updatedByGuid: String,
   createdAt: DateTime,
   updatedAt: DateTime
 ) {
@@ -42,7 +43,7 @@ case class TaskForm(
   id: String,
   `type`: String,
   typeId: String,
-  organizationGuid: Option[String],
+  organizationGuid: Option[UUID],
   numAttempts: Int,
   nextAttemptAt: DateTime,
   errors: Option[Seq[String]],
@@ -65,11 +66,11 @@ object TasksTable {
     val Errors: String = "errors"
     val Stacktrace: String = "stacktrace"
     val Data: String = "data"
-    val UpdatedByUserId: String = "updated_by_user_id"
+    val UpdatedByGuid: String = "updated_by_guid"
     val CreatedAt: String = "created_at"
     val UpdatedAt: String = "updated_at"
     val HashCode: String = "hash_code"
-    val all: List[String] = List(Id, Type, TypeId, OrganizationGuid, NumAttempts, NextAttemptAt, Errors, Stacktrace, Data, UpdatedByUserId, CreatedAt, UpdatedAt, HashCode)
+    val all: List[String] = List(Id, Type, TypeId, OrganizationGuid, NumAttempts, NextAttemptAt, Errors, Stacktrace, Data, UpdatedByGuid, CreatedAt, UpdatedAt, HashCode)
   }
 }
 
@@ -87,7 +88,7 @@ trait BaseTasksDao {
       |        tasks.errors::text as errors_text,
       |        tasks.stacktrace,
       |        tasks.data::text as data_text,
-      |        tasks.updated_by_user_id,
+      |        tasks.updated_by_guid,
       |        tasks.created_at,
       |        tasks.updated_at,
       |        tasks.hash_code
@@ -276,16 +277,16 @@ object TasksDao {
     SqlParser.str("id") ~
     SqlParser.str("type") ~
     SqlParser.str("type_id") ~
-    SqlParser.str("organization_guid").? ~
+    SqlParser.get[UUID]("organization_guid").? ~
     SqlParser.int("num_attempts") ~
     SqlParser.get[DateTime]("next_attempt_at") ~
     SqlParser.str("errors_text").? ~
     SqlParser.str("stacktrace").? ~
     SqlParser.str("data_text") ~
-    SqlParser.str("updated_by_user_id") ~
+    SqlParser.str("updated_by_guid") ~
     SqlParser.get[DateTime]("created_at") ~
     SqlParser.get[DateTime]("updated_at") map {
-      case id ~ type_ ~ typeId ~ organizationGuid ~ numAttempts ~ nextAttemptAt ~ errors ~ stacktrace ~ data ~ updatedByUserId ~ createdAt ~ updatedAt => Task(
+      case id ~ type_ ~ typeId ~ organizationGuid ~ numAttempts ~ nextAttemptAt ~ errors ~ stacktrace ~ data ~ updatedByGuid ~ createdAt ~ updatedAt => Task(
         id = id,
         `type` = type_,
         typeId = typeId,
@@ -295,7 +296,7 @@ object TasksDao {
         errors = errors.map { text => Json.parse(text).as[Seq[String]] },
         stacktrace = stacktrace,
         data = Json.parse(data),
-        updatedByUserId = updatedByUserId,
+        updatedByGuid = updatedByGuid,
         createdAt = createdAt,
         updatedAt = updatedAt
       )
@@ -311,18 +312,18 @@ class TasksDao @Inject() (
 
   private[this] val UpsertQuery = Query("""
     | insert into tasks
-    | (id, type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, updated_by_user_id, hash_code)
+    | (id, type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, updated_by_guid, hash_code)
     | values
-    | ({id}, {type}, {type_id}, {organization_guid}, {num_attempts}::int, {next_attempt_at}::timestamptz, {errors}::json, {stacktrace}, {data}::json, {updated_by_user_id}, {hash_code}::bigint)
+    | ({id}, {type}, {type_id}, {organization_guid}::uuid, {num_attempts}::int, {next_attempt_at}::timestamptz, {errors}::json, {stacktrace}, {data}::json, {updated_by_guid}, {hash_code}::bigint)
     | on conflict (type_id, type)
     | do update
-    |    set organization_guid = {organization_guid},
+    |    set organization_guid = {organization_guid}::uuid,
     |        num_attempts = {num_attempts}::int,
     |        next_attempt_at = {next_attempt_at}::timestamptz,
     |        errors = {errors}::json,
     |        stacktrace = {stacktrace},
     |        data = {data}::json,
-    |        updated_by_user_id = {updated_by_user_id},
+    |        updated_by_guid = {updated_by_guid},
     |        hash_code = {hash_code}::bigint
     |  where tasks.hash_code != {hash_code}::bigint
     | returning id
@@ -332,13 +333,13 @@ class TasksDao @Inject() (
     | update tasks
     |    set type = {type},
     |        type_id = {type_id},
-    |        organization_guid = {organization_guid},
+    |        organization_guid = {organization_guid}::uuid,
     |        num_attempts = {num_attempts}::int,
     |        next_attempt_at = {next_attempt_at}::timestamptz,
     |        errors = {errors}::json,
     |        stacktrace = {stacktrace},
     |        data = {data}::json,
-    |        updated_by_user_id = {updated_by_user_id},
+    |        updated_by_guid = {updated_by_guid},
     |        hash_code = {hash_code}::bigint
     |  where id = {id}
     |    and tasks.hash_code != {hash_code}::bigint
@@ -357,7 +358,7 @@ class TasksDao @Inject() (
       bind("hash_code", form.hashCode())
   }
 
-  private[this] def toNamedParameter(updatedBy: String, form: TaskForm): Seq[NamedParameter] = {
+  private[this] def toNamedParameter(updatedBy: UUID, form: TaskForm): Seq[NamedParameter] = {
     Seq(
       scala.Symbol("id") -> form.id,
       scala.Symbol("type") -> form.`type`,
@@ -368,38 +369,38 @@ class TasksDao @Inject() (
       scala.Symbol("errors") -> form.errors.map { v => Json.toJson(v).toString },
       scala.Symbol("stacktrace") -> form.stacktrace,
       scala.Symbol("data") -> form.data.toString,
-      scala.Symbol("updated_by_user_id") -> updatedBy,
+      scala.Symbol("updated_by_guid") -> updatedBy,
       scala.Symbol("hash_code") -> form.hashCode()
     )
   }
 
-  def upsertIfChangedByTypeIdAndType(updatedBy: String, form: TaskForm): Unit = {
+  def upsertIfChangedByTypeIdAndType(updatedBy: UUID, form: TaskForm): Unit = {
     if (!findByTypeIdAndType(form.typeId, form.`type`).map(_.form).contains(form)) {
       upsertByTypeIdAndType(updatedBy, form)
     }
   }
 
-  def upsertByTypeIdAndType(updatedBy: String, form: TaskForm): Unit = {
+  def upsertByTypeIdAndType(updatedBy: UUID, form: TaskForm): Unit = {
     db.withConnection { c =>
       upsertByTypeIdAndType(c, updatedBy, form)
     }
   }
 
-  def upsertByTypeIdAndType(c: Connection, updatedBy: String, form: TaskForm): Unit = {
+  def upsertByTypeIdAndType(c: Connection, updatedBy: UUID, form: TaskForm): Unit = {
     bindQuery(UpsertQuery, form).
       bind("id", form.id).
-      bind("updated_by_user_id", updatedBy).
+      bind("updated_by_guid", updatedBy).
       anormSql.execute()(c)
     ()
   }
 
-  def upsertBatchByTypeIdAndType(updatedBy: String, forms: Seq[TaskForm]): Unit = {
+  def upsertBatchByTypeIdAndType(updatedBy: UUID, forms: Seq[TaskForm]): Unit = {
     db.withConnection { c =>
       upsertBatchByTypeIdAndType(c, updatedBy, forms)
     }
   }
 
-  def upsertBatchByTypeIdAndType(c: Connection, updatedBy: String, forms: Seq[TaskForm]): Unit = {
+  def upsertBatchByTypeIdAndType(c: Connection, updatedBy: UUID, forms: Seq[TaskForm]): Unit = {
     if (forms.nonEmpty) {
       val params = forms.map(toNamedParameter(updatedBy, _))
       BatchSql(UpsertQuery.sql(), params.head, params.tail: _*).execute()(c)
@@ -407,43 +408,43 @@ class TasksDao @Inject() (
     }
   }
 
-  def updateIfChangedById(updatedBy: String, id: String, form: TaskForm): Unit = {
+  def updateIfChangedById(updatedBy: UUID, id: String, form: TaskForm): Unit = {
     if (!findById(id).map(_.form).contains(form)) {
       updateById(updatedBy, id, form)
     }
   }
 
-  def updateById(updatedBy: String, id: String, form: TaskForm): Unit = {
+  def updateById(updatedBy: UUID, id: String, form: TaskForm): Unit = {
     db.withConnection { c =>
       updateById(c, updatedBy, id, form)
     }
   }
 
-  def updateById(c: Connection, updatedBy: String, id: String, form: TaskForm): Unit = {
+  def updateById(c: Connection, updatedBy: UUID, id: String, form: TaskForm): Unit = {
     bindQuery(UpdateQuery, form).
       bind("id", id).
-      bind("updated_by_user_id", updatedBy).
+      bind("updated_by_guid", updatedBy).
       anormSql.execute()(c)
     ()
   }
 
-  def update(updatedBy: String, existing: Task, form: TaskForm): Unit = {
+  def update(updatedBy: UUID, existing: Task, form: TaskForm): Unit = {
     db.withConnection { c =>
       update(c, updatedBy, existing, form)
     }
   }
 
-  def update(c: Connection, updatedBy: String, existing: Task, form: TaskForm): Unit = {
+  def update(c: Connection, updatedBy: UUID, existing: Task, form: TaskForm): Unit = {
     updateById(c, updatedBy, existing.id, form)
   }
 
-  def updateBatch(updatedBy: String, forms: Seq[TaskForm]): Unit = {
+  def updateBatch(updatedBy: UUID, forms: Seq[TaskForm]): Unit = {
     db.withConnection { c =>
       updateBatchWithConnection(c, updatedBy, forms)
     }
   }
 
-  def updateBatchWithConnection(c: Connection, updatedBy: String, forms: Seq[TaskForm]): Unit = {
+  def updateBatchWithConnection(c: Connection, updatedBy: UUID, forms: Seq[TaskForm]): Unit = {
     if (forms.nonEmpty) {
       val params = forms.map(toNamedParameter(updatedBy, _))
       BatchSql(UpdateQuery.sql(), params.head, params.tail: _*).execute()(c)
@@ -451,23 +452,23 @@ class TasksDao @Inject() (
     }
   }
 
-  def delete(deletedBy: String, task: Task): Unit = {
+  def delete(deletedBy: UUID, task: Task): Unit = {
     db.withConnection { c =>
       delete(c, deletedBy, task)
     }
   }
 
-  def delete(c: Connection, deletedBy: String, task: Task): Unit = {
+  def delete(c: Connection, deletedBy: UUID, task: Task): Unit = {
     deleteById(c, deletedBy, task.id)
   }
 
-  def deleteById(deletedBy: String, id: String): Unit = {
+  def deleteById(deletedBy: UUID, id: String): Unit = {
     db.withConnection { c =>
       deleteById(c, deletedBy, id)
     }
   }
 
-  def deleteById(c: Connection, deletedBy: String, id: String): Unit = {
+  def deleteById(c: Connection, deletedBy: UUID, id: String): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("id", id)
@@ -475,13 +476,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByIds(deletedBy: String, ids: Seq[String]): Unit = {
+  def deleteAllByIds(deletedBy: UUID, ids: Seq[String]): Unit = {
     db.withConnection { c =>
       deleteAllByIds(c, deletedBy, ids)
     }
   }
 
-  def deleteAllByIds(c: Connection, deletedBy: String, ids: Seq[String]): Unit = {
+  def deleteAllByIds(c: Connection, deletedBy: UUID, ids: Seq[String]): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .in("id", ids)
@@ -489,13 +490,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByNumAttempts(deletedBy: String, numAttempts: Int): Unit = {
+  def deleteAllByNumAttempts(deletedBy: UUID, numAttempts: Int): Unit = {
     db.withConnection { c =>
       deleteAllByNumAttempts(c, deletedBy, numAttempts)
     }
   }
 
-  def deleteAllByNumAttempts(c: Connection, deletedBy: String, numAttempts: Int): Unit = {
+  def deleteAllByNumAttempts(c: Connection, deletedBy: UUID, numAttempts: Int): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("num_attempts", numAttempts)
@@ -503,13 +504,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByNumAttemptses(deletedBy: String, numAttemptses: Seq[Int]): Unit = {
+  def deleteAllByNumAttemptses(deletedBy: UUID, numAttemptses: Seq[Int]): Unit = {
     db.withConnection { c =>
       deleteAllByNumAttemptses(c, deletedBy, numAttemptses)
     }
   }
 
-  def deleteAllByNumAttemptses(c: Connection, deletedBy: String, numAttemptses: Seq[Int]): Unit = {
+  def deleteAllByNumAttemptses(c: Connection, deletedBy: UUID, numAttemptses: Seq[Int]): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .in("num_attempts", numAttemptses)
@@ -517,13 +518,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByNumAttemptsAndNextAttemptAt(deletedBy: String, numAttempts: Int, nextAttemptAt: DateTime): Unit = {
+  def deleteAllByNumAttemptsAndNextAttemptAt(deletedBy: UUID, numAttempts: Int, nextAttemptAt: DateTime): Unit = {
     db.withConnection { c =>
       deleteAllByNumAttemptsAndNextAttemptAt(c, deletedBy, numAttempts, nextAttemptAt)
     }
   }
 
-  def deleteAllByNumAttemptsAndNextAttemptAt(c: Connection, deletedBy: String, numAttempts: Int, nextAttemptAt: DateTime): Unit = {
+  def deleteAllByNumAttemptsAndNextAttemptAt(c: Connection, deletedBy: UUID, numAttempts: Int, nextAttemptAt: DateTime): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("num_attempts", numAttempts)
@@ -532,13 +533,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByNumAttemptsAndNextAttemptAts(deletedBy: String, numAttempts: Int, nextAttemptAts: Seq[DateTime]): Unit = {
+  def deleteAllByNumAttemptsAndNextAttemptAts(deletedBy: UUID, numAttempts: Int, nextAttemptAts: Seq[DateTime]): Unit = {
     db.withConnection { c =>
       deleteAllByNumAttemptsAndNextAttemptAts(c, deletedBy, numAttempts, nextAttemptAts)
     }
   }
 
-  def deleteAllByNumAttemptsAndNextAttemptAts(c: Connection, deletedBy: String, numAttempts: Int, nextAttemptAts: Seq[DateTime]): Unit = {
+  def deleteAllByNumAttemptsAndNextAttemptAts(c: Connection, deletedBy: UUID, numAttempts: Int, nextAttemptAts: Seq[DateTime]): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("num_attempts", numAttempts)
@@ -547,13 +548,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByTypeId(deletedBy: String, typeId: String): Unit = {
+  def deleteAllByTypeId(deletedBy: UUID, typeId: String): Unit = {
     db.withConnection { c =>
       deleteAllByTypeId(c, deletedBy, typeId)
     }
   }
 
-  def deleteAllByTypeId(c: Connection, deletedBy: String, typeId: String): Unit = {
+  def deleteAllByTypeId(c: Connection, deletedBy: UUID, typeId: String): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("type_id", typeId)
@@ -561,13 +562,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByTypeIds(deletedBy: String, typeIds: Seq[String]): Unit = {
+  def deleteAllByTypeIds(deletedBy: UUID, typeIds: Seq[String]): Unit = {
     db.withConnection { c =>
       deleteAllByTypeIds(c, deletedBy, typeIds)
     }
   }
 
-  def deleteAllByTypeIds(c: Connection, deletedBy: String, typeIds: Seq[String]): Unit = {
+  def deleteAllByTypeIds(c: Connection, deletedBy: UUID, typeIds: Seq[String]): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .in("type_id", typeIds)
@@ -575,13 +576,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteByTypeIdAndType(deletedBy: String, typeId: String, `type`: String): Unit = {
+  def deleteByTypeIdAndType(deletedBy: UUID, typeId: String, `type`: String): Unit = {
     db.withConnection { c =>
       deleteByTypeIdAndType(c, deletedBy, typeId, `type`)
     }
   }
 
-  def deleteByTypeIdAndType(c: Connection, deletedBy: String, typeId: String, `type`: String): Unit = {
+  def deleteByTypeIdAndType(c: Connection, deletedBy: UUID, typeId: String, `type`: String): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("type_id", typeId)
@@ -590,13 +591,13 @@ class TasksDao @Inject() (
       ()
   }
 
-  def deleteAllByTypeIdAndTypes(deletedBy: String, typeId: String, types: Seq[String]): Unit = {
+  def deleteAllByTypeIdAndTypes(deletedBy: UUID, typeId: String, types: Seq[String]): Unit = {
     db.withConnection { c =>
       deleteAllByTypeIdAndTypes(c, deletedBy, typeId, types)
     }
   }
 
-  def deleteAllByTypeIdAndTypes(c: Connection, deletedBy: String, typeId: String, types: Seq[String]): Unit = {
+  def deleteAllByTypeIdAndTypes(c: Connection, deletedBy: UUID, typeId: String, types: Seq[String]): Unit = {
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("type_id", typeId)
@@ -605,10 +606,7 @@ class TasksDao @Inject() (
       ()
   }
 
-  private[this] val ValidCharacters: Set[String] = "_-,.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("").toSet
-  private[this] def isSafe(value: String): Boolean = value.trim.split("").forall(ValidCharacters.contains)
-  def setJournalDeletedByUserId(c: Connection, deletedBy: String): Unit = {
-    assert(isSafe(deletedBy), s"Value '${deletedBy}' contains unsafe characters")
+  def setJournalDeletedByUserId(c: Connection, deletedBy: UUID): Unit = {
     anorm.SQL(s"SET journal.deleted_by_user_id = '${deletedBy}'").executeUpdate()(c)
     ()
   }
