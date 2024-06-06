@@ -2,20 +2,21 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
-import io.apibuilder.internal.v0.models.TaskDataIndexApplication
+import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 import play.api.db._
+import processor.EmailProcessorQueue
 
 import java.util.UUID
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class ApplicationsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
+  emailQueue: EmailProcessorQueue,
   organizationsDao: OrganizationsDao,
-  tasksDao: TasksDao
+  tasksDao: InternalTasksDao,
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
@@ -163,7 +164,7 @@ class ApplicationsDao @Inject() (
     val errors = validate(org, form, Some(app))
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
-    withTasks(updatedBy, app.guid, { implicit c =>
+    withTasks(app.guid, { implicit c =>
       SQL(UpdateQuery).on(
         "guid" -> app.guid,
         "name" -> form.name.trim,
@@ -194,7 +195,7 @@ class ApplicationsDao @Inject() (
       organizationsDao.findByKey(Authorization.All, form.orgKey) match {
         case None => sys.error(s"Could not find organization with key[${form.orgKey}]")
         case Some(newOrg) => {
-          withTasks(updatedBy, app.guid, { implicit c =>
+          withTasks(app.guid, { implicit c =>
             SQL(InsertMoveQuery).on(
               "guid" -> UUID.randomUUID,
               "application_guid" -> app.guid,
@@ -228,7 +229,7 @@ class ApplicationsDao @Inject() (
       "User[${user.guid}] not authorized to update app[${app.key}]"
     )
 
-    withTasks(updatedBy, app.guid, { implicit c =>
+    withTasks(app.guid, { implicit c =>
       SQL(UpdateVisibilityQuery).on(
         "guid" -> app.guid,
         "visibility" -> visibility.toString,
@@ -252,7 +253,7 @@ class ApplicationsDao @Inject() (
     val guid = UUID.randomUUID
     val key = form.key.getOrElse(UrlKey.generate(form.name))
 
-    withTasks(createdBy, guid, { implicit c =>
+    withTasks(guid, { implicit c =>
       SQL(InsertQuery).on(
         "guid" -> guid,
         "organization_guid" -> org.guid,
@@ -263,9 +264,8 @@ class ApplicationsDao @Inject() (
         "created_by_guid" -> createdBy.guid,
         "updated_by_guid" -> createdBy.guid
       ).execute()
+      emailQueue.queueWithConnection(c, EmailDataApplicationCreated(guid))
     })
-
-    mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
 
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
@@ -273,16 +273,13 @@ class ApplicationsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, application: Application): Unit = {
-    withTasks(deletedBy, application.guid, { c =>
+    withTasks(application.guid, { c =>
       dbHelpers.delete(c, deletedBy.guid, application.guid)
     })
   }
 
   def canUserUpdate(user: User, app: Application): Boolean = {
-    findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
-      case None => false
-      case Some(a) => true
-    }
+    findAll(Authorization.User(user.guid), key = Some(app.key)).nonEmpty
   }
 
   private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[Application] = {
@@ -359,15 +356,13 @@ class ApplicationsDao @Inject() (
   }
 
   private[this] def withTasks(
-    user: User,
     guid: UUID,
     f: java.sql.Connection => Unit
   ): Unit = {
-    val taskGuid = db.withTransaction { implicit c =>
+    db.withTransaction { implicit c =>
       f(c)
-      tasksDao.insert(c, user, TaskDataIndexApplication(guid))
+      tasksDao.queueWithConnection(c, TaskType.IndexApplication, guid.toString)
     }
-    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
   }
 
 }

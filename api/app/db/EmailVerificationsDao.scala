@@ -1,14 +1,17 @@
 package db
 
+import anorm.JodaParameterMetaData._
+import anorm._
 import io.apibuilder.api.v0.models.User
+import io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated
 import io.flow.postgresql.Query
 import lib.{Role, TokenGenerator}
-import anorm._
-import anorm.JodaParameterMetaData._
-import javax.inject.{Inject, Named, Singleton}
-import play.api.db._
-import java.util.UUID
 import org.joda.time.DateTime
+import play.api.db._
+import processor.EmailProcessorQueue
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 case class EmailVerification(
   guid: UUID,
@@ -20,8 +23,8 @@ case class EmailVerification(
 
 @Singleton
 class EmailVerificationsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
+  emailQueue: EmailProcessorQueue,
   emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao
@@ -56,7 +59,7 @@ class EmailVerificationsDao @Inject() (
 
   def create(createdBy: User, user: User, email: String): EmailVerification = {
     val guid = UUID.randomUUID
-    db.withConnection { implicit c =>
+    db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         "guid" -> guid,
         "user_guid" -> user.guid,
@@ -65,9 +68,8 @@ class EmailVerificationsDao @Inject() (
         "expires_at" -> DateTime.now.plusHours(HoursUntilTokenExpires),
         "created_by_guid" -> createdBy.guid
       ).execute()
+      emailQueue.queueWithConnection(c, EmailDataEmailVerificationCreated(guid))
     }
-
-    mainActor ! actors.MainActor.Messages.EmailVerificationCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create email verification")

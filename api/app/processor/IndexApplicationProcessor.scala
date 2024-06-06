@@ -1,19 +1,24 @@
-package actors
+package processor
 
+import cats.implicits._
+import cats.data.ValidatedNec
+import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Application, ApplicationSummary, Organization}
 import io.apibuilder.common.v0.models.Reference
-import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import io.apibuilder.task.v0.models.TaskType
 
-@Singleton
-class Search @Inject() (
+import java.util.UUID
+import javax.inject.Inject
+
+
+class IndexApplicationProcessor @Inject()(
+  args: TaskProcessorArgs,
   applicationsDao: ApplicationsDao,
   itemsDao: ItemsDao,
   organizationsDao: OrganizationsDao
-) {
+) extends TaskProcessorWithGuid(args, TaskType.IndexApplication) {
 
-  def indexApplication(applicationGuid: UUID): Unit = {
+  override def processRecord(applicationGuid: UUID): ValidatedNec[String, Unit] = {
     getInfo(applicationGuid) match {
       case Some((org, app)) => {
         val content = s"""${app.name} ${app.key} ${app.description.getOrElse("")}""".trim.toLowerCase
@@ -33,6 +38,7 @@ class Search @Inject() (
         itemsDao.delete(applicationGuid)
       }
     }
+    ().validNec
   }
 
   private[this] def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {
@@ -42,5 +48,4 @@ class Search @Inject() (
       }
     }
   }
-
 }

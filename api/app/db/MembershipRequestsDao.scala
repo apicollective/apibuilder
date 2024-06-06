@@ -1,17 +1,20 @@
 package db
 
+import anorm._
 import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
+import io.apibuilder.task.v0.models.{EmailDataMembershipRequestAccepted, EmailDataMembershipRequestCreated, EmailDataMembershipRequestDeclined}
 import io.flow.postgresql.Query
 import lib.Role
-import anorm._
-import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
+import processor.EmailProcessorQueue
+
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipRequestsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
+  emailQueue: EmailProcessorQueue,
   membershipsDao: MembershipsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
@@ -59,7 +62,7 @@ class MembershipRequestsDao @Inject() (
 
   private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     val guid = UUID.randomUUID
-    db.withConnection { implicit c =>
+    db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         "guid" -> guid,
         "organization_guid" -> organization.guid,
@@ -67,9 +70,8 @@ class MembershipRequestsDao @Inject() (
         "role" -> role.key,
         "created_by_guid" -> createdBy.guid
       ).execute()
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestCreated(guid))
     }
-
-    mainActor ! actors.MainActor.Messages.MembershipRequestCreated(guid)
 
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create membership_request")
@@ -101,13 +103,12 @@ class MembershipRequestsDao @Inject() (
       sys.error(s"Invalid role[${request.role}]")
     }
 
-    db.withTransaction { implicit conn =>
+    db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy, request.organization, message)
-      dbHelpers.delete(conn, createdBy, request.guid)
+      dbHelpers.delete(c, createdBy, request.guid)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, r.toString))
     }
-
-    mainActor ! actors.MainActor.Messages.MembershipRequestAccepted(request.organization.guid, request.user.guid, r)
   }
 
   /**
@@ -121,12 +122,11 @@ class MembershipRequestsDao @Inject() (
     }
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
-    db.withTransaction { implicit conn =>
+    db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy.guid, request.organization, message)
       softDelete(createdBy, request)
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid, r.toString))
     }
-
-    mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
   }
 
   private[this] def assertUserCanReview(user: User, request: MembershipRequest): Unit = {

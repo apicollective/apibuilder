@@ -1,19 +1,22 @@
 package db
 
+import anorm._
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
 import lib.Role
-import anorm._
-import javax.inject.{Inject, Named, Singleton}
-import play.api.db._
-import java.util.UUID
 import org.joda.time.DateTime
+import play.api.db._
+import processor.EmailProcessorQueue
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
+  emailQueue: EmailProcessorQueue,
   subscriptionsDao: SubscriptionsDao
 ) {
 
@@ -67,7 +70,7 @@ class MembershipsDao @Inject() (
   }
 
   private[db] def create(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
-    db.withConnection { implicit c =>
+    db.withTransaction { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
@@ -94,7 +97,7 @@ class MembershipsDao @Inject() (
       "created_by_guid" -> createdBy
     ).execute()
 
-    mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
+    emailQueue.queueWithConnection(c, EmailDataMembershipCreated(membership.guid))
 
     membership
   }

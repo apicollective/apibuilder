@@ -1,11 +1,15 @@
-package util
+package processor
 
+import akka.actor.ActorSystem
 import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
+import cats.implicits._
 import db.generators.{GeneratorsDao, ServicesDao}
 import db.{Authorization, UsersDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.interfaces.Client
 import io.apibuilder.generator.v0.models.Generator
+import io.apibuilder.task.v0.models.TaskType
 import lib.{Pager, ValidatedHelpers}
 import modules.clients.GeneratorClientFactory
 import play.api.Logger
@@ -13,24 +17,28 @@ import play.api.Logger
 import java.util.UUID
 import javax.inject.Inject
 import scala.annotation.tailrec
-import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
+import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
 
-class GeneratorServiceUtil @Inject() (
+
+class SyncGeneratorServiceProcessor @Inject()(
+  args: TaskProcessorArgs,
+  system: ActorSystem,
   servicesDao: ServicesDao,
   generatorsDao: GeneratorsDao,
   usersDao: UsersDao,
   generatorClientFactory: GeneratorClientFactory
-) extends ValidatedHelpers {
+) extends TaskProcessorWithGuid(args, TaskType.SyncGeneratorService) with ValidatedHelpers {
 
   private[this] val log: Logger = Logger(this.getClass)
+  private[this] val ec: ExecutionContext = system.dispatchers.lookup("generator-service-sync-context")
 
-  def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
-    servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync(_) }
+  override def processRecord(guid: UUID): ValidatedNec[String, Unit] = {
+    syncAll()(ec).validNec
   }
 
-  def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
+  private[this] def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     Pager.eachPage { offset =>
       servicesDao.findAll(
         Authorization.All,
@@ -53,12 +61,12 @@ class GeneratorServiceUtil @Inject() (
     }
   }
 
-  def sync(
-    service: GeneratorService,
-    pageSize: Long = 200
-  ) (
-    implicit ec: scala.concurrent.ExecutionContext
-  ): Unit = {
+  private[this] def sync(
+            service: GeneratorService,
+            pageSize: Long = 200
+          ) (
+            implicit ec: scala.concurrent.ExecutionContext
+          ): Unit = {
     doSync(
       client = generatorClientFactory.instance(service.uri),
       service = service,
@@ -70,14 +78,14 @@ class GeneratorServiceUtil @Inject() (
 
   @tailrec
   private[this] def doSync(
-    client: Client,
-    service: GeneratorService,
-    pageSize: Long,
-    offset: Int,
-    resolved: List[Generator]
-  )(
-    implicit ec: scala.concurrent.ExecutionContext
-  ): Unit = {
+                            client: Client,
+                            service: GeneratorService,
+                            pageSize: Long,
+                            offset: Int,
+                            resolved: List[Generator]
+                          )(
+                            implicit ec: scala.concurrent.ExecutionContext
+                          ): Unit = {
     val newGenerators = Await.result(
       client.generators.get(limit = pageSize.toInt, offset = offset),
       FiniteDuration(30, SECONDS)
@@ -107,5 +115,4 @@ class GeneratorServiceUtil @Inject() (
       case Valid(_) => // no-op
     }
   }
-
 }

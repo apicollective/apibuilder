@@ -1,12 +1,15 @@
-package util
+package processor
 
+import cats.data.ValidatedNec
+import cats.implicits._
 import db.UsersDao
+import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import play.api.db.Database
 
 import javax.inject.Inject
 
-object ProcessDeletes {
+object DeleteMetadata {
   val OrganizationSoft: Seq[String] = Seq(
     "public.applications",
     "public.membership_requests",
@@ -16,7 +19,7 @@ object ProcessDeletes {
     "public.subscriptions"
   )
   val OrganizationHard: Seq[String] = Seq(
-    "public.organization_logs", "search.items"
+    "public.organization_logs", "public.tasks", "search.items"
   )
   val ApplicationSoft: Seq[String] = Seq(
     "public.application_moves", "public.changes", "public.versions", "public.watches"
@@ -25,30 +28,33 @@ object ProcessDeletes {
   val VersionSoft: Seq[String] = Seq(
     "cache.services", "public.originals"
   )
-  val VersionHard: Seq[String] = Seq("public.migrations")
+  val VersionHard: Seq[String] = Nil
 }
 
-class ProcessDeletes @Inject() (
-                               db: Database,
-                               usersDao: UsersDao
-                               ) {
-  import ProcessDeletes._
+class CleanupDeletionsProcessor @Inject()(
+  args: TaskProcessorArgs,
+  db: Database,
+  usersDao: UsersDao
+) extends TaskProcessor(args, TaskType.CleanupDeletions) {
+  import DeleteMetadata._
 
-  def all(): Unit = {
+  override def processRecord(id: String): ValidatedNec[String, Unit] = {
     organizations()
     applications()
     versions()
+    ().validNec
   }
 
-  private[util] def organizations(): Unit = {
+
+  private[processor] def organizations(): Unit = {
     OrganizationSoft.foreach { table =>
       exec(
         s"""
-          |update $table
-          |   set deleted_at=now(),deleted_by_guid={deleted_by_guid}::uuid
-          | where deleted_at is null
-          |   and organization_guid in (select guid from organizations where deleted_at is not null)
-          |""".stripMargin
+           |update $table
+           |   set deleted_at=now(),deleted_by_guid={deleted_by_guid}::uuid
+           | where deleted_at is null
+           |   and organization_guid in (select guid from organizations where deleted_at is not null)
+           |""".stripMargin
       )
     }
 
@@ -62,15 +68,15 @@ class ProcessDeletes @Inject() (
     }
   }
 
-  private[util] def applications(): Unit = {
+  private[processor] def applications(): Unit = {
     ApplicationSoft.foreach { table =>
       exec(
         s"""
-          |update $table
-          |   set deleted_at=now(),deleted_by_guid={deleted_by_guid}::uuid
-          | where deleted_at is null
-          |   and application_guid in (select guid from applications where deleted_at is not null)
-          |""".stripMargin
+           |update $table
+           |   set deleted_at=now(),deleted_by_guid={deleted_by_guid}::uuid
+           | where deleted_at is null
+           |   and application_guid in (select guid from applications where deleted_at is not null)
+           |""".stripMargin
       )
     }
 
@@ -84,7 +90,7 @@ class ProcessDeletes @Inject() (
     }
   }
 
-  private[util] def versions(): Unit = {
+  private[processor] def versions(): Unit = {
     VersionSoft.foreach { table =>
       exec(
         s"""
