@@ -13,7 +13,8 @@ class TaskActorCompanion @Inject() (
   userCreated: UserCreatedProcessor,
   scheduleSyncGeneratorServices: ScheduleSyncGeneratorServicesProcessor,
   syncGeneratorService: SyncGeneratorServiceProcessor,
-  email: EmailProcessor
+  email: EmailProcessor,
+  checkInvariants: CheckInvariantsProcessor,
 ) {
 
   def process(typ: TaskType): Unit = {
@@ -23,6 +24,7 @@ class TaskActorCompanion @Inject() (
   private[this] def lookup(typ: TaskType): BaseTaskProcessor = {
     import TaskType._
     typ match {
+      case CheckInvariants => checkInvariants
       case IndexApplication => indexApplication
       case CleanupDeletions => cleanupDeletions
       case DiffVersion => diffVersion
