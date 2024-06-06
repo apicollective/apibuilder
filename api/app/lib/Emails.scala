@@ -1,4 +1,4 @@
-package actors
+package lib
 
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import io.apibuilder.api.v0.models._

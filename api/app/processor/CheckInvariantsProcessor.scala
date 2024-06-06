@@ -34,7 +34,6 @@ class CheckInvariantsProcessor @Inject()(
   private[this] def sendResults(results: Seq[InvariantResult]): Unit = {
     val (noErrors, withErrors) = results.partition(_.count == 0)
 
-    println(s"# Invariants checked with no errors: ${noErrors.length}")
     if (withErrors.nonEmpty) {
       lazy val subject = if (withErrors.length == 1) {
         "1 Error"
