@@ -14,6 +14,7 @@ class TaskActorCompanion @Inject() (
   scheduleSyncGeneratorServices: ScheduleSyncGeneratorServicesProcessor,
   syncGeneratorService: SyncGeneratorServiceProcessor,
   email: EmailProcessor,
+  purgeOldDeleted: PurgeOldDeletedProcessor,
   checkInvariants: CheckInvariantsProcessor,
 ) {
 
@@ -34,6 +35,7 @@ class TaskActorCompanion @Inject() (
       case ScheduleSyncGeneratorServices => scheduleSyncGeneratorServices
       case SyncGeneratorService => syncGeneratorService
       case Email => email
+      case PurgeOldDeleted => purgeOldDeleted
       case UNDEFINED(_) => sys.error(s"Undefined task type '$typ")
     }
   }
