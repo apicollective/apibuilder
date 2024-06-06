@@ -5,7 +5,7 @@ import cats.data.ValidatedNec
 
 sealed trait TaskType
 object TaskType {
-  case object Noop extends TaskType { override def toString = "noop" }
+  case object IndexApplication extends TaskType { override def toString = "index_application" }
   val all: Seq[TaskType] = Seq(Noop)
 
   private[this] val byString = all.map { t => t.toString.toLowerCase -> t }.toMap

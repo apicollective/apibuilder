@@ -6,6 +6,7 @@ import io.apibuilder.internal.v0.models.TaskDataIndexApplication
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 import play.api.db._
+import processor.TaskType
 
 import java.util.UUID
 import javax.inject.{Inject, Named, Singleton}
@@ -365,7 +366,7 @@ class ApplicationsDao @Inject() (
   ): Unit = {
     val taskGuid = db.withTransaction { implicit c =>
       f(c)
-      tasksDao.queueWithConnection(c, user, TaskDataIndexApplication(guid))
+      tasksDao.queueWithConnection(c, TaskType.IndexApplication, guid.toString)
     }
     mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
   }

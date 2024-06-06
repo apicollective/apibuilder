@@ -129,6 +129,15 @@ abstract class BaseTaskProcessor(
     DateTime.now.plusMinutes(5 * (task.numAttempts + 1))
   }
 
+  protected final def validateGuid(value: String): ValidatedNec[String, UUID] = {
+    Try {
+      UUID.fromString(value)
+    } match {
+      case Success(v) => v.validNec
+      case Failure(_) => s"Invalid guid '$value'".invalidNec
+    }
+  }
+
   final protected def makeInitialTaskForm(
     typeId: String,
     organizationGuid: Option[UUID],
