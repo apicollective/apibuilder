@@ -11,12 +11,12 @@ import io.apibuilder.common.v0.models.{Audit, Reference}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import io.apibuilder.task.v0.models._
+import io.apibuilder.task.v0.models.json._
 import io.flow.postgresql.Query
 import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import play.api.Logger
 import play.api.db._
 import play.api.libs.json._
-import processor.{DiffVersionProcessor, IndexApplicationProcessor}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -25,8 +25,7 @@ class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
   applicationsDao: ApplicationsDao,
   originalsDao: OriginalsDao,
-  diffVersionProcessor: DiffVersionProcessor,
-  indexApplicationProcessor: IndexApplicationProcessor,
+  tasksDao: InternalTasksDao,
   usersDao: UsersDao,
   organizationsDao: OrganizationsDao,
   serviceParser: ServiceParser
@@ -163,10 +162,11 @@ class VersionsDao @Inject() (
   ) (
     implicit c: java.sql.Connection
   ): Unit = {
-    diffVersionProcessor.queueWithConnection(
+    tasksDao.queueWithConnection(
       c,
+      TaskType.DiffVersion,
       newVersionGuid.toString,
-      data = DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)
+      data = Json.toJson(DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
     )
   }
 
@@ -175,7 +175,7 @@ class VersionsDao @Inject() (
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
       createDiffTask(version.guid, versionGuid)
-      indexApplicationProcessor.queue(c, application.guid)
+      tasksDao.queueWithConnection(c, TaskType.IndexApplication, application.guid.toString)
       versionGuid
     }
 

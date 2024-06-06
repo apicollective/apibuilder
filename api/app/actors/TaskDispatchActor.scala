@@ -52,7 +52,7 @@ class TaskDispatchActor @Inject() (
         val ref = injectedChild(
           factory(typ),
           name = name,
-          _.withDispatcher("task-context-dispatch")
+          _.withDispatcher("task-context-dispatcher")
         )
         actors += (typ -> ref)
         ref

@@ -2,10 +2,10 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
+import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 import play.api.db._
-import processor.IndexApplicationProcessor
 
 import java.util.UUID
 import javax.inject.{Inject, Named, Singleton}
@@ -15,7 +15,7 @@ class ApplicationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
   organizationsDao: OrganizationsDao,
-  indexApplicationProcessor: IndexApplicationProcessor,
+  tasksDao: InternalTasksDao,
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
@@ -364,7 +364,7 @@ class ApplicationsDao @Inject() (
   ): Unit = {
     db.withTransaction { implicit c =>
       f(c)
-      indexApplicationProcessor.queue(c, guid)
+      tasksDao.queueWithConnection(c, TaskType.IndexApplication, guid.toString)
     }
   }
 
