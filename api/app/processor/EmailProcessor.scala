@@ -3,15 +3,25 @@ package processor
 import actors.Emails
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.{Authorization, OrganizationsDao, UsersDao}
+import db.{Authorization, InternalTasksDao, OrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Publication
 import io.apibuilder.task.v0.models._
 import io.apibuilder.task.v0.models.json._
 import lib.{AppConfig, EmailUtil, Person, Role}
+import play.api.libs.json.Json
 
+import java.sql.Connection
 import java.util.UUID
 import javax.inject.Inject
 
+class EmailProcessorQueue @Inject() (
+  internalTasksDao: InternalTasksDao
+                                    ) {
+  def queueWithConnection(c: Connection, data: EmailData): Unit = {
+    val dataJson = Json.toJson(data)
+    internalTasksDao.queue(TaskType.Email, id = Json.asciiStringify(dataJson), data = dataJson)
+  }
+}
 
 class EmailProcessor @Inject()(
   args: TaskProcessorArgs,

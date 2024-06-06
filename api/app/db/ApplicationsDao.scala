@@ -2,18 +2,19 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
-import io.apibuilder.task.v0.models.TaskType
+import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 import play.api.db._
+import processor.EmailProcessorQueue
 
 import java.util.UUID
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class ApplicationsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
+  emailQueue: EmailProcessorQueue,
   organizationsDao: OrganizationsDao,
   tasksDao: InternalTasksDao,
 ) {
@@ -263,9 +264,8 @@ class ApplicationsDao @Inject() (
         "created_by_guid" -> createdBy.guid,
         "updated_by_guid" -> createdBy.guid
       ).execute()
+      emailQueue.queueWithConnection(c, EmailDataApplicationCreated(guid))
     })
-
-    mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
 
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
@@ -279,10 +279,7 @@ class ApplicationsDao @Inject() (
   }
 
   def canUserUpdate(user: User, app: Application): Boolean = {
-    findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
-      case None => false
-      case Some(a) => true
-    }
+    findAll(Authorization.User(user.guid), key = Some(app.key)).nonEmpty
   }
 
   private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[Application] = {

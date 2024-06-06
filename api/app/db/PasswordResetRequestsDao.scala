@@ -1,15 +1,17 @@
 package db
 
-import io.apibuilder.api.v0.models.User
-import lib.TokenGenerator
-import anorm._
 import anorm.JodaParameterMetaData._
-import java.util.UUID
-import javax.inject.{Inject, Named, Singleton}
-
-import play.api.db._
+import anorm._
+import io.apibuilder.api.v0.models.User
+import io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated
 import io.flow.postgresql.Query
+import lib.TokenGenerator
 import org.joda.time.DateTime
+import play.api.db._
+import processor.EmailProcessorQueue
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 case class PasswordReset(
   guid: UUID,
@@ -20,8 +22,8 @@ case class PasswordReset(
 
 @Singleton
 class PasswordResetRequestsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
+  emailQueue: EmailProcessorQueue,
   userPasswordsDao: UserPasswordsDao,
   usersDao: UsersDao
 ) {
@@ -48,7 +50,7 @@ class PasswordResetRequestsDao @Inject() (
 
   def create(createdBy: Option[User], user: User): PasswordReset = {
     val guid = UUID.randomUUID
-    db.withConnection { implicit c =>
+    db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         "guid" -> guid,
         "user_guid" -> user.guid,
@@ -56,9 +58,8 @@ class PasswordResetRequestsDao @Inject() (
         "expires_at" -> DateTime.now.plusHours(HoursUntilTokenExpires),
         "created_by_guid" -> createdBy.getOrElse(user).guid
       ).execute()
+      emailQueue.queueWithConnection(c, EmailDataPasswordResetRequestCreated(guid))
     }
-
-    mainActor ! actors.MainActor.Messages.PasswordResetRequestCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create password reset")
