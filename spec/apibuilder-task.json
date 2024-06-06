@@ -16,6 +16,7 @@
   "enums": {
     "task_type": {
       "values": [
+        { "name": "email" },
         { "name": "index_application" },
         { "name": "cleanup_deletions" },
         { "name": "schedule_migrate_versions" },
@@ -28,11 +29,71 @@
     }
   },
 
+  "unions": {
+    "email_data": {
+      "types": [
+        { "type": "email_data_application_created" },
+        { "type": "email_data_email_verification_created" },
+        { "type": "email_data_membership_created" },
+        { "type": "email_data_membership_request_created" },
+        { "type": "email_data_membership_request_accepted" },
+        { "type": "email_data_membership_request_declined" },
+        { "type": "email_data_password_reset_request_created" }
+      ]
+    }
+  },
+
   "models": {
     "diff_version_data": {
       "fields": [
         { "name": "old_version_guid", "type": "uuid" },
         { "name": "new_version_guid", "type": "uuid" }
+      ]
+    },
+
+    "email_data_application_created": {
+      "fields": [
+        { "name": "application_guid", "type": "uuid" }
+      ]
+    },
+
+    "email_data_email_verification_created": {
+      "fields": [
+        { "name": "guid", "type": "uuid" }
+      ]
+    },
+
+    "email_data_membership_created": {
+      "fields": [
+        { "name": "guid", "type": "uuid" }
+      ]
+    },
+
+    "email_data_membership_request_created": {
+      "fields": [
+        { "name": "guid", "type": "uuid" }
+      ]
+    },
+
+    "email_data_membership_request_accepted": {
+      "fields": [
+        { "name": "organization_guid", "type": "uuid" },
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "role", "type": "string" }
+      ]
+    },
+
+    "email_data_membership_request_declined": {
+      "fields": [
+        { "name": "organization_guid", "type": "uuid" },
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "role", "type": "string" }
+      ]
+    },
+
+    "email_data_password_reset_request_created": {
+      "fields": [
+        { "name": "guid", "type": "uuid" }
       ]
     }
   }

@@ -43,7 +43,7 @@ abstract class TaskProcessorWithGuid(
     validateGuid(task.typeId).andThen(processRecord)
   }
 
-  private[this] def validateGuid(value: String): ValidatedNec[String, UUID] = {
+  protected def validateGuid(value: String): ValidatedNec[String, UUID] = {
     Try {
       UUID.fromString(value)
     } match {
