@@ -38,17 +38,12 @@ class MainActor @javax.inject.Inject() (
 
   private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("main-actor-context")
 
-  private[this] case object QueueVersionsToMigrate
-  private[this] case object MigrateVersions
-
   private[this] def scheduleOnce(msg: Any)(implicit delay: FiniteDuration = FiniteDuration(10, SECONDS)): Unit = {
     system.scheduler.scheduleOnce(delay) {
       self ! msg
     }
   }
 
-  scheduleOnce(QueueVersionsToMigrate)
-  scheduleOnce(MigrateVersions)
 
   def receive: Receive = akka.event.LoggingReceive {
 

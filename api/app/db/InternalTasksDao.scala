@@ -17,7 +17,7 @@ class InternalTasksDao @Inject() (
     dao.findByTypeIdAndType(typeId, typ.toString)
   }
 
-  def queue(typ: TaskType, id: String, organizationGuid: Option[UUID], data: JsValue = Json.obj()): Unit = {
+  def queue(typ: TaskType, id: String, organizationGuid: Option[UUID] = None, data: JsValue = Json.obj()): Unit = {
     dao.db.withConnection { c =>
       queueWithConnection(c, typ, id, organizationGuid = organizationGuid, data = data)
     }
