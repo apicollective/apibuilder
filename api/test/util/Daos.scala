@@ -1,10 +1,9 @@
 package util
 
-import actors.Emails
+import db._
 import db.generated.SessionsDao
 import db.generators.{GeneratorsDao, ServicesDao}
-import db._
-import lib.DatabaseServiceFetcher
+import lib.{DatabaseServiceFetcher, Emails}
 import play.api.Application
 import play.api.inject.Injector
 
@@ -38,7 +37,7 @@ trait Daos {
   def servicesDao: ServicesDao = injector.instanceOf[db.generators.ServicesDao]
   def generatorsDao: GeneratorsDao = injector.instanceOf[db.generators.GeneratorsDao]
 
-  def emails: Emails = injector.instanceOf[actors.Emails]
+  def emails: Emails = injector.instanceOf[Emails]
 
   def sessionHelper: SessionHelper = injector.instanceOf[SessionHelper]
 }

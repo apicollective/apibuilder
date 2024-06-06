@@ -1,13 +1,12 @@
 package processor
 
-import actors.Emails
 import cats.data.ValidatedNec
 import cats.implicits._
 import db._
 import io.apibuilder.api.v0.models._
 import io.apibuilder.task.v0.models.json._
 import io.apibuilder.task.v0.models.{DiffVersionData, TaskType}
-import lib.{AppConfig, ServiceDiff}
+import lib.{AppConfig, ServiceDiff, Emails}
 import play.twirl.api.Html
 
 import java.util.UUID
