@@ -1,10 +1,11 @@
 package actors
 
-import io.apibuilder.api.v0.models._
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
-import javax.inject.{Inject, Singleton}
+import io.apibuilder.api.v0.models._
 import lib._
-import play.api.{Logger, Logging}
+import play.api.Logging
+
+import javax.inject.{Inject, Singleton}
 
 object Emails {
 
@@ -29,7 +30,6 @@ object Emails {
 
 @Singleton
 class Emails @Inject() (
-                         appConfig: AppConfig,
                          email: EmailUtil,
                          applicationsDao: ApplicationsDao,
                          membershipsDao: MembershipsDao,
@@ -46,11 +46,13 @@ class Emails @Inject() (
     implicit filter: Subscription => Boolean = { _ => true }
   ): Unit = {
     eachSubscription(context, org, publication, { subscription =>
-      email.sendHtml(
-        to = Person(subscription.user),
-        subject = subject,
-        body = body
-      )
+      if (filter(subscription)) {
+        email.sendHtml(
+          to = Person(subscription.user),
+          subject = subject,
+          body = body
+        )
+      }
     })
   }
 
@@ -104,25 +106,6 @@ class Emails @Inject() (
       }
       case Emails.Context.OrganizationMember => {
         membershipsDao.isUserMember(user, organization)
-      }
-    }
-  }
-
-  def sendErrors(
-    subject: String,
-    errors: Seq[String]
-  ): Unit = {
-    errors match {
-      case Nil => {}
-      case _ => {
-        val body = views.html.emails.errors(errors).toString
-        appConfig.sendErrorsTo.foreach { emailAddress =>
-          email.sendHtml(
-            to = Person(emailAddress),
-            subject = subject,
-            body = body
-          )
-        }
       }
     }
   }
