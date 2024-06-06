@@ -27,7 +27,7 @@ class InternalTasksDao @Inject() (
     c: Connection,
     typ: TaskType,
     id: String,
-    organizationGuid: Option[UUID],
+    organizationGuid: Option[UUID] = None,
     data: JsValue = Json.obj()
   ): Unit = {
     if (dao.findByTypeIdAndTypeWithConnection(c, id, typ.toString).isEmpty) {
