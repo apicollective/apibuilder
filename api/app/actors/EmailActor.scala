@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.{Actor, ActorLogging}
 import db._
 import io.apibuilder.api.v0.models.Publication
 import lib.{AppConfig, EmailUtil, Person, Role}
@@ -23,7 +23,6 @@ object EmailActor {
 
 @javax.inject.Singleton
 class EmailActor @javax.inject.Inject() (
-  system: ActorSystem,
   appConfig: AppConfig,
   applicationsDao: db.ApplicationsDao,
   email: EmailUtil,
@@ -36,7 +35,7 @@ class EmailActor @javax.inject.Inject() (
   usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  def receive = {
+  def receive: Receive = {
 
     case m @ EmailActor.Messages.MembershipRequestCreated(guid) => withVerboseErrorHandler(m) {
       membershipRequestsDao.findByGuid(Authorization.All, guid).foreach { request =>
@@ -117,7 +116,7 @@ class EmailActor @javax.inject.Inject() (
         usersDao.findByGuid(verification.userGuid).foreach { user =>
           email.sendHtml(
             to = Person(email = verification.email, name = user.name),
-            subject = s"Verify your email address",
+            subject = "Verify your email address",
             body = views.html.emails.emailVerificationCreated(appConfig, verification).toString
           )
         }
