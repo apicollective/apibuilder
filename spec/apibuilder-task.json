@@ -17,6 +17,7 @@
     "task_type": {
       "values": [
         { "name": "email" },
+        { "name": "check_invariants" },
         { "name": "index_application" },
         { "name": "cleanup_deletions" },
         { "name": "schedule_migrate_versions" },
