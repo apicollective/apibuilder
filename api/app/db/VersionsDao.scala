@@ -17,6 +17,7 @@ import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import play.api.Logger
 import play.api.db._
 import play.api.libs.json._
+import processor.MigrateVersion
 
 import java.util.UUID
 import javax.inject.Inject
@@ -368,7 +369,7 @@ class VersionsDao @Inject() (
             orgNamespace = org.namespace,
             version = versionName
           )
-          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${Migration.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
+          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${MigrateVersion.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
 
           val validator = OriginalValidator(
             config = serviceConfig,
@@ -393,7 +394,7 @@ class VersionsDao @Inject() (
   ): Unit =  {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
       "version_guid" -> versionGuid,
-      "version" -> Migration.ServiceVersionNumber,
+      "version" -> MigrateVersion.ServiceVersionNumber,
       "user_guid" -> user.guid
     ).execute()
   }
@@ -407,7 +408,7 @@ class VersionsDao @Inject() (
     SQL(InsertServiceQuery).on(
       "guid" -> UUID.randomUUID,
       "version_guid" -> versionGuid,
-      "version" -> Migration.ServiceVersionNumber,
+      "version" -> MigrateVersion.ServiceVersionNumber,
       "json" -> Json.toJson(service).as[JsObject].toString.trim,
       "user_guid" -> user.guid
     ).execute()

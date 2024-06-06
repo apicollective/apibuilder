@@ -3,7 +3,7 @@ package processor
 import anorm.SqlParser
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.{InternalTasksDao, Migration, VersionsDao}
+import db.InternalTasksDao
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import play.api.db.{Database, NamedDatabase}
@@ -40,7 +40,7 @@ class ScheduleMigrateVersionsProcessor @Inject()(
       |  )
       |limit 250
       |""".stripMargin
-  ).bind("service_version", Migration.ServiceVersionNumber)
+  ).bind("service_version", MigrateVersion.ServiceVersionNumber)
     .bind("task_type", TaskType.MigrateVersion.toString)
 
   @tailrec

@@ -7,6 +7,9 @@ import io.apibuilder.task.v0.models.TaskType
 import java.util.UUID
 import javax.inject.Inject
 
+object MigrateVersion {
+  val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
+}
 
 class MigrateVersionProcessor @Inject()(
   args: TaskProcessorArgs,
