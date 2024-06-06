@@ -1,7 +1,6 @@
-package actors
+package lib
 
 import io.apibuilder.api.v0.models.Visibility
-import lib.Role
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 

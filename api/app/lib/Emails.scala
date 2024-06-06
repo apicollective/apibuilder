@@ -2,7 +2,7 @@ package lib
 
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import io.apibuilder.api.v0.models._
-import lib._
+import org.joda.time.DateTime
 import play.api.Logging
 
 import javax.inject.{Inject, Singleton}
@@ -46,13 +46,13 @@ class Emails @Inject() (
     implicit filter: Subscription => Boolean = { _ => true }
   ): Unit = {
     eachSubscription(context, org, publication, { subscription =>
-      if (filter(subscription)) {
-        email.sendHtml(
-          to = Person(subscription.user),
-          subject = subject,
-          body = body
-        )
-      }
+      val result = filter(subscription)
+      println(s"[${DateTime.now} DEBUG_FILTER] result: $result")
+      email.sendHtml(
+        to = Person(subscription.user),
+        subject = subject,
+        body = body
+      )
     })
   }
 
@@ -80,7 +80,7 @@ class Emails @Inject() (
     }
   }
 
-  private[actors] def isAuthorized(
+  private[lib] def isAuthorized(
     context: Emails.Context,
     organization: Organization,
     user: User

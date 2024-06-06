@@ -1,13 +1,12 @@
 package processor
 
-import actors.Emails
 import cats.data.ValidatedNec
 import cats.implicits._
 import db.{Authorization, InternalTasksDao, OrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Publication
 import io.apibuilder.task.v0.models._
 import io.apibuilder.task.v0.models.json._
-import lib.{AppConfig, EmailUtil, Person, Role}
+import lib.{AppConfig, EmailUtil, Person, Emails, Role}
 import play.api.libs.json.Json
 
 import java.sql.Connection
