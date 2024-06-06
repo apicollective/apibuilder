@@ -1,14 +1,16 @@
 package actors
 
-import helpers.{AsyncHelpers, DbHelpers, DefaultAppSpec, ExportHelpers}
-import util.DbAuthorization
+import db.Authorization
+import helpers.AsyncHelpers
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class TaskActorSpec extends DefaultAppSpec with AsyncHelpers with ExportHelpers with DbHelpers {
+class TaskActorSpec extends PlaySpec with GuiceOneAppPerSuite with AsyncHelpers with db.Helpers {
 
-  "processes export" in {
-    val exp = createDefaultExport()
+  "run" in {
+    val app = createApplication()
     eventuallyInNSeconds(10) {
-      internalExportsDao.findById(DbAuthorization.All, exp.id).value.db.processedAt.value
+      itemsDao.findByGuid(Authorization.All, app.guid).value
     }
   }
 

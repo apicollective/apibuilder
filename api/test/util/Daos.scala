@@ -1,9 +1,9 @@
 package util
 
 import actors.Emails
-import db.{ApplicationsDao, AttributesDao, ChangesDao, EmailVerificationsDao, ItemsDao, MembershipRequestsDao, MembershipsDao, OrganizationAttributeValuesDao, OrganizationDomainsDao, OrganizationLogsDao, OrganizationsDao, OriginalsDao, PasswordResetRequestsDao, SubscriptionsDao, TasksDao, TokensDao, UserPasswordsDao, UsersDao, VersionsDao}
 import db.generated.SessionsDao
 import db.generators.{GeneratorsDao, ServicesDao}
+import db._
 import lib.DatabaseServiceFetcher
 import play.api.Application
 import play.api.inject.Injector
@@ -31,7 +31,6 @@ trait Daos {
   def sessionsDao: SessionsDao =  injector.instanceOf[SessionsDao]
 
   def subscriptionsDao: SubscriptionsDao = injector.instanceOf[db.SubscriptionsDao]
-  def tasksDao: TasksDao = injector.instanceOf[db.TasksDao]
   def tokensDao: TokensDao = injector.instanceOf[db.TokensDao]
   def userPasswordsDao: UserPasswordsDao = injector.instanceOf[db.UserPasswordsDao]
   def versionsDao: VersionsDao = injector.instanceOf[db.VersionsDao]
@@ -40,7 +39,6 @@ trait Daos {
   def generatorsDao: GeneratorsDao = injector.instanceOf[db.generators.GeneratorsDao]
 
   def emails: Emails = injector.instanceOf[actors.Emails]
-  def search: Search = injector.instanceOf[actors.Search]
 
   def sessionHelper: SessionHelper = injector.instanceOf[SessionHelper]
 }

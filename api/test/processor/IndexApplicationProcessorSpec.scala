@@ -1,12 +1,21 @@
-package actors
-
-import java.util.UUID
+package processor
 
 import db.Authorization
+import lib.TestHelper
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+import java.util.UUID
+
+class IndexApplicationProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with TestHelper {
+
+  private[this] def processor = injector.instanceOf[IndexApplicationProcessor]
+
+  private[this] def indexApplication(guid: UUID): Unit = {
+    expectValid {
+      processor.processRecord(guid)
+    }
+  }
 
   "indexApplication" must {
 
@@ -14,7 +23,7 @@ class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       val description = UUID.randomUUID.toString
       val form = createApplicationForm().copy(description = Some(description))
       val app = createApplication(form = form)
-      search.indexApplication(app.guid)
+      indexApplication(app.guid)
 
       Seq(
         app.name,
@@ -31,8 +40,7 @@ class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
     "on create" in {
       val app = createApplication()
-
-      search.indexApplication(app.guid)
+      indexApplication(app.guid)
 
       itemsDao.findAll(Authorization.All, 
         guid = Some(app.guid)
@@ -42,8 +50,7 @@ class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
     "on update" in {
       val form = createApplicationForm()
       val app = createApplication(form = form)
-
-      search.indexApplication(app.guid)
+      indexApplication(app.guid)
 
       val newName = app.name + "2"
 
@@ -52,8 +59,7 @@ class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         app = app,
         form = form.copy(name = newName)
       )
-
-      search.indexApplication(app.guid)
+      indexApplication(app.guid)
 
       val existing = applicationsDao.findByGuid(Authorization.All, app.guid).get
 
@@ -65,10 +71,10 @@ class SearchSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
     "on delete" in {
       val app = createApplication()
-      search.indexApplication(app.guid)
+      indexApplication(app.guid)
 
       applicationsDao.softDelete(testUser, app)
-      search.indexApplication(app.guid)
+      indexApplication(app.guid)
       itemsDao.findAll(Authorization.All, guid = Some(app.guid)) must be(Nil)
     }
 
