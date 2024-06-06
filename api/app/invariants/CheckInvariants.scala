@@ -15,7 +15,9 @@ class CheckInvariants @Inject() (
   def process(): Unit = {
     val results = invariants.all.map { i =>
       val count = database.withConnection { c =>
-        i.query.as(SqlParser.long(1).*)(c).headOption.getOrElse(0L)
+        i.query
+          .withDebugging()
+          .as(SqlParser.long(1).*)(c).headOption.getOrElse(0L)
       }
       InvariantResult(i, count)
     }
@@ -24,8 +26,9 @@ class CheckInvariants @Inject() (
 
   private[this] case class InvariantResult(invariant: Invariant, count: Long)
   private[this] def sendResults(results: Seq[InvariantResult]): Unit = {
-    val (_, withErrors) = results.partition(_.count == 0)
+    val (noErrors, withErrors) = results.partition(_.count == 0)
 
+    println(s"# Invariants checked with no errors: ${noErrors.length}")
     if (withErrors.nonEmpty) {
       val subject = if (withErrors.length == 1) {
         "1 Error"
