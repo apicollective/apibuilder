@@ -163,7 +163,7 @@ class VersionsDao @Inject() (
   ) (
     implicit c: java.sql.Connection
   ): Unit = {
-    diffVersionProcessor.queue(
+    diffVersionProcessor.queueWithConnection(
       c,
       newVersionGuid.toString,
       data = DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)

@@ -30,15 +30,6 @@ abstract class TaskProcessor(
     processRecord(task.typeId)
   }
 
-  final def queue(typeId: String, organizationGuid: Option[UUID]): Unit = {
-    args.dao.db.withConnection { c =>
-      queue(c, typeId, organizationGuid = organizationGuid)
-    }
-  }
-
-  final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID] = None): Unit = {
-    insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, Json.obj()))
-  }
 }
 
 abstract class TaskProcessorWithGuid(
@@ -89,11 +80,11 @@ abstract class TaskProcessorWithData[T](
 
   final def queue(typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
     args.dao.db.withConnection { c =>
-      queue(c, typeId, organizationGuid, data)
+      queueWithConnection(c, typeId, organizationGuid, data)
     }
   }
 
-  final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
+  final def queueWithConnection(c: Connection, typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
     insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, Json.toJson(data).asInstanceOf[JsObject]))
   }
 

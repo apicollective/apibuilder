@@ -18,6 +18,7 @@ class TaskActorCompanion @Inject() (
     typ match {
       case IndexApplication => indexApplication
       case DiffVersion => diffVersion
+      case UNDEFINED(_) => sys.error(s"Undefined task type '$typ")
     }
   }
 }
