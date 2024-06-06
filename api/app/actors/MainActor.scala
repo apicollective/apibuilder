@@ -1,9 +1,7 @@
 package actors
 
 import akka.actor._
-import db.InternalMigrationsDao
 import lib.Role
-import play.api.Mode
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
@@ -28,9 +26,7 @@ object MainActor {
 
 @javax.inject.Singleton
 class MainActor @javax.inject.Inject() (
-  app: play.api.Application,
   system: ActorSystem,
-  internalMigrationsDao: InternalMigrationsDao,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
   @javax.inject.Named("user-actor") userActor: akka.actor.ActorRef
@@ -81,25 +77,6 @@ class MainActor @javax.inject.Inject() (
 
     case m @ MainActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
       userActor ! UserActor.Messages.UserCreated(guid)
-    }
-
-    case m @ QueueVersionsToMigrate => withVerboseErrorHandler(m) {
-      app.mode match {
-        case Mode.Test => // No-op
-        case Mode.Prod | Mode.Dev => internalMigrationsDao.queueVersions()
-      }
-    }
-
-    case m @ MigrateVersions => withVerboseErrorHandler(m) {
-      println(s"DEBUG_MigrateVersions - STARTING")
-      app.mode match {
-        case Mode.Test => // No-op
-        case Mode.Prod | Mode.Dev => {
-          if (internalMigrationsDao.migrateBatch(60)) {
-            scheduleOnce(MigrateVersions)(FiniteDuration(20, SECONDS))
-          }
-        }
-      }
     }
 
     case m: Any => logUnhandledMessage(m)

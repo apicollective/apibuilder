@@ -18,6 +18,8 @@
       "values": [
         { "name": "index_application" },
         { "name": "cleanup_deletions" },
+        { "name": "schedule_migrate_versions" },
+        { "name": "migrate_version" },
         { "name": "diff_version" }
       ]
     }

@@ -35,6 +35,7 @@ class PeriodicActor @Inject() (
     import TaskType._
     Seq(
       schedule(CleanupDeletions, FiniteDuration(1, HOURS)),
+      schedule(ScheduleMigrateVersions, FiniteDuration(12, HOURS)),
     )
   }
 
