@@ -17,6 +17,13 @@ class InternalTasksDao @Inject() (
     dao.findByTypeIdAndType(typeId, typ.toString)
   }
 
+  // TODO: Use a bulk insert for this method
+  def queueBatch(typ: TaskType, ids: Seq[String]): Unit = {
+    ids.foreach { id =>
+      queue(typ, id)
+    }
+  }
+
   def queue(typ: TaskType, id: String, organizationGuid: Option[UUID] = None, data: JsValue = Json.obj()): Unit = {
     dao.db.withConnection { c =>
       queueWithConnection(c, typ, id, organizationGuid = organizationGuid, data = data)

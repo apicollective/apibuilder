@@ -20,6 +20,8 @@
         { "name": "cleanup_deletions" },
         { "name": "schedule_migrate_versions" },
         { "name": "migrate_version" },
+        { "name": "schedule_sync_generator_services" },
+        { "name": "sync_generator_service" },
         { "name": "diff_version" },
         { "name": "user_created" }
       ]

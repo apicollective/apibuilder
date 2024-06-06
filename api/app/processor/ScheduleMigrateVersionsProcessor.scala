@@ -50,9 +50,7 @@ class ScheduleMigrateVersionsProcessor @Inject()(
         .as(SqlParser.get[_root_.java.util.UUID](1).*)
     }
     if (versionGuids.nonEmpty) {
-      versionGuids.foreach { vGuid =>
-        internalTasksDao.queue(TaskType.MigrateVersion, vGuid.toString)
-      }
+      internalTasksDao.queueBatch(TaskType.MigrateVersion, versionGuids.map(_.toString))
       scheduleMigrationTasks()
     }
   }

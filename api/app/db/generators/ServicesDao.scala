@@ -1,23 +1,22 @@
 package db.generators
 
-import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
-import db._
-import io.apibuilder.api.v0.models.{Error, User}
-import core.Util
-import javax.inject.{Inject, Singleton}
-
-import lib.{Pager, Validation}
 import anorm._
-import play.api.db._
-import java.util.UUID
-
+import core.Util
+import db._
+import io.apibuilder.api.v0.models.{Error, GeneratorService, GeneratorServiceForm, User}
+import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
+import lib.{Pager, Validation}
+import play.api.db._
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class ServicesDao @Inject() (
   @NamedDatabase("default") db: Database,
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  generatorsDao: GeneratorsDao
+  generatorsDao: GeneratorsDao,
+  internalTasksDao: InternalTasksDao
 ) {
   private[this] val dbHelpers = DbHelpers(db, "generators.services")
 
@@ -45,7 +44,7 @@ class ServicesDao @Inject() (
           uri = Some(form.uri.trim)
         ).headOption match {
           case None => Nil
-          case Some(uri) => {
+          case Some(_) => {
             Seq(s"URI[${form.uri.trim}] already exists")
           }
         }
@@ -62,15 +61,14 @@ class ServicesDao @Inject() (
 
     val guid = UUID.randomUUID
 
-    db.withConnection { implicit c =>
+    db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         "guid" -> guid,
         "uri" -> form.uri.trim,
         "created_by_guid" -> user.guid
       ).execute()
+      internalTasksDao.queueWithConnection(c, TaskType.SyncGeneratorService, guid.toString)
     }
-
-    mainActor ! actors.MainActor.Messages.GeneratorServiceCreated(guid)
 
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create service")
@@ -81,7 +79,7 @@ class ServicesDao @Inject() (
     * Also will soft delete all generators for this service
     */
   def softDelete(deletedBy: User, service: GeneratorService): Unit = {
-    Pager.eachPage { offset =>
+    Pager.eachPage { _ =>
       // Note we do not include offset in the query as each iteration
       // deletes records which will then NOT show up in the next loop
       generatorsDao.findAll(

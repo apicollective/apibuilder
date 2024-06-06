@@ -36,6 +36,7 @@ class PeriodicActor @Inject() (
     Seq(
       schedule(CleanupDeletions, FiniteDuration(1, HOURS)),
       schedule(ScheduleMigrateVersions, FiniteDuration(12, HOURS)),
+      schedule(ScheduleSyncGeneratorServices, FiniteDuration(1, HOURS)),
     )
   }
 

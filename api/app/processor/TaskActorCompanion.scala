@@ -10,7 +10,9 @@ class TaskActorCompanion @Inject() (
   cleanupDeletions: CleanupDeletionsProcessor,
   scheduleMigrateVersions: ScheduleMigrateVersionsProcessor,
   migrateVersion: MigrateVersionProcessor,
-  userCreated: UserCreatedProcessor
+  userCreated: UserCreatedProcessor,
+  scheduleSyncGeneratorServices: ScheduleSyncGeneratorServicesProcessor,
+  syncGeneratorService: SyncGeneratorServiceProcessor
 ) {
 
   def process(typ: TaskType): Unit = {
@@ -26,6 +28,8 @@ class TaskActorCompanion @Inject() (
       case MigrateVersion => migrateVersion
       case ScheduleMigrateVersions => scheduleMigrateVersions
       case UserCreated => userCreated
+      case ScheduleSyncGeneratorServices => scheduleSyncGeneratorServices
+      case SyncGeneratorService => syncGeneratorService
       case UNDEFINED(_) => sys.error(s"Undefined task type '$typ")
     }
   }

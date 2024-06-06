@@ -16,15 +16,12 @@ object MainActor {
 
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
-
-    case class GeneratorServiceCreated(guid: UUID)
   }
 }
 
 @javax.inject.Singleton
 class MainActor @javax.inject.Inject() (
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
-  @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
 ) extends Actor with ActorLogging with ErrorHandler {
 
   def receive: Receive = akka.event.LoggingReceive {
@@ -47,10 +44,6 @@ class MainActor @javax.inject.Inject() (
 
     case m @ MainActor.Messages.ApplicationCreated(guid) => withVerboseErrorHandler(m) {
       emailActor ! EmailActor.Messages.ApplicationCreated(guid)
-    }
-
-    case m @ MainActor.Messages.GeneratorServiceCreated(guid) => withVerboseErrorHandler(m) {
-      generatorServiceActor ! GeneratorServiceActorMessage.GeneratorServiceCreated(guid)
     }
 
     case m @ MainActor.Messages.EmailVerificationCreated(guid) => withVerboseErrorHandler(m) {
