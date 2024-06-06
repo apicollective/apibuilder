@@ -1,0 +1,24 @@
+{
+  "name": "apibuilder task",
+
+  "info": {
+    "contact": {
+      "name": "Michael Bryzek",
+      "email": "mbryzek@alum.mit.edu",
+      "url": "http://twitter.com/mbryzek"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  },
+
+  "models": {
+    "diff_version_data": {
+      "fields": [
+        { "name": "old_version_guid", "type": "uuid" },
+        { "name": "new_version_guid", "type": "uuid" }
+      ]
+    }
+  }
+}

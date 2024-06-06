@@ -15,7 +15,6 @@ class IndexApplicationProcessor @Inject()(
                               applicationsDao: ApplicationsDao,
                               itemsDao: ItemsDao,
                               organizationsDao: OrganizationsDao
-
                                          ) extends BaseTaskProcessor(args, TaskType.IndexApplication) {
 
   override def processTask(task: Task): ValidatedNec[String, Unit] = {

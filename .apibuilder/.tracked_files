@@ -3,7 +3,6 @@ apicollective:
   apibuilder-api:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderApiV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderApiV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderApiV0Client.scala
     play_2_x_routes:
@@ -14,13 +13,11 @@ apicollective:
   apibuilder-common:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderCommonV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderCommonV0Parsers.scala
     play_2_x_json:
     - generated/app/ApicollectiveApibuilderCommonV0Models.scala
   apibuilder-generator:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderGeneratorV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderGeneratorV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderGeneratorV0Client.scala
     play_2_8_mock_client:
@@ -28,14 +25,17 @@ apicollective:
   apibuilder-internal:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderInternalV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderInternalV0Parsers.scala
     play_2_x_json:
     - generated/app/ApicollectiveApibuilderInternalV0Models.scala
   apibuilder-spec:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderSpecV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderSpecV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderSpecV0Client.scala
     play_2_8_mock_client:
     - generated/app/ApicollectiveApibuilderSpecV0MockClient.scala
+  apibuilder-task:
+    play_2_8_client:
+    - generated/app/ApicollectiveApibuilderTaskV0Client.scala
+    play_2_8_mock_client:
+    - generated/app/ApicollectiveApibuilderTaskV0MockClient.scala

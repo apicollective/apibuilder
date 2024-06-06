@@ -8,14 +8,16 @@ import cats.implicits._
 import core.{ServiceFetcher, VersionMigration}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.{Audit, Reference}
-import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.task.v0.models._
+import io.apibuilder.task.v0.models.json._
 import io.flow.postgresql.Query
 import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import play.api.Logger
 import play.api.db._
 import play.api.libs.json._
+import processor.TaskType
 
 import java.util.UUID
 import javax.inject.{Inject, Named}
@@ -25,7 +27,7 @@ class VersionsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   applicationsDao: ApplicationsDao,
   originalsDao: OriginalsDao,
-  tasksDao: TasksDao,
+  tasksDao: InternalTasksDao,
   usersDao: UsersDao,
   organizationsDao: OrganizationsDao,
   serviceParser: ServiceParser
@@ -165,7 +167,7 @@ class VersionsDao @Inject() (
   ) (
     implicit c: java.sql.Connection
   ): UUID = {
-    tasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
+    tasksDao.queueWithConnection(c, TaskType.DiffVersion, data = Json.toJson(DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)))
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
