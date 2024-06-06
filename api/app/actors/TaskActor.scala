@@ -2,7 +2,8 @@ package actors
 
 import akka.actor.{Actor, ActorLogging}
 import com.google.inject.assistedinject.Assisted
-import processor.{TaskActorCompanion, TaskType}
+import io.apibuilder.task.v0.models.TaskType
+import processor.TaskActorCompanion
 
 import javax.inject.Inject
 

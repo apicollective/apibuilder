@@ -23,7 +23,6 @@ object MainActor {
     case class ApplicationCreated(guid: UUID)
     case class UserCreated(guid: UUID)
 
-    case class TaskCreated(guid: UUID)
     case class GeneratorServiceCreated(guid: UUID)
   }
 }
@@ -36,7 +35,6 @@ class MainActor @javax.inject.Inject() (
   processDeletes: ProcessDeletes,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
-  @javax.inject.Named("task-actor") taskActor: akka.actor.ActorRef,
   @javax.inject.Named("user-actor") userActor: akka.actor.ActorRef
 ) extends Actor with ActorLogging with ErrorHandler {
 
@@ -55,7 +53,7 @@ class MainActor @javax.inject.Inject() (
   scheduleOnce(QueueVersionsToMigrate)
   scheduleOnce(CleanupDeletedApplications)
 
-  def receive = akka.event.LoggingReceive {
+  def receive: Receive = akka.event.LoggingReceive {
 
     case m @ MainActor.Messages.MembershipRequestCreated(guid) => withVerboseErrorHandler(m) {
       emailActor ! EmailActor.Messages.MembershipRequestCreated(guid)

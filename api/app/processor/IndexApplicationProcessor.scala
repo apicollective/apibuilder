@@ -1,27 +1,24 @@
 package processor
 
+import cats.implicits._
 import cats.data.ValidatedNec
-import db.generated.Task
 import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Application, ApplicationSummary, Organization}
 import io.apibuilder.common.v0.models.Reference
+import io.apibuilder.task.v0.models.TaskType
 
 import java.util.UUID
 import javax.inject.Inject
 
 
 class IndexApplicationProcessor @Inject()(
-                              args: TaskProcessorArgs,
-                              applicationsDao: ApplicationsDao,
-                              itemsDao: ItemsDao,
-                              organizationsDao: OrganizationsDao
-                                         ) extends BaseTaskProcessor(args, TaskType.IndexApplication) {
+  args: TaskProcessorArgs,
+  applicationsDao: ApplicationsDao,
+  itemsDao: ItemsDao,
+  organizationsDao: OrganizationsDao
+) extends TaskProcessorWithGuid(args, TaskType.IndexApplication) {
 
-  override def processTask(task: Task): ValidatedNec[String, Unit] = {
-    validateGuid(task.typeId).map(processApplicationGuid)
-  }
-
-  def processApplicationGuid(applicationGuid: UUID): Unit = {
+  override def processRecord(applicationGuid: UUID): ValidatedNec[String, Unit] = {
     getInfo(applicationGuid) match {
       case Some((org, app)) => {
         val content = s"""${app.name} ${app.key} ${app.description.getOrElse("")}""".trim.toLowerCase
@@ -41,6 +38,7 @@ class IndexApplicationProcessor @Inject()(
         itemsDao.delete(applicationGuid)
       }
     }
+    ().validNec
   }
 
   private[this] def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {

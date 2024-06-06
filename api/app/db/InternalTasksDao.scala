@@ -1,10 +1,10 @@
 package db
 
 import db.generated.{Task, TaskForm}
+import io.apibuilder.task.v0.models.TaskType
 import lib.Constants
 import org.joda.time.DateTime
 import play.api.libs.json.{JsValue, Json}
-import processor.TaskType
 
 import java.sql.Connection
 import java.util.UUID

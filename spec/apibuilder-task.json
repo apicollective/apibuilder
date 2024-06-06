@@ -13,6 +13,15 @@
     }
   },
 
+  "enums": {
+    "task_type": {
+      "values": [
+        { "name": "index_application" },
+        { "name": "diff_version" }
+      ]
+    }
+  },
+
   "models": {
     "diff_version_data": {
       "fields": [

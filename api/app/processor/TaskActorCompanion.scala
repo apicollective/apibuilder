@@ -1,13 +1,12 @@
 package processor
 
-import cats.implicits._
-import cats.data.ValidatedNec
-import db.generated.Task
+import io.apibuilder.task.v0.models.TaskType
 
 import javax.inject.Inject
 
 class TaskActorCompanion @Inject() (
-  indexApplication: IndexApplicationProcessor
+  indexApplication: IndexApplicationProcessor,
+  diffVersion: DiffVersionProcessor,
 ) {
 
   def process(typ: TaskType): Unit = {
@@ -18,6 +17,7 @@ class TaskActorCompanion @Inject() (
     import TaskType._
     typ match {
       case IndexApplication => indexApplication
+      case DiffVersion => diffVersion
     }
   }
 }

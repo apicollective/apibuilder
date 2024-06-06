@@ -11,6 +11,8 @@ package io.apibuilder.task.v0.mock {
       _root_.scala.util.Random.alphanumeric.take(length).mkString
     }
 
+    def makeTaskType(): io.apibuilder.task.v0.models.TaskType = io.apibuilder.task.v0.models.TaskType.IndexApplication
+
     def makeDiffVersionData(): io.apibuilder.task.v0.models.DiffVersionData = io.apibuilder.task.v0.models.DiffVersionData(
       oldVersionGuid = _root_.java.util.UUID.randomUUID,
       newVersionGuid = _root_.java.util.UUID.randomUUID

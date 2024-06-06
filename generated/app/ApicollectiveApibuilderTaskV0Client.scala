@@ -9,6 +9,38 @@ package io.apibuilder.task.v0.models {
     oldVersionGuid: _root_.java.util.UUID,
     newVersionGuid: _root_.java.util.UUID
   )
+  sealed trait TaskType extends _root_.scala.Product with _root_.scala.Serializable
+
+  object TaskType {
+
+    case object IndexApplication extends TaskType { override def toString = "index_application" }
+    case object DiffVersion extends TaskType { override def toString = "diff_version" }
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    final case class UNDEFINED(override val toString: String) extends TaskType
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all: scala.List[TaskType] = scala.List(IndexApplication, DiffVersion)
+
+    private[this]
+    val byName: Map[String, TaskType] = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): TaskType = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[TaskType] = byName.get(value.toLowerCase)
+
+  }
 
 }
 
@@ -43,6 +75,38 @@ package io.apibuilder.task.v0.models {
       play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
     }
 
+    implicit val jsonReadsApibuilderTaskTaskType: play.api.libs.json.Reads[io.apibuilder.task.v0.models.TaskType] = new play.api.libs.json.Reads[io.apibuilder.task.v0.models.TaskType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.task.v0.models.TaskType] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.TaskType(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.TaskType(v))
+              case err: play.api.libs.json.JsError =>
+                (js \ "task_type").validate[String] match {
+                  case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.TaskType(v))
+                  case err: play.api.libs.json.JsError => err
+                }
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesApibuilderTaskTaskType(obj: io.apibuilder.task.v0.models.TaskType) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectTaskType(obj: io.apibuilder.task.v0.models.TaskType) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesApibuilderTaskTaskType: play.api.libs.json.Writes[TaskType] = {
+      (obj: io.apibuilder.task.v0.models.TaskType) => {
+        jsonWritesApibuilderTaskTaskType(obj)
+      }
+    }
+
     implicit def jsonReadsApibuilderTaskDiffVersionData: play.api.libs.json.Reads[DiffVersionData] = {
       for {
         oldVersionGuid <- (__ \ "old_version_guid").read[_root_.java.util.UUID]
@@ -73,6 +137,7 @@ package io.apibuilder.task.v0 {
 
     // import models directly for backwards compatibility with prior versions of the generator
     import Core._
+    import Models._
 
     object Core {
       implicit def pathBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
@@ -80,6 +145,19 @@ package io.apibuilder.task.v0 {
 
       implicit def pathBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
       implicit def queryStringBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+    }
+
+    object Models {
+      import io.apibuilder.task.v0.models._
+
+      val taskTypeConverter: ApibuilderTypeConverter[io.apibuilder.task.v0.models.TaskType] = new ApibuilderTypeConverter[io.apibuilder.task.v0.models.TaskType] {
+        override def convert(value: String): io.apibuilder.task.v0.models.TaskType = io.apibuilder.task.v0.models.TaskType(value)
+        override def convert(value: io.apibuilder.task.v0.models.TaskType): String = value.toString
+        override def example: io.apibuilder.task.v0.models.TaskType = io.apibuilder.task.v0.models.TaskType.IndexApplication
+        override def validValues: Seq[io.apibuilder.task.v0.models.TaskType] = io.apibuilder.task.v0.models.TaskType.all
+      }
+      implicit def pathBindableTaskType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.task.v0.models.TaskType] = ApibuilderPathBindable(taskTypeConverter)
+      implicit def queryStringBindableTaskType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.task.v0.models.TaskType] = ApibuilderQueryStringBindable(taskTypeConverter)
     }
 
     trait ApibuilderTypeConverter[T] {

@@ -4,6 +4,7 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits._
 import db.generated.{Task, TaskForm, TasksDao}
+import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.OrderBy
 import lib.Constants
 import org.joda.time.DateTime
@@ -37,6 +38,27 @@ abstract class TaskProcessor(
 
   final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID]): Unit = {
     insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, Json.obj()))
+  }
+}
+
+abstract class TaskProcessorWithGuid(
+                              args: TaskProcessorArgs,
+                              typ: TaskType
+                            ) extends TaskProcessor(args, typ) {
+
+  def processRecord(guid: UUID): ValidatedNec[String, Unit]
+
+  override final def processRecord(id: String): ValidatedNec[String, Unit] = {
+    validateGuid(id).andThen(processRecord)
+  }
+
+  private[this] def validateGuid(value: String): ValidatedNec[String, UUID] = {
+    Try {
+      UUID.fromString(value)
+    } match {
+      case Success(v) => v.validNec
+      case Failure(_) => s"Invalid guid '$value'".invalidNec
+    }
   }
 }
 
@@ -127,15 +149,6 @@ abstract class BaseTaskProcessor(
 
   protected def computeNextAttemptAt(task: Task): DateTime = {
     DateTime.now.plusMinutes(5 * (task.numAttempts + 1))
-  }
-
-  protected final def validateGuid(value: String): ValidatedNec[String, UUID] = {
-    Try {
-      UUID.fromString(value)
-    } match {
-      case Success(v) => v.validNec
-      case Failure(_) => s"Invalid guid '$value'".invalidNec
-    }
   }
 
   final protected def makeInitialTaskForm(

@@ -17,7 +17,6 @@ import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import play.api.Logger
 import play.api.db._
 import play.api.libs.json._
-import processor.TaskType
 
 import java.util.UUID
 import javax.inject.{Inject, Named}
@@ -111,7 +110,7 @@ class VersionsDao @Inject() (
     val (guid, taskGuid) = db.withTransaction { implicit c =>
       val versionGuid = doCreate(c, user, application, version, original, service)
       val taskGuid = latestVersion.map { v =>
-        createDiffTask(user, v.guid, versionGuid)
+        createDiffTask(v.guid, versionGuid)
       }
       (versionGuid, taskGuid)
     }
@@ -163,11 +162,19 @@ class VersionsDao @Inject() (
   }
 
   private[this] def createDiffTask(
-    user: User, oldVersionGuid: UUID, newVersionGuid: UUID
+    oldVersionGuid: UUID,
+    newVersionGuid: UUID
   ) (
     implicit c: java.sql.Connection
-  ): UUID = {
-    tasksDao.queueWithConnection(c, TaskType.DiffVersion, data = Json.toJson(DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)))
+  ): Unit = {
+    tasksDao.queueWithConnection(
+      c,
+      TaskType.DiffVersion,
+      newVersionGuid.toString,
+      data = Json.toJson(
+        DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)
+      )
+    )
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
