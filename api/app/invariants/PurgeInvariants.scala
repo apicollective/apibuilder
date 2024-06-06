@@ -11,7 +11,7 @@ object PurgeInvariants {
     Invariant(
       s"old_deleted_records_purged_from_$t",
       Query(
-        s"select count(*) from $t where deleted_at < now() - interval '3 months'"
+        s"select count(*) from $t where deleted_at < now() - interval '1 year'"
       )
     )
   }

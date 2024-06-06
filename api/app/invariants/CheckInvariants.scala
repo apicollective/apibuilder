@@ -15,9 +15,7 @@ class CheckInvariants @Inject() (
   def process(): Unit = {
     val results = invariants.all.map { i =>
       val count = database.withConnection { c =>
-        i.query
-          .withDebugging()
-          .as(SqlParser.long(1).*)(c).headOption.getOrElse(0L)
+        i.query.as(SqlParser.long(1).*)(c).headOption.getOrElse(0L)
       }
       InvariantResult(i, count)
     }
