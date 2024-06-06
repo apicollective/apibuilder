@@ -1,4 +1,4 @@
-package util
+package processor
 
 import anorm.SqlParser
 import db.Helpers
@@ -10,9 +10,9 @@ import play.api.db.Database
 
 import java.util.UUID
 
-class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
+class CleanupDeletionsProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
 
-  private[this] def processDeletes: ProcessDeletes = app.injector.instanceOf[ProcessDeletes]
+  private[this] def processor: CleanupDeletionsProcessor = app.injector.instanceOf[CleanupDeletionsProcessor]
   private[this] def database: Database = app.injector.instanceOf[Database]
 
   private[this] def isDeleted(table: String, guid: UUID): Boolean = {
@@ -39,7 +39,7 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe false
 
-    processDeletes.organizations()
+    processor.organizations()
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe true
   }
@@ -61,7 +61,7 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
     isVersionDeleted(version) mustBe false
     isVersionDeleted(versionDeleted) mustBe false
 
-    processDeletes.applications()
+    processor.applications()
     isVersionDeleted(version) mustBe false
     isVersionDeleted(versionDeleted) mustBe true
   }
@@ -102,28 +102,28 @@ class ProcessDeletesSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers 
 
     "Organization" must {
       "soft" in {
-        getTablesSoft("organization_guid") mustBe ProcessDeletes.OrganizationSoft
+        getTablesSoft("organization_guid") mustBe DeleteMetadata.OrganizationSoft
       }
       "hard" in {
-        getTablesHard("organization_guid") mustBe ProcessDeletes.OrganizationHard
+        getTablesHard("organization_guid") mustBe DeleteMetadata.OrganizationHard
       }
     }
 
     "Application" must {
       "soft" in {
-        getTablesSoft("application_guid") mustBe ProcessDeletes.ApplicationSoft
+        getTablesSoft("application_guid") mustBe DeleteMetadata.ApplicationSoft
       }
       "hard" in {
-        getTablesHard("application_guid") mustBe ProcessDeletes.ApplicationHard
+        getTablesHard("application_guid") mustBe DeleteMetadata.ApplicationHard
       }
     }
 
     "Version" must {
       "soft" in {
-        getTablesSoft("version_guid") mustBe ProcessDeletes.VersionSoft
+        getTablesSoft("version_guid") mustBe DeleteMetadata.VersionSoft
       }
       "hard" in {
-        getTablesHard("version_guid") mustBe ProcessDeletes.VersionHard
+        getTablesHard("version_guid") mustBe DeleteMetadata.VersionHard
       }
     }
   }

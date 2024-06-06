@@ -7,6 +7,7 @@ import javax.inject.Inject
 class TaskActorCompanion @Inject() (
   indexApplication: IndexApplicationProcessor,
   diffVersion: DiffVersionProcessor,
+  cleanupDeletions: CleanupDeletionsProcessor
 ) {
 
   def process(typ: TaskType): Unit = {
@@ -17,6 +18,7 @@ class TaskActorCompanion @Inject() (
     import TaskType._
     typ match {
       case IndexApplication => indexApplication
+      case CleanupDeletions => cleanupDeletions
       case DiffVersion => diffVersion
       case UNDEFINED(_) => sys.error(s"Undefined task type '$typ")
     }

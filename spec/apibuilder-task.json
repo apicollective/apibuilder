@@ -17,6 +17,7 @@
     "task_type": {
       "values": [
         { "name": "index_application" },
+        { "name": "cleanup_deletions" },
         { "name": "diff_version" }
       ]
     }

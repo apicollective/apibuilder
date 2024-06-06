@@ -8,7 +8,7 @@ import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.OrderBy
 import lib.Constants
 import org.joda.time.DateTime
-import play.api.libs.json.{JsObject, JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsObject, JsValue, Reads, Writes}
 import play.libs.exception.ExceptionUtils
 
 import java.sql.Connection
@@ -35,16 +35,12 @@ abstract class TaskProcessor(
 abstract class TaskProcessorWithGuid(
                               args: TaskProcessorArgs,
                               typ: TaskType
-                            ) extends TaskProcessor(args, typ) {
+                            ) extends BaseTaskProcessor(args, typ) {
 
   def processRecord(guid: UUID): ValidatedNec[String, Unit]
 
-  final def queue(c: Connection, typeId: UUID, organizationGuid: Option[UUID] = None): Unit = {
-    insertIfNew(c, makeInitialTaskForm(typeId.toString, organizationGuid, Json.obj()))
-  }
-
-  override final def processRecord(id: String): ValidatedNec[String, Unit] = {
-    validateGuid(id).andThen(processRecord)
+  override def processTask(task: Task): ValidatedNec[String, Unit] = {
+    validateGuid(task.typeId).andThen(processRecord)
   }
 
   private[this] def validateGuid(value: String): ValidatedNec[String, UUID] = {
@@ -76,16 +72,6 @@ abstract class TaskProcessorWithData[T](
       case None => "Failed to parse data".invalidNec
       case Some(instance) => instance.validNec
     }
-  }
-
-  final def queue(typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
-    args.dao.db.withConnection { c =>
-      queueWithConnection(c, typeId, organizationGuid, data)
-    }
-  }
-
-  final def queueWithConnection(c: Connection, typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
-    insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, Json.toJson(data).asInstanceOf[JsObject]))
   }
 
 }
