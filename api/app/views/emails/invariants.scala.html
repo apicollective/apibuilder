@@ -1,0 +1,27 @@
+@(
+  appConfig: lib.AppConfig,
+        noErrors: Seq[String],
+        withErrors: Seq[processor.InvariantResult]
+)
+
+<h2>
+  The following invariants resulted in a non zero value
+</h2>
+
+<ul>
+@for(i <- withErrors) {
+  <li> @{i.invariant.name}: @{i.count}
+       <blockquote>@{i.invariant.query.interpolate()}</blockquote>
+  </li>
+}
+</ul>
+
+<h2>
+  The following invariants were all valid
+</h2>
+
+<ul>
+@for(i <- noErrors) {
+  <li> @i </li>
+}
+</ul>
