@@ -9,7 +9,6 @@ class ActorsModule extends AbstractModule with AkkaGuiceSupport {
     bindActor[PeriodicActor]("PeriodicActor")
     bindActor[GeneratorServiceActor]("generator-service-actor")
     bindActor[EmailActor]("email-actor")
-    bindActor[UserActor]("user-actor")
     bindActor[TaskDispatchActor](
       "TaskDispatchActor",
       _.withDispatcher("task-context-dispatcher")

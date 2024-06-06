@@ -16,7 +16,6 @@ object MainActor {
 
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
-    case class UserCreated(guid: UUID)
 
     case class GeneratorServiceCreated(guid: UUID)
   }
@@ -26,7 +25,6 @@ object MainActor {
 class MainActor @javax.inject.Inject() (
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
-  @javax.inject.Named("user-actor") userActor: akka.actor.ActorRef
 ) extends Actor with ActorLogging with ErrorHandler {
 
   def receive: Receive = akka.event.LoggingReceive {
@@ -61,10 +59,6 @@ class MainActor @javax.inject.Inject() (
 
     case m @ MainActor.Messages.PasswordResetRequestCreated(guid) => withVerboseErrorHandler(m) {
       emailActor ! EmailActor.Messages.PasswordResetRequestCreated(guid)
-    }
-
-    case m @ MainActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
-      userActor ! UserActor.Messages.UserCreated(guid)
     }
 
     case m: Any => logUnhandledMessage(m)

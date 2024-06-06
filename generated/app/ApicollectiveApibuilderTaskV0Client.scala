@@ -18,6 +18,7 @@ package io.apibuilder.task.v0.models {
     case object ScheduleMigrateVersions extends TaskType { override def toString = "schedule_migrate_versions" }
     case object MigrateVersion extends TaskType { override def toString = "migrate_version" }
     case object DiffVersion extends TaskType { override def toString = "diff_version" }
+    case object UserCreated extends TaskType { override def toString = "user_created" }
     /**
      * UNDEFINED captures values that are sent either in error or
      * that were added by the server after this library was
@@ -34,7 +35,7 @@ package io.apibuilder.task.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: scala.List[TaskType] = scala.List(IndexApplication, CleanupDeletions, ScheduleMigrateVersions, MigrateVersion, DiffVersion)
+    val all: scala.List[TaskType] = scala.List(IndexApplication, CleanupDeletions, ScheduleMigrateVersions, MigrateVersion, DiffVersion, UserCreated)
 
     private[this]
     val byName: Map[String, TaskType] = all.map(x => x.toString.toLowerCase -> x).toMap
