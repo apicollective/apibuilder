@@ -4,8 +4,6 @@ import akka.actor._
 import lib.Role
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 object MainActor {
 
@@ -26,20 +24,10 @@ object MainActor {
 
 @javax.inject.Singleton
 class MainActor @javax.inject.Inject() (
-  system: ActorSystem,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
   @javax.inject.Named("user-actor") userActor: akka.actor.ActorRef
 ) extends Actor with ActorLogging with ErrorHandler {
-
-  private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("main-actor-context")
-
-  private[this] def scheduleOnce(msg: Any)(implicit delay: FiniteDuration = FiniteDuration(10, SECONDS)): Unit = {
-    system.scheduler.scheduleOnce(delay) {
-      self ! msg
-    }
-  }
-
 
   def receive: Receive = akka.event.LoggingReceive {
 
