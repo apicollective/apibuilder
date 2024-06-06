@@ -8,7 +8,7 @@ import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.OrderBy
 import lib.Constants
 import org.joda.time.DateTime
-import play.api.libs.json.{JsObject, JsValue, Json, Reads}
+import play.api.libs.json.{JsObject, JsValue, Json, Reads, Writes}
 import play.libs.exception.ExceptionUtils
 
 import java.sql.Connection
@@ -36,7 +36,7 @@ abstract class TaskProcessor(
     }
   }
 
-  final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID]): Unit = {
+  final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID] = None): Unit = {
     insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, Json.obj()))
   }
 }
@@ -47,6 +47,10 @@ abstract class TaskProcessorWithGuid(
                             ) extends TaskProcessor(args, typ) {
 
   def processRecord(guid: UUID): ValidatedNec[String, Unit]
+
+  final def queue(c: Connection, typeId: UUID, organizationGuid: Option[UUID] = None): Unit = {
+    insertIfNew(c, makeInitialTaskForm(typeId.toString, organizationGuid, Json.obj()))
+  }
 
   override final def processRecord(id: String): ValidatedNec[String, Unit] = {
     validateGuid(id).andThen(processRecord)
@@ -65,7 +69,7 @@ abstract class TaskProcessorWithGuid(
 abstract class TaskProcessorWithData[T](
   args: TaskProcessorArgs,
   typ: TaskType
-)(implicit reads: Reads[T])
+)(implicit reads: Reads[T], writes: Writes[T])
   extends BaseTaskProcessor(args, typ) {
 
   def processRecord(id: String, data: T): ValidatedNec[String, Unit]
@@ -83,14 +87,14 @@ abstract class TaskProcessorWithData[T](
     }
   }
 
-  final def queue(typeId: String, organizationGuid: Option[UUID], data: JsObject): Unit = {
+  final def queue(typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
     args.dao.db.withConnection { c =>
       queue(c, typeId, organizationGuid, data)
     }
   }
 
-  final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID], data: JsObject): Unit = {
-    insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, data))
+  final def queue(c: Connection, typeId: String, organizationGuid: Option[UUID] = None, data: T): Unit = {
+    insertIfNew(c, makeInitialTaskForm(typeId, organizationGuid, Json.toJson(data).asInstanceOf[JsObject]))
   }
 
 }

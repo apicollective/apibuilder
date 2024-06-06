@@ -1,6 +1,7 @@
 package processor
 
 import anorm.SqlParser
+import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import play.api.db.Database
 
@@ -18,7 +19,7 @@ class TaskDispatchActorCompanion @Inject() (
       .withConnection { c =>
         TypesQuery.as(SqlParser.str(1).*)(c)
       }
-      .map(TaskType.fromString).flatMap(_.toOption)
+      .flatMap(TaskType.fromString)
   }
 
 }

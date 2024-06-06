@@ -1,8 +1,9 @@
 package actors
 
 import akka.actor._
+import io.apibuilder.task.v0.models.TaskType
 import play.api.libs.concurrent.InjectedActorSupport
-import processor.{TaskDispatchActorCompanion, TaskType}
+import processor.TaskDispatchActorCompanion
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext

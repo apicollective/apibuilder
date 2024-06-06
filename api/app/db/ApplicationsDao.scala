@@ -5,7 +5,7 @@ import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Err
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 import play.api.db._
-import processor.TaskType
+import processor.IndexApplicationProcessor
 
 import java.util.UUID
 import javax.inject.{Inject, Named, Singleton}
@@ -15,7 +15,7 @@ class ApplicationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
   organizationsDao: OrganizationsDao,
-  tasksDao: InternalTasksDao
+  indexApplicationProcessor: IndexApplicationProcessor,
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "applications")
@@ -364,7 +364,7 @@ class ApplicationsDao @Inject() (
   ): Unit = {
     db.withTransaction { implicit c =>
       f(c)
-      tasksDao.queueWithConnection(c, TaskType.IndexApplication, guid.toString)
+      indexApplicationProcessor.queue(c, guid)
     }
   }
 

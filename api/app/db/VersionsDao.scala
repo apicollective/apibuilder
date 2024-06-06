@@ -11,22 +11,22 @@ import io.apibuilder.common.v0.models.{Audit, Reference}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import io.apibuilder.task.v0.models._
-import io.apibuilder.task.v0.models.json._
 import io.flow.postgresql.Query
 import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import play.api.Logger
 import play.api.db._
 import play.api.libs.json._
+import processor.{DiffVersionProcessor, IndexApplicationProcessor}
 
 import java.util.UUID
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 
 class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
   applicationsDao: ApplicationsDao,
   originalsDao: OriginalsDao,
-  tasksDao: InternalTasksDao,
+  diffVersionProcessor: DiffVersionProcessor,
+  indexApplicationProcessor: IndexApplicationProcessor,
   usersDao: UsersDao,
   organizationsDao: OrganizationsDao,
   serviceParser: ServiceParser
@@ -107,19 +107,15 @@ class VersionsDao @Inject() (
       limit = 1
     ).headOption
 
-    val (guid, taskGuid) = db.withTransaction { implicit c =>
+    val guid = db.withTransaction { implicit c =>
       val versionGuid = doCreate(c, user, application, version, original, service)
-      val taskGuid = latestVersion.map { v =>
+      latestVersion.foreach { v =>
         createDiffTask(v.guid, versionGuid)
       }
-      (versionGuid, taskGuid)
+      versionGuid
     }
 
-    taskGuid.foreach { guid =>
-      mainActor ! actors.MainActor.Messages.TaskCreated(guid)
-    }
-
-    findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create version")
     }
   }
@@ -167,30 +163,23 @@ class VersionsDao @Inject() (
   ) (
     implicit c: java.sql.Connection
   ): Unit = {
-    tasksDao.queueWithConnection(
+    diffVersionProcessor.queue(
       c,
-      TaskType.DiffVersion,
       newVersionGuid.toString,
-      data = Json.toJson(
-        DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)
-      )
+      data = DiffVersionData(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid)
     )
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
-    val (versionGuid, taskGuids) = db.withTransaction { implicit c =>
+    val versionGuid = db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
-      val diffTaskGuid = createDiffTask(user, version.guid, versionGuid)
-      val indexTaskGuid = tasksDao.insert(c, user, TaskDataIndexApplication(application.guid))
-      (versionGuid, Seq(diffTaskGuid, indexTaskGuid))
+      createDiffTask(version.guid, versionGuid)
+      indexApplicationProcessor.queue(c, application.guid)
+      versionGuid
     }
 
-    taskGuids.foreach { taskGuid =>
-      mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
-    }
-
-    findAll(Authorization.All, guid = Some(versionGuid), limit = 1).headOption.getOrElse {
+    findByGuid(Authorization.All, versionGuid).getOrElse {
       sys.error(s"Failed to replace version[${version.guid}]")
     }
   }
