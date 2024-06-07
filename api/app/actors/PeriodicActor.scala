@@ -7,7 +7,7 @@ import play.api.{Environment, Mode}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.{FiniteDuration, HOURS}
+import scala.concurrent.duration.{FiniteDuration, HOURS, SECONDS}
 
 class PeriodicActor @Inject() (
   tasksDao: InternalTasksDao,
@@ -31,13 +31,21 @@ class PeriodicActor @Inject() (
     context.system.scheduler.scheduleWithFixedDelay(finalInitial, interval, self, UpsertTask(taskType))
   }
 
+  private[this] def scheduleOnce(taskType: TaskType): Unit = {
+    context.system.scheduler.scheduleOnce(FiniteDuration(10, SECONDS)) {
+      UpsertTask(taskType)
+    }
+  }
+
+
   private[this] val cancellables: Seq[Cancellable] = {
     import TaskType._
+    scheduleOnce(ScheduleMigrateVersions)
     Seq(
       schedule(CleanupDeletions, FiniteDuration(1, HOURS)),
-      schedule(ScheduleMigrateVersions, FiniteDuration(12, HOURS)),
       schedule(ScheduleSyncGeneratorServices, FiniteDuration(1, HOURS)),
       schedule(CheckInvariants, FiniteDuration(1, HOURS)),
+      schedule(PurgeOldDeleted, FiniteDuration(1, HOURS))(FiniteDuration(5, SECONDS)),
     )
   }
 
