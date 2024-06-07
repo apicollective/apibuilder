@@ -23,22 +23,19 @@ class ScheduleMigrateVersionsProcessor @Inject()(
   }
 
 
+  private[this] val Limit = 1000
   private[this] val VersionsNeedingUpgrade = Query(
-    """
+    s"""
       |select v.guid
       |  from versions v
       |  join applications apps on apps.guid = v.application_guid and apps.deleted_at is null
-      |  left join tasks t on t.type = {task_type} and t.type_id::uuid = v.guid
+      |  left join cache.services on services.deleted_at is null
+      |                          and services.version_guid = v.guid
+      |                          and services.version = {service_version}
       | where v.deleted_at is null
-      |   and t.id is null
-      |   and not exists (
-      |    select 1
-      |      from cache.services
-      |      where services.deleted_at is null
-      |        and services.version_guid = v.guid
-      |        and services.version = {service_version}
-      |  )
-      |limit 250
+      |   and services.guid is null
+      |   and v.guid not in (select type_id::uuid from tasks where type = {task_type})
+      |limit $Limit
       |""".stripMargin
   ).bind("service_version", MigrateVersion.ServiceVersionNumber)
     .bind("task_type", TaskType.MigrateVersion.toString)
@@ -51,7 +48,9 @@ class ScheduleMigrateVersionsProcessor @Inject()(
     }
     if (versionGuids.nonEmpty) {
       internalTasksDao.queueBatch(TaskType.MigrateVersion, versionGuids.map(_.toString))
-      scheduleMigrationTasks()
+      if (versionGuids.length >= Limit) {
+        scheduleMigrationTasks()
+      }
     }
   }
 }
