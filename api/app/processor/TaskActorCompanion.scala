@@ -17,26 +17,26 @@ class TaskActorCompanion @Inject() (
   purgeOldDeleted: PurgeOldDeletedProcessor,
   checkInvariants: CheckInvariantsProcessor,
 ) {
-
-  def process(typ: TaskType): Unit = {
-    lookup(typ).process()
+  private[processor] val all: Map[TaskType, BaseTaskProcessor] = {
+    import TaskType._
+    Map(
+      CheckInvariants -> checkInvariants,
+      IndexApplication -> indexApplication,
+      CleanupDeletions -> cleanupDeletions,
+      DiffVersion -> diffVersion,
+      MigrateVersion -> migrateVersion,
+      ScheduleMigrateVersions -> scheduleMigrateVersions,
+      UserCreated -> userCreated,
+      ScheduleSyncGeneratorServices -> scheduleSyncGeneratorServices,
+      SyncGeneratorService -> syncGeneratorService,
+      Email -> email,
+      PurgeOldDeleted -> purgeOldDeleted,
+    )
   }
 
-  private[this] def lookup(typ: TaskType): BaseTaskProcessor = {
-    import TaskType._
-    typ match {
-      case CheckInvariants => checkInvariants
-      case IndexApplication => indexApplication
-      case CleanupDeletions => cleanupDeletions
-      case DiffVersion => diffVersion
-      case MigrateVersion => migrateVersion
-      case ScheduleMigrateVersions => scheduleMigrateVersions
-      case UserCreated => userCreated
-      case ScheduleSyncGeneratorServices => scheduleSyncGeneratorServices
-      case SyncGeneratorService => syncGeneratorService
-      case Email => email
-      case PurgeOldDeleted => purgeOldDeleted
-      case UNDEFINED(_) => sys.error(s"Undefined task type '$typ")
-    }
+  def process(typ: TaskType): Unit = {
+    all.getOrElse(typ, {
+      sys.error(s"Failed to find processor for task type '$typ'")
+    }).process()
   }
 }

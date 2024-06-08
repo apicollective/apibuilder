@@ -78,7 +78,7 @@ abstract class TaskProcessorWithData[T](
 
 abstract class BaseTaskProcessor(
   args: TaskProcessorArgs,
-  typ: TaskType
+  val typ: TaskType
 ) {
 
   private[this] val Limit = 100
