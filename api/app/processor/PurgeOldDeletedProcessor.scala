@@ -6,6 +6,7 @@ import db.{Authorization, OrganizationsDao, UsersDao}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
+import play.api.{Environment, Mode}
 import play.api.db.Database
 
 import javax.inject.Inject
@@ -14,6 +15,7 @@ import scala.util.{Failure, Success, Try}
 
 class PurgeOldDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
+  env: Environment,
   db: Database,
   usersDao: UsersDao,
   organizationsDao: OrganizationsDao
@@ -27,10 +29,16 @@ class PurgeOldDeletedProcessor @Inject()(
     purgeOldOrganizations()
   }
 
+  private[this] val cutoffProd = DateTime.parse("2024-06-05T12:00:00.0+00")
+  private[this] val cutoff = env.mode match {
+    case Mode.Prod => cutoffProd
+    case _ => cutoffProd.minusYears(10)
+  }
+
   private[this] def purgeOldOrganizations(): ValidatedNec[String, Unit] = {
     organizationsDao.findAll(
       Authorization.All,
-      deletedAtBefore = Some(DateTime.now.minusYears(1)),
+      deletedAtBefore = Some(Seq(DateTime.now.minusYears(1), cutoff).max),
       isDeleted = Some(true),
       limit = 1000,
       offset = 0,
@@ -50,6 +58,7 @@ class PurgeOldDeletedProcessor @Inject()(
         s"""
           |delete from $table
           | where deleted_at < now() - interval '45 days'
+          |   and deleted_at >= {cutoff}::timestamptz
           |   and $column in (
           |  select guid from $parentTable where deleted_at <= now() - interval '6 months'
           |)
@@ -59,7 +68,7 @@ class PurgeOldDeletedProcessor @Inject()(
   }
 
   private[this] def exec(q: String): Unit = {
-    exec(Query(q).bind("deleted_by_guid", usersDao.AdminUser.guid))
+    exec(Query(q).bind("deleted_by_guid", usersDao.AdminUser.guid).bind("cutoff", cutoff))
   }
 
   private[this] def exec(q: Query): Unit = {
