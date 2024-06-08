@@ -8,6 +8,6 @@ class CheckInvariantsProcessorSpec extends PlaySpec with GuiceOneAppPerSuite wit
   private def processor: CheckInvariantsProcessor = injector.instanceOf[CheckInvariantsProcessor]
 
   "process" in {
-    processor.processRecord("periodic")
+    processor.processRecord(randomString())
   }
 }

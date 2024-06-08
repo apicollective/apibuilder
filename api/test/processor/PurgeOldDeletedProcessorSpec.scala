@@ -53,7 +53,7 @@ class PurgeOldDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite wit
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe false
 
-    processor.processRecord("periodic")
+    processor.processRecord(randomString())
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe true
   }

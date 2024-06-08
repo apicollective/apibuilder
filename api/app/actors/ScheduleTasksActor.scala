@@ -9,12 +9,12 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{FiniteDuration, HOURS, SECONDS}
 
-class PeriodicActor @Inject() (
+class ScheduleTasksActor @Inject()(
   tasksDao: InternalTasksDao,
   env: Environment
 ) extends Actor with ActorLogging with ErrorHandler  {
 
-  private[this] implicit val ec: ExecutionContext = context.system.dispatchers.lookup("periodic-actor-context")
+  private[this] implicit val ec: ExecutionContext = context.system.dispatchers.lookup("schedule-tasks-actor-context")
 
   private[this] case class UpsertTask(typ: TaskType)
 
@@ -55,7 +55,7 @@ class PeriodicActor @Inject() (
   }
 
   override def receive: Receive = {
-    case UpsertTask(taskType) => tasksDao.queue(taskType, "periodic")
+    case UpsertTask(taskType) => tasksDao.queue(taskType, "ScheduleTasksActor")
     case other => logUnhandledMessage(other)
   }
 

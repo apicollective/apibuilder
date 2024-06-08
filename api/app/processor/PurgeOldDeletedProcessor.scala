@@ -10,8 +10,17 @@ import play.api.{Environment, Mode}
 import play.api.db.Database
 
 import javax.inject.Inject
+import scala.sys.env
 import scala.util.{Failure, Success, Try}
 
+object PurgeOldDeleted {
+  private[this] val cutoffProd = DateTime.parse("2024-06-05T12:00:00.0+00")
+  def cutoff(env: Environment): DateTime = env.mode match {
+    case Mode.Prod => cutoffProd
+    case _ => cutoffProd.minusYears(10)
+  }
+
+}
 
 class PurgeOldDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
@@ -21,18 +30,13 @@ class PurgeOldDeletedProcessor @Inject()(
   organizationsDao: OrganizationsDao
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
   import DeleteMetadata._
+  private[this] val cutoff: DateTime = PurgeOldDeleted.cutoff(env)
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
     delete("versions", "version_guid", VersionSoft)
     delete("applications", "application_guid", ApplicationSoft)
     delete("organizations", "organization_guid", OrganizationSoft)
     purgeOldOrganizations()
-  }
-
-  private[this] val cutoffProd = DateTime.parse("2024-06-05T12:00:00.0+00")
-  private[this] val cutoff = env.mode match {
-    case Mode.Prod => cutoffProd
-    case _ => cutoffProd.minusYears(10)
   }
 
   private[this] def purgeOldOrganizations(): ValidatedNec[String, Unit] = {
