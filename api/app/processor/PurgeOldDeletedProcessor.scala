@@ -1,26 +1,17 @@
 package processor
 
-import cats.implicits._
 import cats.data.ValidatedNec
+import cats.implicits._
 import db.{Authorization, OrganizationsDao, UsersDao}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
-import play.api.{Environment, Mode}
+import play.api.Environment
 import play.api.db.Database
 
 import javax.inject.Inject
-import scala.sys.env
 import scala.util.{Failure, Success, Try}
 
-object PurgeOldDeleted {
-  private[this] val cutoffProd = DateTime.parse("2024-06-05T12:00:00.0+00")
-  def cutoff(env: Environment): DateTime = env.mode match {
-    case Mode.Prod => cutoffProd
-    case _ => cutoffProd.minusYears(10)
-  }
-
-}
 
 class PurgeOldDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
@@ -30,7 +21,6 @@ class PurgeOldDeletedProcessor @Inject()(
   organizationsDao: OrganizationsDao
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
   import DeleteMetadata._
-  private[this] val cutoff: DateTime = PurgeOldDeleted.cutoff(env)
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
     delete("versions", "version_guid", VersionSoft)
@@ -42,7 +32,7 @@ class PurgeOldDeletedProcessor @Inject()(
   private[this] def purgeOldOrganizations(): ValidatedNec[String, Unit] = {
     organizationsDao.findAll(
       Authorization.All,
-      deletedAtBefore = Some(Seq(DateTime.now.minusYears(1), cutoff).max),
+      deletedAtBefore = Some(DateTime.now.minusMonths(6)),
       isDeleted = Some(true),
       limit = 1000,
       offset = 0,
@@ -57,27 +47,36 @@ class PurgeOldDeletedProcessor @Inject()(
   }
 
   private[processor] def delete(parentTable: String, column: String, tables: Seq[String]): Unit = {
+    println(s"starting delete $parentTable")
     tables.foreach { table =>
+      println(s"Delete from child $table")
+
+      exec(
+        s"""
+          |update $table
+          |   set deleted_at = deleted_at - interval '45 days'
+          | where deleted_at >= '2024-06-01'
+          |   and deleted_at < '2024-06-06'
+          |""".stripMargin)
       exec(
         s"""
           |delete from $table
           | where deleted_at < now() - interval '45 days'
-          |   and deleted_at >= {cutoff}::timestamptz
           |   and $column in (
-          |  select guid from $parentTable where deleted_at <= now() - interval '6 months'
-          |)
+          |     select guid from $parentTable where deleted_at <= now() - interval '6 months'
+          |   )
           |""".stripMargin
       )
     }
   }
 
   private[this] def exec(q: String): Unit = {
-    exec(Query(q).bind("deleted_by_guid", usersDao.AdminUser.guid).bind("cutoff", cutoff))
+    exec(Query(q).bind("deleted_by_guid", usersDao.AdminUser.guid))
   }
 
   private[this] def exec(q: Query): Unit = {
     db.withConnection { c =>
-      q.anormSql().executeUpdate()(c)
+      q.withDebugging().anormSql().executeUpdate()(c)
     }
     ()
   }
