@@ -10,6 +10,7 @@ import org.joda.time.DateTime
 import play.api.db.Database
 import util.{PrimaryKey, Table, Tables}
 
+import java.util.UUID
 import javax.inject.Inject
 import scala.annotation.tailrec
 
@@ -21,40 +22,78 @@ class PurgeDeletedProcessor @Inject()(
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    def versionFilter(column: String) = filter(Tables.versions)(column)
-    softDelete(Table.guid("cache.services"), versionFilter("version_guid"))
-    softDelete(Table.long("public.originals"), versionFilter("version_guid"))
-    softDelete(Table.guid("public.changes"), versionFilter("from_version_guid"))
-    softDelete(Table.guid("public.changes"), versionFilter("to_version_guid"))
-    delete(Tables.versions)
+    @tailrec
+    def deleteVersions(): Unit = {
+      val all = nextDeletedRows(Tables.versions)
+      if (all.nonEmpty) {
+        all.foreach { row =>
+          softDelete(Table.guid("cache.services"))(_.equals("version_guid", row.pkey))
+          softDelete(Table.long("public.originals"))(_.equals("version_guid", row.pkey))
+          softDelete(Table.guid("public.changes"))(_.equals("from_version_guid", row.pkey))
+          softDelete(Table.guid("public.changes"))(_.equals("to_version_guid", row.pkey))
+        }
+        if (all.length >= Limit) {
+          deleteVersions()
+        } else {
+          delete(Tables.versions)
+        }
+      }
+    }
 
-    def appFilter(column: String) = filter(Tables.applications)(column)
-    softDelete(Table.guid("public.application_moves"), appFilter("application_guid"))
-    softDelete(Table.guid("public.changes"), appFilter("application_guid"))
-    hardDelete(Table.guid("search.items"), appFilter("application_guid"))
-    softDelete(Table.guid("public.watches"), appFilter("application_guid"))
-    softDelete(Table.guid("public.versions"), appFilter("application_guid"))
-    delete(Tables.applications)
+    @tailrec
+    def deleteApplications(): Unit = {
+      val all = nextDeletedRows(Tables.applications)
+      if (all.nonEmpty) {
+        all.foreach { row =>
+          softDelete(Table.guid("public.application_moves"))(_.equals("application_guid", row.pkey))
+          softDelete(Table.guid("public.changes"))(_.equals("application_guid", row.pkey))
+          hardDelete(Table.guid("search.items"))(_.equals("application_guid", row.pkey))
+          softDelete(Table.guid("public.watches"))(_.equals("application_guid", row.pkey))
+          softDelete(Table.guid("public.versions"))(_.equals("application_guid", row.pkey))
+        }
+        if (all.length >= Limit) {
+          deleteApplications()
+        } else {
+          delete(Tables.applications)
+        }
+      }
+    }
 
-    def orgFilter(column: String) = filter(Tables.organizations)(column)
-    softDelete(Table.guid("public.application_moves"), orgFilter("from_organization_guid"))
-    softDelete(Table.guid("public.application_moves"), orgFilter("to_organization_guid"))
-    hardDelete(Table.guid("search.items"), orgFilter("organization_guid"))
-    softDelete(Table.guid("public.membership_requests"), orgFilter("organization_guid"))
-    softDelete(Table.guid("public.memberships"), orgFilter("organization_guid"))
-    softDelete(Table.guid("public.organization_attribute_values"), orgFilter("organization_guid"))
-    softDelete(Table.guid("public.organization_domains"), orgFilter("organization_guid"))
-    hardDelete(Table.guid("public.organization_logs"), orgFilter("organization_guid"))
-    softDelete(Table.guid("public.applications"), orgFilter("organization_guid"))
-    delete(Tables.organizations)
+
+    @tailrec
+    def deleteOrganizations(): Unit = {
+      val all = nextDeletedRows(Tables.organizations)
+      if (all.nonEmpty) {
+        all.foreach { row =>
+          softDelete(Table.guid("public.application_moves"))(_.equals("from_organization_guid", row.pkey))
+          softDelete(Table.guid("public.application_moves"))(_.equals("to_organization_guid", row.pkey))
+          hardDelete(Table.guid("search.items"))(_.equals("organization_guid", row.pkey))
+          softDelete(Table.guid("public.membership_requests"))(_.equals("organization_guid", row.pkey))
+          softDelete(Table.guid("public.memberships"))(_.equals("organization_guid", row.pkey))
+          softDelete(Table.guid("public.organization_attribute_values"))(_.equals("organization_guid", row.pkey))
+          softDelete(Table.guid("public.organization_domains"))(_.equals("organization_guid", row.pkey))
+          hardDelete(Table.guid("public.organization_logs"))(_.equals("organization_guid", row.pkey))
+          softDelete(Table.guid("public.applications"))(_.equals("organization_guid", row.pkey))        }
+        if (all.length >= Limit) {
+          deleteOrganizations()
+        } else {
+          delete(Tables.organizations)
+        }
+      }
+    }
+
+
+    deleteVersions()
+    deleteApplications()
+    deleteOrganizations()
     ().validNec
   }
 
   private[this] def filter(table: Table)(column: String) = s"$column in (select ${table.pkey.name} from ${table.name} where deleted_at is not null)"
 
   private[this] val Limit = 1000
-  private[this] case class DbRow(pkey: String, deletedAt: DateTime)
-  private[this] def nextDeletedRows(table: Table): Seq[DbRow] = {
+  private[this] case class DbRow[T](pkey: T, deletedAt: DateTime)
+  private[this] def nextDeletedRows(table: Table): Seq[DbRow[_]] = {
     db.withConnection { c =>
       Query(
         s"""
@@ -63,19 +102,25 @@ class PurgeDeletedProcessor @Inject()(
            | where deleted_at is not null
            | limit 1000
            |""".stripMargin
-      ).withDebugging().as(parser.*)(c)
+      ).withDebugging().as(parser(table.pkey).*)(c)
     }
   }
 
-  private[this] val parser: RowParser[DbRow] = {
+  private[this] def parser(primaryKey: PrimaryKey): RowParser[DbRow[_]] = {
+    import PrimaryKey._
     SqlParser.get[String]("pkey") ~
       SqlParser.get[DateTime]("deleted_at") map {
       case pkey ~ deletedAt =>
-        DbRow(pkey, deletedAt)
+        val pkeyValue = primaryKey match {
+          case PkeyUUID => UUID.fromString(pkey)
+          case PkeyString => pkey
+          case PkeyLong => BigInt(pkey)
+        }
+        DbRow(pkeyValue, deletedAt)
     }
   }
 
-  private[this] def moveDeletedAtBack(table: Table, pkey: String): Unit = {
+  private[this] def moveDeletedAtBack(table: Table, pkey: Any): Unit = {
     exec(
       addPkey(table, pkey, Query(s"update ${table.name} set deleted_at = deleted_at - interval '45 days'"))
     )
@@ -99,26 +144,24 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] def softDelete(table: Table, filter: String): Unit = {
-    exec(
-      Query(
+  private[this] def softDelete(table: Table)(filter: Query => Query): Unit = {
+    exec(filter(Query(
         s"""
           |update ${table.name}
           |   set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid
           | where deleted_at is null
-          |   and $filter
           |""".stripMargin
       ).bind("deleted_by_guid", usersDao.AdminUser.guid)
-    )
-    delete(table)
+    ))
   }
-  private[this] def hardDelete(table: Table, filter: String): Unit = {
+
+  private[this] def hardDelete(table: Table)(filter: Query => Query): Unit = {
     exec(
-      Query(s"delete from ${table.name} where $filter")
+      filter(Query(s"delete from ${table.name}"))
     )
   }
 
-  private[this] def addPkey(table: Table, pkey: String, query: Query): Query =  {
+  private[this] def addPkey(table: Table, pkey: Any, query: Query): Query =  {
     val clause = table.pkey match {
       case PrimaryKey.PkeyLong => "{pkey}::bigint"
       case PrimaryKey.PkeyString => "{pkey}"
