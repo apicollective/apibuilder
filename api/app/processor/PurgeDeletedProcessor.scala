@@ -89,20 +89,16 @@ class PurgeDeletedProcessor @Inject()(
     ().validNec
   }
 
-  private[this] def filter(table: Table)(column: String) = s"$column in (select ${table.pkey.name} from ${table.name} where deleted_at is not null)"
-
   private[this] val Limit = 1000
   private[this] case class DbRow[T](pkey: T, deletedAt: DateTime)
   private[this] def nextDeletedRows(table: Table): Seq[DbRow[_]] = {
     db.withConnection { c =>
       Query(
-        s"""
-           |select ${table.pkey.name}::text as pkey, deleted_at
-           |  from ${table.name}
-           | where deleted_at is not null
-           | limit 1000
-           |""".stripMargin
-      ).withDebugging().as(parser(table.pkey).*)(c)
+        s"select ${table.pkey.name}::text as pkey, deleted_at from ${table.name}"
+      ).isNotNull("deleted_at")
+        .limit(Limit)
+        .withDebugging()
+        .as(parser(table.pkey).*)(c)
     }
   }
 
@@ -149,9 +145,9 @@ class PurgeDeletedProcessor @Inject()(
         s"""
           |update ${table.name}
           |   set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid
-          | where deleted_at is null
           |""".stripMargin
-      ).bind("deleted_by_guid", usersDao.AdminUser.guid)
+      ).and("deleted_at is null")
+      .bind("deleted_by_guid", usersDao.AdminUser.guid)
     ))
   }
 
