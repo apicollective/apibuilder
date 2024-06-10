@@ -33,7 +33,7 @@ class PurgeOldDeletedProcessor @Inject()(
         s"""
            |select ${table.pkey.name}::text as pkey, deleted_at
            |  from ${table.name}
-           | where deleted_at < now() - interval '45 days'
+           | where deleted_at is not null
            | limit 1000
            |""".stripMargin
       ).withDebugging().as(parser.*)(c)
@@ -59,18 +59,16 @@ class PurgeOldDeletedProcessor @Inject()(
 
   private[this] def moveDeletedAtBack(table: TableMetadata, pkey: String): Unit = {
     exec(
-      addPkey(table, pkey, Query(s"update $table set deleted_at = deleted_at - interval '45 days'"))
+      addPkey(table, pkey, Query(s"update ${table.name} set deleted_at = deleted_at - interval '45 days'"))
     )
   }
-
-  private[this] val Start: DateTime = DateTime.parse("2024-06-01T12:00:00.000-05:00")
-  private[this] val End: DateTime = DateTime.parse("2024-06-01T12:00:00.000-05:00")
 
   @tailrec
   private[this] def delete(childTable: TableMetadata): Unit = {
     val rows = nextDeletedRows(childTable)
     rows.foreach { row =>
-      if (row.deletedAt.isAfter(End) && row.deletedAt.isBefore(Start)) {
+      if (row.deletedAt.isAfter(DateTime.now.minusDays(35))) {
+        // Temporarily work around triggers
         moveDeletedAtBack(childTable, row.pkey)
       }
 
