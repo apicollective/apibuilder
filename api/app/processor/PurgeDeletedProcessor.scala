@@ -144,7 +144,7 @@ class PurgeDeletedProcessor @Inject()(
     exec(filter(Query(
         s"""
           |update ${table.name}
-          |   set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid
+          |   set deleted_at = now() - interval '45 days', deleted_by_guid = {deleted_by_guid}::uuid
           |""".stripMargin
       ).and("deleted_at is null")
       .bind("deleted_by_guid", usersDao.AdminUser.guid)
