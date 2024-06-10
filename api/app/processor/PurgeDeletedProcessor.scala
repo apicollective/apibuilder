@@ -153,7 +153,7 @@ class PurgeDeletedProcessor @Inject()(
 
   private[this] def exec(q: Query): Unit = {
     db.withConnection { c =>
-      q.withDebugging().anormSql().executeUpdate()(c)
+      q.anormSql().executeUpdate()(c)
     }
     ()
   }
