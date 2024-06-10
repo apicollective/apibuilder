@@ -7,14 +7,13 @@ import javax.inject.Inject
 class TaskActorCompanion @Inject() (
                                      indexApplication: IndexApplicationProcessor,
                                      diffVersion: DiffVersionProcessor,
-                                     cleanupDeletions: CleanupDeletionsProcessor,
                                      scheduleMigrateVersions: ScheduleMigrateVersionsProcessor,
                                      migrateVersion: MigrateVersionProcessor,
                                      userCreated: UserCreatedProcessor,
                                      scheduleSyncGeneratorServices: ScheduleSyncGeneratorServicesProcessor,
                                      syncGeneratorService: SyncGeneratorServiceProcessor,
                                      email: EmailProcessor,
-                                     purgeOldDeleted: PurgeDeletedProcessor,
+                                     purgeDeleted: PurgeDeletedProcessor,
                                      checkInvariants: CheckInvariantsProcessor,
 ) {
   private[processor] val all: Map[TaskType, BaseTaskProcessor] = {
@@ -22,7 +21,6 @@ class TaskActorCompanion @Inject() (
     Map(
       CheckInvariants -> checkInvariants,
       IndexApplication -> indexApplication,
-      CleanupDeletions -> cleanupDeletions,
       DiffVersion -> diffVersion,
       MigrateVersion -> migrateVersion,
       ScheduleMigrateVersions -> scheduleMigrateVersions,
@@ -30,7 +28,7 @@ class TaskActorCompanion @Inject() (
       ScheduleSyncGeneratorServices -> scheduleSyncGeneratorServices,
       SyncGeneratorService -> syncGeneratorService,
       Email -> email,
-      PurgeOldDeleted -> purgeOldDeleted,
+      PurgeOldDeleted -> purgeDeleted,
     )
   }
 

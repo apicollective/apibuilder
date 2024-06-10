@@ -8,7 +8,7 @@ import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
 import play.api.db.Database
-import util.Table
+import util.{PrimaryKey, Table, Tables}
 
 import javax.inject.Inject
 import scala.annotation.tailrec
