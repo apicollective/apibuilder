@@ -32,7 +32,6 @@ class PurgeOldDeletedProcessor @Inject()(
       Query(
         s"""
            |select ${table.pkey.name}::text as pkey, deleted_at
-           |select ${table.pkey.name}::text as pkey, deleted_at
            |  from ${table.name}
            | where deleted_at < now() - interval '45 days'
            | limit 1000
@@ -90,7 +89,7 @@ class PurgeOldDeletedProcessor @Inject()(
       case PrimaryKey.PkeyString => "{pkey}"
       case PrimaryKey.PkeyUUID => "{pkey}::uuid"
     }
-    query.and(s"${table.pkey.name} = $clase").bind(table.pkey.name, pkey)
+    query.and(s"${table.pkey.name} = $clause").bind(table.pkey.name, pkey)
   }
 
   private[this] def exec(q: Query): Unit = {
