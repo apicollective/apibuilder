@@ -102,28 +102,28 @@ class CleanupDeletionsProcessorSpec extends PlaySpec with GuiceOneAppPerSuite wi
 
     "Organization" must {
       "soft" in {
-        getTablesSoft("organization_guid") mustBe DeleteMetadata.OrganizationSoft
+        getTablesSoft("organization_guid") mustBe DeleteMetadata.OrganizationSoft.map(_.name)
       }
       "hard" in {
-        getTablesHard("organization_guid") mustBe DeleteMetadata.OrganizationHard
+        getTablesHard("organization_guid") mustBe DeleteMetadata.OrganizationHard.map(_.name)
       }
     }
 
     "Application" must {
       "soft" in {
-        getTablesSoft("application_guid") mustBe DeleteMetadata.ApplicationSoft
+        getTablesSoft("application_guid") mustBe DeleteMetadata.ApplicationSoft.map(_.name)
       }
       "hard" in {
-        getTablesHard("application_guid") mustBe DeleteMetadata.ApplicationHard
+        getTablesHard("application_guid") mustBe DeleteMetadata.ApplicationHard.map(_.name)
       }
     }
 
     "Version" must {
       "soft" in {
-        getTablesSoft("version_guid") mustBe DeleteMetadata.VersionSoft
+        getTablesSoft("version_guid") mustBe DeleteMetadata.VersionSoft.map(_.name)
       }
       "hard" in {
-        getTablesHard("version_guid") mustBe DeleteMetadata.VersionHard
+        getTablesHard("version_guid") mustBe DeleteMetadata.VersionHard.map(_.name)
       }
     }
   }
