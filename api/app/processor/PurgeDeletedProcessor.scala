@@ -20,8 +20,6 @@ class PurgeDeletedProcessor @Inject()(
   usersDao: UsersDao,
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
-  private[this] def filter(table: Table)(column: String) = s"$column in (select ${table.pkey.name} from ${table.name} where deleted_at is not null)"
-
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
     def versionFilter(column: String) = filter(Tables.versions)(column)
     softDelete(Table.guid("cache.services"), versionFilter("version_guid"))
@@ -38,9 +36,21 @@ class PurgeDeletedProcessor @Inject()(
     softDelete(Table.guid("public.versions"), appFilter("application_guid"))
     delete(Tables.applications)
 
-    //delete(Tables.organizations)
+    def orgFilter(column: String) = filter(Tables.organizations)(column)
+    softDelete(Table.guid("public.application_moves"), orgFilter("from_organization_guid"))
+    softDelete(Table.guid("public.application_moves"), orgFilter("to_organization_guid"))
+    hardDelete(Table.guid("search.items"), orgFilter("organization_guid"))
+    softDelete(Table.guid("public.membership_requests"), orgFilter("organization_guid"))
+    softDelete(Table.guid("public.memberships"), orgFilter("organization_guid"))
+    softDelete(Table.guid("public.organization_attribute_values"), orgFilter("organization_guid"))
+    softDelete(Table.guid("public.organization_domains"), orgFilter("organization_guid"))
+    hardDelete(Table.guid("public.organization_logs"), orgFilter("organization_guid"))
+    softDelete(Table.guid("public.applications"), orgFilter("organization_guid"))
+    delete(Tables.organizations)
     ().validNec
   }
+
+  private[this] def filter(table: Table)(column: String) = s"$column in (select ${table.pkey.name} from ${table.name} where deleted_at is not null)"
 
   private[this] val Limit = 1000
   private[this] case class DbRow(pkey: String, deletedAt: DateTime)

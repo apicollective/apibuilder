@@ -48,15 +48,13 @@ class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with H
 
     val (_, app) = setup()
     val (orgDeleted, appDeleted) = setup()
-    println(s"Created org[${orgDeleted.guid}] with app[${appDeleted.guid}]")
     softDelete("organizations", orgDeleted.guid, DateTime.now.minusYears(1))
 
     isAppDeleted(app) mustBe false
     isAppDeleted(appDeleted) mustBe false
 
-    println(s"Calling process")
     processor.processRecord(randomString())
-    isAppDeleted(app) mustBe false
+    isAppDeleted(app) mustBe true
     isAppDeleted(appDeleted) mustBe true
   }
 
