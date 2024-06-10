@@ -89,7 +89,7 @@ class PurgeOldDeletedProcessor @Inject()(
       case PrimaryKey.PkeyString => "{pkey}"
       case PrimaryKey.PkeyUUID => "{pkey}::uuid"
     }
-    query.and(s"${table.pkey.name} = $clause").bind(table.pkey.name, pkey)
+    query.and(s"${table.pkey.name} = $clause").bind("pkey", pkey)
   }
 
   private[this] def exec(q: Query): Unit = {
