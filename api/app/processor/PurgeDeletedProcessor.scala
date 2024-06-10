@@ -19,7 +19,7 @@ class PurgeDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
   db: Database,
   usersDao: UsersDao,
-) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
+) extends TaskProcessor(args, TaskType.PurgeDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
     deleteAll(Tables.versions) { row =>

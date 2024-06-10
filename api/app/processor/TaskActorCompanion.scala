@@ -28,7 +28,7 @@ class TaskActorCompanion @Inject() (
       ScheduleSyncGeneratorServices -> scheduleSyncGeneratorServices,
       SyncGeneratorService -> syncGeneratorService,
       Email -> email,
-      PurgeOldDeleted -> purgeDeleted,
+      PurgeDeleted -> purgeDeleted,
     )
   }
 

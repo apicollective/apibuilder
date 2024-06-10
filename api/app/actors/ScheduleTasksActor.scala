@@ -42,10 +42,9 @@ class ScheduleTasksActor @Inject()(
     import TaskType._
     scheduleOnce(ScheduleMigrateVersions)
     Seq(
-      schedule(CleanupDeletions, FiniteDuration(1, HOURS)),
       schedule(ScheduleSyncGeneratorServices, FiniteDuration(1, HOURS)),
       schedule(CheckInvariants, FiniteDuration(1, HOURS)),
-      schedule(PurgeOldDeleted, FiniteDuration(1, HOURS))(FiniteDuration(5, SECONDS)),
+      schedule(PurgeDeleted, FiniteDuration(1, HOURS))(FiniteDuration(5, SECONDS)),
     )
   }
 
