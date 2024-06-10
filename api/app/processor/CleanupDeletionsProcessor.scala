@@ -23,28 +23,18 @@ object PrimaryKey {
     override val name = "guid"
   }
 }
-case class TableMetadata(name: String, pkey: PrimaryKey, references: Seq[TableMetadata])
+case class TableMetadata(name: String, pkey: PrimaryKey)
+object TableMetadata {
+  def guid(name: String): TableMetadata = TableMetadata(name, PrimaryKey.PkeyUUID)
+  def string(name: String): TableMetadata = TableMetadata(name, PrimaryKey.PkeyString)
+  def long(name: String): TableMetadata = TableMetadata(name, PrimaryKey.PkeyLong)
+}
 object Tables {
-  val organizations: TableMetadata = TableMetadata("organizations", PrimaryKey.PkeyUUID, Nil)
-  val applications: TableMetadata = TableMetadata("applications", PrimaryKey.PkeyUUID, Nil)
-  val versions: TableMetadata = TableMetadata("versions", PrimaryKey.PkeyUUID, Nil)
+  val organizations: TableMetadata = TableMetadata("organizations", PrimaryKey.PkeyUUID)
+  val applications: TableMetadata = TableMetadata("applications", PrimaryKey.PkeyUUID)
+  val versions: TableMetadata = TableMetadata("versions", PrimaryKey.PkeyUUID)
 }
 object DeleteMetadata {
-  private[this] def guidReferencesOrganizations(name: String): TableMetadata = {
-    TableMetadata(
-      name,
-      PrimaryKey.PkeyUUID,
-      Seq(Tables.organizations)
-    )
-  }
-  private[this] def guidReferencesApplications(name: String): TableMetadata = {
-    TableMetadata(
-      name,
-      PrimaryKey.PkeyUUID,
-      Seq(Tables.applications)
-    )
-  }
-
   val OrganizationSoft: Seq[TableMetadata] = Seq(
     "public.applications",
     "public.membership_requests",
@@ -52,18 +42,17 @@ object DeleteMetadata {
     "public.organization_attribute_values",
     "public.organization_domains",
     "public.subscriptions"
-  ).map(guidReferencesOrganizations)
+  ).map(TableMetadata.guid)
   val OrganizationHard: Seq[TableMetadata] = Seq(
     "public.organization_logs", "public.tasks", "search.items"
-  ).map(guidReferencesOrganizations)
+  ).map(TableMetadata.guid)
   val ApplicationSoft: Seq[TableMetadata] = Seq(
     "public.application_moves", "public.changes", "public.versions", "public.watches"
-  ).map(guidReferencesApplications)
-  val ApplicationHard: Seq[TableMetadata] = Seq("search.items").map(guidReferencesApplications)
+  ).map(TableMetadata.guid)
+  val ApplicationHard: Seq[TableMetadata] = Seq("search.items").map(TableMetadata.guid)
   val VersionSoft: Seq[TableMetadata] = Seq(
-    TableMetadata("cache.services", PrimaryKey.PkeyUUID, Seq(Tables.versions)),
-    TableMetadata("public.originals", PrimaryKey.PkeyLong, Seq(Tables.versions)),
-    TableMetadata("public.changes", PrimaryKey.PkeyUUID, Seq(Tables.versions)),
+    TableMetadata.guid("cache.services"),
+    TableMetadata.long("public.originals"),
   )
   val VersionHard: Seq[TableMetadata] = Nil
 }

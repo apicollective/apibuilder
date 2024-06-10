@@ -1,8 +1,9 @@
 package processor
 
 import anorm._
-import cats.data.ValidatedNec
 import cats.implicits._
+import cats.data.ValidatedNec
+import db.UsersDao
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
@@ -15,13 +16,35 @@ import scala.annotation.tailrec
 class PurgeOldDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
   db: Database,
+  usersDao: UsersDao,
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
-  import DeleteMetadata._
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    delete(Tables.versions, VersionSoft)
-    delete(Tables.applications, ApplicationSoft)
-    delete(Tables.organizations, OrganizationSoft)
+    delete(TableMetadata.guid("cache.services"))
+    delete(TableMetadata.long("public.originals"))
+    exec(Query(
+      """
+        |update changes
+        |   set deleted = now(),
+        |       deleted_by_guid = {deleted_by_guid}::uuid
+        | where deleted_at is null
+        |   and from_version_guid in (select guid from versions where deleted_at is not null)
+        |""".stripMargin).bind("deleted_by_guid", usersDao.AdminUser.guid)
+    )
+    exec(Query(
+      """
+        |update changes
+        |   set deleted = now(),
+        |       deleted_by_guid = {deleted_by_guid}::uuid
+        | where deleted_at is null
+        |   and to_version_guid in (select guid from versions where deleted_at is not null)
+        |""".stripMargin).bind("deleted_by_guid", usersDao.AdminUser.guid)
+    )
+    delete(TableMetadata.long("public.changes"))
+
+    delete(Tables.versions)
+    //delete(Tables.applications)
+    //delete(Tables.organizations)
     ().validNec
   }
 
@@ -46,15 +69,6 @@ class PurgeOldDeletedProcessor @Inject()(
       case pkey ~ deletedAt =>
         DbRow(pkey, deletedAt)
     }
-  }
-
-  private[processor] def delete(parentTable: TableMetadata, tables: Seq[TableMetadata]): Unit = {
-    println(s"starting delete ${parentTable.name}")
-    tables.foreach { childTable =>
-      println(s"Delete from child ${childTable.name}")
-      delete(childTable)
-    }
-    delete(parentTable)
   }
 
   private[this] def moveDeletedAtBack(table: TableMetadata, pkey: String): Unit = {
