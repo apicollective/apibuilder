@@ -125,6 +125,7 @@ class PurgeDeletedProcessor @Inject()(
       ).and("deleted_at is null")
       .bind("deleted_by_guid", usersDao.AdminUser.guid)
     ))
+    delete(table)
   }
 
   private[this] def hardDelete(table: Table)(filter: Query => Query): Unit = {
