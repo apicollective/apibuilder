@@ -21,12 +21,12 @@ class PurgeDeletedProcessor @Inject()(
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    def versionGuidFilter(column: String) = s"$column in (select guid from versions where deleted_at is not null"
-    val versionFilter = versionGuidFilter("guid")
-    softDelete(Table.guid("cache.services"), versionFilter)
-    softDelete(Table.long("public.originals"), versionFilter)
-    softDelete(Table.guid("public.changes"), versionGuidFilter("from_change_guid"))
-    softDelete(Table.guid("public.changes"), versionGuidFilter("to_change_guid"))
+    def versionGuidFilter(column: String) = s"$column in (select guid from versions where deleted_at is not null)"
+
+    softDelete(Table.guid("cache.services"), versionGuidFilter("version_guid"))
+    softDelete(Table.long("public.originals"), versionGuidFilter("version_guid"))
+    softDelete(Table.guid("public.changes"), versionGuidFilter("from_version_guid"))
+    softDelete(Table.guid("public.changes"), versionGuidFilter("to_version_guid"))
 
     delete(Table.guid("cache.services"))
     delete(Table.long("public.originals"))
