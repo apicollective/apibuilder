@@ -59,8 +59,9 @@ class PurgeOldDeletedProcessor @Inject()(
 
   private[this] def moveDeletedAtBack(table: TableMetadata, pkey: String): Unit = {
     exec(
-      Query(s"update $table set deleted_at = deleted_at - interval '45 days'")
+      addPkey(table, pkey, Query(s"update $table set deleted_at = deleted_at - interval '45 days'")
         .equals(table.pkey, pkey)
+      )
     )
   }
 
@@ -76,12 +77,21 @@ class PurgeOldDeletedProcessor @Inject()(
       }
 
       exec(
-        Query(s"delete from $childTable").equals(childTable.pkey, row.pkey)
+        addPkey(childTable, row.pkey, Query(s"delete from ${childTable.name}"))
       )
     }
     if (rows.length >= Limit) {
       delete(childTable)
     }
+  }
+
+  private[this] def addPkey(table: TableMetadata, pkey: String, query: Query): Query =  {
+    val q = table.pkeyType match {
+      case PkeyType.PkeyLong => query.and(s"${table.pkey} = {pkey}::bigint")
+      case PkeyType.PkeyString => query.and(s"${table.pkey} = {pkey}")
+      case PkeyType.PkeyUUID => query.and(s"${table.pkey} = {pkey}::uuid")
+    }
+    q.bind("pkey", pkey)
   }
 
   private[this] def exec(q: Query): Unit = {

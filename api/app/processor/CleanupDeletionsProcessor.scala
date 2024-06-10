@@ -12,11 +12,13 @@ import javax.inject.Inject
 sealed trait PkeyType
 object PkeyType {
   case object PkeyString extends PkeyType
+  case object PkeyLong extends PkeyType
   case object PkeyUUID extends PkeyType
 }
 case class TableMetadata(name: String, pkey: String, pkeyType: PkeyType)
 object TableMetadata {
   def guid(name: String): TableMetadata = TableMetadata(name, "guid", PkeyType.PkeyUUID)
+  def long(name: String): TableMetadata = TableMetadata(name, "id", PkeyType.PkeyLong)
   def string(name: String): TableMetadata = TableMetadata(name, "id", PkeyType.PkeyString)
 }
 object DeleteMetadata {
@@ -40,7 +42,7 @@ object DeleteMetadata {
   val ApplicationHard: Seq[TableMetadata] = guids("search.items")
   val VersionSoft: Seq[TableMetadata] = Seq(
     TableMetadata.guid("cache.services"),
-    TableMetadata.string("public.originals")
+    TableMetadata.long("public.originals")
   )
   val VersionHard: Seq[TableMetadata] = Nil
 }
