@@ -32,7 +32,7 @@ class PurgeOldDeletedProcessor @Inject()(
       Query(
         s"""
            |select ${table.pkey}::text as pkey, deleted_at
-           |  from $table
+           |  from ${table.name}
            | where deleted_at < now() - interval '45 days'
            | limit 1000
            |""".stripMargin
@@ -41,10 +41,10 @@ class PurgeOldDeletedProcessor @Inject()(
   }
 
   private[this] val parser: RowParser[DbRow] = {
-    SqlParser.get[String]("guid") ~
+    SqlParser.get[String]("pkey") ~
       SqlParser.get[DateTime]("deleted_at") map {
-      case play ~ deletedAt =>
-        DbRow(play, deletedAt)
+      case pkey ~ deletedAt =>
+        DbRow(pkey, deletedAt)
     }
   }
 
