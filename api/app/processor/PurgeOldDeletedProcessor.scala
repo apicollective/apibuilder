@@ -19,9 +19,9 @@ class PurgeOldDeletedProcessor @Inject()(
   import DeleteMetadata._
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    delete(TableMetadata.guid("versions"), VersionSoft)
-    delete(TableMetadata.guid("applications"), ApplicationSoft)
-    delete(TableMetadata.guid("organizations"), OrganizationSoft)
+    delete(Tables.versions, VersionSoft)
+    delete(Tables.applications, ApplicationSoft)
+    delete(Tables.organizations, OrganizationSoft)
     ().validNec
   }
 
@@ -31,7 +31,7 @@ class PurgeOldDeletedProcessor @Inject()(
     db.withConnection { c =>
       Query(
         s"""
-           |select ${table.pkey}::text as pkey, deleted_at
+           |select ${table.pkey.name}::text as pkey, deleted_at
            |  from ${table.name}
            | where deleted_at < now() - interval '45 days'
            | limit 1000
@@ -59,9 +59,7 @@ class PurgeOldDeletedProcessor @Inject()(
 
   private[this] def moveDeletedAtBack(table: TableMetadata, pkey: String): Unit = {
     exec(
-      addPkey(table, pkey, Query(s"update $table set deleted_at = deleted_at - interval '45 days'")
-        .equals(table.pkey, pkey)
-      )
+      addPkey(table, pkey, Query(s"update $table set deleted_at = deleted_at - interval '45 days'"))
     )
   }
 
@@ -86,12 +84,12 @@ class PurgeOldDeletedProcessor @Inject()(
   }
 
   private[this] def addPkey(table: TableMetadata, pkey: String, query: Query): Query =  {
-    val q = table.pkeyType match {
-      case PkeyType.PkeyLong => query.and(s"${table.pkey} = {pkey}::bigint")
-      case PkeyType.PkeyString => query.and(s"${table.pkey} = {pkey}")
-      case PkeyType.PkeyUUID => query.and(s"${table.pkey} = {pkey}::uuid")
+    val q = table.pkey match {
+      case PrimaryKey.PkeyLong => query.and(s"${table.pkey} = {pkey}::bigint")
+      case PrimaryKey.PkeyString => query.and(s"${table.pkey} = {pkey}")
+      case PrimaryKey.PkeyUUID => query.and(s"${table.pkey} = {pkey}::uuid")
     }
-    q.bind("pkey", pkey)
+    q.bind(table.pkey.name, pkey)
   }
 
   private[this] def exec(q: Query): Unit = {
