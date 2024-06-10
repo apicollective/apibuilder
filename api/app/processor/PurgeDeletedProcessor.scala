@@ -21,15 +21,23 @@ class PurgeDeletedProcessor @Inject()(
   usersDao: UsersDao,
 ) extends TaskProcessor(args, TaskType.PurgeDeleted) {
 
+  private[this] def debug(msg: String): Unit = {
+    println(s"[${DateTime.now} DEBUG] $msg")
+  }
+
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
+    debug("PurgeDeletedProcessor starting to delete versions")
     deleteAll(Tables.versions) { row =>
+      debug(s"  - version: ${row.pkey}")
       softDelete(Table.guid("cache.services"))(_.equals("version_guid", row.pkey))
       softDelete(Table.long("public.originals"))(_.equals("version_guid", row.pkey))
       softDelete(Table.guid("public.changes"))(_.equals("from_version_guid", row.pkey))
       softDelete(Table.guid("public.changes"))(_.equals("to_version_guid", row.pkey))
     }
 
+    debug("PurgeDeletedProcessor starting to delete applications")
     deleteAll(Tables.applications) { row =>
+      debug(s"  - application: ${row.pkey}")
       softDelete(Table.guid("public.application_moves"))(_.equals("application_guid", row.pkey))
       softDelete(Table.guid("public.changes"))(_.equals("application_guid", row.pkey))
       hardDelete(Table.guid("search.items"))(_.equals("application_guid", row.pkey))
@@ -37,7 +45,9 @@ class PurgeDeletedProcessor @Inject()(
       softDelete(Table.guid("public.versions"))(_.equals("application_guid", row.pkey))
     }
 
+    debug("PurgeDeletedProcessor starting to delete applications")
     deleteAll(Tables.organizations) { row =>
+      debug(s"  - organization: ${row.pkey}")
       softDelete(Table.guid("public.application_moves"))(_.equals("from_organization_guid", row.pkey))
       softDelete(Table.guid("public.application_moves"))(_.equals("to_organization_guid", row.pkey))
       hardDelete(Table.guid("search.items"))(_.equals("organization_guid", row.pkey))
@@ -49,6 +59,7 @@ class PurgeDeletedProcessor @Inject()(
       softDelete(Table.guid("public.applications"))(_.equals("organization_guid", row.pkey))
     }
 
+    debug("done")
     ().validNec
   }
 
