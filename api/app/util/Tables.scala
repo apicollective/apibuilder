@@ -15,15 +15,15 @@ object PrimaryKey {
   }
 }
 
-case class TableMetadata(name: String, pkey: PrimaryKey)
-object TableMetadata {
-  def guid(name: String): TableMetadata = TableMetadata(name, PrimaryKey.PkeyUUID)
-  def string(name: String): TableMetadata = TableMetadata(name, PrimaryKey.PkeyString)
-  def long(name: String): TableMetadata = TableMetadata(name, PrimaryKey.PkeyLong)
+case class Table(name: String, pkey: PrimaryKey)
+object Table {
+  def guid(name: String): Table = Table(name, PrimaryKey.PkeyUUID)
+  def string(name: String): Table = Table(name, PrimaryKey.PkeyString)
+  def long(name: String): Table = Table(name, PrimaryKey.PkeyLong)
 }
 
 object Tables {
-  val organizations: TableMetadata = TableMetadata("organizations", PrimaryKey.PkeyUUID)
-  val applications: TableMetadata = TableMetadata("applications", PrimaryKey.PkeyUUID)
-  val versions: TableMetadata = TableMetadata("versions", PrimaryKey.PkeyUUID)
+  val organizations: Table = Table("organizations", PrimaryKey.PkeyUUID)
+  val applications: Table = Table("applications", PrimaryKey.PkeyUUID)
+  val versions: Table = Table("versions", PrimaryKey.PkeyUUID)
 }

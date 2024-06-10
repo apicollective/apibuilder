@@ -8,6 +8,7 @@ import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
 import play.api.db.Database
+import util.Table
 
 import javax.inject.Inject
 import scala.annotation.tailrec
@@ -20,8 +21,8 @@ class PurgeDeletedProcessor @Inject()(
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    delete(TableMetadata.guid("cache.services"))
-    delete(TableMetadata.long("public.originals"))
+    delete(Table.guid("cache.services"))
+    delete(Table.long("public.originals"))
     exec(Query(
       """
         |update changes
@@ -40,7 +41,7 @@ class PurgeDeletedProcessor @Inject()(
         |   and to_version_guid in (select guid from versions where deleted_at is not null)
         |""".stripMargin).bind("deleted_by_guid", usersDao.AdminUser.guid)
     )
-    delete(TableMetadata.guid("public.changes"))
+    delete(Table.guid("public.changes"))
 
     delete(Tables.versions)
     //delete(Tables.applications)
@@ -50,7 +51,7 @@ class PurgeDeletedProcessor @Inject()(
 
   private[this] val Limit = 1000
   private[this] case class DbRow(pkey: String, deletedAt: DateTime)
-  private[this] def nextDeletedRows(table: TableMetadata): Seq[DbRow] = {
+  private[this] def nextDeletedRows(table: Table): Seq[DbRow] = {
     db.withConnection { c =>
       Query(
         s"""
@@ -71,14 +72,14 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] def moveDeletedAtBack(table: TableMetadata, pkey: String): Unit = {
+  private[this] def moveDeletedAtBack(table: Table, pkey: String): Unit = {
     exec(
       addPkey(table, pkey, Query(s"update ${table.name} set deleted_at = deleted_at - interval '45 days'"))
     )
   }
 
   @tailrec
-  private[this] def delete(childTable: TableMetadata): Unit = {
+  private[this] def delete(childTable: Table): Unit = {
     val rows = nextDeletedRows(childTable)
     rows.foreach { row =>
       if (row.deletedAt.isAfter(DateTime.now.minusDays(35))) {
@@ -95,7 +96,7 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] def addPkey(table: TableMetadata, pkey: String, query: Query): Query =  {
+  private[this] def addPkey(table: Table, pkey: String, query: Query): Query =  {
     val clause = table.pkey match {
       case PrimaryKey.PkeyLong => "{pkey}::bigint"
       case PrimaryKey.PkeyString => "{pkey}"
