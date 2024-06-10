@@ -22,71 +22,47 @@ class PurgeDeletedProcessor @Inject()(
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    @tailrec
-    def deleteVersions(): Unit = {
-      val all = nextDeletedRows(Tables.versions)
-      if (all.nonEmpty) {
-        all.foreach { row =>
-          softDelete(Table.guid("cache.services"))(_.equals("version_guid", row.pkey))
-          softDelete(Table.long("public.originals"))(_.equals("version_guid", row.pkey))
-          softDelete(Table.guid("public.changes"))(_.equals("from_version_guid", row.pkey))
-          softDelete(Table.guid("public.changes"))(_.equals("to_version_guid", row.pkey))
-        }
-        if (all.length >= Limit) {
-          deleteVersions()
-        } else {
-          delete(Tables.versions)
-        }
-      }
+    deleteAll(Tables.versions) { row =>
+      softDelete(Table.guid("cache.services"))(_.equals("version_guid", row.pkey))
+      softDelete(Table.long("public.originals"))(_.equals("version_guid", row.pkey))
+      softDelete(Table.guid("public.changes"))(_.equals("from_version_guid", row.pkey))
+      softDelete(Table.guid("public.changes"))(_.equals("to_version_guid", row.pkey))
     }
 
-    @tailrec
-    def deleteApplications(): Unit = {
-      val all = nextDeletedRows(Tables.applications)
-      if (all.nonEmpty) {
-        all.foreach { row =>
-          softDelete(Table.guid("public.application_moves"))(_.equals("application_guid", row.pkey))
-          softDelete(Table.guid("public.changes"))(_.equals("application_guid", row.pkey))
-          hardDelete(Table.guid("search.items"))(_.equals("application_guid", row.pkey))
-          softDelete(Table.guid("public.watches"))(_.equals("application_guid", row.pkey))
-          softDelete(Table.guid("public.versions"))(_.equals("application_guid", row.pkey))
-        }
-        if (all.length >= Limit) {
-          deleteApplications()
-        } else {
-          delete(Tables.applications)
-        }
-      }
+    deleteAll(Tables.applications) { row =>
+      softDelete(Table.guid("public.application_moves"))(_.equals("application_guid", row.pkey))
+      softDelete(Table.guid("public.changes"))(_.equals("application_guid", row.pkey))
+      hardDelete(Table.guid("search.items"))(_.equals("application_guid", row.pkey))
+      softDelete(Table.guid("public.watches"))(_.equals("application_guid", row.pkey))
+      softDelete(Table.guid("public.versions"))(_.equals("application_guid", row.pkey))
     }
 
-
-    @tailrec
-    def deleteOrganizations(): Unit = {
-      val all = nextDeletedRows(Tables.organizations)
-      if (all.nonEmpty) {
-        all.foreach { row =>
-          softDelete(Table.guid("public.application_moves"))(_.equals("from_organization_guid", row.pkey))
-          softDelete(Table.guid("public.application_moves"))(_.equals("to_organization_guid", row.pkey))
-          hardDelete(Table.guid("search.items"))(_.equals("organization_guid", row.pkey))
-          softDelete(Table.guid("public.membership_requests"))(_.equals("organization_guid", row.pkey))
-          softDelete(Table.guid("public.memberships"))(_.equals("organization_guid", row.pkey))
-          softDelete(Table.guid("public.organization_attribute_values"))(_.equals("organization_guid", row.pkey))
-          softDelete(Table.guid("public.organization_domains"))(_.equals("organization_guid", row.pkey))
-          hardDelete(Table.guid("public.organization_logs"))(_.equals("organization_guid", row.pkey))
-          softDelete(Table.guid("public.applications"))(_.equals("organization_guid", row.pkey))        }
-        if (all.length >= Limit) {
-          deleteOrganizations()
-        } else {
-          delete(Tables.organizations)
-        }
-      }
+    deleteAll(Tables.organizations) { row =>
+      softDelete(Table.guid("public.application_moves"))(_.equals("from_organization_guid", row.pkey))
+      softDelete(Table.guid("public.application_moves"))(_.equals("to_organization_guid", row.pkey))
+      hardDelete(Table.guid("search.items"))(_.equals("organization_guid", row.pkey))
+      softDelete(Table.guid("public.membership_requests"))(_.equals("organization_guid", row.pkey))
+      softDelete(Table.guid("public.memberships"))(_.equals("organization_guid", row.pkey))
+      softDelete(Table.guid("public.organization_attribute_values"))(_.equals("organization_guid", row.pkey))
+      softDelete(Table.guid("public.organization_domains"))(_.equals("organization_guid", row.pkey))
+      hardDelete(Table.guid("public.organization_logs"))(_.equals("organization_guid", row.pkey))
+      softDelete(Table.guid("public.applications"))(_.equals("organization_guid", row.pkey))
     }
 
-
-    deleteVersions()
-    deleteApplications()
-    deleteOrganizations()
     ().validNec
+  }
+
+  @tailrec
+  private[this] def deleteAll(table: Table)(f: DbRow[_] => Any): Unit =  {
+    val all = nextDeletedRows(table)
+    if (all.nonEmpty) {
+      all.foreach(f)
+      if (all.length >= Limit) {
+        deleteAll(table)(f)
+      } else {
+        delete(table)
+      }
+    }
   }
 
   private[this] val Limit = 1000
