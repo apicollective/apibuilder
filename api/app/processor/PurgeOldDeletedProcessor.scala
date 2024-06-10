@@ -32,6 +32,7 @@ class PurgeOldDeletedProcessor @Inject()(
       Query(
         s"""
            |select ${table.pkey.name}::text as pkey, deleted_at
+           |select ${table.pkey.name}::text as pkey, deleted_at
            |  from ${table.name}
            | where deleted_at < now() - interval '45 days'
            | limit 1000
@@ -84,12 +85,12 @@ class PurgeOldDeletedProcessor @Inject()(
   }
 
   private[this] def addPkey(table: TableMetadata, pkey: String, query: Query): Query =  {
-    val q = table.pkey match {
-      case PrimaryKey.PkeyLong => query.and(s"${table.pkey} = {pkey}::bigint")
-      case PrimaryKey.PkeyString => query.and(s"${table.pkey} = {pkey}")
-      case PrimaryKey.PkeyUUID => query.and(s"${table.pkey} = {pkey}::uuid")
+    val clause = table.pkey match {
+      case PrimaryKey.PkeyLong => "{pkey}::bigint"
+      case PrimaryKey.PkeyString => "{pkey}"
+      case PrimaryKey.PkeyUUID => "{pkey}::uuid"
     }
-    q.bind(table.pkey.name, pkey)
+    query.and(s"${table.pkey.name} = $clase").bind(table.pkey.name, pkey)
   }
 
   private[this] def exec(q: Query): Unit = {
