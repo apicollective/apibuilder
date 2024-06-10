@@ -33,14 +33,14 @@ object DeleteMetadata {
   private[this] def guidReferencesOrganizations(name: String): TableMetadata = {
     TableMetadata(
       name,
-      PrimaryKey.PkeyString,
+      PrimaryKey.PkeyUUID,
       Seq(Tables.organizations)
     )
   }
   private[this] def guidReferencesApplications(name: String): TableMetadata = {
     TableMetadata(
       name,
-      PrimaryKey.PkeyString,
+      PrimaryKey.PkeyUUID,
       Seq(Tables.applications)
     )
   }
@@ -63,6 +63,7 @@ object DeleteMetadata {
   val VersionSoft: Seq[TableMetadata] = Seq(
     TableMetadata("cache.services", PrimaryKey.PkeyUUID, Seq(Tables.versions)),
     TableMetadata("public.originals", PrimaryKey.PkeyLong, Seq(Tables.versions)),
+    TableMetadata("public.changes", PrimaryKey.PkeyUUID, Seq(Tables.versions)),
   )
   val VersionHard: Seq[TableMetadata] = Nil
 }
