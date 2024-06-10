@@ -36,7 +36,7 @@ class PurgeOldDeletedProcessor @Inject()(
            | where deleted_at < now() - interval '45 days'
            | limit 1000
            |""".stripMargin
-      ).as(parser.*)(c)
+      ).withDebugging().as(parser.*)(c)
     }
   }
 

@@ -25,9 +25,9 @@ object PrimaryKey {
 }
 case class TableMetadata(name: String, pkey: PrimaryKey, references: Seq[TableMetadata])
 object Tables {
-  val organizations: TableMetadata = TableMetadata("organizations", PrimaryKey.PkeyString, Nil)
-  val applications: TableMetadata = TableMetadata("applications", PrimaryKey.PkeyString, Nil)
-  val versions: TableMetadata = TableMetadata("versions", PrimaryKey.PkeyString, Nil)
+  val organizations: TableMetadata = TableMetadata("organizations", PrimaryKey.PkeyUUID, Nil)
+  val applications: TableMetadata = TableMetadata("applications", PrimaryKey.PkeyUUID, Nil)
+  val versions: TableMetadata = TableMetadata("versions", PrimaryKey.PkeyUUID, Nil)
 }
 object DeleteMetadata {
   private[this] def guidReferencesOrganizations(name: String): TableMetadata = {
