@@ -125,7 +125,15 @@ class PurgeDeletedProcessor @Inject()(
       ).and("deleted_at is null")
       .bind("deleted_by_guid", usersDao.AdminUser.guid)
     ))
-    delete(table)
+
+    // Temporarily work around db triggers
+    exec(filter(Query(
+      s"""
+         |update ${table.name}
+         |   set deleted_at = now() - interval '45 days'
+         |""".stripMargin
+    ).and("deleted_at > now() - interval '35 days'")))
+    hardDelete(table)(filter)
   }
 
   private[this] def hardDelete(table: Table)(filter: Query => Query): Unit = {
