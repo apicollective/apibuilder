@@ -5,17 +5,17 @@ import io.apibuilder.task.v0.models.TaskType
 import javax.inject.Inject
 
 class TaskActorCompanion @Inject() (
-  indexApplication: IndexApplicationProcessor,
-  diffVersion: DiffVersionProcessor,
-  cleanupDeletions: CleanupDeletionsProcessor,
-  scheduleMigrateVersions: ScheduleMigrateVersionsProcessor,
-  migrateVersion: MigrateVersionProcessor,
-  userCreated: UserCreatedProcessor,
-  scheduleSyncGeneratorServices: ScheduleSyncGeneratorServicesProcessor,
-  syncGeneratorService: SyncGeneratorServiceProcessor,
-  email: EmailProcessor,
-  purgeOldDeleted: PurgeOldDeletedProcessor,
-  checkInvariants: CheckInvariantsProcessor,
+                                     indexApplication: IndexApplicationProcessor,
+                                     diffVersion: DiffVersionProcessor,
+                                     cleanupDeletions: CleanupDeletionsProcessor,
+                                     scheduleMigrateVersions: ScheduleMigrateVersionsProcessor,
+                                     migrateVersion: MigrateVersionProcessor,
+                                     userCreated: UserCreatedProcessor,
+                                     scheduleSyncGeneratorServices: ScheduleSyncGeneratorServicesProcessor,
+                                     syncGeneratorService: SyncGeneratorServiceProcessor,
+                                     email: EmailProcessor,
+                                     purgeOldDeleted: PurgeDeletedProcessor,
+                                     checkInvariants: CheckInvariantsProcessor,
 ) {
   private[processor] val all: Map[TaskType, BaseTaskProcessor] = {
     import TaskType._

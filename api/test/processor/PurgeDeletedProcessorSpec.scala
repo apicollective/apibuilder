@@ -11,9 +11,9 @@ import play.api.db.Database
 
 import java.util.UUID
 
-class PurgeOldDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
+class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
 
-  private[this] def processor: PurgeOldDeletedProcessor = app.injector.instanceOf[PurgeOldDeletedProcessor]
+  private[this] def processor: PurgeDeletedProcessor = app.injector.instanceOf[PurgeDeletedProcessor]
   private[this] def database: Database = app.injector.instanceOf[Database]
 
   private[this] def isDeleted(table: String, guid: UUID): Boolean = {

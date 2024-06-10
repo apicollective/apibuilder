@@ -13,7 +13,7 @@ import javax.inject.Inject
 import scala.annotation.tailrec
 
 
-class PurgeOldDeletedProcessor @Inject()(
+class PurgeDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
   db: Database,
   usersDao: UsersDao,
@@ -25,7 +25,7 @@ class PurgeOldDeletedProcessor @Inject()(
     exec(Query(
       """
         |update changes
-        |   set deleted = now(),
+        |   set deleted_at = now(),
         |       deleted_by_guid = {deleted_by_guid}::uuid
         | where deleted_at is null
         |   and from_version_guid in (select guid from versions where deleted_at is not null)
@@ -34,13 +34,13 @@ class PurgeOldDeletedProcessor @Inject()(
     exec(Query(
       """
         |update changes
-        |   set deleted = now(),
+        |   set deleted_at = now(),
         |       deleted_by_guid = {deleted_by_guid}::uuid
         | where deleted_at is null
         |   and to_version_guid in (select guid from versions where deleted_at is not null)
         |""".stripMargin).bind("deleted_by_guid", usersDao.AdminUser.guid)
     )
-    delete(TableMetadata.long("public.changes"))
+    delete(TableMetadata.guid("public.changes"))
 
     delete(Tables.versions)
     //delete(Tables.applications)
