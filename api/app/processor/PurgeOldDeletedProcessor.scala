@@ -1,77 +1,87 @@
 package processor
 
+import anorm._
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.{Authorization, OrganizationsDao, UsersDao}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
-import play.api.Environment
 import play.api.db.Database
 
 import javax.inject.Inject
-import scala.util.{Failure, Success, Try}
+import scala.annotation.tailrec
 
 
 class PurgeOldDeletedProcessor @Inject()(
   args: TaskProcessorArgs,
-  env: Environment,
   db: Database,
-  usersDao: UsersDao,
-  organizationsDao: OrganizationsDao
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
   import DeleteMetadata._
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    delete("versions", "version_guid", VersionSoft)
-    delete("applications", "application_guid", ApplicationSoft)
-    delete("organizations", "organization_guid", OrganizationSoft)
-    purgeOldOrganizations()
+    delete(TableMetadata.guid("versions"), VersionSoft)
+    delete(TableMetadata.guid("applications"), ApplicationSoft)
+    delete(TableMetadata.guid("organizations"), OrganizationSoft)
+    ().validNec
   }
 
-  private[this] def purgeOldOrganizations(): ValidatedNec[String, Unit] = {
-    organizationsDao.findAll(
-      Authorization.All,
-      deletedAtBefore = Some(DateTime.now.minusMonths(6)),
-      isDeleted = Some(true),
-      limit = 1000,
-      offset = 0,
-    ).map { org =>
-      Try {
-        exec(Query("delete from organizations").equals("guid", org.guid))
-      } match {
-        case Success(_) => ().validNec
-        case Failure(e) => s"Failed to delete org where guid = '${org.guid}': ${e.getMessage}".invalidNec
-      }
-    }.sequence.map { _ => () }
-  }
-
-  private[processor] def delete(parentTable: String, column: String, tables: Seq[String]): Unit = {
-    println(s"starting delete $parentTable")
-    tables.foreach { table =>
-      println(s"Delete from child $table")
-
-      exec(
+  private[this] val Limit = 1000
+  private[this] case class DbRow(pkey: String, deletedAt: DateTime)
+  private[this] def nextDeletedRows(table: TableMetadata): Seq[DbRow] = {
+    db.withConnection { c =>
+      Query(
         s"""
-          |update $table
-          |   set deleted_at = deleted_at - interval '45 days'
-          | where deleted_at >= '2024-06-01'
-          |   and deleted_at < '2024-06-06'
-          |""".stripMargin)
-      exec(
-        s"""
-          |delete from $table
-          | where deleted_at < now() - interval '45 days'
-          |   and $column in (
-          |     select guid from $parentTable where deleted_at <= now() - interval '6 months'
-          |   )
-          |""".stripMargin
-      )
+           |select ${table.pkey}::text as pkey, deleted_at
+           |  from $table
+           | where deleted_at < now() - interval '45 days'
+           | limit 1000
+           |""".stripMargin
+      ).as(parser.*)(c)
     }
   }
 
-  private[this] def exec(q: String): Unit = {
-    exec(Query(q).bind("deleted_by_guid", usersDao.AdminUser.guid))
+  private[this] val parser: RowParser[DbRow] = {
+    SqlParser.get[String]("guid") ~
+      SqlParser.get[DateTime]("deleted_at") map {
+      case play ~ deletedAt =>
+        DbRow(play, deletedAt)
+    }
+  }
+
+  private[processor] def delete(parentTable: TableMetadata, tables: Seq[TableMetadata]): Unit = {
+    println(s"starting delete ${parentTable.name}")
+    tables.foreach { childTable =>
+      println(s"Delete from child ${childTable.name}")
+      delete(childTable)
+    }
+    delete(parentTable)
+  }
+
+  private[this] def moveDeletedAtBack(table: TableMetadata, pkey: String): Unit = {
+    exec(
+      Query(s"update $table set deleted_at = deleted_at - interval '45 days'")
+        .equals(table.pkey, pkey)
+    )
+  }
+
+  private[this] val Start: DateTime = DateTime.parse("2024-06-01T12:00:00.000-05:00")
+  private[this] val End: DateTime = DateTime.parse("2024-06-01T12:00:00.000-05:00")
+
+  @tailrec
+  private[this] def delete(childTable: TableMetadata): Unit = {
+    val rows = nextDeletedRows(childTable)
+    rows.foreach { row =>
+      if (row.deletedAt.isAfter(End) && row.deletedAt.isBefore(Start)) {
+        moveDeletedAtBack(childTable, row.pkey)
+      }
+
+      exec(
+        Query(s"delete from $childTable").equals(childTable.pkey, row.pkey)
+      )
+    }
+    if (rows.length >= Limit) {
+      delete(childTable)
+    }
   }
 
   private[this] def exec(q: Query): Unit = {

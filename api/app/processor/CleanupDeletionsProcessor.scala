@@ -9,8 +9,21 @@ import play.api.db.Database
 
 import javax.inject.Inject
 
+sealed trait PkeyType
+object PkeyType {
+  case object PkeyString extends PkeyType
+  case object PkeyUUID extends PkeyType
+}
+case class TableMetadata(name: String, pkey: String, pkeyType: PkeyType)
+object TableMetadata {
+  def guid(name: String): TableMetadata = TableMetadata(name, "guid", PkeyType.PkeyUUID)
+  def string(name: String): TableMetadata = TableMetadata(name, "id", PkeyType.PkeyString)
+}
 object DeleteMetadata {
-  val OrganizationSoft: Seq[String] = Seq(
+  private[this] def guids(names: String*): Seq[TableMetadata] = {
+    names.map { n => TableMetadata.guid(n) }
+  }
+  val OrganizationSoft: Seq[TableMetadata] = guids(
     "public.applications",
     "public.membership_requests",
     "public.memberships",
@@ -18,17 +31,18 @@ object DeleteMetadata {
     "public.organization_domains",
     "public.subscriptions"
   )
-  val OrganizationHard: Seq[String] = Seq(
+  val OrganizationHard: Seq[TableMetadata] = guids(
     "public.organization_logs", "public.tasks", "search.items"
   )
-  val ApplicationSoft: Seq[String] = Seq(
+  val ApplicationSoft: Seq[TableMetadata] = guids(
     "public.application_moves", "public.changes", "public.versions", "public.watches"
   )
-  val ApplicationHard: Seq[String] = Seq("search.items")
-  val VersionSoft: Seq[String] = Seq(
-    "cache.services", "public.originals"
+  val ApplicationHard: Seq[TableMetadata] = guids("search.items")
+  val VersionSoft: Seq[TableMetadata] = Seq(
+    TableMetadata.guid("cache.services"),
+    TableMetadata.string("public.originals")
   )
-  val VersionHard: Seq[String] = Nil
+  val VersionHard: Seq[TableMetadata] = Nil
 }
 
 class CleanupDeletionsProcessor @Inject()(
@@ -47,7 +61,7 @@ class CleanupDeletionsProcessor @Inject()(
 
 
   private[processor] def organizations(): Unit = {
-    OrganizationSoft.foreach { table =>
+    OrganizationSoft.map(_.name).foreach { table =>
       exec(
         s"""
            |update $table
@@ -58,7 +72,7 @@ class CleanupDeletionsProcessor @Inject()(
       )
     }
 
-    OrganizationHard.foreach { table =>
+    OrganizationHard.map(_.name).foreach { table =>
       exec(
         s"""
            |delete from $table
@@ -69,7 +83,7 @@ class CleanupDeletionsProcessor @Inject()(
   }
 
   private[processor] def applications(): Unit = {
-    ApplicationSoft.foreach { table =>
+    ApplicationSoft.map(_.name).foreach { table =>
       exec(
         s"""
            |update $table
@@ -80,7 +94,7 @@ class CleanupDeletionsProcessor @Inject()(
       )
     }
 
-    ApplicationHard.foreach { table =>
+    ApplicationHard.map(_.name).foreach { table =>
       exec(
         s"""
            |delete from $table
@@ -91,7 +105,7 @@ class CleanupDeletionsProcessor @Inject()(
   }
 
   private[processor] def versions(): Unit = {
-    VersionSoft.foreach { table =>
+    VersionSoft.map(_.name).foreach { table =>
       exec(
         s"""
            |update $table
@@ -102,7 +116,7 @@ class CleanupDeletionsProcessor @Inject()(
       )
     }
 
-    VersionHard.foreach { table =>
+    VersionHard.map(_.name).foreach { table =>
       exec(
         s"""
            |delete from $table
