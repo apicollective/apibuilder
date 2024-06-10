@@ -20,20 +20,24 @@ class PurgeDeletedProcessor @Inject()(
   usersDao: UsersDao,
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
+  private[this] def filter(table: Table)(column: String) = s"$column in (select ${table.pkey.name} from ${table.name} where deleted_at is not null)"
+
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
-    def versionGuidFilter(column: String) = s"$column in (select guid from versions where deleted_at is not null)"
-
-    softDelete(Table.guid("cache.services"), versionGuidFilter("version_guid"))
-    softDelete(Table.long("public.originals"), versionGuidFilter("version_guid"))
-    softDelete(Table.guid("public.changes"), versionGuidFilter("from_version_guid"))
-    softDelete(Table.guid("public.changes"), versionGuidFilter("to_version_guid"))
-
-    delete(Table.guid("cache.services"))
-    delete(Table.long("public.originals"))
-    delete(Table.guid("public.changes"))
-
+    def versionFilter(column: String) = filter(Tables.versions)(column)
+    softDelete(Table.guid("cache.services"), versionFilter("version_guid"))
+    softDelete(Table.long("public.originals"), versionFilter("version_guid"))
+    softDelete(Table.guid("public.changes"), versionFilter("from_version_guid"))
+    softDelete(Table.guid("public.changes"), versionFilter("to_version_guid"))
     delete(Tables.versions)
-    //delete(Tables.applications)
+
+    def appFilter(column: String) = filter(Tables.applications)(column)
+    softDelete(Table.guid("public.application_moves"), appFilter("application_guid"))
+    softDelete(Table.guid("public.changes"), appFilter("application_guid"))
+    hardDelete(Table.guid("search.items"), appFilter("application_guid"))
+    softDelete(Table.guid("public.watches"), appFilter("application_guid"))
+    softDelete(Table.guid("public.versions"), appFilter("application_guid"))
+    delete(Tables.applications)
+
     //delete(Tables.organizations)
     ().validNec
   }
@@ -95,6 +99,12 @@ class PurgeDeletedProcessor @Inject()(
           |   and $filter
           |""".stripMargin
       ).bind("deleted_by_guid", usersDao.AdminUser.guid)
+    )
+    delete(table)
+  }
+  private[this] def hardDelete(table: Table, filter: String): Unit = {
+    exec(
+      Query(s"delete from ${table.name} where $filter")
     )
   }
 
