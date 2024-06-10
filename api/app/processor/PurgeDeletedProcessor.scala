@@ -21,26 +21,15 @@ class PurgeDeletedProcessor @Inject()(
 ) extends TaskProcessor(args, TaskType.PurgeOldDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
+    def versionGuidFilter(column: String) = s"$column in (select guid from versions where deleted_at is not null"
+    val versionFilter = versionGuidFilter("guid")
+    softDelete(Table.guid("cache.services"), versionFilter)
+    softDelete(Table.long("public.originals"), versionFilter)
+    softDelete(Table.guid("public.changes"), versionGuidFilter("from_change_guid"))
+    softDelete(Table.guid("public.changes"), versionGuidFilter("to_change_guid"))
+
     delete(Table.guid("cache.services"))
     delete(Table.long("public.originals"))
-    exec(Query(
-      """
-        |update changes
-        |   set deleted_at = now(),
-        |       deleted_by_guid = {deleted_by_guid}::uuid
-        | where deleted_at is null
-        |   and from_version_guid in (select guid from versions where deleted_at is not null)
-        |""".stripMargin).bind("deleted_by_guid", usersDao.AdminUser.guid)
-    )
-    exec(Query(
-      """
-        |update changes
-        |   set deleted_at = now(),
-        |       deleted_by_guid = {deleted_by_guid}::uuid
-        | where deleted_at is null
-        |   and to_version_guid in (select guid from versions where deleted_at is not null)
-        |""".stripMargin).bind("deleted_by_guid", usersDao.AdminUser.guid)
-    )
     delete(Table.guid("public.changes"))
 
     delete(Tables.versions)
@@ -94,6 +83,19 @@ class PurgeDeletedProcessor @Inject()(
     if (rows.length >= Limit) {
       delete(childTable)
     }
+  }
+
+  private[this] def softDelete(table: Table, filter: String): Unit = {
+    exec(
+      Query(
+        s"""
+          |update ${table.name}
+          |   set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid
+          | where deleted_at is null
+          |   and $filter
+          |""".stripMargin
+      ).bind("deleted_by_guid", usersDao.AdminUser.guid)
+    )
   }
 
   private[this] def addPkey(table: Table, pkey: String, query: Query): Query =  {
