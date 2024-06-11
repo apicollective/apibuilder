@@ -68,5 +68,4 @@ case class DbHelpers(
       bind("id", id).
       anormSql().execute()
   }
-
 }

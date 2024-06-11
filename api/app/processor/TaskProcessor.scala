@@ -10,6 +10,7 @@ import lib.Constants
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsValue, Reads, Writes}
 import play.libs.exception.ExceptionUtils
+import util.LockUtil
 
 import java.sql.Connection
 import java.util.UUID
@@ -17,7 +18,8 @@ import javax.inject.Inject
 import scala.util.{Failure, Success, Try}
 
 class TaskProcessorArgs @Inject() (
-  val dao: TasksDao
+  val dao: TasksDao,
+  val lockUtil: LockUtil
 ) {}
 
 abstract class TaskProcessor(
@@ -84,14 +86,16 @@ abstract class BaseTaskProcessor(
   private[this] val Limit = 100
 
   final def process(): Unit = {
-    args.dao
-      .findAll(
-        `type` = Some(typ.toString),
-        nextAttemptAtLessThanOrEquals = Some(DateTime.now),
-        limit = Some(Limit),
-        orderBy = Some(OrderBy("num_attempts, next_attempt_at"))
-      )
-      .foreach(processRecordSafe)
+    args.lockUtil.lock(s"tasks:$typ") { _ =>
+      args.dao
+        .findAll(
+          `type` = Some(typ.toString),
+          nextAttemptAtLessThanOrEquals = Some(DateTime.now),
+          limit = Some(Limit),
+          orderBy = Some(OrderBy("num_attempts, next_attempt_at"))
+        )
+        .foreach(processRecordSafe)
+    }
   }
 
   def processTask(task: Task): ValidatedNec[String, Unit]
