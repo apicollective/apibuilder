@@ -43,7 +43,7 @@ class ScheduleTasksActor @Inject()(
     scheduleOnce(ScheduleMigrateVersions)
     Seq(
       schedule(ScheduleSyncGeneratorServices, FiniteDuration(1, HOURS)),
-      schedule(CheckInvariants, FiniteDuration(1, HOURS)),
+      schedule(CheckInvariants, FiniteDuration(12, HOURS)),
       schedule(PurgeDeleted, FiniteDuration(1, HOURS))(FiniteDuration(5, SECONDS)),
     )
   }
