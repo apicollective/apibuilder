@@ -1,8 +1,6 @@
 package util
 
 import anorm._
-import cats.data.ValidatedNec
-import cats.implicits._
 import io.flow.postgresql.Query
 import org.apache.commons.codec.digest.DigestUtils
 import play.api.db.Database
@@ -16,15 +14,15 @@ class LockUtil @Inject() (
   db: Database
 ) {
 
-  def lock[T](id: String)(f: Connection => T): ValidatedNec[String, T] =
+  def lock[T](id: String)(f: Connection => T): Option[T] =
     db.withTransaction(lock(_)(id)(f))
 
-  def lock[T](c: Connection)(id: String)(f: Connection => T): ValidatedNec[String, T] = {
+  def lock[T](c: Connection)(id: String)(f: Connection => T): Option[T] = {
     require(!c.getAutoCommit, "Must be in a transaction")
     if (acquireLock(c)(id))
-      f(c).validNec
+      Some(f(c))
     else
-      s"Failed to acquire lock for id '$id'".invalidNec
+      None
   }
 
   private def acquireLock(c: Connection)(id: String): Boolean = {
