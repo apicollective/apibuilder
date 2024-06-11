@@ -47,7 +47,6 @@ class Emails @Inject() (
   ): Unit = {
     eachSubscription(context, org, publication, { subscription =>
       val result = filter(subscription)
-      println(s"[${DateTime.now} DEBUG_FILTER] result: $result")
       email.sendHtml(
         to = Person(subscription.user),
         subject = subject,

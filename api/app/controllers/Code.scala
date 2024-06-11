@@ -156,9 +156,9 @@ class Code @Inject() (
               val newAttributes = updatedAttributes.filterNot { a =>
                 data.invocationForm.attributes.map(_.name).contains(a.name)
               }.mkString(", ")
-              println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: $newAttributes")
+              //println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: $newAttributes")
             } else {
-              println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
+              //println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
 
             recordInvocation(gws.generator.key)

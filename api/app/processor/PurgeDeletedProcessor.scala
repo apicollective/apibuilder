@@ -115,9 +115,11 @@ class PurgeDeletedProcessor @Inject()(
     rows.foreach { row =>
       if (row.deletedAt.isAfter(DateTime.now.minusDays(35))) {
         // Temporarily work around triggers
+        debug(s"Moving deleted at back for table[${childTable.name}] pkey[${row.pkey}]")
         moveDeletedAtBack(childTable, row.pkey)
       }
 
+      debug(s"Hard deleting from ${childTable.name}where ${childTable.pkey.name} = '${row.pkey}'")
       exec(
         addPkey(childTable, row.pkey, Query(s"delete from ${childTable.name}"))
       )
