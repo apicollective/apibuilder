@@ -19,23 +19,22 @@ class LockUtil @Inject() (
 
   def lock[T](c: Connection)(id: String)(f: Connection => T): Option[T] = {
     require(!c.getAutoCommit, "Must be in a transaction")
-    if (tryLockInternal(c)(id))
+    if (acquireLock(c)(id))
       Some(f(c))
     else
       None
   }
 
-  private def tryLockInternal(c: Connection)(id: String): Boolean = {
-    val (key1, key2) = LockUtil.toHashInts(id)
+  private def acquireLock(c: Connection)(id: String): Boolean = {
+    val (key1, key2) = toHashInts(id)
+    println(s"tryLockInternal id[$id] keys[$key1, $key2]")
     Query("SELECT pg_try_advisory_xact_lock({key1}::int, {key2}::int)")
       .bind("key1", key1)
       .bind("key2", key2)
       .as(SqlParser.bool(1).single)(c)
   }
-}
 
-object LockUtil {
-  def toHashInts(id: String): (Int, Int) = {
+  private[this] def toHashInts(id: String): (Int, Int) = {
     val buffer = ByteBuffer.wrap(DigestUtils.md5(id))
     val key1 = buffer.getInt(0)
     val key2 = buffer.getInt(4)
