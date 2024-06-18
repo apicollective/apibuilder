@@ -27,6 +27,9 @@ class PurgeDeletedProcessor @Inject()(
   }
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
+    softDelete(Tables.applications)(_.in("organization_guid", Query("select guid from organizations where deleted_at is not null")))
+    softDelete(Tables.versions)(_.in("application_guid", Query("select guid from applications where deleted_at is not null")))
+
     debug("PurgeDeletedProcessor starting to delete versions")
     deleteAll(Tables.versions) { row =>
       debug(s"  - version: ${row.pkey}")
@@ -124,14 +127,18 @@ class PurgeDeletedProcessor @Inject()(
     })
   }
 
+  private[this] def softDelete(table: Table)(filter: Query => Query): Unit = {
+    exec(
+      filter(Query(
+        s"update ${table.qualified} set deleted_at = now() - interval '45 days', deleted_by_guid = {deleted_by_guid}::uuid"
+      ).bind("deleted_by_guid", usersDao.AdminUser.guid)
+        .and("(deleted_at is null or deleted_at > now() - interval '32 days')")
+      ))
+  }
+
   private[this] def delete(table: Table)(filter: Query => Query): Unit = {
     if (hasDeletedAt(table)) {
-      exec(
-        filter(Query(
-          s"update ${table.qualified} set deleted_at = now() - interval '45 days', deleted_by_guid = {deleted_by_guid}::uuid"
-        ).bind("deleted_by_guid", usersDao.AdminUser.guid)
-          .and("(deleted_at is null or deleted_at > now() - interval '32 days')")
-      ))
+      softDelete(table)(filter)
     }
 
     exec(
