@@ -13,6 +13,7 @@ import util.{PrimaryKey, Table, Tables}
 import java.util.UUID
 import javax.inject.Inject
 import scala.annotation.tailrec
+import scala.collection.concurrent.TrieMap
 
 
 class PurgeDeletedProcessor @Inject()(
@@ -29,34 +30,34 @@ class PurgeDeletedProcessor @Inject()(
     debug("PurgeDeletedProcessor starting to delete versions")
     deleteAll(Tables.versions) { row =>
       debug(s"  - version: ${row.pkey}")
-      softDelete(Table.guid("cache.services"))(_.equals("version_guid", row.pkey))
-      softDelete(Table.long("public.originals"))(_.equals("version_guid", row.pkey))
-      softDelete(Table.guid("public.changes"))(_.equals("from_version_guid", row.pkey))
-      softDelete(Table.guid("public.changes"))(_.equals("to_version_guid", row.pkey))
+      delete(Table.guid("cache", "services"))(_.equals("version_guid", row.pkey))
+      delete(Table.long("public", "originals"))(_.equals("version_guid", row.pkey))
+      delete(Table.guid("public", "changes"))(_.equals("from_version_guid", row.pkey))
+      delete(Table.guid("public", "changes"))(_.equals("to_version_guid", row.pkey))
     }
 
     debug("PurgeDeletedProcessor starting to delete applications")
     deleteAll(Tables.applications) { row =>
       debug(s"  - application: ${row.pkey}")
-      softDelete(Table.guid("public.application_moves"))(_.equals("application_guid", row.pkey))
-      softDelete(Table.guid("public.changes"))(_.equals("application_guid", row.pkey))
-      hardDelete(Table.guid("search.items"))(_.equals("application_guid", row.pkey))
-      softDelete(Table.guid("public.watches"))(_.equals("application_guid", row.pkey))
-      softDelete(Table.guid("public.versions"))(_.equals("application_guid", row.pkey))
+      delete(Table.guid("public", "application_moves"))(_.equals("application_guid", row.pkey))
+      delete(Table.guid("public", "changes"))(_.equals("application_guid", row.pkey))
+      delete(Table.guid("search", "items"))(_.equals("application_guid", row.pkey))
+      delete(Table.guid("public", "watches"))(_.equals("application_guid", row.pkey))
+      delete(Table.guid("public", "versions"))(_.equals("application_guid", row.pkey))
     }
 
     debug("PurgeDeletedProcessor starting to delete applications")
     deleteAll(Tables.organizations) { row =>
       debug(s"  - organization: ${row.pkey}")
-      softDelete(Table.guid("public.application_moves"))(_.equals("from_organization_guid", row.pkey))
-      softDelete(Table.guid("public.application_moves"))(_.equals("to_organization_guid", row.pkey))
-      hardDelete(Table.guid("search.items"))(_.equals("organization_guid", row.pkey))
-      softDelete(Table.guid("public.membership_requests"))(_.equals("organization_guid", row.pkey))
-      softDelete(Table.guid("public.memberships"))(_.equals("organization_guid", row.pkey))
-      softDelete(Table.guid("public.organization_attribute_values"))(_.equals("organization_guid", row.pkey))
-      softDelete(Table.guid("public.organization_domains"))(_.equals("organization_guid", row.pkey))
-      hardDelete(Table.guid("public.organization_logs"))(_.equals("organization_guid", row.pkey))
-      softDelete(Table.guid("public.applications"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "application_moves"))(_.equals("from_organization_guid", row.pkey))
+      delete(Table.guid("public", "application_moves"))(_.equals("to_organization_guid", row.pkey))
+      delete(Table.guid("search", "items"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "membership_requests"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "memberships"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "organization_attribute_values"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "organization_domains"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "organization_logs"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "applications"))(_.equals("organization_guid", row.pkey))
     }
 
     debug("done")
@@ -67,11 +68,12 @@ class PurgeDeletedProcessor @Inject()(
   private[this] def deleteAll(table: Table)(f: DbRow[_] => Any): Unit =  {
     val all = nextDeletedRows(table)
     if (all.nonEmpty) {
-      all.foreach(f)
+      all.foreach { row =>
+        f(row)
+        delete(table)(_.equals(table.pkey.name, row.pkey))
+      }
       if (all.length >= Limit) {
         deleteAll(table)(f)
-      } else {
-        delete(table)
       }
     }
   }
@@ -81,10 +83,9 @@ class PurgeDeletedProcessor @Inject()(
   private[this] def nextDeletedRows(table: Table): Seq[DbRow[_]] = {
     db.withConnection { c =>
       Query(
-        s"select ${table.pkey.name}::text as pkey, deleted_at from ${table.name}"
+        s"select ${table.pkey.name}::text as pkey, deleted_at from ${table.qualified}"
       ).isNotNull("deleted_at")
         .limit(Limit)
-        .withDebugging()
         .as(parser(table.pkey).*)(c)
     }
   }
@@ -103,65 +104,39 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] def moveDeletedAtBack(table: Table, pkey: Any): Unit = {
-    exec(
-      addPkey(table, pkey, Query(s"update ${table.name} set deleted_at = deleted_at - interval '45 days'"))
-    )
+  private[this] val deletedAtCache = TrieMap[Table, Boolean]()
+  private[this] val DeletedAtQuery = Query(
+    """
+      |select count(*)
+      |  from information_schema.columns
+      | where table_schema = {table_schema}
+      |   and table_name = {table_name}
+      |   and column_name = 'deleted_at'
+      |""".stripMargin)
+  private[this] def hasDeletedAt(table: Table): Boolean = {
+    deletedAtCache.getOrElseUpdate(table, {
+      db.withConnection { c =>
+        DeletedAtQuery
+          .bind("table_schema", table.schema)
+          .bind("table_name", table.name)
+          .as(SqlParser.int(1).single)(c)
+      } > 0
+    })
   }
 
-  @tailrec
-  private[this] def delete(childTable: Table): Unit = {
-    val rows = nextDeletedRows(childTable)
-    rows.foreach { row =>
-      if (row.deletedAt.isAfter(DateTime.now.minusDays(35))) {
-        // Temporarily work around triggers
-        debug(s"Moving deleted at back for table[${childTable.name}] pkey[${row.pkey}]")
-        moveDeletedAtBack(childTable, row.pkey)
-      }
-
-      debug(s"Hard deleting from ${childTable.name}where ${childTable.pkey.name} = '${row.pkey}'")
+  private[this] def delete(table: Table)(filter: Query => Query): Unit = {
+    if (hasDeletedAt(table)) {
       exec(
-        addPkey(childTable, row.pkey, Query(s"delete from ${childTable.name}"))
-      )
+        filter(Query(
+          s"update ${table.qualified} set deleted_at = now() - interval '45 days', deleted_by_guid = {deleted_by_guid}::uuid"
+        ).bind("deleted_by_guid", usersDao.AdminUser.guid)
+          .and("(deleted_at is null or deleted_at > now() - interval '32 days')")
+      ))
     }
-    if (rows.length >= Limit) {
-      delete(childTable)
-    }
-  }
 
-  private[this] def softDelete(table: Table)(filter: Query => Query): Unit = {
-    exec(filter(Query(
-        s"""
-          |update ${table.name}
-          |   set deleted_at = now() - interval '45 days', deleted_by_guid = {deleted_by_guid}::uuid
-          |""".stripMargin
-      ).and("deleted_at is null")
-      .bind("deleted_by_guid", usersDao.AdminUser.guid)
-    ))
-
-    // Temporarily work around db triggers
-    exec(filter(Query(
-      s"""
-         |update ${table.name}
-         |   set deleted_at = now() - interval '45 days'
-         |""".stripMargin
-    ).and("deleted_at > now() - interval '35 days'")))
-    hardDelete(table)(filter)
-  }
-
-  private[this] def hardDelete(table: Table)(filter: Query => Query): Unit = {
     exec(
-      filter(Query(s"delete from ${table.name}"))
+      filter(Query(s"delete from ${table.qualified}"))
     )
-  }
-
-  private[this] def addPkey(table: Table, pkey: Any, query: Query): Query =  {
-    val clause = table.pkey match {
-      case PrimaryKey.PkeyLong => "{pkey}::bigint"
-      case PrimaryKey.PkeyString => "{pkey}"
-      case PrimaryKey.PkeyUUID => "{pkey}::uuid"
-    }
-    query.and(s"${table.pkey.name} = $clause").bind("pkey", pkey)
   }
 
   private[this] def exec(q: Query): Unit = {

@@ -15,15 +15,18 @@ object PrimaryKey {
   }
 }
 
-case class Table(name: String, pkey: PrimaryKey)
+case class Table(schema: String, name: String, pkey: PrimaryKey) {
+  def qualified: String = s"$schema.$name"
+}
 object Table {
-  def guid(name: String): Table = Table(name, PrimaryKey.PkeyUUID)
-  def string(name: String): Table = Table(name, PrimaryKey.PkeyString)
-  def long(name: String): Table = Table(name, PrimaryKey.PkeyLong)
+  def public(name: String, pkey: PrimaryKey): Table = Table("public", name, pkey)
+  def guid(schema: String, name: String): Table = Table(schema, name, PrimaryKey.PkeyUUID)
+  def string(schema: String, name: String): Table = Table(schema, name, PrimaryKey.PkeyString)
+  def long(schema: String, name: String): Table = Table(schema, name, PrimaryKey.PkeyLong)
 }
 
 object Tables {
-  val organizations: Table = Table("organizations", PrimaryKey.PkeyUUID)
-  val applications: Table = Table("applications", PrimaryKey.PkeyUUID)
-  val versions: Table = Table("versions", PrimaryKey.PkeyUUID)
+  val organizations: Table = Table.public("organizations", PrimaryKey.PkeyUUID)
+  val applications: Table = Table.public("applications", PrimaryKey.PkeyUUID)
+  val versions: Table = Table.public("versions", PrimaryKey.PkeyUUID)
 }
