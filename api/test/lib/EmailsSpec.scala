@@ -1,6 +1,7 @@
 package lib
 
 import io.apibuilder.api.v0.models.Visibility
+import io.apibuilder.common.v0.models.MembershipRole
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -13,13 +14,13 @@ class EmailsSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
     lazy val orgMember = {
       val user = createRandomUser()
-      createMembership(org, user, Role.Member)
+      createMembership(org, user, MembershipRole.Member)
       user
     }
 
     lazy val orgAdmin = {
       val user = createRandomUser()
-      createMembership(org, user, Role.Admin)
+      createMembership(org, user, MembershipRole.Admin)
       user
     }
 
