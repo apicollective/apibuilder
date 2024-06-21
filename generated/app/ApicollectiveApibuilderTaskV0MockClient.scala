@@ -11,8 +11,6 @@ package io.apibuilder.task.v0.mock {
       _root_.scala.util.Random.alphanumeric.take(length).mkString
     }
 
-    def makeMembershipRole(): io.apibuilder.task.v0.models.MembershipRole = io.apibuilder.task.v0.models.MembershipRole.Member
-
     def makeTaskType(): io.apibuilder.task.v0.models.TaskType = io.apibuilder.task.v0.models.TaskType.Email
 
     def makeDiffVersionData(): io.apibuilder.task.v0.models.DiffVersionData = io.apibuilder.task.v0.models.DiffVersionData(
@@ -35,7 +33,7 @@ package io.apibuilder.task.v0.mock {
     def makeEmailDataMembershipRequestAccepted(): io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted = io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted(
       organizationGuid = _root_.java.util.UUID.randomUUID,
       userGuid = _root_.java.util.UUID.randomUUID,
-      role = io.apibuilder.task.v0.mock.Factories.makeMembershipRole()
+      role = io.apibuilder.common.v0.mock.Factories.makeMembershipRole()
     )
 
     def makeEmailDataMembershipRequestCreated(): io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated = io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated(
@@ -45,7 +43,7 @@ package io.apibuilder.task.v0.mock {
     def makeEmailDataMembershipRequestDeclined(): io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined = io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined(
       organizationGuid = _root_.java.util.UUID.randomUUID,
       userGuid = _root_.java.util.UUID.randomUUID,
-      role = io.apibuilder.task.v0.mock.Factories.makeMembershipRole()
+      role = io.apibuilder.common.v0.mock.Factories.makeMembershipRole()
     )
 
     def makeEmailDataPasswordResetRequestCreated(): io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated = io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated(

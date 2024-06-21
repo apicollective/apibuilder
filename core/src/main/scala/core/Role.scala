@@ -1,4 +1,4 @@
-package util
+package core
 
 import io.apibuilder.task.v0.models.MembershipRole
 

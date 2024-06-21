@@ -11,6 +11,18 @@ package io.apibuilder.common.v0.anorm.parsers {
 
   import io.apibuilder.common.v0.anorm.conversions.Types._
 
+  object MembershipRole {
+
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.common.v0.models.MembershipRole] = parser(prefixOpt = Some(s"$prefix$sep"))
+
+    def parser(name: String = "membership_role", prefixOpt: Option[String] = None): RowParser[io.apibuilder.common.v0.models.MembershipRole] = {
+      SqlParser.str(prefixOpt.getOrElse("") + name) map {
+        case value => io.apibuilder.common.v0.models.MembershipRole(value)
+      }
+    }
+
+  }
+
   object Audit {
 
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.common.v0.models.Audit] = parser(prefixOpt = Some(s"$prefix$sep"))

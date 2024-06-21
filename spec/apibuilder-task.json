@@ -13,6 +13,10 @@
     }
   },
 
+  "imports": [
+    { "uri": "https://app.apibuilder.io/apicollective/apibuilder-common/latest/service.json" }
+  ],
+
   "enums": {
     "task_type": {
       "values": [
@@ -26,12 +30,6 @@
         { "name": "sync_generator_service" },
         { "name": "diff_version" },
         { "name": "user_created" }
-      ]
-    },
-    "membership_role": {
-      "values": [
-        { "name": "member" },
-        { "name": "admin" }
       ]
     }
   },
@@ -86,7 +84,7 @@
       "fields": [
         { "name": "organization_guid", "type": "uuid" },
         { "name": "user_guid", "type": "uuid" },
-        { "name": "role", "type": "membership_role" }
+        { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role" }
       ]
     },
 
@@ -94,7 +92,7 @@
       "fields": [
         { "name": "organization_guid", "type": "uuid" },
         { "name": "user_guid", "type": "uuid" },
-        { "name": "role", "type": "membership_role" }
+        { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role" }
       ]
     },
 

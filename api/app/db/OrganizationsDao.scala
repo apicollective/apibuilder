@@ -3,7 +3,8 @@ package db
 import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
-import lib.{Misc, Role, UrlKey, Validation}
+import core.Role
+import lib.{Misc, UrlKey, Validation}
 import anorm._
 import javax.inject.{Inject, Singleton}
 

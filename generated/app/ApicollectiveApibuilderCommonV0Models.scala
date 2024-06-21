@@ -28,6 +28,38 @@ package io.apibuilder.common.v0.models {
   final case class ReferenceGuid(
     guid: _root_.java.util.UUID
   )
+  sealed trait MembershipRole extends _root_.scala.Product with _root_.scala.Serializable
+
+  object MembershipRole {
+
+    case object Member extends MembershipRole { override def toString = "member" }
+    case object Admin extends MembershipRole { override def toString = "admin" }
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    final case class UNDEFINED(override val toString: String) extends MembershipRole
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all: scala.List[MembershipRole] = scala.List(Member, Admin)
+
+    private[this]
+    val byName: Map[String, MembershipRole] = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): MembershipRole = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[MembershipRole] = byName.get(value.toLowerCase)
+
+  }
 
 }
 
@@ -60,6 +92,38 @@ package io.apibuilder.common.v0.models {
 
     private[v0] implicit val jsonWritesJodaLocalDate: play.api.libs.json.Writes[_root_.org.joda.time.LocalDate] = (x: _root_.org.joda.time.LocalDate) => {
       play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
+    }
+
+    implicit val jsonReadsApibuilderCommonMembershipRole: play.api.libs.json.Reads[io.apibuilder.common.v0.models.MembershipRole] = new play.api.libs.json.Reads[io.apibuilder.common.v0.models.MembershipRole] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.common.v0.models.MembershipRole] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.common.v0.models.MembershipRole(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.common.v0.models.MembershipRole(v))
+              case err: play.api.libs.json.JsError =>
+                (js \ "membership_role").validate[String] match {
+                  case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.common.v0.models.MembershipRole(v))
+                  case err: play.api.libs.json.JsError => err
+                }
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesApibuilderCommonMembershipRole(obj: io.apibuilder.common.v0.models.MembershipRole) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectMembershipRole(obj: io.apibuilder.common.v0.models.MembershipRole) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesApibuilderCommonMembershipRole: play.api.libs.json.Writes[MembershipRole] = {
+      (obj: io.apibuilder.common.v0.models.MembershipRole) => {
+        jsonWritesApibuilderCommonMembershipRole(obj)
+      }
     }
 
     implicit def jsonReadsApibuilderCommonAudit: play.api.libs.json.Reads[Audit] = {
@@ -148,6 +212,7 @@ package io.apibuilder.common.v0 {
 
     // import models directly for backwards compatibility with prior versions of the generator
     import Core._
+    import Models._
 
     object Core {
       implicit def pathBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
@@ -155,6 +220,19 @@ package io.apibuilder.common.v0 {
 
       implicit def pathBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
       implicit def queryStringBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+    }
+
+    object Models {
+      import io.apibuilder.common.v0.models._
+
+      val membershipRoleConverter: ApibuilderTypeConverter[io.apibuilder.common.v0.models.MembershipRole] = new ApibuilderTypeConverter[io.apibuilder.common.v0.models.MembershipRole] {
+        override def convert(value: String): io.apibuilder.common.v0.models.MembershipRole = io.apibuilder.common.v0.models.MembershipRole(value)
+        override def convert(value: io.apibuilder.common.v0.models.MembershipRole): String = value.toString
+        override def example: io.apibuilder.common.v0.models.MembershipRole = io.apibuilder.common.v0.models.MembershipRole.Member
+        override def validValues: Seq[io.apibuilder.common.v0.models.MembershipRole] = io.apibuilder.common.v0.models.MembershipRole.all
+      }
+      implicit def pathBindableMembershipRole(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.common.v0.models.MembershipRole] = ApibuilderPathBindable(membershipRoleConverter)
+      implicit def queryStringBindableMembershipRole(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.common.v0.models.MembershipRole] = ApibuilderQueryStringBindable(membershipRoleConverter)
     }
 
     trait ApibuilderTypeConverter[T] {

@@ -53,6 +53,8 @@ package io.apibuilder.common.v0.anorm.conversions {
 
   object Types {
     import io.apibuilder.common.v0.models.json._
+    implicit val columnToSeqApibuilderCommonMembershipRole: Column[Seq[_root_.io.apibuilder.common.v0.models.MembershipRole]] = Util.parser { _.as[Seq[_root_.io.apibuilder.common.v0.models.MembershipRole]] }
+    implicit val columnToMapApibuilderCommonMembershipRole: Column[Map[String, _root_.io.apibuilder.common.v0.models.MembershipRole]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.common.v0.models.MembershipRole]] }
     implicit val columnToSeqApibuilderCommonAudit: Column[Seq[_root_.io.apibuilder.common.v0.models.Audit]] = Util.parser { _.as[Seq[_root_.io.apibuilder.common.v0.models.Audit]] }
     implicit val columnToMapApibuilderCommonAudit: Column[Map[String, _root_.io.apibuilder.common.v0.models.Audit]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.common.v0.models.Audit]] }
     implicit val columnToSeqApibuilderCommonHealthcheck: Column[Seq[_root_.io.apibuilder.common.v0.models.Healthcheck]] = Util.parser { _.as[Seq[_root_.io.apibuilder.common.v0.models.Healthcheck]] }

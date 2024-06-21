@@ -26,7 +26,7 @@ package io.apibuilder.task.v0.models {
   final case class EmailDataMembershipRequestAccepted(
     organizationGuid: _root_.java.util.UUID,
     userGuid: _root_.java.util.UUID,
-    role: io.apibuilder.task.v0.models.MembershipRole
+    role: io.apibuilder.common.v0.models.MembershipRole
   ) extends EmailData
 
   final case class EmailDataMembershipRequestCreated(
@@ -36,7 +36,7 @@ package io.apibuilder.task.v0.models {
   final case class EmailDataMembershipRequestDeclined(
     organizationGuid: _root_.java.util.UUID,
     userGuid: _root_.java.util.UUID,
-    role: io.apibuilder.task.v0.models.MembershipRole
+    role: io.apibuilder.common.v0.models.MembershipRole
   ) extends EmailData
 
   final case class EmailDataPasswordResetRequestCreated(
@@ -55,39 +55,6 @@ package io.apibuilder.task.v0.models {
   final case class EmailDataUndefinedType(
     description: String
   ) extends EmailData
-  sealed trait MembershipRole extends _root_.scala.Product with _root_.scala.Serializable
-
-  object MembershipRole {
-
-    case object Member extends MembershipRole { override def toString = "member" }
-    case object Admin extends MembershipRole { override def toString = "admin" }
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    final case class UNDEFINED(override val toString: String) extends MembershipRole
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all: scala.List[MembershipRole] = scala.List(Member, Admin)
-
-    private[this]
-    val byName: Map[String, MembershipRole] = all.map(x => x.toString.toLowerCase -> x).toMap
-
-    def apply(value: String): MembershipRole = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): _root_.scala.Option[MembershipRole] = byName.get(value.toLowerCase)
-
-  }
-
   sealed trait TaskType extends _root_.scala.Product with _root_.scala.Serializable
 
   object TaskType {
@@ -140,6 +107,7 @@ package io.apibuilder.task.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import io.apibuilder.common.v0.models.json._
     import io.apibuilder.task.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID: play.api.libs.json.Reads[_root_.java.util.UUID] = __.read[String].map { str =>
@@ -162,38 +130,6 @@ package io.apibuilder.task.v0.models {
 
     private[v0] implicit val jsonWritesJodaLocalDate: play.api.libs.json.Writes[_root_.org.joda.time.LocalDate] = (x: _root_.org.joda.time.LocalDate) => {
       play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.date.print(x))
-    }
-
-    implicit val jsonReadsApibuilderTaskMembershipRole: play.api.libs.json.Reads[io.apibuilder.task.v0.models.MembershipRole] = new play.api.libs.json.Reads[io.apibuilder.task.v0.models.MembershipRole] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.task.v0.models.MembershipRole] = {
-        js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.MembershipRole(v.value))
-          case _ => {
-            (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.MembershipRole(v))
-              case err: play.api.libs.json.JsError =>
-                (js \ "membership_role").validate[String] match {
-                  case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.MembershipRole(v))
-                  case err: play.api.libs.json.JsError => err
-                }
-            }
-          }
-        }
-      }
-    }
-
-    def jsonWritesApibuilderTaskMembershipRole(obj: io.apibuilder.task.v0.models.MembershipRole) = {
-      play.api.libs.json.JsString(obj.toString)
-    }
-
-    def jsObjectMembershipRole(obj: io.apibuilder.task.v0.models.MembershipRole) = {
-      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
-    }
-
-    implicit def jsonWritesApibuilderTaskMembershipRole: play.api.libs.json.Writes[MembershipRole] = {
-      (obj: io.apibuilder.task.v0.models.MembershipRole) => {
-        jsonWritesApibuilderTaskMembershipRole(obj)
-      }
     }
 
     implicit val jsonReadsApibuilderTaskTaskType: play.api.libs.json.Reads[io.apibuilder.task.v0.models.TaskType] = new play.api.libs.json.Reads[io.apibuilder.task.v0.models.TaskType] {
@@ -300,7 +236,7 @@ package io.apibuilder.task.v0.models {
       for {
         organizationGuid <- (__ \ "organization_guid").read[_root_.java.util.UUID]
         userGuid <- (__ \ "user_guid").read[_root_.java.util.UUID]
-        role <- (__ \ "role").read[io.apibuilder.task.v0.models.MembershipRole]
+        role <- (__ \ "role").read[io.apibuilder.common.v0.models.MembershipRole]
       } yield EmailDataMembershipRequestAccepted(organizationGuid, userGuid, role)
     }
 
@@ -338,7 +274,7 @@ package io.apibuilder.task.v0.models {
       for {
         organizationGuid <- (__ \ "organization_guid").read[_root_.java.util.UUID]
         userGuid <- (__ \ "user_guid").read[_root_.java.util.UUID]
-        role <- (__ \ "role").read[io.apibuilder.task.v0.models.MembershipRole]
+        role <- (__ \ "role").read[io.apibuilder.common.v0.models.MembershipRole]
       } yield EmailDataMembershipRequestDeclined(organizationGuid, userGuid, role)
     }
 
@@ -433,15 +369,6 @@ package io.apibuilder.task.v0 {
 
     object Models {
       import io.apibuilder.task.v0.models._
-
-      val membershipRoleConverter: ApibuilderTypeConverter[io.apibuilder.task.v0.models.MembershipRole] = new ApibuilderTypeConverter[io.apibuilder.task.v0.models.MembershipRole] {
-        override def convert(value: String): io.apibuilder.task.v0.models.MembershipRole = io.apibuilder.task.v0.models.MembershipRole(value)
-        override def convert(value: io.apibuilder.task.v0.models.MembershipRole): String = value.toString
-        override def example: io.apibuilder.task.v0.models.MembershipRole = io.apibuilder.task.v0.models.MembershipRole.Member
-        override def validValues: Seq[io.apibuilder.task.v0.models.MembershipRole] = io.apibuilder.task.v0.models.MembershipRole.all
-      }
-      implicit def pathBindableMembershipRole(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.task.v0.models.MembershipRole] = ApibuilderPathBindable(membershipRoleConverter)
-      implicit def queryStringBindableMembershipRole(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.task.v0.models.MembershipRole] = ApibuilderQueryStringBindable(membershipRoleConverter)
 
       val taskTypeConverter: ApibuilderTypeConverter[io.apibuilder.task.v0.models.TaskType] = new ApibuilderTypeConverter[io.apibuilder.task.v0.models.TaskType] {
         override def convert(value: String): io.apibuilder.task.v0.models.TaskType = io.apibuilder.task.v0.models.TaskType(value)
@@ -552,6 +479,7 @@ package io.apibuilder.task.v0 {
     auth: scala.Option[io.apibuilder.task.v0.Authorization] = None,
     defaultHeaders: Seq[(String, String)] = Nil
   ) extends interfaces.Client {
+    import io.apibuilder.common.v0.models.json._
     import io.apibuilder.task.v0.models.json._
 
     private[this] val logger = play.api.Logger("io.apibuilder.task.v0.Client")
