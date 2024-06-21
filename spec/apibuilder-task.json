@@ -86,7 +86,7 @@
       "fields": [
         { "name": "organization_guid", "type": "uuid" },
         { "name": "user_guid", "type": "uuid" },
-        { "name": "role", "type": "string" }
+        { "name": "role", "type": "membership_role" }
       ]
     },
 
@@ -94,7 +94,7 @@
       "fields": [
         { "name": "organization_guid", "type": "uuid" },
         { "name": "user_guid", "type": "uuid" },
-        { "name": "role", "type": "string" }
+        { "name": "role", "type": "membership_role" }
       ]
     },
 
