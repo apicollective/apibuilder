@@ -13,6 +13,10 @@
     }
   },
 
+  "imports": [
+    { "uri": "https://app.apibuilder.io/apicollective/apibuilder-common/latest/service.json" }
+  ],
+
   "enums": {
     "task_type": {
       "values": [
@@ -80,15 +84,14 @@
       "fields": [
         { "name": "organization_guid", "type": "uuid" },
         { "name": "user_guid", "type": "uuid" },
-        { "name": "role", "type": "string" }
+        { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role" }
       ]
     },
 
     "email_data_membership_request_declined": {
       "fields": [
         { "name": "organization_guid", "type": "uuid" },
-        { "name": "user_guid", "type": "uuid" },
-        { "name": "role", "type": "string" }
+        { "name": "user_guid", "type": "uuid" }
       ]
     },
 

@@ -1,13 +1,12 @@
 package db
 
+import anorm._
 import io.apibuilder.api.v0.models.{Domain, Organization, User}
 import io.flow.postgresql.Query
-import lib.{Role, UrlKey}
-import anorm._
-import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.json._
+
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 case class OrganizationDomain(guid: UUID, organizationGuid: UUID, domain: Domain)
 

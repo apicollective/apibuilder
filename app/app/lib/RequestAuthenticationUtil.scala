@@ -1,9 +1,9 @@
 package lib
 
 import javax.inject.Inject
-
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
+import io.apibuilder.common.v0.models.MembershipRole
 import models.MainTemplate
 
 import scala.concurrent.ExecutionContext
@@ -16,8 +16,8 @@ case class ApibuilderRequestData(
   org: Option[Organization],
   memberships: Seq[Membership]
 ) {
-  val isAdmin = memberships.exists { membership => Role.fromString(membership.role).contains(Role.Admin) }
-  val isMember = isAdmin || memberships.exists { membership => Role.fromString(membership.role).contains(Role.Member) }
+  val isAdmin: Boolean = memberships.exists(_.role == MembershipRole.Admin)
+  val isMember: Boolean = isAdmin || memberships.exists(_.role == MembershipRole.Member)
 
   def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(

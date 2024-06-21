@@ -3,9 +3,10 @@ package db
 import anorm.JodaParameterMetaData._
 import anorm._
 import io.apibuilder.api.v0.models.User
+import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated
 import io.flow.postgresql.Query
-import lib.{Role, TokenGenerator}
+import lib.TokenGenerator
 import org.joda.time.DateTime
 import play.api.db._
 import processor.EmailProcessorQueue
@@ -90,7 +91,7 @@ class EmailVerificationsDao @Inject() (
 
     emailVerificationConfirmationsDao.upsert(updatingUserGuid, verification)
     organizationsDao.findAllByEmailDomain(verification.email).foreach { org =>
-      membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, Role.Member).foreach { request =>
+      membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, MembershipRole.Member).foreach { request =>
         membershipRequestsDao.acceptViaEmailVerification(updatingUserGuid, request, verification.email)
       }
     }

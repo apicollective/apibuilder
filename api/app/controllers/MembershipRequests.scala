@@ -1,10 +1,12 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Organization, User}
-import io.apibuilder.api.v0.models.json._
-import lib.{Role, Validation}
 import db.{MembershipRequestsDao, OrganizationsDao, UsersDao}
+import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.{Organization, User}
+import io.apibuilder.common.v0.models.MembershipRole
+import lib.Validation
 import play.api.libs.json._
+
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
@@ -32,7 +34,7 @@ class MembershipRequests @Inject() (
     organizationGuid: Option[UUID],
     organizationKey: Option[String],
     userGuid: Option[UUID],
-    role: Option[String],
+    role: Option[MembershipRole],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -68,12 +70,12 @@ class MembershipRequests @Inject() (
               }
 
               case Some(user: User) => {
-                Role.fromString(form.role) match {
+                MembershipRole.fromString(form.role) match {
                   case None => {
                     Conflict(Json.toJson(Validation.error("Invalid role")))
                   }
 
-                  case Some(role: Role) => {
+                  case Some(role) => {
                     val mr = membershipRequestsDao.upsert(request.user, org, user, role)
                     Ok(Json.toJson(mr))
                   }

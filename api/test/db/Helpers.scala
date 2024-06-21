@@ -1,13 +1,13 @@
 package db
 
+import helpers.RandomHelpers
 import io.apibuilder.api.v0.models._
+import io.apibuilder.common.v0.models.MembershipRole
+import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.{models => spec}
 import play.api.libs.json.Json
-import lib.Role
-import java.util.UUID
 
-import helpers.RandomHelpers
-import io.apibuilder.spec.v0.models.Service
+import java.util.UUID
 
 trait Helpers extends util.Daos with RandomHelpers {
 
@@ -152,7 +152,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createMembership(
     org: Organization,
     user: User = createRandomUser(),
-    role: Role = Role.Admin
+    role: MembershipRole = MembershipRole.Admin
   ): io.apibuilder.api.v0.models.Membership = {
     val request = membershipRequestsDao.upsert(testUser, org, user, role)
     membershipRequestsDao.accept(testUser, request)

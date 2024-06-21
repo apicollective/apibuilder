@@ -1,7 +1,7 @@
 package db
 
 import io.apibuilder.api.v0.models.{Organization, Publication}
-import lib.Role
+import io.apibuilder.common.v0.models.MembershipRole
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -11,7 +11,7 @@ class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
   "when a user loses admin role, we remove subscriptions that require admin" in {
     val user = createRandomUser()
-    val membership = createMembership(org, user, Role.Admin)
+    val membership = createMembership(org, user, MembershipRole.Admin)
 
     Publication.all.foreach { publication => createSubscription(org, user, publication) }
 

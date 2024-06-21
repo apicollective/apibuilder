@@ -1,12 +1,13 @@
+@import io.apibuilder.common.v0.models.MembershipRole
 @(
   org: io.apibuilder.api.v0.models.Organization,
   user: io.apibuilder.api.v0.models.User,
-  role: lib.Role
+  role: MembershipRole
 )
 
 <p>
 
-  @if(role == lib.Role.Admin) {
+  @if(role == MembershipRole.Admin) {
     You are now an administrator of @org.name.
   } else {
     Your request to join @org.name has been accepted!

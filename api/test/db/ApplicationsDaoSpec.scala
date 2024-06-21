@@ -1,12 +1,12 @@
 package db
 
-import java.util.UUID
-
 import io.apibuilder.api.v0.models._
-import lib.Role
+import io.apibuilder.common.v0.models.MembershipRole
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
+
+import java.util.UUID
 
 class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
@@ -265,13 +265,13 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
           initialize()
           val myUser = createRandomUser()
           val myOrg = createOrganization(visibility = Visibility.Public)
-          createMembership(myOrg, myUser, Role.Member)
+          createMembership(myOrg, myUser, MembershipRole.Member)
           val myPrivateApp = upsertApplication(org = myOrg)
           val myPublicApp = upsertApplication(org = myOrg, visibility = Visibility.Public)
 
           val otherUser = createRandomUser()
           val otherOrg = createOrganization(visibility = Visibility.Public)
-          createMembership(otherOrg, otherUser, Role.Member)
+          createMembership(otherOrg, otherUser, MembershipRole.Member)
           val otherPrivateApp = upsertApplication(org = otherOrg)
           val otherPublicApp = upsertApplication(org = otherOrg, visibility = Visibility.Public)
 

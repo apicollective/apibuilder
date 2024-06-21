@@ -29,7 +29,7 @@
 
           @helper.select(
               addForm("role"),
-              options = lib.Role.All.map( r => (r.key, r.name) ),
+              options = io.apibuilder.common.v0.models.MembershipRole.all.map { r => (r.toString, lib.Text.initCap(r.toString)) },
               Symbol("_label") -> "Role",
               Symbol("_error") -> addForm.error("role")
           )

@@ -2,6 +2,7 @@ package controllers
 
 import lib._
 import io.apibuilder.api.v0.models.{Organization, User}
+import io.apibuilder.common.v0.models.MembershipRole
 import models._
 import play.api.data._
 import play.api.data.Forms._
@@ -48,7 +49,7 @@ class Members @Inject() (
 
   def add(orgKey: String) = IdentifiedOrg { implicit request =>
     request.withMember {
-      val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = Role.Member.key, email = "", nickname = ""))
+      val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = MembershipRole.Member.toString, email = "", nickname = ""))
 
       val tpl = request.mainTemplate(Some("Add Member")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
       Ok(views.html.members.add(tpl, filledForm))
@@ -78,7 +79,7 @@ class Members @Inject() (
               }
 
               case Some(user: User) => {
-                val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
+                val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, MembershipRole(valid.role)), 1500.millis)
                 Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
                 Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
               }
@@ -108,12 +109,13 @@ class Members @Inject() (
         membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
         memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
       } yield {
-        memberships.find(_.role == Role.Member.key) match {
-          case None => createMembership(request.api, request.org, membership.get.user.guid, Role.Member)
+        def findByRole(r: MembershipRole) = memberships.find(_.role == r)
+        findByRole(MembershipRole.Member) match {
+          case None => createMembership(request.api, request.org, membership.get.user.guid, MembershipRole.Member)
           case Some(_) => // no-op
         }
 
-        memberships.find(_.role == Role.Admin.key) match {
+        findByRole(MembershipRole.Admin) match {
           case None => // no-op
           case Some(m) => {
             Await.result(
@@ -134,12 +136,12 @@ class Members @Inject() (
         membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
         memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
       } yield {
-        memberships.find(_.role == Role.Admin.key) match {
-          case None => createMembership(request.api, request.org, membership.get.user.guid, Role.Admin)
+        memberships.find(_.role == MembershipRole.Admin) match {
+          case None => createMembership(request.api, request.org, membership.get.user.guid, MembershipRole.Admin)
           case Some(_) => // no-op
         }
 
-        memberships.find(_.role == Role.Member.key) match {
+        memberships.find(_.role == MembershipRole.Member) match {
           case None => // no-op
           case Some(m) => {
             Await.result(
@@ -168,9 +170,9 @@ class Members @Inject() (
     }
   }
 
-  private[this] def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: Role): Unit = {
+  private[this] def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: MembershipRole): Unit = {
     val membershipRequest = Await.result(
-      api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.key),
+      api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role),
       1500.millis
     )
     Await.result(
@@ -192,7 +194,7 @@ object Members {
   case class AddMemberData(role: String, email: String, nickname: String)
   private[controllers] val addMemberForm = Form(
     mapping(
-      "role" -> default(nonEmptyText, lib.Role.Member.name),
+      "role" -> default(nonEmptyText, MembershipRole.Member.toString),
       "email" -> text,
       "nickname" -> text
     )(AddMemberData.apply)(AddMemberData.unapply)

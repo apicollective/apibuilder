@@ -2,10 +2,9 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
-import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
-import lib.Role
 import org.joda.time.DateTime
 import play.api.db._
 import processor.EmailProcessorQueue
@@ -51,7 +50,7 @@ class MembershipsDao @Inject() (
       join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
+  def upsert(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): Membership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r) => r
       case None => create(createdBy, organization, user, role)
@@ -60,8 +59,8 @@ class MembershipsDao @Inject() (
     // If we made this user an admin, and s/he already exists as a
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
-    if (role == Role.Admin) {
-      findByOrganizationAndUserAndRole(Authorization.All, organization, user, Role.Member).foreach { membership =>
+    if (role == MembershipRole.Admin) {
+      findByOrganizationAndUserAndRole(Authorization.All, organization, user, MembershipRole.Member).foreach { membership =>
         softDelete(user, membership)
       }
     }
@@ -69,18 +68,18 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): Membership = {
     db.withTransaction { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: MembershipRole): Membership = {
     val membership = Membership(
       guid = UUID.randomUUID,
       organization = organization,
       user = user,
-      role = role.key,
+      role = role,
       audit = Audit(
         createdAt = DateTime.now,
         createdBy = ReferenceGuid(user.guid),
@@ -93,7 +92,7 @@ class MembershipsDao @Inject() (
       "guid" -> membership.guid,
       "organization_guid" -> membership.organization.guid,
       "user_guid" -> membership.user.guid,
-      "role" -> membership.role,
+      "role" -> membership.role.toString,
       "created_by_guid" -> createdBy
     ).execute()
 
@@ -116,7 +115,7 @@ class MembershipsDao @Inject() (
     user: User,
     organization: Organization
   ): Boolean = {
-    findByOrganizationAndUserAndRole(Authorization.All, organization, user, Role.Admin) match {
+    findByOrganizationAndUserAndRole(Authorization.All, organization, user, MembershipRole.Admin) match {
       case None => false
       case Some(_) => true
     }
@@ -141,16 +140,16 @@ class MembershipsDao @Inject() (
     authorization: Authorization,
     organization: Organization,
     user: User,
-    role: Role
+    role: MembershipRole
   ): Option[Membership] = {
-    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key), limit = Some(1)).headOption
+    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role), limit = Some(1)).headOption
   }
 
   def findByOrganizationAndUserAndRoles(
     authorization: Authorization,
     organization: Organization,
     user: User,
-    roles: Seq[Role]
+    roles: Seq[MembershipRole]
   ): Seq[Membership] = {
     findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), roles = Some(roles), limit = None)
   }
@@ -165,8 +164,8 @@ class MembershipsDao @Inject() (
     organizationGuid: Option[UUID] = None,
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
-    role: Option[String] = None,
-    roles: Option[Seq[Role]] = None,
+    role: Option[MembershipRole] = None,
+    roles: Option[Seq[MembershipRole]] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Option[Long],
     offset: Long = 0
@@ -182,8 +181,8 @@ class MembershipsDao @Inject() (
             "memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
           }
         ).bind("organization_key", organizationKey).
-        equals("memberships.role", role).
-        optionalIn("memberships.role", roles.map(_.map(_.key))).
+        equals("memberships.role", role.map(_.toString)).
+        optionalIn("memberships.role", roles.map(_.map(_.toString))).
         and(isDeleted.map(Filters.isDeleted("memberships", _))).
         orderBy("lower(users.name), lower(users.email)").
         optionalLimit(limit).

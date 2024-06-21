@@ -97,7 +97,6 @@
         { "name": "desc" }
       ]
     }
-
   },
 
   "models": {
@@ -263,7 +262,7 @@
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership." },
         { "name": "user", "type": "user" },
         { "name": "organization", "type": "organization" },
-        { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" },
+        { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
@@ -274,7 +273,7 @@
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership request." },
         { "name": "user", "type": "user" },
         { "name": "organization", "type": "organization" },
-        { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" },
+        { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" },
         { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
@@ -919,7 +918,7 @@
             { "name": "org_guid", "type": "uuid", "required": false },
             { "name": "org_key", "type": "string", "required": false },
             { "name": "user_guid", "type": "uuid", "required": false },
-            { "name": "role", "type": "string", "required": false },
+            { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
@@ -958,7 +957,7 @@
             { "name": "org_guid", "type": "uuid", "required": false },
             { "name": "org_key", "type": "string", "required": false },
             { "name": "user_guid", "type": "uuid", "required": false },
-            { "name": "role", "type": "string", "required": false },
+            { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
@@ -973,7 +972,7 @@
           "parameters": [
             { "name": "org_guid", "type": "uuid" },
             { "name": "user_guid", "type": "uuid" },
-            { "name": "role", "type": "string" }
+            { "name": "role", "type": "io.apibuilder.common.v0.enums.membership_role" }
           ],
           "responses": {
             "200": { "type": "membership_request" },

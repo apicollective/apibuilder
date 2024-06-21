@@ -102,6 +102,7 @@ lazy val api = project
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
+    routesImport += "io.apibuilder.common.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release",
@@ -141,6 +142,7 @@ lazy val app = project
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
+    routesImport += "io.apibuilder.common.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       guice,
