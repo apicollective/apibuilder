@@ -85,23 +85,19 @@ class MembershipRequestsDao @Inject() (
    */
   def accept(createdBy: User, request: MembershipRequest): Unit = {
     assertUserCanReview(createdBy, request)
-    val r = MembershipRole(request.role)
-    doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as $r")
+    doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${request.role}")
   }
 
   private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String): Unit = {
-    val r = MembershipRole(request.role)
-    doAccept(createdBy, request, s"$email joined as $r by verifying their email address")
+    doAccept(createdBy, request, s"$email joined as ${request.role} by verifying their email address")
   }
 
   private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
-    val r = MembershipRole(request.role)
-
     db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy, request.organization, message)
       dbHelpers.delete(c, createdBy, request.guid)
-      membershipsDao.upsert(createdBy, request.organization, request.user, r)
-      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, r))
+      membershipsDao.upsert(createdBy, request.organization, request.user, request.role)
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, request.role))
     }
   }
 
@@ -111,13 +107,12 @@ class MembershipRequestsDao @Inject() (
    */
   def decline(createdBy: User, request: MembershipRequest): Unit = {
     assertUserCanReview(createdBy, request)
-    val r = MembershipRole(request.role)
 
-    val message = s"Declined membership request for ${request.user.email} to join as $r"
+    val message = s"Declined membership request for ${request.user.email} to join as ${request.role}"
     db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy.guid, request.organization, message)
       softDelete(createdBy, request)
-      emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid, r))
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid))
     }
   }
 

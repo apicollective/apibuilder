@@ -34,7 +34,7 @@ class MembershipRequests @Inject() (
     organizationGuid: Option[UUID],
     organizationKey: Option[String],
     userGuid: Option[UUID],
-    role: Option[String],
+    role: Option[MembershipRole],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
