@@ -79,7 +79,7 @@ class MembershipsDao @Inject() (
       guid = UUID.randomUUID,
       organization = organization,
       user = user,
-      role = role.toString,
+      role = role,
       audit = Audit(
         createdAt = DateTime.now,
         createdBy = ReferenceGuid(user.guid),
@@ -92,7 +92,7 @@ class MembershipsDao @Inject() (
       "guid" -> membership.guid,
       "organization_guid" -> membership.organization.guid,
       "user_guid" -> membership.user.guid,
-      "role" -> membership.role,
+      "role" -> membership.role.toString,
       "created_by_guid" -> createdBy
     ).execute()
 
@@ -164,7 +164,7 @@ class MembershipsDao @Inject() (
     organizationGuid: Option[UUID] = None,
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
-    role: Option[String] = None,
+    role: Option[MembershipRole] = None,
     roles: Option[Seq[MembershipRole]] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Option[Long],
@@ -181,7 +181,7 @@ class MembershipsDao @Inject() (
             "memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
           }
         ).bind("organization_key", organizationKey).
-        equals("memberships.role", role).
+        equals("memberships.role", role.map(_.toString)).
         optionalIn("memberships.role", roles.map(_.map(_.toString))).
         and(isDeleted.map(Filters.isDeleted("memberships", _))).
         orderBy("lower(users.name), lower(users.email)").

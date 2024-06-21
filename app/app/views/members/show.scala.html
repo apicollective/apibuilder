@@ -40,7 +40,7 @@
            <td>@member.role</td>
            @if(isAdmin) {
              <td>
-               @if(member.role == lib.Role.Member.key) {
+               @if(member.role == io.apibuilder.common.v0.models.MembershipRole.Member) {
                  <a class="postForm" href="@routes.Members.postMakeAdmin(tpl.org.get.key, member.guid)">Make admin</a>
                } else {
                  <a class="postForm" href="@routes.Members.postRevokeAdmin(tpl.org.get.key, member.guid)">Revoke admin</a>

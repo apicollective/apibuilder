@@ -1,10 +1,12 @@
 package controllers
 
-import io.apibuilder.api.v0.models.json._
 import db.MembershipsDao
+import io.apibuilder.api.v0.models.json._
+import io.apibuilder.common.v0.models.MembershipRole
+import play.api.libs.json.Json
+
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
 
 @Singleton
 class Memberships @Inject() (
@@ -13,12 +15,12 @@ class Memberships @Inject() (
 ) extends ApiBuilderController {
 
   def get(
-    organizationGuid: Option[UUID],
-    organizationKey: Option[String],
-    userGuid: Option[UUID],
-    role: Option[String],
-    limit: Long = 25,
-    offset: Long = 0
+           organizationGuid: Option[UUID],
+           organizationKey: Option[String],
+           userGuid: Option[UUID],
+           role: Option[MembershipRole],
+           limit: Long = 25,
+           offset: Long = 0
   ) = Identified { request =>
     Ok(
       Json.toJson(

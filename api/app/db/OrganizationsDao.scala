@@ -1,18 +1,16 @@
 package db
 
-import io.apibuilder.api.v0.models._
-import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
-import io.flow.postgresql.Query
-import core.Role
-import lib.{Misc, UrlKey, Validation}
 import anorm._
-import javax.inject.{Inject, Singleton}
-
-import play.api.db._
-import java.util.UUID
-
+import io.apibuilder.api.v0.models._
+import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
+import io.flow.postgresql.Query
+import lib.{Misc, UrlKey, Validation}
 import org.joda.time.DateTime
+import play.api.db._
 import play.api.inject.Injector
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class OrganizationsDao @Inject() (
@@ -146,8 +144,8 @@ class OrganizationsDao @Inject() (
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     db.withTransaction { implicit c =>
       val org = create(c, user, form)
-      membershipsDao.create(c, user.guid, org, user, Role.Admin)
-      organizationLogsDao.create(c, user.guid, org, s"Created organization and joined as ${Role.Admin.name}")
+      membershipsDao.create(c, user.guid, org, user, MembershipRole.Admin)
+      organizationLogsDao.create(c, user.guid, org, s"Created organization and joined as ${MembershipRole.Admin}")
       org
     }
   }
