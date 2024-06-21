@@ -560,14 +560,6 @@
           "responses": {
             "200": { "type": "io.apibuilder.generator.v0.models.healthcheck" }
           }
-        },
-
-        {
-          "method": "GET",
-          "path": "/migrate",
-          "responses": {
-            "200": { "type": "map[string]" }
-          }
         }
       ]
     },
