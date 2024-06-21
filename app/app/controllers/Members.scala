@@ -136,12 +136,12 @@ class Members @Inject() (
         membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
         memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
       } yield {
-        memberships.find(_.role == MembershipRole.Admin.toString) match {
+        memberships.find(_.role == MembershipRole.Admin) match {
           case None => createMembership(request.api, request.org, membership.get.user.guid, MembershipRole.Admin)
           case Some(_) => // no-op
         }
 
-        memberships.find(_.role == MembershipRole.Member.toString) match {
+        memberships.find(_.role == MembershipRole.Member) match {
           case None => // no-op
           case Some(m) => {
             Await.result(
