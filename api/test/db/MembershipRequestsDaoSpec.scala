@@ -117,7 +117,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     membershipRequestsDao.decline(testUser, request)
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member) must be(None)
     organizationLogsDao.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message) must equal(
-      Seq("Declined membership request for %s to join as Member".format(member.email))
+      Seq("Declined membership request for %s to join as member".format(member.email))
     )
   }
 
