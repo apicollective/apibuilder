@@ -3,6 +3,7 @@ apicollective:
   apibuilder-api:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderApiV0Conversions.scala
+    - api/app/generated/ApicollectiveApibuilderApiV0Parsers.scala
     play_2_8_client:
     - generated/app/ApicollectiveApibuilderApiV0Client.scala
     play_2_x_routes:

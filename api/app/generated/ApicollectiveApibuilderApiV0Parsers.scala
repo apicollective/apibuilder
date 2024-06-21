@@ -772,7 +772,7 @@ package io.apibuilder.api.v0.anorm.parsers {
       SqlParser.get[_root_.java.util.UUID](prefixOpt.getOrElse("") + guid) ~
       io.apibuilder.api.v0.anorm.parsers.User.parserWithPrefix(prefixOpt.getOrElse("") + userPrefix) ~
       io.apibuilder.api.v0.anorm.parsers.Organization.parserWithPrefix(prefixOpt.getOrElse("") + organizationPrefix) ~
-      SqlParser.str(prefixOpt.getOrElse("") + role) ~
+      io.apibuilder.common.v0.anorm.parsers.MembershipRole.parser(prefixOpt.getOrElse("") + role) ~
       io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix(prefixOpt.getOrElse("") + auditPrefix) map {
         case guid ~ user ~ organization ~ role ~ audit => {
           io.apibuilder.api.v0.models.Membership(
@@ -803,7 +803,7 @@ package io.apibuilder.api.v0.anorm.parsers {
       SqlParser.get[_root_.java.util.UUID](prefixOpt.getOrElse("") + guid) ~
       io.apibuilder.api.v0.anorm.parsers.User.parserWithPrefix(prefixOpt.getOrElse("") + userPrefix) ~
       io.apibuilder.api.v0.anorm.parsers.Organization.parserWithPrefix(prefixOpt.getOrElse("") + organizationPrefix) ~
-      SqlParser.str(prefixOpt.getOrElse("") + role) ~
+      io.apibuilder.common.v0.anorm.parsers.MembershipRole.parser(prefixOpt.getOrElse("") + role) ~
       io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix(prefixOpt.getOrElse("") + auditPrefix) map {
         case guid ~ user ~ organization ~ role ~ audit => {
           io.apibuilder.api.v0.models.MembershipRequest(
