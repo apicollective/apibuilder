@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.task.v0.models.MembershipRole
+import io.apibuilder.common.v0.models.MembershipRole
 
 case class Role(key: MembershipRole, name: String)
 
