@@ -43,8 +43,8 @@ class EmailProcessor @Inject()(
       case EmailDataEmailVerificationCreated(guid) => emailVerificationCreated(guid).validNec
       case EmailDataMembershipCreated(guid) => membershipCreated(guid).validNec
       case EmailDataMembershipRequestCreated(guid) => membershipRequestCreated(guid).validNec
-      case EmailDataMembershipRequestAccepted(orgGuid, userGuid, role) => membershipRequestAccepted(orgGuid, userGuid, role)
-      case EmailDataMembershipRequestDeclined(orgGuid, userGuid) => membershipRequestDeclined(orgGuid, userGuid)
+      case EmailDataMembershipRequestAccepted(orgGuid, userGuid, role) => membershipRequestAccepted(orgGuid, userGuid, role).validNec
+      case EmailDataMembershipRequestDeclined(orgGuid, userGuid) => membershipRequestDeclined(orgGuid, userGuid).validNec
       case EmailDataPasswordResetRequestCreated(guid) => passwordResetRequestCreated(guid).validNec
       case EmailDataUndefinedType(description) => s"Invalid email data type '$description'".invalidNec
     }

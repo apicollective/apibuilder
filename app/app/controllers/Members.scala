@@ -79,7 +79,7 @@ class Members @Inject() (
               }
 
               case Some(user: User) => {
-                val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
+                val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, MembershipRole(valid.role)), 1500.millis)
                 Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
                 Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
               }
@@ -109,7 +109,7 @@ class Members @Inject() (
         membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
         memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
       } yield {
-        def findByRole(r: MembershipRole) =memberships.find { m => MembershipRole(m.role) == r }
+        def findByRole(r: MembershipRole) = memberships.find(_.role == r)
         findByRole(MembershipRole.Member) match {
           case None => createMembership(request.api, request.org, membership.get.user.guid, MembershipRole.Member)
           case Some(_) => // no-op
@@ -172,7 +172,7 @@ class Members @Inject() (
 
   private[this] def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: MembershipRole): Unit = {
     val membershipRequest = Await.result(
-      api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.toString),
+      api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role),
       1500.millis
     )
     Await.result(

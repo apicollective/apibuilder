@@ -16,8 +16,8 @@ case class ApibuilderRequestData(
   org: Option[Organization],
   memberships: Seq[Membership]
 ) {
-  val isAdmin: Boolean = memberships.exists { membership => MembershipRole.fromString(membership.role).contains(MembershipRole.Admin) }
-  val isMember: Boolean = isAdmin || memberships.exists { membership => MembershipRole.fromString(membership.role).contains(MembershipRole.Member) }
+  val isAdmin: Boolean = memberships.exists(_.role == MembershipRole.Admin)
+  val isMember: Boolean = isAdmin || memberships.exists(_.role == MembershipRole.Member)
 
   def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(

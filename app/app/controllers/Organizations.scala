@@ -76,16 +76,16 @@ class Organizations @Inject() (
       membershipsResponse <- request.api.Memberships.get(
         orgKey = Some(orgKey),
         userGuid = Some(request.user.guid),
-        role = Some(MembershipRole.Member.toString)
+        role = Some(MembershipRole.Member)
       )
       membershipRequestResponse <- request.api.MembershipRequests.get(
         orgKey = Some(orgKey),
         userGuid = Some(request.user.guid),
-        role = Some(MembershipRole.Member.toString)
+        role = Some(MembershipRole.Member)
       )
       adminsResponse <- request.api.Memberships.get(
         orgKey = Some(orgKey),
-        role = Some(MembershipRole.Admin.toString)
+        role = Some(MembershipRole.Admin)
       )
     } yield {
       orgResponse.headOption match {
@@ -115,7 +115,7 @@ class Organizations @Inject() (
           Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
         }
         case Some(org: Organization) => {
-          request.api.MembershipRequests.post(org.guid, request.user.guid, MembershipRole.Member.toString).map { _ =>
+          request.api.MembershipRequests.post(org.guid, request.user.guid, MembershipRole.Member).map { _ =>
             Redirect(routes.Organizations.requestMembership(orgKey)).flashing(
               "success" -> s"We have submitted your membership request to join ${org.name}"
             )
