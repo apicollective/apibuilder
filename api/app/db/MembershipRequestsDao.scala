@@ -107,7 +107,7 @@ class MembershipRequestsDao @Inject() (
       organizationLogsDao.create(createdBy, request.organization, message)
       dbHelpers.delete(c, createdBy, request.guid)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
-      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, r.toString))
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, r.key))
     }
   }
 

@@ -27,6 +27,12 @@
         { "name": "diff_version" },
         { "name": "user_created" }
       ]
+    },
+    "membership_role": {
+      "values": [
+        { "name": "member" },
+        { "name": "admin" }
+      ]
     }
   },
 
