@@ -2997,15 +2997,6 @@ package io.apibuilder.api.v0 {
           case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
-
-      override def getMigrate(
-        requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, String]] = {
-        _executeRequest("GET", s"/_internal_/migrate", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("Map[String, String]", r, _.validate[Map[String, String]])
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
-        }
-      }
     }
 
     object Items extends Items {
@@ -4174,10 +4165,6 @@ package io.apibuilder.api.v0 {
     def getHealthcheck(
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.generator.v0.models.Healthcheck]
-
-    def getMigrate(
-      requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, String]]
   }
 
   trait Items {
