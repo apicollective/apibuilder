@@ -13,7 +13,10 @@ apicollective:
   apibuilder-common:
     anorm_2_8_parsers:
     - api/app/generated/ApicollectiveApibuilderCommonV0Conversions.scala
-    - api/app/generated/ApicollectiveApibuilderCommonV0Parsers.scala
+    play_2_8_client:
+    - generated/app/ApicollectiveApibuilderCommonV0Client.scala
+    play_2_8_mock_client:
+    - generated/app/ApicollectiveApibuilderCommonV0MockClient.scala
     play_2_x_json:
     - generated/app/ApicollectiveApibuilderCommonV0Models.scala
   apibuilder-generator:

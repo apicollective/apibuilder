@@ -19,8 +19,8 @@ code:
     apibuilder-common:
       version: latest
       generators:
-        play_2_x_json: generated/app
-        anorm_2_8_parsers: api/app/generated
+        play_2_8_client: generated/app
+        play_2_8_mock_client: generated/app
     apibuilder-generator:
       version: latest
       generators:
