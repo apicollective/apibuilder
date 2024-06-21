@@ -65,7 +65,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
   }
   
   "findAll for organization key" in {
-    val otherOrg = createOrganization()
+    createOrganization()
     val newOrg = createOrganization()
     val request = membershipRequestsDao.upsert(testUser, newOrg, member, MembershipRole.Admin)
     Seq(request) must equal(
@@ -104,7 +104,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member).get.user must equal(member)
 
     organizationLogsDao.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message) must equal(
-      Seq("Accepted membership request for %s to join as Member".format(member.email))
+      Seq("Accepted membership request for %s to join as member".format(member.email))
     )
   }
   
