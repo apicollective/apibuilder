@@ -35,8 +35,7 @@ package io.apibuilder.task.v0.models {
 
   final case class EmailDataMembershipRequestDeclined(
     organizationGuid: _root_.java.util.UUID,
-    userGuid: _root_.java.util.UUID,
-    role: io.apibuilder.common.v0.models.MembershipRole
+    userGuid: _root_.java.util.UUID
   ) extends EmailData
 
   final case class EmailDataPasswordResetRequestCreated(
@@ -274,15 +273,13 @@ package io.apibuilder.task.v0.models {
       for {
         organizationGuid <- (__ \ "organization_guid").read[_root_.java.util.UUID]
         userGuid <- (__ \ "user_guid").read[_root_.java.util.UUID]
-        role <- (__ \ "role").read[io.apibuilder.common.v0.models.MembershipRole]
-      } yield EmailDataMembershipRequestDeclined(organizationGuid, userGuid, role)
+      } yield EmailDataMembershipRequestDeclined(organizationGuid, userGuid)
     }
 
     def jsObjectEmailDataMembershipRequestDeclined(obj: io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "organization_guid" -> play.api.libs.json.JsString(obj.organizationGuid.toString),
-        "user_guid" -> play.api.libs.json.JsString(obj.userGuid.toString),
-        "role" -> play.api.libs.json.JsString(obj.role.toString)
+        "user_guid" -> play.api.libs.json.JsString(obj.userGuid.toString)
       )
     }
 

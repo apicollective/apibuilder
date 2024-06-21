@@ -42,8 +42,7 @@ package io.apibuilder.task.v0.mock {
 
     def makeEmailDataMembershipRequestDeclined(): io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined = io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined(
       organizationGuid = _root_.java.util.UUID.randomUUID,
-      userGuid = _root_.java.util.UUID.randomUUID,
-      role = io.apibuilder.common.v0.mock.Factories.makeMembershipRole()
+      userGuid = _root_.java.util.UUID.randomUUID
     )
 
     def makeEmailDataPasswordResetRequestCreated(): io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated = io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated(

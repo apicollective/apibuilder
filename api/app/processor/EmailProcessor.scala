@@ -4,9 +4,10 @@ import cats.data.ValidatedNec
 import cats.implicits._
 import db.{Authorization, InternalTasksDao, OrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Publication
+import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models._
 import io.apibuilder.task.v0.models.json._
-import lib.{AppConfig, EmailUtil, Person, Emails, Role}
+import lib.{AppConfig, EmailUtil, Emails, Person}
 import play.api.libs.json.Json
 
 import java.sql.Connection
@@ -43,7 +44,7 @@ class EmailProcessor @Inject()(
       case EmailDataMembershipCreated(guid) => membershipCreated(guid).validNec
       case EmailDataMembershipRequestCreated(guid) => membershipRequestCreated(guid).validNec
       case EmailDataMembershipRequestAccepted(orgGuid, userGuid, role) => membershipRequestAccepted(orgGuid, userGuid, role)
-      case EmailDataMembershipRequestDeclined(orgGuid, userGuid, role) => membershipRequestDeclined(orgGuid, userGuid, role)
+      case EmailDataMembershipRequestDeclined(orgGuid, userGuid) => membershipRequestDeclined(orgGuid, userGuid)
       case EmailDataPasswordResetRequestCreated(guid) => passwordResetRequestCreated(guid).validNec
       case EmailDataUndefinedType(description) => s"Invalid email data type '$description'".invalidNec
     }
@@ -99,34 +100,26 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def validateRole(role: String): ValidatedNec[String, Role] = {
-    Role.fromString(role).toValidNec(s"Invalid role '$role'")
-  }
-
-  private[this] def membershipRequestAccepted(orgGuid: UUID, userGuid: UUID, role: String): ValidatedNec[String, Unit] = {
-    validateRole(role).map { vRole =>
-      organizationsDao.findByGuid(Authorization.All, orgGuid).foreach { org =>
-        usersDao.findByGuid(userGuid).foreach { user =>
-          email.sendHtml(
-            to = Person(user),
-            subject = s"Welcome to ${org.name}",
-            body = views.html.emails.membershipRequestAccepted(org, user, vRole).toString
-          )
-        }
+  private[this] def membershipRequestAccepted(orgGuid: UUID, userGuid: UUID, role: MembershipRole): Unit = {
+    organizationsDao.findByGuid(Authorization.All, orgGuid).foreach { org =>
+      usersDao.findByGuid(userGuid).foreach { user =>
+        email.sendHtml(
+          to = Person(user),
+          subject = s"Welcome to ${org.name}",
+          body = views.html.emails.membershipRequestAccepted(org, user, role).toString
+        )
       }
     }
   }
 
-  private[this] def membershipRequestDeclined(orgGuid: UUID, userGuid: UUID, role: String): ValidatedNec[String, Unit] = {
-    validateRole(role).map { vRole =>
-      organizationsDao.findByGuid(Authorization.All, orgGuid).foreach { org =>
-        usersDao.findByGuid(userGuid).foreach { user =>
-          email.sendHtml(
-            to = Person(user),
-            subject = s"Your Membership Request to join ${org.name} was declined",
-            body = views.html.emails.membershipRequestDeclined(org, user, vRole).toString
-          )
-        }
+  private[this] def membershipRequestDeclined(orgGuid: UUID, userGuid: UUID): Unit = {
+    organizationsDao.findByGuid(Authorization.All, orgGuid).foreach { org =>
+      usersDao.findByGuid(userGuid).foreach { user =>
+        email.sendHtml(
+          to = Person(user),
+          subject = s"Your Membership Request to join ${org.name} was declined",
+          body = views.html.emails.membershipRequestDeclined(org, user).toString
+        )
       }
     }
   }

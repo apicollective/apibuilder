@@ -1,15 +1,10 @@
 @(
   org: io.apibuilder.api.v0.models.Organization,
-  user: io.apibuilder.api.v0.models.User,
-  role: lib.Role
+  user: io.apibuilder.api.v0.models.User
 )
 
 <p>
 
-  @if(role == lib.Role.Admin) {
-    You are now an administrator of @org.name.
-  } else {
-    Your request to join @org.name has been declined.
-  }
+  Your request to join @org.name has been declined.
 
 </p>
