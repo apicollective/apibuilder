@@ -10,6 +10,7 @@ import play.api.data.Forms._
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
 import io.apibuilder.api.v0.Client
+import io.apibuilder.common.v0.models.MembershipRole
 import play.api.mvc.{Action, AnyContent}
 
 class Organizations @Inject() (
@@ -75,16 +76,16 @@ class Organizations @Inject() (
       membershipsResponse <- request.api.Memberships.get(
         orgKey = Some(orgKey),
         userGuid = Some(request.user.guid),
-        role = Some(Role.Member.key)
+        role = Some(MembershipRole.Member.toString)
       )
       membershipRequestResponse <- request.api.MembershipRequests.get(
         orgKey = Some(orgKey),
         userGuid = Some(request.user.guid),
-        role = Some(Role.Member.key)
+        role = Some(MembershipRole.Member.toString)
       )
       adminsResponse <- request.api.Memberships.get(
         orgKey = Some(orgKey),
-        role = Some(Role.Admin.key)
+        role = Some(MembershipRole.Admin.toString)
       )
     } yield {
       orgResponse.headOption match {
@@ -114,7 +115,7 @@ class Organizations @Inject() (
           Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
         }
         case Some(org: Organization) => {
-          request.api.MembershipRequests.post(org.guid, request.user.guid, Role.Member.key).map { _ =>
+          request.api.MembershipRequests.post(org.guid, request.user.guid, MembershipRole.Member.toString).map { _ =>
             Redirect(routes.Organizations.requestMembership(orgKey)).flashing(
               "success" -> s"We have submitted your membership request to join ${org.name}"
             )

@@ -21,6 +21,7 @@ code:
       generators:
         play_2_8_client: generated/app
         play_2_8_mock_client: generated/app
+        anorm_2_8_parsers: api/app/generated
     apibuilder-generator:
       version: latest
       generators:

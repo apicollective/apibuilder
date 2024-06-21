@@ -1,12 +1,12 @@
 package controllers
 
 import javax.inject.Inject
-
 import com.google.inject.ImplementedBy
 import db.{Authorization, MembershipsDao, OrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
-import lib.{RequestAuthenticationUtil, Role, Validation}
+import io.apibuilder.common.v0.models.MembershipRole
+import lib.{RequestAuthenticationUtil, Validation}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 
@@ -44,7 +44,7 @@ trait ApiBuilderController extends BaseController {
 
   def withOrgMember(user: User, orgKey: String)(f: Organization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
-      withRole(org, user, Role.All) {
+      withRole(org, user, MembershipRole.all) {
         f(org)
       }
     }
@@ -52,22 +52,22 @@ trait ApiBuilderController extends BaseController {
 
   def withOrgAdmin(user: User, orgKey: String)(f: Organization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
-      withRole(org, user, Seq(Role.Admin)) {
+      withRole(org, user, Seq(MembershipRole.Admin)) {
         f(org)
       }
     }
   }
 
-  private[this] def withRole(org: Organization, user: User, roles: Seq[Role])(f: => Result): Result = {
+  private[this] def withRole(org: Organization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
     val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
       Authorization.All, org, user, roles
     ).map(_.role)
 
     if (actualRoles.isEmpty) {
-      val msg: String = if (roles.contains(Role.Admin)) {
-        s"an '${Role.Admin}'"
+      val msg: String = if (roles.contains(MembershipRole.Admin)) {
+        s"an '${MembershipRole.Admin}'"
       } else {
-        s"a '${Role.Member}'"
+        s"a '${MembershipRole.Member}'"
       }
       Results.Unauthorized(
         jsonError(s"Must be $msg of the organization")
