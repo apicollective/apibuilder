@@ -18,6 +18,7 @@ DELETE     /generator_services/:guid                                 controllers
 GET        /generators                                               controllers.GeneratorWithServices.get(guid: _root_.scala.Option[_root_.java.util.UUID], service_guid: _root_.scala.Option[_root_.java.util.UUID], service_uri: _root_.scala.Option[String], attribute_name: _root_.scala.Option[String], key: _root_.scala.Option[String], limit: Long ?= 100L, offset: Long ?= 0L)
 GET        /generators/:key                                          controllers.GeneratorWithServices.getByKey(key: String)
 GET        /_internal_/healthcheck                                   controllers.Healthchecks.getHealthcheck()
+GET        /_internal_/migrate                                       controllers.Healthchecks.getMigrate()
 GET        /items                                                    controllers.Items.get(q: _root_.scala.Option[String], limit: Long ?= 25L, offset: Long ?= 0L)
 GET        /items/:guid                                              controllers.Items.getByGuid(guid: _root_.java.util.UUID)
 GET        /memberships                                              controllers.Memberships.get(org_guid: _root_.scala.Option[_root_.java.util.UUID], org_key: _root_.scala.Option[String], user_guid: _root_.scala.Option[_root_.java.util.UUID], role: _root_.scala.Option[io.apibuilder.common.v0.models.MembershipRole], limit: Long ?= 25L, offset: Long ?= 0L)
