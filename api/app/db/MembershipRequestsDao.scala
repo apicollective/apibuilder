@@ -2,9 +2,9 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
+import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models.{EmailDataMembershipRequestAccepted, EmailDataMembershipRequestCreated, EmailDataMembershipRequestDeclined}
 import io.flow.postgresql.Query
-import lib.Role
 import play.api.db._
 import processor.EmailProcessorQueue
 
@@ -51,7 +51,7 @@ class MembershipRequestsDao @Inject() (
    ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
+  def upsert(createdBy: User, organization: Organization, user: User, role: MembershipRole): MembershipRequest = {
     findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role) match {
       case Some(r: MembershipRequest) => r
       case None => {
@@ -60,14 +60,14 @@ class MembershipRequestsDao @Inject() (
     }
   }
 
-  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
+  private[db] def create(createdBy: User, organization: Organization, user: User, role: MembershipRole): MembershipRequest = {
     val guid = UUID.randomUUID
     db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         "guid" -> guid,
         "organization_guid" -> organization.guid,
         "user_guid" -> user.guid,
-        "role" -> role.key,
+        "role" -> role.toString,
         "created_by_guid" -> createdBy.guid
       ).execute()
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestCreated(guid))
@@ -85,29 +85,23 @@ class MembershipRequestsDao @Inject() (
    */
   def accept(createdBy: User, request: MembershipRequest): Unit = {
     assertUserCanReview(createdBy, request)
-    val r = Role.fromString(request.role).getOrElse {
-      sys.error(s"Invalid role[${request.role}]")
-    }
-    doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
+    val r = MembershipRole(request.role)
+    doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as $r")
   }
 
   private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String): Unit = {
-    val r = Role.fromString(request.role).getOrElse {
-      sys.error(s"Invalid role[${request.role}]")
-    }
-    doAccept(createdBy, request, s"$email joined as ${r.name} by verifying their email address")
+    val r = MembershipRole(request.role)
+    doAccept(createdBy, request, s"$email joined as $r by verifying their email address")
   }
 
   private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
-    val r = Role.fromString(request.role).getOrElse {
-      sys.error(s"Invalid role[${request.role}]")
-    }
+    val r = MembershipRole(request.role)
 
     db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy, request.organization, message)
       dbHelpers.delete(c, createdBy, request.guid)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
-      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, r.key))
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, r))
     }
   }
 
@@ -117,15 +111,13 @@ class MembershipRequestsDao @Inject() (
    */
   def decline(createdBy: User, request: MembershipRequest): Unit = {
     assertUserCanReview(createdBy, request)
-    val r = Role.fromString(request.role).getOrElse {
-      sys.error(s"Invalid role[${request.role}]")
-    }
+    val r = MembershipRole(request.role)
 
-    val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
+    val message = s"Declined membership request for ${request.user.email} to join as $r"
     db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy.guid, request.organization, message)
       softDelete(createdBy, request)
-      emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid, r.toString))
+      emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid, r))
     }
   }
 
@@ -144,13 +136,13 @@ class MembershipRequestsDao @Inject() (
     authorization: Authorization,
     org: Organization,
     userGuid: UUID,
-    role: Role
+    role: MembershipRole
   ): Option[MembershipRequest] = {
     findAll(
       authorization,
       organizationGuid = Some(org.guid),
       userGuid = Some(userGuid),
-      role = Some(role.key),
+      role = Some(role),
       limit = 1
     ).headOption
   }
@@ -165,7 +157,7 @@ class MembershipRequestsDao @Inject() (
     organizationGuid: Option[UUID] = None,
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
-    role: Option[String] = None,
+    role: Option[MembershipRole] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -182,7 +174,7 @@ class MembershipRequestsDao @Inject() (
             "membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
           }
         ).bind("organization_key", organizationKey).
-        equals("membership_requests.role", role).
+        equals("membership_requests.role", role.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("membership_requests", _))).
         orderBy("membership_requests.created_at desc").
         limit(limit).

@@ -2,8 +2,8 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
-import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
-import io.apibuilder.task.v0.models.{EmailDataMembershipCreated, MembershipRole}
+import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
+import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
 import play.api.db._

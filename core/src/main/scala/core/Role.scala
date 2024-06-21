@@ -9,7 +9,7 @@ object Role {
   val Admin: Role = Role(MembershipRole.Admin, "Admin")
   val Member: Role = Role(MembershipRole.Member, "Member")
 
-  val All: Seq[Role] = Seq(Member, Admin)
+  val all: Seq[Role] = Seq(Member, Admin)
 
   def fromString(key: String): Option[Role] = {
     MembershipRole.fromString(key).flatMap {
