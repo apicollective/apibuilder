@@ -61,6 +61,7 @@ class PurgeDeletedProcessor @Inject()(
       delete(Table.guid("public", "organization_domains"))(_.equals("organization_guid", row.pkey))
       delete(Table.guid("public", "organization_logs"))(_.equals("organization_guid", row.pkey))
       delete(Table.guid("public", "applications"))(_.equals("organization_guid", row.pkey))
+      delete(Table.guid("public", "subscriptions"))(_.equals("organization_guid", row.pkey))
     }
 
     debug("done")

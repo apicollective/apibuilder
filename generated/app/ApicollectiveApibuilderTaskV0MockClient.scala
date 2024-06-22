@@ -49,6 +49,8 @@ package io.apibuilder.task.v0.mock {
       guid = _root_.java.util.UUID.randomUUID
     )
 
+    def makeEmailData(): io.apibuilder.task.v0.models.EmailData = io.apibuilder.task.v0.mock.Factories.makeEmailDataApplicationCreated()
+
   }
 
 }
