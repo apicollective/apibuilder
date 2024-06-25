@@ -22,26 +22,18 @@ class PurgeDeletedProcessor @Inject()(
   usersDao: UsersDao,
 ) extends TaskProcessor(args, TaskType.PurgeDeleted) {
 
-  private[this] def debug(msg: String): Unit = {
-    println(s"[${DateTime.now} DEBUG] $msg")
-  }
-
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
     softDelete(Tables.applications)(_.in("organization_guid", Query("select guid from organizations where deleted_at is not null")))
     softDelete(Tables.versions)(_.in("application_guid", Query("select guid from applications where deleted_at is not null")))
 
-    debug("PurgeDeletedProcessor starting to delete versions")
     deleteAll(Tables.versions) { row =>
-      debug(s"  - version: ${row.pkey}")
       delete(Table.guid("cache", "services"))(_.equals("version_guid", row.pkey))
       delete(Table.long("public", "originals"))(_.equals("version_guid", row.pkey))
       delete(Table.guid("public", "changes"))(_.equals("from_version_guid", row.pkey))
       delete(Table.guid("public", "changes"))(_.equals("to_version_guid", row.pkey))
     }
 
-    debug("PurgeDeletedProcessor starting to delete applications")
     deleteAll(Tables.applications) { row =>
-      debug(s"  - application: ${row.pkey}")
       delete(Table.guid("public", "application_moves"))(_.equals("application_guid", row.pkey))
       delete(Table.guid("public", "changes"))(_.equals("application_guid", row.pkey))
       delete(Table.guid("search", "items"))(_.equals("application_guid", row.pkey))
@@ -49,9 +41,7 @@ class PurgeDeletedProcessor @Inject()(
       delete(Table.guid("public", "versions"))(_.equals("application_guid", row.pkey))
     }
 
-    debug("PurgeDeletedProcessor starting to delete applications")
     deleteAll(Tables.organizations) { row =>
-      debug(s"  - organization: ${row.pkey}")
       delete(Table.guid("public", "application_moves"))(_.equals("from_organization_guid", row.pkey))
       delete(Table.guid("public", "application_moves"))(_.equals("to_organization_guid", row.pkey))
       delete(Table.guid("search", "items"))(_.equals("organization_guid", row.pkey))
@@ -64,7 +54,6 @@ class PurgeDeletedProcessor @Inject()(
       delete(Table.guid("public", "subscriptions"))(_.equals("organization_guid", row.pkey))
     }
 
-    debug("done")
     ().validNec
   }
 
