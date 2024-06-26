@@ -151,17 +151,19 @@ class Code @Inject() (
             // TODO: Should we merge the org attributes into the provided invocation form? I think that
             // was the original intent, but not sure if it would impact anybody. For now going to log
             // the instance for which this results in a change.
+            /*
             val updatedAttributes = orgAttributeUtil.merge(data.version.organization, gws.generator.attributes, data.invocationForm.attributes)
             if (updatedAttributes != data.invocationForm.attributes) {
               val newAttributes = updatedAttributes.filterNot { a =>
                 data.invocationForm.attributes.map(_.name).contains(a.name)
               }.mkString(", ")
-              //println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: $newAttributes")
+              println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: $newAttributes")
             } else {
-              //println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
+              println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
+            */
 
-            recordInvocation(gws.generator.key)
+            recordInvocation(params, gws.generator.key)
 
             new Client(wSClient, service.uri).invocations.postByKey(
               key = gws.generator.key,
@@ -224,9 +226,11 @@ class Code @Inject() (
     Conflict(Json.toJson(Validation.errors(messages)))
   }
 
-  private[this] def recordInvocation(generatorKey: String): Unit = {
+  private[this] def recordInvocation(params: CodeParams, generatorKey: String): Unit = {
     generatorInvocationsDao.insert(Constants.DefaultUserGuid, GeneratorInvocationForm(
-      key = generatorKey
+      key = generatorKey,
+      organizationKey = Some(params.orgKey),
+      applicationKey = Some(params.applicationKey)
     ))
     ()
   }

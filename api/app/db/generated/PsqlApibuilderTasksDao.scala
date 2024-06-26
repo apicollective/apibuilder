@@ -360,17 +360,17 @@ class TasksDao @Inject() (
 
   private[this] def toNamedParameter(updatedBy: UUID, form: TaskForm): Seq[NamedParameter] = {
     Seq(
-      scala.Symbol("id") -> form.id,
-      scala.Symbol("type") -> form.`type`,
-      scala.Symbol("type_id") -> form.typeId,
-      scala.Symbol("organization_guid") -> form.organizationGuid,
-      scala.Symbol("num_attempts") -> form.numAttempts,
-      scala.Symbol("next_attempt_at") -> form.nextAttemptAt,
-      scala.Symbol("errors") -> form.errors.map { v => Json.toJson(v).toString },
-      scala.Symbol("stacktrace") -> form.stacktrace,
-      scala.Symbol("data") -> form.data.toString,
-      scala.Symbol("updated_by_guid") -> updatedBy,
-      scala.Symbol("hash_code") -> form.hashCode()
+      "id" -> form.id,
+      "type" -> form.`type`,
+      "type_id" -> form.typeId,
+      "organization_guid" -> form.organizationGuid,
+      "num_attempts" -> form.numAttempts,
+      "next_attempt_at" -> form.nextAttemptAt,
+      "errors" -> form.errors.map { v => Json.toJson(v).toString },
+      "stacktrace" -> form.stacktrace,
+      "data" -> form.data.toString,
+      "updated_by_guid" -> updatedBy,
+      "hash_code" -> form.hashCode()
     )
   }
 
@@ -390,7 +390,7 @@ class TasksDao @Inject() (
     bindQuery(UpsertQuery, form).
       bind("id", form.id).
       bind("updated_by_guid", updatedBy).
-      anormSql.execute()(c)
+      anormSql().execute()(c)
     ()
   }
 
@@ -424,7 +424,7 @@ class TasksDao @Inject() (
     bindQuery(UpdateQuery, form).
       bind("id", id).
       bind("updated_by_guid", updatedBy).
-      anormSql.execute()(c)
+      anormSql().execute()(c)
     ()
   }
 
@@ -472,8 +472,8 @@ class TasksDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("id", id)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByIds(deletedBy: UUID, ids: Seq[String]): Unit = {
@@ -486,8 +486,8 @@ class TasksDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .in("id", ids)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByNumAttempts(deletedBy: UUID, numAttempts: Int): Unit = {
@@ -500,8 +500,8 @@ class TasksDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("num_attempts", numAttempts)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByNumAttemptses(deletedBy: UUID, numAttemptses: Seq[Int]): Unit = {
@@ -514,8 +514,8 @@ class TasksDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .in("num_attempts", numAttemptses)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByNumAttemptsAndNextAttemptAt(deletedBy: UUID, numAttempts: Int, nextAttemptAt: DateTime): Unit = {
@@ -529,8 +529,8 @@ class TasksDao @Inject() (
     Query("delete from tasks")
       .equals("num_attempts", numAttempts)
       .equals("next_attempt_at", nextAttemptAt)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByNumAttemptsAndNextAttemptAts(deletedBy: UUID, numAttempts: Int, nextAttemptAts: Seq[DateTime]): Unit = {
@@ -544,8 +544,8 @@ class TasksDao @Inject() (
     Query("delete from tasks")
       .equals("num_attempts", numAttempts)
       .in("next_attempt_at", nextAttemptAts)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByTypeId(deletedBy: UUID, typeId: String): Unit = {
@@ -558,8 +558,8 @@ class TasksDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .equals("type_id", typeId)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByTypeIds(deletedBy: UUID, typeIds: Seq[String]): Unit = {
@@ -572,8 +572,8 @@ class TasksDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from tasks")
       .in("type_id", typeIds)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteByTypeIdAndType(deletedBy: UUID, typeId: String, `type`: String): Unit = {
@@ -587,8 +587,8 @@ class TasksDao @Inject() (
     Query("delete from tasks")
       .equals("type_id", typeId)
       .equals("type", `type`)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByTypeIdAndTypes(deletedBy: UUID, typeId: String, types: Seq[String]): Unit = {
@@ -602,12 +602,12 @@ class TasksDao @Inject() (
     Query("delete from tasks")
       .equals("type_id", typeId)
       .in("type", types)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def setJournalDeletedByUserId(c: Connection, deletedBy: UUID): Unit = {
-    anorm.SQL(s"SET journal.deleted_by_user_id = '${deletedBy}'").executeUpdate()(c)
+    Query(s"SET journal.deleted_by_user_id = '${deletedBy}'").anormSql().executeUpdate()(c)
     ()
   }
 

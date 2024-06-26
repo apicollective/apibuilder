@@ -12,19 +12,25 @@ import play.api.db.Database
 case class GeneratorInvocation(
   id: String,
   key: String,
+  organizationKey: Option[String],
+  applicationKey: Option[String],
   updatedByGuid: String,
   createdAt: DateTime,
   updatedAt: DateTime
 ) {
 
   lazy val form: GeneratorInvocationForm = GeneratorInvocationForm(
-    key = key
+    key = key,
+    organizationKey = organizationKey,
+    applicationKey = applicationKey
   )
 
 }
 
 case class GeneratorInvocationForm(
-  key: String
+  key: String,
+  organizationKey: Option[String],
+  applicationKey: Option[String]
 )
 
 object GeneratorInvocationsTable {
@@ -35,11 +41,13 @@ object GeneratorInvocationsTable {
   object Columns {
     val Id: String = "id"
     val Key: String = "key"
+    val OrganizationKey: String = "organization_key"
+    val ApplicationKey: String = "application_key"
     val UpdatedByGuid: String = "updated_by_guid"
     val CreatedAt: String = "created_at"
     val UpdatedAt: String = "updated_at"
     val HashCode: String = "hash_code"
-    val all: List[String] = List(Id, Key, UpdatedByGuid, CreatedAt, UpdatedAt, HashCode)
+    val all: List[String] = List(Id, Key, OrganizationKey, ApplicationKey, UpdatedByGuid, CreatedAt, UpdatedAt, HashCode)
   }
 }
 
@@ -50,6 +58,8 @@ trait BaseGeneratorInvocationsDao {
   private[this] val BaseQuery = Query("""
       | select generator_invocations.id,
       |        generator_invocations.key,
+      |        generator_invocations.organization_key,
+      |        generator_invocations.application_key,
       |        generator_invocations.updated_by_guid,
       |        generator_invocations.created_at,
       |        generator_invocations.updated_at,
@@ -132,12 +142,16 @@ object GeneratorInvocationsDao {
   val parser: RowParser[GeneratorInvocation] = {
     SqlParser.str("id") ~
     SqlParser.str("key") ~
+    SqlParser.str("organization_key").? ~
+    SqlParser.str("application_key").? ~
     SqlParser.str("updated_by_guid") ~
     SqlParser.get[DateTime]("created_at") ~
     SqlParser.get[DateTime]("updated_at") map {
-      case id ~ key ~ updatedByGuid ~ createdAt ~ updatedAt => GeneratorInvocation(
+      case id ~ key ~ organizationKey ~ applicationKey ~ updatedByGuid ~ createdAt ~ updatedAt => GeneratorInvocation(
         id = id,
         key = key,
+        organizationKey = organizationKey,
+        applicationKey = applicationKey,
         updatedByGuid = updatedByGuid,
         createdAt = createdAt,
         updatedAt = updatedAt
@@ -158,14 +172,16 @@ class GeneratorInvocationsDao @Inject() (
 
   private[this] val InsertQuery = Query("""
     | insert into generator_invocations
-    | (id, key, updated_by_guid, hash_code)
+    | (id, key, organization_key, application_key, updated_by_guid, hash_code)
     | values
-    | ({id}, {key}, {updated_by_guid}, {hash_code}::bigint)
+    | ({id}, {key}, {organization_key}, {application_key}, {updated_by_guid}, {hash_code}::bigint)
   """.stripMargin)
 
   private[this] val UpdateQuery = Query("""
     | update generator_invocations
     |    set key = {key},
+    |        organization_key = {organization_key},
+    |        application_key = {application_key},
     |        updated_by_guid = {updated_by_guid},
     |        hash_code = {hash_code}::bigint
     |  where id = {id}
@@ -175,15 +191,19 @@ class GeneratorInvocationsDao @Inject() (
   private[this] def bindQuery(query: Query, form: GeneratorInvocationForm): Query = {
     query.
       bind("key", form.key).
+      bind("organization_key", form.organizationKey).
+      bind("application_key", form.applicationKey).
       bind("hash_code", form.hashCode())
   }
 
   private[this] def toNamedParameter(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Seq[NamedParameter] = {
     Seq(
-      scala.Symbol("id") -> id,
-      scala.Symbol("key") -> form.key,
-      scala.Symbol("updated_by_guid") -> updatedBy,
-      scala.Symbol("hash_code") -> form.hashCode()
+      "id" -> id,
+      "key" -> form.key,
+      "organization_key" -> form.organizationKey,
+      "application_key" -> form.applicationKey,
+      "updated_by_guid" -> updatedBy,
+      "hash_code" -> form.hashCode()
     )
   }
 
@@ -198,7 +218,7 @@ class GeneratorInvocationsDao @Inject() (
     bindQuery(InsertQuery, form).
       bind("id", id).
       bind("updated_by_guid", updatedBy).
-      anormSql.execute()(c)
+      anormSql().execute()(c)
     id
   }
 
@@ -235,7 +255,7 @@ class GeneratorInvocationsDao @Inject() (
     bindQuery(UpdateQuery, form).
       bind("id", id).
       bind("updated_by_guid", updatedBy).
-      anormSql.execute()(c)
+      anormSql().execute()(c)
     ()
   }
 
@@ -283,8 +303,8 @@ class GeneratorInvocationsDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from generator_invocations")
       .equals("id", id)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def deleteAllByIds(deletedBy: UUID, ids: Seq[String]): Unit = {
@@ -297,12 +317,12 @@ class GeneratorInvocationsDao @Inject() (
     setJournalDeletedByUserId(c, deletedBy)
     Query("delete from generator_invocations")
       .in("id", ids)
-      .anormSql.executeUpdate()(c)
-      ()
+      .anormSql().executeUpdate()(c)
+    ()
   }
 
   def setJournalDeletedByUserId(c: Connection, deletedBy: UUID): Unit = {
-    anorm.SQL(s"SET journal.deleted_by_user_id = '${deletedBy}'").executeUpdate()(c)
+    Query(s"SET journal.deleted_by_user_id = '${deletedBy}'").anormSql().executeUpdate()(c)
     ()
   }
 
