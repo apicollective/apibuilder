@@ -55,6 +55,8 @@ package io.apibuilder.api.v0.anorm.conversions {
     import io.apibuilder.api.v0.models.json._
     implicit val columnToSeqApibuilderApiAppSortBy: Column[Seq[_root_.io.apibuilder.api.v0.models.AppSortBy]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AppSortBy]] }
     implicit val columnToMapApibuilderApiAppSortBy: Column[Map[String, _root_.io.apibuilder.api.v0.models.AppSortBy]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.AppSortBy]] }
+    implicit val columnToSeqApibuilderApiBatchStatus: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchStatus]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchStatus]] }
+    implicit val columnToMapApibuilderApiBatchStatus: Column[Map[String, _root_.io.apibuilder.api.v0.models.BatchStatus]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.BatchStatus]] }
     implicit val columnToSeqApibuilderApiOriginalType: Column[Seq[_root_.io.apibuilder.api.v0.models.OriginalType]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.OriginalType]] }
     implicit val columnToMapApibuilderApiOriginalType: Column[Map[String, _root_.io.apibuilder.api.v0.models.OriginalType]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.OriginalType]] }
     implicit val columnToSeqApibuilderApiPublication: Column[Seq[_root_.io.apibuilder.api.v0.models.Publication]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Publication]] }
@@ -87,6 +89,8 @@ package io.apibuilder.api.v0.anorm.conversions {
     implicit val columnToMapApibuilderApiAuthentication: Column[Map[String, _root_.io.apibuilder.api.v0.models.Authentication]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.Authentication]] }
     implicit val columnToSeqApibuilderApiBatch: Column[Seq[_root_.io.apibuilder.api.v0.models.Batch]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Batch]] }
     implicit val columnToMapApibuilderApiBatch: Column[Map[String, _root_.io.apibuilder.api.v0.models.Batch]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.Batch]] }
+    implicit val columnToSeqApibuilderApiBatchData: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchData]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchData]] }
+    implicit val columnToMapApibuilderApiBatchData: Column[Map[String, _root_.io.apibuilder.api.v0.models.BatchData]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.BatchData]] }
     implicit val columnToSeqApibuilderApiBatchDownloadForm: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadForm]] }
     implicit val columnToMapApibuilderApiBatchDownloadForm: Column[Map[String, _root_.io.apibuilder.api.v0.models.BatchDownloadForm]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.api.v0.models.BatchDownloadForm]] }
     implicit val columnToSeqApibuilderApiBatchDownloadFormApplication: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadFormApplication]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadFormApplication]] }

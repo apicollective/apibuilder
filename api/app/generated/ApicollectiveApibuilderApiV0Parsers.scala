@@ -26,6 +26,18 @@ package io.apibuilder.api.v0.anorm.parsers {
 
   }
 
+  object BatchStatus {
+
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.BatchStatus] = parser(prefixOpt = Some(s"$prefix$sep"))
+
+    def parser(name: String = "batch_status", prefixOpt: Option[String] = None): RowParser[io.apibuilder.api.v0.models.BatchStatus] = {
+      SqlParser.str(prefixOpt.getOrElse("") + name) map {
+        case value => io.apibuilder.api.v0.models.BatchStatus(value)
+      }
+    }
+
+  }
+
   object OriginalType {
 
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.OriginalType] = parser(prefixOpt = Some(s"$prefix$sep"))
@@ -354,12 +366,37 @@ package io.apibuilder.api.v0.anorm.parsers {
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.Batch] = parser(prefixOpt = Some(s"$prefix$sep"))
 
     def parser(
-      applications: String = "applications",
+      id: String = "id",
+      status: String = "status",
+      dataPrefix: String = "data",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.api.v0.models.Batch] = {
+      SqlParser.str(prefixOpt.getOrElse("") + id) ~
+      io.apibuilder.api.v0.anorm.parsers.BatchStatus.parser(prefixOpt.getOrElse("") + status) ~
+      io.apibuilder.api.v0.anorm.parsers.BatchData.parserWithPrefix(prefixOpt.getOrElse("") + dataPrefix).? map {
+        case id ~ status ~ data => {
+          io.apibuilder.api.v0.models.Batch(
+            id = id,
+            status = status,
+            data = data
+          )
+        }
+      }
+    }
+
+  }
+
+  object BatchData {
+
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.api.v0.models.BatchData] = parser(prefixOpt = Some(s"$prefix$sep"))
+
+    def parser(
+      applications: String = "applications",
+      prefixOpt: Option[String] = None
+    ): RowParser[io.apibuilder.api.v0.models.BatchData] = {
       SqlParser.get[Seq[io.apibuilder.api.v0.models.Version]](prefixOpt.getOrElse("") + applications) map {
         case applications => {
-          io.apibuilder.api.v0.models.Batch(
+          io.apibuilder.api.v0.models.BatchData(
             applications = applications
           )
         }

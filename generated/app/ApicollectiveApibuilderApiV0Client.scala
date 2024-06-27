@@ -194,7 +194,20 @@ package io.apibuilder.api.v0.models {
     session: io.apibuilder.api.v0.models.Session
   )
 
+  /**
+   * Supports creating a batch operation which will run async. Caller can fetch the
+   * resource and check the status.
+   *
+   * @param data Populated once the batch is ready
+   */
+
   final case class Batch(
+    id: String,
+    status: io.apibuilder.api.v0.models.BatchStatus,
+    data: _root_.scala.Option[io.apibuilder.api.v0.models.BatchData] = None
+  )
+
+  final case class BatchData(
     applications: Seq[io.apibuilder.api.v0.models.Version]
   )
 
@@ -720,6 +733,41 @@ package io.apibuilder.api.v0.models {
 
   }
 
+  sealed trait BatchStatus extends _root_.scala.Product with _root_.scala.Serializable
+
+  object BatchStatus {
+
+    case object Created extends BatchStatus { override def toString = "created" }
+    case object Processing extends BatchStatus { override def toString = "processing" }
+    case object Ready extends BatchStatus { override def toString = "ready" }
+    case object Failed extends BatchStatus { override def toString = "failed" }
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    final case class UNDEFINED(override val toString: String) extends BatchStatus
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all: scala.List[BatchStatus] = scala.List(Created, Processing, Ready, Failed)
+
+    private[this]
+    val byName: Map[String, BatchStatus] = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): BatchStatus = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[BatchStatus] = byName.get(value.toLowerCase)
+
+  }
+
   sealed trait OriginalType extends _root_.scala.Product with _root_.scala.Serializable
 
   object OriginalType {
@@ -997,6 +1045,38 @@ package io.apibuilder.api.v0.models {
     implicit def jsonWritesApibuilderApiAppSortBy: play.api.libs.json.Writes[AppSortBy] = {
       (obj: io.apibuilder.api.v0.models.AppSortBy) => {
         jsonWritesApibuilderApiAppSortBy(obj)
+      }
+    }
+
+    implicit val jsonReadsApibuilderApiBatchStatus: play.api.libs.json.Reads[io.apibuilder.api.v0.models.BatchStatus] = new play.api.libs.json.Reads[io.apibuilder.api.v0.models.BatchStatus] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.api.v0.models.BatchStatus] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.BatchStatus(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.BatchStatus(v))
+              case err: play.api.libs.json.JsError =>
+                (js \ "batch_status").validate[String] match {
+                  case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.api.v0.models.BatchStatus(v))
+                  case err: play.api.libs.json.JsError => err
+                }
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesApibuilderApiBatchStatus(obj: io.apibuilder.api.v0.models.BatchStatus) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectBatchStatus(obj: io.apibuilder.api.v0.models.BatchStatus) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesApibuilderApiBatchStatus: play.api.libs.json.Writes[BatchStatus] = {
+      (obj: io.apibuilder.api.v0.models.BatchStatus) => {
+        jsonWritesApibuilderApiBatchStatus(obj)
       }
     }
 
@@ -1378,18 +1458,42 @@ package io.apibuilder.api.v0.models {
     }
 
     implicit def jsonReadsApibuilderApiBatch: play.api.libs.json.Reads[io.apibuilder.api.v0.models.Batch] = {
-      (__ \ "applications").read[Seq[io.apibuilder.api.v0.models.Version]].map { x => Batch(applications = x) }
+      for {
+        id <- (__ \ "id").read[String]
+        status <- (__ \ "status").read[io.apibuilder.api.v0.models.BatchStatus]
+        data <- (__ \ "data").readNullable[io.apibuilder.api.v0.models.BatchData]
+      } yield Batch(id, status, data)
     }
 
     def jsObjectBatch(obj: io.apibuilder.api.v0.models.Batch): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "applications" -> play.api.libs.json.Json.toJson(obj.applications)
-      )
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "status" -> play.api.libs.json.JsString(obj.status.toString)
+      ) ++ (obj.data match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("data" -> jsObjectBatchData(x))
+      })
     }
 
     implicit def jsonWritesApibuilderApiBatch: play.api.libs.json.Writes[Batch] = {
       (obj: io.apibuilder.api.v0.models.Batch) => {
         jsObjectBatch(obj)
+      }
+    }
+
+    implicit def jsonReadsApibuilderApiBatchData: play.api.libs.json.Reads[io.apibuilder.api.v0.models.BatchData] = {
+      (__ \ "applications").read[Seq[io.apibuilder.api.v0.models.Version]].map { x => BatchData(applications = x) }
+    }
+
+    def jsObjectBatchData(obj: io.apibuilder.api.v0.models.BatchData): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "applications" -> play.api.libs.json.Json.toJson(obj.applications)
+      )
+    }
+
+    implicit def jsonWritesApibuilderApiBatchData: play.api.libs.json.Writes[BatchData] = {
+      (obj: io.apibuilder.api.v0.models.BatchData) => {
+        jsObjectBatchData(obj)
       }
     }
 
@@ -2384,6 +2488,15 @@ package io.apibuilder.api.v0 {
       }
       implicit def pathBindableAppSortBy(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.api.v0.models.AppSortBy] = ApibuilderPathBindable(appSortByConverter)
       implicit def queryStringBindableAppSortBy(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.api.v0.models.AppSortBy] = ApibuilderQueryStringBindable(appSortByConverter)
+
+      val batchStatusConverter: ApibuilderTypeConverter[io.apibuilder.api.v0.models.BatchStatus] = new ApibuilderTypeConverter[io.apibuilder.api.v0.models.BatchStatus] {
+        override def convert(value: String): io.apibuilder.api.v0.models.BatchStatus = io.apibuilder.api.v0.models.BatchStatus(value)
+        override def convert(value: io.apibuilder.api.v0.models.BatchStatus): String = value.toString
+        override def example: io.apibuilder.api.v0.models.BatchStatus = io.apibuilder.api.v0.models.BatchStatus.Created
+        override def validValues: Seq[io.apibuilder.api.v0.models.BatchStatus] = io.apibuilder.api.v0.models.BatchStatus.all
+      }
+      implicit def pathBindableBatchStatus(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.apibuilder.api.v0.models.BatchStatus] = ApibuilderPathBindable(batchStatusConverter)
+      implicit def queryStringBindableBatchStatus(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.apibuilder.api.v0.models.BatchStatus] = ApibuilderQueryStringBindable(batchStatusConverter)
 
       val originalTypeConverter: ApibuilderTypeConverter[io.apibuilder.api.v0.models.OriginalType] = new ApibuilderTypeConverter[io.apibuilder.api.v0.models.OriginalType] {
         override def convert(value: String): io.apibuilder.api.v0.models.OriginalType = io.apibuilder.api.v0.models.OriginalType(value)

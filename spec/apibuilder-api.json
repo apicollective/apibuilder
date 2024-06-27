@@ -53,6 +53,15 @@
   },
 
   "enums": {
+    "batch_status": {
+      "values": [
+        { "name": "created" },
+        { "name": "processing" },
+        { "name": "ready" },
+        { "name": "failed" }
+      ]
+    },
+
     "visibility": {
       "description": "Controls who is able to view this version",
       "values": [
@@ -529,6 +538,15 @@
     },
 
     "batch": {
+      "description": "Supports creating a batch operation which will run async. Caller can fetch the resource and check the status.",
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "status", "type": "batch_status" },
+        { "name": "data", "type": "batch_data", "required": false, "description": "Populated once the batch is ready" }
+      ]
+    },
+
+    "batch_data": {
       "fields": [
         { "name": "applications", "type": "[version]" }
       ]

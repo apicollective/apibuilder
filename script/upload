@@ -13,6 +13,9 @@
 #  Upload specific specifications
 #
 #    upload --spec organization --spec user
+#    upload --spec organization --app user
+#
+#  Note you can specify either spec|app - they are synonyms
 #
 #  Upload a specific tag
 #
@@ -42,8 +45,8 @@ ARGV.each_slice(2) { |pair|
   value = pair[1].to_s.strip
   if args[key]
     args[key] << value
-  elsif key == :spec
-    args[key] = [value]
+  elsif key == :spec || key == :app
+    args[:spec] = [value]
   else
     args[key] = value
   end
@@ -185,4 +188,3 @@ filtered.each do |spec|
   end
   puts ""
 end
-
