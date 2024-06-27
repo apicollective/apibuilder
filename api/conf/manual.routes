@@ -1,0 +1,1 @@
+POST /:orgKey/batch/download/applications controllers.Batches.postDownload(orgKey: String)

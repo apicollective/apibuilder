@@ -528,20 +528,24 @@
       ]
     },
 
-    "batch_download_applications": {
-      "plural": "batch_download_applications",
+    "batch": {
       "fields": [
         { "name": "applications", "type": "[version]" }
       ]
     },
 
-    "batch_download_applications_form": {
+    "batch_form": {
       "fields": [
-        { "name": "applications", "type": "[batch_download_application_form]" }
+        { "name": "applications", "type": "[version_form]" }
+      ]
+    },
+    "batch_download_form": {
+      "fields": [
+        { "name": "applications", "type": "[batch_download_form_application]" }
       ]
     },
 
-    "batch_download_application_form": {
+    "batch_download_form_application": {
       "fields": [
         { "name": "application_key", "type": "string" },
         { "name": "version", "type": "string", "default": "latest", "required": false }
@@ -994,15 +998,35 @@
       ]
     },
 
-    "batch_download_applications": {
-      "path": "/:orgKey/batch/download/applications",
+    "batch": {
+      "path": "/:orgKey/batch/applications",
       "operations": [
         {
           "method": "POST",
-          "description": "Retrieve multiple applications in one api call.",
-          "body": { "type": "batch_download_applications_form" },
+          "description": "Upsert multiple applications in one api call. Validation happens first - we store results only if ALL applications are valid",
+          "body": { "type": "batch_form" },
           "responses": {
-            "201": { "type": "batch_download_applications" },
+            "201": { "type": "batch" },
+            "409": { "type": "[error]" }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/dryrun",
+          "description": "Validate a batch of applications without SAVING anything to the database",
+          "body": { "type": "batch_download_form" },
+          "responses": {
+            "201": { "type": "batch" },
+            "409": { "type": "[error]" }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/download",
+          "description": "Download multiple applications in one api call.",
+          "body": { "type": "batch_download_form" },
+          "responses": {
+            "201": { "type": "batch" },
             "409": { "type": "[error]" }
           }
         }
@@ -1173,7 +1197,7 @@
           "description": "Retrieve a specific version of an application.",
           "path": "/:applicationKey/:version",
           "parameters": [
-            { "name": "version", "type": "string", "description": "The version of tthis application to download, or the keyword latest to get the latest version", "example": "latest" }
+            { "name": "version", "type": "string", "description": "The version of this application to download, or the keyword latest to get the latest version", "example": "latest" }
           ],
           "responses": {
             "200": { "type": "version" },
