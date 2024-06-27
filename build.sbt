@@ -146,8 +146,8 @@ lazy val app = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       guice,
-      "com.google.inject" % "guice" % "7.0.0",
-      "com.google.inject.extensions" % "guice-assistedinject" % "7.0.0",
+      "com.google.inject" % "guice" % "5.1.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
