@@ -26,7 +26,7 @@ lazy val lib = project
 
 val avroVersion = "1.11.1"
 
-val playJsonVersion = "2.10.5"
+val playJsonVersion = "2.10.6"
 
 lazy val avro = project
   .in(file("avro"))
@@ -63,7 +63,7 @@ lazy val swagger = project
     )
   )
 
-val circeVersion = "0.14.7"
+val circeVersion = "0.14.8"
 lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)
@@ -112,7 +112,7 @@ lazy val api = project
       ws,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
-      "org.projectlombok" % "lombok" % "1.18.28" % "provided",
+      "org.projectlombok" % "lombok" % "1.18.32" % "provided",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.postgresql"    %  "postgresql"     % "42.7.3",
@@ -146,13 +146,13 @@ lazy val app = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       guice,
-      "com.google.inject" % "guice" % "5.1.0",
-      "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
+      "com.google.inject" % "guice" % "7.0.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "7.0.0",
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.apache.commons" % "commons-compress" % "1.26.2",
-      "com.github.tototoshi" %% "scala-csv" % "1.3.10",
+      "com.github.tototoshi" %% "scala-csv" % "1.4.0",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
       "org.webjars" %% "webjars-play" % "2.8.18",
       "org.webjars" % "bootstrap" % "3.3.7",
@@ -182,7 +182,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("apibuilder-" + _),
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.4",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
     "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
     "org.atteo" % "evo-inflector" % "1.3",
     "org.typelevel" %% "cats-core" % "2.12.0",
