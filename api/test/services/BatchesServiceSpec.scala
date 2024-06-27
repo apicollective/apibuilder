@@ -5,11 +5,11 @@ import db.Authorization
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-class BatchDownloadApplicationsServiceSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite
+class BatchesServiceSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite
   with helpers.BatchDownloadApplicationHelpers
   with helpers.ValidatedTestHelpers
 {
-  private[this] def batchDownloadApplicationsService: BatchDownloadApplicationsService = app.injector.instanceOf[BatchDownloadApplicationsService]
+  private[this] def batchDownloadApplicationsService: BatchesService = app.injector.instanceOf[BatchesService]
 
   "process multiple applications" in {
     val org = createOrganization()

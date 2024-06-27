@@ -1,12 +1,13 @@
 package services
 
 import cats.data.ValidatedNec
-import db.{ApplicationsDao, Authorization, VersionsDao}
 import cats.implicits._
-import io.apibuilder.api.v0.models.{BatchDownloadApplicationForm, BatchDownloadApplications, BatchDownloadApplicationsForm, Version}
+import db.{ApplicationsDao, Authorization, VersionsDao}
+import io.apibuilder.api.v0.models.Version
+
 import javax.inject.Inject
 
-class BatchDownloadApplicationsService @Inject() (
+class BatchesService @Inject()(
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao,
 ) {

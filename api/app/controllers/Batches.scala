@@ -1,18 +1,17 @@
 package controllers
 
 import cats.data.Validated.{Invalid, Valid}
-import io.apibuilder.api.v0.models.BatchDownloadApplicationsForm
 import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import lib.Validation
 import play.api.libs.json.Json
-import services.BatchDownloadApplicationsService
+import services.BatchesService
 
 @Singleton
-class BatchDownloadApplications @Inject() (
-  override val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  service: BatchDownloadApplicationsService,
-) extends ApiBuilderController {
+class Batches @Inject()(
+                         override val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                         service: BatchesService,
+) extends ApiBuilderController with BatchCont {
 
   def post(orgKey: String) = Anonymous(parse.json[BatchDownloadApplicationsForm]) { request =>
     service.process(request.authorization, orgKey, request.body) match {

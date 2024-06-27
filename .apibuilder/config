@@ -6,6 +6,7 @@ code:
         play_2_8_client: generated/app
         play_2_x_routes: api/conf/api.routes
         anorm_2_8_parsers: api/app/generated
+        play_2_6_controllers: generated/app
     apibuilder-api-json:
       version: latest
       generators:

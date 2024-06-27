@@ -3,7 +3,7 @@ package controllers
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 
-class BatchDownloadApplicationsSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite
+class BatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite
   with helpers.BatchDownloadApplicationHelpers
 {
 
