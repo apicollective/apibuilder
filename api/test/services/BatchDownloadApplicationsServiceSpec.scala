@@ -9,7 +9,7 @@ class BatchDownloadApplicationsServiceSpec extends PlaySpec with MockClient with
   with helpers.BatchDownloadApplicationHelpers
   with helpers.ValidatedTestHelpers
 {
-  private[this] def batchDownloadApplicationsService: BatchDownloadApplicationsService = app.injector.instanceOf[BatchDownloadApplicationsService]
+  private def batchDownloadApplicationsService: BatchDownloadApplicationsService = app.injector.instanceOf[BatchDownloadApplicationsService]
 
   "process multiple applications" in {
     val org = createOrganization()

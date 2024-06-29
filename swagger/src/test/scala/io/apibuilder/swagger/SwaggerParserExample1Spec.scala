@@ -11,7 +11,7 @@ class SwaggerParserExample1Spec extends AnyFunSpec
   with ServiceConfigurationHelpers
 {
 
-  private[this] val example =
+  private val example =
     """
       |swagger: '2.0'
       |info:

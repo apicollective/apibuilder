@@ -17,9 +17,9 @@ object Markdown {
     value.map { toHtml }.getOrElse(default)
   }
 
-  private[this] val options = new MutableDataSet()
-  private[this] val parser = Parser.builder(options).build
-  private[this] val renderer = HtmlRenderer.builder(options).build
+  private val options = new MutableDataSet()
+  private val parser = Parser.builder(options).build
+  private val renderer = HtmlRenderer.builder(options).build
 
   def toHtml(value: String): String = {
     renderer.render(parser.parse(value))

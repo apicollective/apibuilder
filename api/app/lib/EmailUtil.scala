@@ -26,17 +26,17 @@ class EmailUtil @Inject()(
   appConfig: AppConfig
 ) {
 
-  private[this] val fromPerson = Person(
+  private val fromPerson = Person(
     email = appConfig.emailDefaultFromEmail,
     name = Some(appConfig.emailDefaultFromName)
   )
 
-  private[this] val localDeliveryDir: Option[Path] = appConfig.mailLocalDeliveryDir.map(Paths.get(_))
+  private val localDeliveryDir: Option[Path] = appConfig.mailLocalDeliveryDir.map(Paths.get(_))
 
   // Initialize sendgrid on startup to verify that all of our settings
   // are here. If using localDeliveryDir, set password to a test
   // string.
-  private[this] val sendgrid = {
+  private val sendgrid = {
     localDeliveryDir match {
       case None => new SendGrid(appConfig.sendgridApiKey.getOrElse {
         sys.error(s"sendgridApiKey required when localDeliveryDir is not set")
@@ -85,7 +85,7 @@ class EmailUtil @Inject()(
     }
   }
 
-  private[this] def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
+  private def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
     val timestamp = UrlKey.generate(ISODateTimeFormat.dateTimeNoMillis.print(DateTime.now))
 
     Files.createDirectories(dir)

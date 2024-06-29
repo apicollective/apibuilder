@@ -31,14 +31,14 @@ class SyncGeneratorServiceProcessor @Inject()(
   generatorClientFactory: GeneratorClientFactory
 ) extends TaskProcessorWithGuid(args, TaskType.SyncGeneratorService) with ValidatedHelpers {
 
-  private[this] val log: Logger = Logger(this.getClass)
-  private[this] val ec: ExecutionContext = system.dispatchers.lookup("generator-service-sync-context")
+  private val log: Logger = Logger(this.getClass)
+  private val ec: ExecutionContext = system.dispatchers.lookup("generator-service-sync-context")
 
   override def processRecord(guid: UUID): ValidatedNec[String, Unit] = {
     syncAll()(ec).validNec
   }
 
-  private[this] def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
+  private def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     Pager.eachPage { offset =>
       servicesDao.findAll(
         Authorization.All,
@@ -61,7 +61,7 @@ class SyncGeneratorServiceProcessor @Inject()(
     }
   }
 
-  private[this] def sync(
+  private def sync(
             service: GeneratorService,
             pageSize: Long = 200
           ) (
@@ -77,7 +77,7 @@ class SyncGeneratorServiceProcessor @Inject()(
   }
 
   @tailrec
-  private[this] def doSync(
+  private def doSync(
                             client: Client,
                             service: GeneratorService,
                             pageSize: Long,
@@ -97,7 +97,7 @@ class SyncGeneratorServiceProcessor @Inject()(
     }
   }
 
-  private[this] def storeGenerators(service: GeneratorService, generators: Seq[Generator]): Unit = {
+  private def storeGenerators(service: GeneratorService, generators: Seq[Generator]): Unit = {
     sequenceUnique {
       generators.map { gen =>
         generatorsDao.upsert(

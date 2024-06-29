@@ -39,7 +39,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def makeEnum(`enum`: Enum, parentUnion: Option[(Union, UnionType)]): JsValue = {
+  private def makeEnum(`enum`: Enum, parentUnion: Option[(Union, UnionType)]): JsValue = {
     val value: JsValue = JsString(
       `enum`.values.headOption.map(ev => ev.value.getOrElse(ev.name)).getOrElse("undefined")
     )
@@ -60,7 +60,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     
   }
 
-  private[this] def makeModel(model: Model, parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
+  private def makeModel(model: Model, parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
     val value = JsObject(
       Map(
         model.fields.
@@ -83,7 +83,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def makeUnion(unionName: String, unionTypeName: String, typeAcc: Set[String]): Option[JsValue] = {
+  private def makeUnion(unionName: String, unionTypeName: String, typeAcc: Set[String]): Option[JsValue] = {
     val unions = for {
       union <- service.unions if union.name == unionName
       unionType <- union.types if (unionType.`type` == unionTypeName)
@@ -91,7 +91,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     unions.headOption
   }
 
-  private[this] def makeUnion(union: Union, unionType: Option[UnionType], typeAcc: Set[String]): JsValue = {
+  private def makeUnion(union: Union, unionType: Option[UnionType], typeAcc: Set[String]): JsValue = {
     unionType.orElse(union.types.headOption).fold {
       Json.obj(): JsValue
     } { unionType =>
@@ -106,7 +106,7 @@ case class ExampleJson(service: Service, selection: Selection) {
   }
 
   // primitives in a union type are wrapped in a 'value' field
-  private[this] def primitiveUnionWrapper(union: Union, unionType: UnionType, js: JsValue): JsValue = {
+  private def primitiveUnionWrapper(union: Union, unionType: UnionType, js: JsValue): JsValue = {
     val discrVal = unionType.discriminatorValue.getOrElse(unionType.`type`)
     union.discriminator.fold {
       Json.obj(discrVal -> Json.obj("value" -> js))
@@ -118,7 +118,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(types: Seq[TextDatatype], parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
+  private def mockValue(types: Seq[TextDatatype], parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
     types.toList match {
       case Nil => JsNull
       case TextDatatype.Singleton(one) :: Nil if typeAcc.contains(one) => JsNull
@@ -129,7 +129,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def singleton(typ: String, parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
+  private def singleton(typ: String, parentUnion: Option[(Union, UnionType)], typeAcc: Set[String]): JsValue = {
     Primitives(typ) match {
       case None => {
         service.enums.find(_.name == typ) match {
@@ -153,7 +153,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockValue(field: Field, typeAcc: Set[String]): JsValue = {
+  private def mockValue(field: Field, typeAcc: Set[String]): JsValue = {
     val types = TextDatatype.parse(field.`type`)
     types.toList match {
       case Nil => JsNull
@@ -191,7 +191,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def singleton(field: Field, typeAcc: Set[String]): JsValue = {
+  private def singleton(field: Field, typeAcc: Set[String]): JsValue = {
     Primitives(field.`type`) match {
       case None => {
         service.enums.find(_.name == field.`type`) match {
@@ -224,7 +224,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def mockPrimitive(p: Primitives): JsValue = {
+  private def mockPrimitive(p: Primitives): JsValue = {
     p match {
       case Primitives.Boolean => JsBoolean(true)
       case Primitives.Double => JsNumber(1.0)
@@ -244,7 +244,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def primitiveExample(p: Primitives, ex: String): JsValue = {
+  private def primitiveExample(p: Primitives, ex: String): JsValue = {
     p match {
       case Primitives.Boolean => JsBoolean(parseBoolean(ex, true))
       case Primitives.Double => JsNumber(parseDouble(ex, 1.0))
@@ -267,7 +267,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseBoolean(value: String, default: Boolean): Boolean = {
+  private def parseBoolean(value: String, default: Boolean): Boolean = {
     if (ExampleJson.TrueStrings.contains(value.toLowerCase().trim)) {
       true
     } else if (ExampleJson.TrueStrings.contains(value.toLowerCase().trim)) {
@@ -277,7 +277,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseDouble(value: String, default: Double): Double = {
+  private def parseDouble(value: String, default: Double): Double = {
     try {
       value.toDouble
     } catch {
@@ -285,7 +285,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseInt(value: String, default: Int): Int = {
+  private def parseInt(value: String, default: Int): Int = {
     try {
       value.toInt
     } catch {
@@ -293,7 +293,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseUUID(value: String, default: UUID): UUID = {
+  private def parseUUID(value: String, default: UUID): UUID = {
     try {
       UUID.fromString(value)
     } catch {
@@ -301,7 +301,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseObject(value: String, default: JsObject): JsObject = {
+  private def parseObject(value: String, default: JsObject): JsObject = {
     try {
       Json.parse(value).as[JsObject]
     } catch {
@@ -309,7 +309,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseJsonValue(value: String, default: JsValue): JsValue = {
+  private def parseJsonValue(value: String, default: JsValue): JsValue = {
     try {
       Json.parse(value)
     } catch {
@@ -317,7 +317,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseDate(value: String, default: LocalDate): LocalDate = {
+  private def parseDate(value: String, default: LocalDate): LocalDate = {
     try {
       ISODateTimeFormat.dateTimeParser.parseLocalDate(value)
     } catch {
@@ -325,7 +325,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def parseDateTime(value: String, default: DateTime): DateTime = {
+  private def parseDateTime(value: String, default: DateTime): DateTime = {
     try {
       ISODateTimeFormat.dateTimeParser.parseDateTime(value)
     } catch {
@@ -333,7 +333,7 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def randomString(): String = {
+  private def randomString(): String = {
     "lorem ipsum " + TokenGenerator.generate(6)
   }
 

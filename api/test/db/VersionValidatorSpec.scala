@@ -7,7 +7,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class VersionValidatorSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] def versionValidator = injector.instanceOf[VersionValidator]
+  private def versionValidator = injector.instanceOf[VersionValidator]
   
   "validates user is a member of the organization to create an application" in {
     val org = createOrganization()

@@ -31,7 +31,7 @@ class Versions @Inject() (
   versionValidator: VersionValidator,
 ) extends ApiBuilderController {
 
-  private[this] val DefaultVisibility = Visibility.Organization
+  private val DefaultVisibility = Visibility.Organization
 
   def getByApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = Anonymous { request =>
     val versions = applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
@@ -209,7 +209,7 @@ class Versions @Inject() (
     }
   }
 
-  private[this] def upsertVersion(
+  private def upsertVersion(
     user: User,
     org: Organization,
     versionName: String,
@@ -256,7 +256,7 @@ class Versions @Inject() (
     }
   }
 
-  private[this] def toServiceConfiguration(
+  private def toServiceConfiguration(
     org: Organization,
     version: String
   ) = ServiceConfiguration(

@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 
 class BodyParameterSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-  private[this] val baseJson = """
+  private val baseJson = """
     {
       "name": "API Builder",
       "apidoc": { "version": "0.9.6" },
@@ -48,7 +48,7 @@ class BodyParameterSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
     }
   """
 
-  private[this] def setupValid(json: String): Service = {
+  private def setupValid(json: String): Service = {
     val service = setupValidApiJson(json)
     service.models.find(_.name == "message").getOrElse {
       sys.error("missing model message")

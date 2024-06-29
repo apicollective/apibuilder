@@ -17,10 +17,10 @@ class Versions @Inject() (
                            apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] val DefaultVersion = "0.0.1-dev"
-  private[this] val LatestVersion = "latest"
+  private val DefaultVersion = "0.0.1-dev"
+  private val LatestVersion = "latest"
 
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirectToLatest(orgKey: String, applicationKey: String) = Action {
     Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
@@ -329,7 +329,7 @@ class Versions @Inject() (
     }
   }
 
-  private[this] def isWatching(
+  private def isWatching(
     api: io.apibuilder.api.v0.Client,
     user: Option[User],
     orgKey: String,

@@ -19,9 +19,9 @@ class MembershipsDao @Inject() (
   subscriptionsDao: SubscriptionsDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "memberships")
+  private val dbHelpers = DbHelpers(db, "memberships")
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into memberships
     (guid, organization_guid, user_guid, role, created_by_guid)
     values
@@ -29,7 +29,7 @@ class MembershipsDao @Inject() (
   """
 
   // TODO: Properly select domains
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")},

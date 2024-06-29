@@ -10,7 +10,7 @@ import play.api.libs.json.Json
  */
 class InterfaceImportsSpec extends AnyFunSpec with Matchers with helpers.ApiJsonHelpers {
 
-  private[this] val importedServiceFile: String = TestHelper.writeToTempFile(
+  private val importedServiceFile: String = TestHelper.writeToTempFile(
     Json.toJson(
       toService(
         makeApiJson(

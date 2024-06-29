@@ -5,7 +5,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class UtilSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  private[this] val util = app.injector.instanceOf[Util]
+  private val util = app.injector.instanceOf[Util]
 
   "validateReturnUrl for invalid domains" in {
     util.validateReturnUrl("") must be(Left(Seq("Redirect URL[] must start with / or a known domain")))

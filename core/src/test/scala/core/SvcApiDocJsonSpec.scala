@@ -56,7 +56,7 @@ class SvcApiDocJsonSpec extends AnyFunSpec with Matchers with ValidatedTestHelpe
     }
   }
 
-  private[this] def toLabel(response: Response): String = {
+  private def toLabel(response: Response): String = {
     response.code match {
       case i: ResponseCodeInt => i.value.toString
       case ResponseCodeOption.Default => "*"

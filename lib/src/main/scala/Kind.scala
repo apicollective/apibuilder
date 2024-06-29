@@ -41,7 +41,7 @@ case class DatatypeResolver(
    * toSingletonType("long") => Some(Primitives.Long)
    * toSingletonType("foo") => None
    */
-  private[this] def toSingletonType(name: String): Seq[Kind] =
+  private def toSingletonType(name: String): Seq[Kind] =
     Primitives(name) match {
       case Some(_) => {
         Seq(Kind.Primitive(name))
@@ -106,7 +106,7 @@ case class DatatypeResolver(
     * will throw errors if it finds a non container type.
     */
   @tailrec
-  private[this] def parse(kind: Kind, rest: Seq[TextDatatype]): Kind = {
+  private def parse(kind: Kind, rest: Seq[TextDatatype]): Kind = {
     rest.headOption match {
       case None => {
         kind
@@ -122,14 +122,14 @@ case class DatatypeResolver(
     }
   }
 
-  private[this] def isSingleton(kind: Kind): Boolean = {
+  private def isSingleton(kind: Kind): Boolean = {
     kind match {
       case Kind.Enum(_) | Kind.Model(_) | Kind.Interface(_) | Kind.Primitive(_) | Kind.Union(_) => true
       case Kind.List(_) | Kind.Map(_) => false
     }
   }
 
-  private[this] def isSingleton(td: TextDatatype): Boolean = {
+  private def isSingleton(td: TextDatatype): Boolean = {
     td match {
       case TextDatatype.Singleton(_) => true
       case TextDatatype.List | TextDatatype.Map => false

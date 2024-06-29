@@ -230,7 +230,7 @@ package io.apibuilder.api.json.v0.models {
      */
     val all: scala.List[ParameterLocation] = scala.List(Path, Query, Form, Header)
 
-    private[this]
+    private
     val byName: Map[String, ParameterLocation] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): ParameterLocation = fromString(value).getOrElse(UNDEFINED(value))

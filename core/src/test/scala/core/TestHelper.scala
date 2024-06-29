@@ -45,7 +45,7 @@ object TestHelper extends ValidatedHelpers with ValidatedTestHelpers {
     version = "0.0.41"
   )
 
-  private[this] val apiJsonValidator = OriginalValidator(apibuilderConfig, OriginalType.ApiJson, MockServiceFetcher())
+  private val apiJsonValidator = OriginalValidator(apibuilderConfig, OriginalType.ApiJson, MockServiceFetcher())
 
   private lazy val specService: Service = {
     expectValid {

@@ -14,16 +14,16 @@ class TaskDispatchActor @Inject() (
   factory: TaskActor.Factory,
   companion: TaskDispatchActorCompanion
 ) extends Actor with ActorLogging with ErrorHandler with InjectedActorSupport {
-  private[this] val ec: ExecutionContext = context.system.dispatchers.lookup("task-context")
-  private[this] case object Process
+  private val ec: ExecutionContext = context.system.dispatchers.lookup("task-context")
+  private case object Process
 
-  private[this] val actors = scala.collection.mutable.Map[TaskType, ActorRef]()
+  private val actors = scala.collection.mutable.Map[TaskType, ActorRef]()
 
-  private[this] def schedule(message: Any, interval: FiniteDuration): Cancellable = {
+  private def schedule(message: Any, interval: FiniteDuration): Cancellable = {
     context.system.scheduler.scheduleWithFixedDelay(FiniteDuration(1, SECONDS), interval, self, message)(ec)
   }
 
-  private[this] val cancellables: Seq[Cancellable] = {
+  private val cancellables: Seq[Cancellable] = {
     Seq(
       schedule(Process, FiniteDuration(2, SECONDS))
     )
@@ -39,13 +39,13 @@ class TaskDispatchActor @Inject() (
     case other => logUnhandledMessage(other)
   }
 
-  private[this] def process(): Unit = {
+  private def process(): Unit = {
     companion.typesWithWork.foreach { typ =>
       upsertActor(typ) ! TaskActor.Process
     }
   }
 
-  private[this] def upsertActor(typ: TaskType): ActorRef = {
+  private def upsertActor(typ: TaskType): ActorRef = {
     actors.getOrElse(
       typ, {
         val name = s"task$typ"

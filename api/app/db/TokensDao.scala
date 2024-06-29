@@ -15,9 +15,9 @@ class TokensDao @Inject() (
   usersDao: UsersDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "tokens")
+  private val dbHelpers = DbHelpers(db, "tokens")
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select tokens.guid,
            'XXX-XXX-XXX' as masked_token,
            tokens.description,
@@ -31,9 +31,9 @@ class TokensDao @Inject() (
       join users on users.guid = tokens.user_guid and users.deleted_at is null
   """)
 
-  private[this] val FindCleartextQuery = Query("select token from tokens")
+  private val FindCleartextQuery = Query("select token from tokens")
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into tokens
     (guid, user_guid, token, description, created_by_guid)
     values

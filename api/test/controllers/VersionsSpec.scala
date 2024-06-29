@@ -6,8 +6,8 @@ import org.scalatestplus.play.PlaySpec
 
 class VersionsSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
-  private[this] lazy val org = createOrganization()
-  private[this] lazy val application = createApplication(org)
+  private lazy val org = createOrganization()
+  private lazy val application = createApplication(org)
 
   "POST /:orgKey/:version stores the original in the proper format" in {
     val form = createVersionForm(name = application.name)

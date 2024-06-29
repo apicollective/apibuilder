@@ -12,7 +12,7 @@ import play.api.libs.json.Json
 
 class ImportServiceServiceJsonSpec extends AnyFunSpec with Matchers with ApiJsonHelpers with ValidatedTestHelpers {
 
-  private[this] def makeUserModel(idType: String = "long"): Model = {
+  private def makeUserModel(idType: String = "long"): Model = {
     makeModel(
       fields = Seq(makeField(name = "id", `type` = idType)),
     )

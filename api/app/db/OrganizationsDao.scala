@@ -20,12 +20,12 @@ class OrganizationsDao @Inject() (
   organizationLogsDao: OrganizationLogsDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "organizations")
+  private val dbHelpers = DbHelpers(db, "organizations")
 
   // TODO: resolve circular dependency
-  private[this] def membershipsDao = injector.instanceOf[MembershipsDao]
+  private def membershipsDao = injector.instanceOf[MembershipsDao]
 
-  private[this] val MinNameLength = 3
+  private val MinNameLength = 3
 
   private[db] val BaseQuery = Query(s"""
     select organizations.guid,
@@ -44,14 +44,14 @@ class OrganizationsDao @Inject() (
       from organizations
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into organizations
     (guid, name, key, namespace, visibility, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {name}, {key}, {namespace}, {visibility}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  private[this] val UpdateQuery = """
+  private val UpdateQuery = """
     update organizations
        set name = {name},
            key = {key},
@@ -130,7 +130,7 @@ class OrganizationsDao @Inject() (
 
 
   // We just care that the domain does not have a space in it
-  private[this] val DomainRx = """^[^\s]+$""".r
+  private val DomainRx = """^[^\s]+$""".r
   private[db] def isDomainValid(domain: String): Boolean = {
     domain match {
       case DomainRx() => true
@@ -184,7 +184,7 @@ class OrganizationsDao @Inject() (
     }
   }
 
-  private[this] def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): Organization = {
+  private def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): Organization = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 

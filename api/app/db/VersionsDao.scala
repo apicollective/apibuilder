@@ -32,12 +32,12 @@ class VersionsDao @Inject() (
   serviceParser: ServiceParser
 ) extends ValidatedHelpers {
 
-  private[this] val logger: Logger = Logger(this.getClass)
+  private val logger: Logger = Logger(this.getClass)
 
-  private[this] val LatestVersion = "latest"
-  private[this] val LatestVersionFilter = "~"
+  private val LatestVersion = "latest"
+  private val LatestVersionFilter = "~"
 
-  private[this] val HasServiceJsonClause: String =
+  private val HasServiceJsonClause: String =
     """
       |exists (
       |  select 1
@@ -47,7 +47,7 @@ class VersionsDao @Inject() (
       |)
     """.stripMargin
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select versions.guid, versions.version,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("versions")},
            originals.type as original_type,
@@ -69,14 +69,14 @@ class VersionsDao @Inject() (
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into versions
     (guid, application_guid, version, version_sort_key, created_by_guid)
     values
     ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {created_by_guid}::uuid)
   """
 
-  private[this] val DeleteQuery = """
+  private val DeleteQuery = """
     update versions
        set deleted_at = now(),
            deleted_by_guid = {deleted_by_guid}::uuid
@@ -84,14 +84,14 @@ class VersionsDao @Inject() (
        and guid = {guid}::uuid
   """
 
-  private[this] val InsertServiceQuery = """
+  private val InsertServiceQuery = """
     insert into cache.services
     (guid, version_guid, version, json, created_by_guid)
     values
     ({guid}::uuid, {version_guid}::uuid, {version}, {json}::json, {user_guid}::uuid)
   """
 
-  private[this] val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
+  private val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
     update cache.services
        set deleted_at = now(),
            deleted_by_guid = {user_guid}::uuid
@@ -120,7 +120,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  private[this] def doCreate(
+  private def doCreate(
     implicit c: java.sql.Connection,
     user: User,
     application: Application,
@@ -157,7 +157,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  private[this] def createDiffTask(
+  private def createDiffTask(
     oldVersionGuid: UUID,
     newVersionGuid: UUID
   ) (
@@ -274,7 +274,7 @@ class VersionsDao @Inject() (
     }
   }  
 
-  private[this] def applicationMetadataParser(): RowParser[ApplicationMetadataVersion] = {
+  private def applicationMetadataParser(): RowParser[ApplicationMetadataVersion] = {
     SqlParser.str("version") map { version =>
       ApplicationMetadataVersion(
         version = version
@@ -282,7 +282,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  private[this] case class TmpVersion(
+  private case class TmpVersion(
                                        guid: UUID,
                                        organization: Reference,
                                        application: Reference,
@@ -306,7 +306,7 @@ class VersionsDao @Inject() (
 
     }
 
-    private[this] def service: ValidatedNec[String, Service] = {
+    private def service: ValidatedNec[String, Service] = {
       serviceJson match {
         case None => "Version does not have service json".invalidNec
         case Some(json) => serviceParser.fromString(json)
@@ -314,7 +314,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  private[this] val parser: RowParser[TmpVersion] = {
+  private val parser: RowParser[TmpVersion] = {
     SqlParser.get[_root_.java.util.UUID]("guid") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
@@ -336,11 +336,11 @@ class VersionsDao @Inject() (
     }
   }
 
-  private[this] def validateOrg(org: Reference): ValidatedNec[String, Organization] = {
+  private def validateOrg(org: Reference): ValidatedNec[String, Organization] = {
     organizationsDao.findByGuid(Authorization.All, org.guid).toValidNec(s"Cannot find organization where guid = '${org.guid}'")
   }
 
-  private[this] def lookupVersionToMigrate(guid: UUID): Option[TmpVersion] = {
+  private def lookupVersionToMigrate(guid: UUID): Option[TmpVersion] = {
     db.withConnection { implicit c =>
       BaseQuery.
         equals("versions.guid", guid).
@@ -387,7 +387,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  private[this] def softDeleteService(
+  private def softDeleteService(
     implicit c: java.sql.Connection,
     user: User,
     versionGuid: UUID
@@ -399,7 +399,7 @@ class VersionsDao @Inject() (
     ).execute()
   }
 
-  private[this] def insertService(
+  private def insertService(
     implicit c: java.sql.Connection,
     user: User,
     versionGuid: UUID,
@@ -414,7 +414,7 @@ class VersionsDao @Inject() (
     ).execute()
   }
 
-  private[this] def databaseServiceFetcher(auth: Authorization) = {
+  private def databaseServiceFetcher(auth: Authorization) = {
     new ServiceFetcher {
       override def fetch(uri: String): Service = {
         val serviceUri = ServiceUri.parse(uri).getOrElse {

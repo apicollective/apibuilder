@@ -26,7 +26,7 @@ object SchemaType {
 
   val all = Seq(Array, Boolean, Bytes, Double, Enum, Fixed, Float, Int, Long, Map, Null, Record, String, Union)
 
-  private[this]
+  private
   val byName = all.map(x => x.toString.toLowerCase -> x).toMap
 
   def fromAvro(avroType: org.apache.avro.Schema.Type) = fromString(avroType.toString)

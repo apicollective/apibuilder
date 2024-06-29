@@ -10,14 +10,14 @@ import java.util.UUID
 @Singleton
 class OriginalsDao @Inject() () {
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into originals
     (version_guid, type, data, created_by_guid)
     values
     ({version_guid}::uuid, {type}, {data}, {created_by_guid}::uuid)
   """
 
-  private[this] val SoftDeleteByVersionGuidQuery = """
+  private val SoftDeleteByVersionGuidQuery = """
     update originals
        set deleted_at = now(),
            deleted_by_guid = {deleted_by_guid}::uuid

@@ -83,7 +83,7 @@ case class ServiceBuilder(
       model: Option[TypesProviderModel] = None,
       union: Option[TypesProviderUnion] = None
     ) {
-      private[this] val all = Seq(`enum`, model, union).flatten
+      private val all = Seq(`enum`, model, union).flatten
       assert(all.size <= 1, s"Cannot have more than 1 resolved item: $all")
 
       def isEmpty: Boolean = all.isEmpty
@@ -194,7 +194,7 @@ case class ServiceBuilder(
       * Historically ApiBuilder placed parameters by default for GET and DELETE in
       * the query parameters. Maintain this convention to avoid breaking APIs
       */
-    private[this] def defaultParameterLocation(verb: String): ParameterLocation = {
+    private def defaultParameterLocation(verb: String): ParameterLocation = {
       if (supportsBody(verb)) {
         verb.toUpperCase().trim match {
           case "DELETE" => ParameterLocation.Query
@@ -601,7 +601,7 @@ case class ServiceBuilder(
     }
   }
 
-  private[this] def validOrError[T](value: ValidatedNec[String, T]): T = {
+  private def validOrError[T](value: ValidatedNec[String, T]): T = {
     value match {
       case Invalid(errors) => sys.error("Unexpected errors: " + formatErrors(errors))
       case Valid(v) => v

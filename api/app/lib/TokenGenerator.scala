@@ -6,8 +6,8 @@ import scala.util.Random
 
 object TokenGenerator {
 
-  private[this] val random = new Random(new SecureRandom())
-  private[this] val Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  private val random = new Random(new SecureRandom())
+  private val Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
   def generate(n: Int = 80): String = {
     val uuid = UUID.randomUUID().toString.replaceAll("-", "")
@@ -19,7 +19,7 @@ object TokenGenerator {
     }
   }
 
-  private[this] def random(n: Int): String = {
+  private def random(n: Int): String = {
     LazyList.continually(random.nextInt(Alphabet.length)).map(Alphabet).take(n).mkString
   }
 }

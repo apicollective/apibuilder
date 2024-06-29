@@ -6,15 +6,15 @@ package util
   */
 case class Random() {
 
-  private[this] val random = new java.security.SecureRandom
+  private val random = new java.security.SecureRandom
 
-  private[this] val Ambiguous = "B8G6I1l0OoQDS5Z2".split("")
-  private[this] val Numbers = "0123456789"
-  private[this] val Lower = "abcdefghijklmnopqrstuvwxyz"
-  private[this] val LowerAndUpper = Lower + Lower.toUpperCase
-  private[this] val LowerAndUpperAndNumbers = LowerAndUpper + Numbers
-  private[this] val NonAmbiguousLowerAndUpper = LowerAndUpper.split("").filter(!Ambiguous.contains(_)).mkString("")
-  private[this] val NonAmbiguousLowerAndUpperAndNumbers = NonAmbiguousLowerAndUpper + "3479"
+  private val Ambiguous = "B8G6I1l0OoQDS5Z2".split("")
+  private val Numbers = "0123456789"
+  private val Lower = "abcdefghijklmnopqrstuvwxyz"
+  private val LowerAndUpper = Lower + Lower.toUpperCase
+  private val LowerAndUpperAndNumbers = LowerAndUpper + Numbers
+  private val NonAmbiguousLowerAndUpper = LowerAndUpper.split("").filter(!Ambiguous.contains(_)).mkString("")
+  private val NonAmbiguousLowerAndUpperAndNumbers = NonAmbiguousLowerAndUpper + "3479"
 
   /**
     * Generate a random string of length n from the given alphabet

@@ -6,11 +6,11 @@ import play.api.libs.json.JsError
 
 object Validation {
 
-  private[this] val InvalidJsonCode = "invalid_json"
-  private[this] val UserAuthorizationFailedCode = "user_authorization_failed"
-  private[this] val Unauthorized = "unauthorized"
-  private[this] val ErrorCode = "validation_error"
-  private[this] val ServerError = "server_error"
+  private val InvalidJsonCode = "invalid_json"
+  private val UserAuthorizationFailedCode = "user_authorization_failed"
+  private val Unauthorized = "unauthorized"
+  private val ErrorCode = "validation_error"
+  private val ServerError = "server_error"
 
   def invalidJson(errors: JsError): Seq[Error] = {
     Seq(Error(InvalidJsonCode, errors.toString))

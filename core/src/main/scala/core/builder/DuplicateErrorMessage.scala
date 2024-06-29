@@ -15,7 +15,7 @@ private[builder] object DuplicateErrorMessage {
     }
   }
 
-  private[this] def findDuplicates(values: Iterable[String]): List[String] = {
+  private def findDuplicates(values: Iterable[String]): List[String] = {
     values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim)
       .filter {
         _._2.size > 1

@@ -14,9 +14,9 @@ import play.api.libs.json._
 import java.io.File
 
 class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers with ValidatedHelpers {
-  private[this] val resourcesDir = "swagger/src/test/resources/"
+  private val resourcesDir = "swagger/src/test/resources/"
 
-  private[this] def printRequired(value: Boolean): String = {
+  private def printRequired(value: Boolean): String = {
     if (value) {
       "(required)"
     } else {
@@ -24,9 +24,9 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     }
   }
 
-  private[this] def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
-  private[this] def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
-  private[this] def checkResource(actual: Resource, target: Resource): Unit = {
+  private def checkModel(actual: Model, target: Model): Unit = checkJson(actual, target)
+  private def checkOperation(actual: Operation, target: Operation): Unit = checkJson(actual, target)
+  private def checkResource(actual: Resource, target: Resource): Unit = {
     // first test ordering of operations
     actual.operations.map(_.path) shouldBe target.operations.map(_.path)
     actual.operations.map(_.method) shouldBe target.operations.map(_.method)
@@ -44,7 +44,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     )
   }
 
-  private[this] def checkJson[T](actual: T, target: T)(implicit writer: Writes[T]): Unit = {
+  private def checkJson[T](actual: T, target: T)(implicit writer: Writes[T]): Unit = {
     val errors = JsonDiff.diff(
       Json.toJson(actual),
       Json.toJson(target),
@@ -57,11 +57,11 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     }
   }
 
-  private[this] def checkEnum(actual: Enum, target: Enum): Unit = {
+  private def checkEnum(actual: Enum, target: Enum): Unit = {
     actual should be(target)
   }
 
-  private[this] val validator: SwaggerServiceValidator = SwaggerServiceValidator(
+  private val validator: SwaggerServiceValidator = SwaggerServiceValidator(
     ServiceConfiguration(
       orgKey = "apibuilder",
       orgNamespace = "me.apibuilder",
@@ -69,7 +69,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
     )
   )
 
-  private[this] def validate(path: String): ValidatedNec[String, Service] = {
+  private def validate(path: String): ValidatedNec[String, Service] = {
     validator.validate(FileUtils.readToString(new File(path)))
   }
 

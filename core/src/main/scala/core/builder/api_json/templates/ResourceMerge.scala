@@ -34,11 +34,11 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
     )
   }
 
-  private[this] def pathLabel(op: Operation): String = {
+  private def pathLabel(op: Operation): String = {
     (op.method + ":" + op.path.getOrElse("")).toLowerCase().trim
   }
 
-  private[this] def mergeOperations(original: Seq[Operation], template: Seq[Operation]): Seq[Operation] = {
+  private def mergeOperations(original: Seq[Operation], template: Seq[Operation]): Seq[Operation] = {
     new ArrayMerge[Operation]() {
       override def uniqueIdentifier(i: Operation): String = pathLabel(i)
       override def merge(original: Operation, tpl: Operation): Operation = {
@@ -56,7 +56,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
     }.merge(original, template)
   }
 
-  private[this] def mergeParameters(original: Option[Seq[Parameter]], template: Option[Seq[Parameter]]): Option[Seq[Parameter]] = {
+  private def mergeParameters(original: Option[Seq[Parameter]], template: Option[Seq[Parameter]]): Option[Seq[Parameter]] = {
     new ArrayMerge[Parameter]() {
       override def uniqueIdentifier(i: Parameter): String = i.name
 
@@ -78,7 +78,7 @@ case class ResourceMerge(templates: Map[String, Resource]) extends TemplateMerge
     }.merge(original, template)
   }
 
-  private[this] def mergeResponses(original: Option[Map[String, Response]], template: Option[Map[String, Response]]): Option[Map[String, Response]] = {
+  private def mergeResponses(original: Option[Map[String, Response]], template: Option[Map[String, Response]]): Option[Map[String, Response]] = {
     new MapMerge[Response]() {
       override def merge(original: Response, tpl: Response): Response = {
         Response(

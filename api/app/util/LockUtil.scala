@@ -33,7 +33,7 @@ class LockUtil @Inject() (
       .as(SqlParser.bool(1).single)(c)
   }
 
-  private[this] def toHashInts(id: String): (Int, Int) = {
+  private def toHashInts(id: String): (Int, Int) = {
     val buffer = ByteBuffer.wrap(DigestUtils.md5(id))
     val key1 = buffer.getInt(0)
     val key2 = buffer.getInt(4)

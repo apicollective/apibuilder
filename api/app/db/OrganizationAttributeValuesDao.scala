@@ -16,9 +16,9 @@ class OrganizationAttributeValuesDao @Inject() (
   attributesDao: AttributesDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "organization_attribute_values")
+  private val dbHelpers = DbHelpers(db, "organization_attribute_values")
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select organization_attribute_values.guid,
            organization_attribute_values.value,
            ${AuditsDao.query("organization_attribute_values")},
@@ -28,14 +28,14 @@ class OrganizationAttributeValuesDao @Inject() (
       join attributes on attributes.deleted_at is null and attributes.guid = organization_attribute_values.attribute_guid
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into organization_attribute_values
     (guid, organization_guid, attribute_guid, value, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {organization_guid}::uuid, {attribute_guid}::uuid, {value}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  private[this] val UpdateQuery = """
+  private val UpdateQuery = """
     update organization_attribute_values
        set value = {value},
            updated_by_guid = {user_guid}::uuid

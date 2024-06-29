@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 
 class ServiceHeaderImportsSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
-  private[this] def setupValid(json: String): Service = {
+  private def setupValid(json: String): Service = {
     expectValid {
       TestHelper.serviceValidatorFromApiJson(json)
     }

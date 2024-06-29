@@ -52,9 +52,9 @@ class SessionsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "sessions")
+  private val dbHelpers = DbHelpers(db, "sessions")
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
       | select sessions.id,
       |        sessions.user_guid,
       |        sessions.expires_at,
@@ -68,14 +68,14 @@ class SessionsDao @Inject() (
       |   from sessions
   """.stripMargin)
 
-  private[this] val InsertQuery = Query("""
+  private val InsertQuery = Query("""
     | insert into sessions
     | (id, user_guid, expires_at, created_at, created_by_guid, updated_at, updated_by_guid, deleted_at, deleted_by_guid, hash_code)
     | values
     | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid, {deleted_at}::timestamptz, {deleted_by_guid}::uuid, {hash_code}::bigint)
   """.stripMargin)
 
-  private[this] val UpdateQuery = Query("""
+  private val UpdateQuery = Query("""
     | update sessions
     |    set user_guid = {user_guid}::uuid,
     |        expires_at = {expires_at}::timestamptz,
@@ -90,7 +90,7 @@ class SessionsDao @Inject() (
     |    and (sessions.hash_code is null or sessions.hash_code != {hash_code}::bigint)
   """.stripMargin)
 
-  private[this] def bindQuery(query: Query, form: SessionForm): Query = {
+  private def bindQuery(query: Query, form: SessionForm): Query = {
     query.
       bind("user_guid", form.userGuid).
       bind("expires_at", form.expiresAt).

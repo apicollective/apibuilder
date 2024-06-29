@@ -13,7 +13,7 @@ class ApiBuilderServiceImportResolver @Inject()(
   versionsDao: VersionsDao,
   rollbarLogger: RollbarLogger,
 ) {
-  private[this] val logger = rollbarLogger.fingerprint(getClass.getName)
+  private val logger = rollbarLogger.fingerprint(getClass.getName)
 
   /**
    * Expands each import into its service definition, returning the list of imported services.
@@ -24,7 +24,7 @@ class ApiBuilderServiceImportResolver @Inject()(
   }
 
   @tailrec
-  private[this] def resolve(auth: Authorization, imports: List[Import], builder: ServiceBuilder): ServiceBuilder = {
+  private def resolve(auth: Authorization, imports: List[Import], builder: ServiceBuilder): ServiceBuilder = {
     imports match {
       case Nil => builder
       case imp :: rest => {
@@ -52,12 +52,12 @@ class ApiBuilderServiceImportResolver @Inject()(
 
 private[util] case class ServiceBuilder(services: Seq[Service] = Nil) {
 
-  private[this] val keysWithVersion: Set[String] = services.map(toKeyWithVersion).toSet
+  private val keysWithVersion: Set[String] = services.map(toKeyWithVersion).toSet
 
-  private[this] def toKeyWithVersion(service: Service): String = {
+  private def toKeyWithVersion(service: Service): String = {
     s"${service.organization.key}/${service.application.key}/${service.version}"
   }
-  private[this] def toKeyWithVersion(imp: Import): String = {
+  private def toKeyWithVersion(imp: Import): String = {
     s"${imp.organization.key}/${imp.application.key}/${imp.version}"
   }
 

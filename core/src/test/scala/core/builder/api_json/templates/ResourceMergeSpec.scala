@@ -8,7 +8,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class ResourceMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
 
-  private[this] def setupOperation(
+  private def setupOperation(
     templateOp: Operation,
     resourcePath: String = "/partner/statements"
   ): SpecOperation = {

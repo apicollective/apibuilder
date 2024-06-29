@@ -20,7 +20,7 @@ class ItemsDao @Inject() (
   // indexed is the application and thus join applications and
   // organizations. This is ONLY used to enforce the authorization
   // filter in findAll
-  private[this] val BaseQuery = io.flow.postgresql.Query("""
+  private val BaseQuery = io.flow.postgresql.Query("""
     select items.guid::text,
            items.detail::text,
            items.label,
@@ -30,7 +30,7 @@ class ItemsDao @Inject() (
       left join applications on items.application_guid = applications.guid and applications.deleted_at is null
   """)
 
-  private[this] val UpsertQuery = """
+  private val UpsertQuery = """
     insert into search.items
     (guid, organization_guid, application_guid, detail, label, description, content)
     values
@@ -45,7 +45,7 @@ class ItemsDao @Inject() (
               content = {content}
   """
 
-  private[this] val DeleteQuery = """
+  private val DeleteQuery = """
     delete from search.items where guid = {guid}::uuid
   """
 
@@ -87,7 +87,7 @@ class ItemsDao @Inject() (
     }
   }
   
-  private[this] def delete(implicit c: java.sql.Connection, guid: UUID): Unit = {
+  private def delete(implicit c: java.sql.Connection, guid: UUID): Unit = {
     SQL(DeleteQuery).on("guid" -> guid).execute()
   }
 
@@ -130,7 +130,7 @@ class ItemsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[Item] = {
+  private def parser(): RowParser[Item] = {
     SqlParser.get[UUID]("guid") ~
       SqlParser.str("detail") ~
       SqlParser.str("label") ~
@@ -146,7 +146,7 @@ class ItemsDao @Inject() (
     }
   }
 
-  private[this] def parseQuery(query: Query): (Option[String], Option[String]) = {
+  private def parseQuery(query: Query): (Option[String], Option[String]) = {
     val keywords = query.words match {
       case Nil => None
       case words => Some(words.mkString(" "))

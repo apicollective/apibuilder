@@ -3,7 +3,7 @@ package builder.api_json.templates
 import io.apibuilder.api.json.v0.models.Attribute
 
 trait AttributeMerge {
-  private[this] val merger = new ArrayMerge[Attribute] {
+  private val merger = new ArrayMerge[Attribute] {
     override def uniqueIdentifier(i: Attribute): String = i.name
 
     override def merge(original: Attribute, tpl: Attribute): Attribute = {

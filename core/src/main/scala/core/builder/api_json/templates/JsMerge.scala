@@ -39,7 +39,7 @@ object JsMerge {
    *     of 'group' to the type of the resource 'user_group'
    * This method collects the mappings from the template name to the actual model|resource type
    */
-  private[this] def typeCasts(json: ApiJson): Seq[TemplateTypeCast] = {
+  private def typeCasts(json: ApiJson): Seq[TemplateTypeCast] = {
     def casts(typeName: String, template: TemplateDeclaration) = {
       template.cast match {
         case None => Seq(TemplateTypeCast(typeName, template.name, typeName))
@@ -55,7 +55,7 @@ object JsMerge {
     }.toSeq
   }
 
-  private[this] def mergeTemplates(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
+  private def mergeTemplates(js: ApiJson, templates: Templates): ValidatedNec[String, ApiJson] = {
     (
       validateTemplateNames(js, templates),
       mergeModels(js, templates),
@@ -70,7 +70,7 @@ object JsMerge {
     }
   }
 
-  private[this] def mergeModels(js: ApiJson, templates: Templates): ValidatedNec[String, ModelMergeData] = {
+  private def mergeModels(js: ApiJson, templates: Templates): ValidatedNec[String, ModelMergeData] = {
     ModelMerge(templates.models.getOrElse(Map.empty)).merge(
       ModelMergeData(
         models = js.models,
@@ -79,20 +79,20 @@ object JsMerge {
     )
   }
 
-  private[this] def mergeResources(js: ApiJson, templates: Templates): ValidatedNec[String, ResourceMergeData] = {
+  private def mergeResources(js: ApiJson, templates: Templates): ValidatedNec[String, ResourceMergeData] = {
     ResourceMerge(templates.resources.getOrElse(Map.empty)).merge(
       ResourceMergeData(resources = js.resources)
     )
   }
 
-  private[this] def validateTemplateNames(js: ApiJson, templates: Templates): ValidatedNec[String, Unit] = {
+  private def validateTemplateNames(js: ApiJson, templates: Templates): ValidatedNec[String, Unit] = {
     (
       validateTemplateNamesModel(templates.models.getOrElse(Map.empty), js.models.keys.toSet),
       validateTemplateNamesInterface(templates.models.getOrElse(Map.empty), js.interfaces.keys.toSet)
     ).mapN { case (_, _) => () }
   }
 
-  private[this] def validateTemplateNamesModel(templateModels: Map[String, Model], names: Set[String]): ValidatedNec[String, Unit] = {
+  private def validateTemplateNamesModel(templateModels: Map[String, Model], names: Set[String]): ValidatedNec[String, Unit] = {
     templateModels.keys.filter(names.contains).toList match {
       case Nil => ().validNec
       case dups => dups.map { n =>
@@ -101,7 +101,7 @@ object JsMerge {
     }
   }
 
-  private[this] def validateTemplateNamesInterface(templateModels: Map[String, Model], names: Set[String]): ValidatedNec[String, Unit] = {
+  private def validateTemplateNamesInterface(templateModels: Map[String, Model], names: Set[String]): ValidatedNec[String, Unit] = {
     templateModels.keys.filter(names.contains).toList match {
       case Nil => ().validNec
       case dups => dups.map { n =>

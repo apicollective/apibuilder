@@ -28,7 +28,7 @@ object Primitives {
     }
   }
 
-  private[this] val byName: Map[String, Primitives] = All.map(x => x.toString.toLowerCase -> x).toMap
+  private val byName: Map[String, Primitives] = All.map(x => x.toString.toLowerCase -> x).toMap
 
   def apply(value: String): Option[Primitives] = byName.get(value.toLowerCase.trim)
 

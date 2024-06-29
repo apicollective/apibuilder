@@ -31,7 +31,7 @@ class CheckInvariantsProcessor @Inject()(
     ().validNec
   }
 
-  private[this] def sendResults(results: Seq[InvariantResult]): Unit = {
+  private def sendResults(results: Seq[InvariantResult]): Unit = {
     val (noErrors, withErrors) = results.partition(_.count == 0)
 
     if (withErrors.nonEmpty) {

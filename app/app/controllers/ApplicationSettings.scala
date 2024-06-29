@@ -16,9 +16,9 @@ class ApplicationSettings @Inject() (
                                       apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] def withRedirect(
+  private def withRedirect(
     result: Either[String, MainTemplate]
   ) (
     f: MainTemplate => Result
@@ -33,7 +33,7 @@ class ApplicationSettings @Inject() (
     }
   }
 
-  private[this] def mainTemplate(
+  private def mainTemplate(
     api: io.apibuilder.api.v0.Client,
     base: MainTemplate,
     applicationKey: String,

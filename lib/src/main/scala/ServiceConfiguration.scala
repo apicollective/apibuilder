@@ -9,7 +9,7 @@ case class ServiceConfiguration(
   assert(orgNamespace.trim == orgNamespace, s"orgNamespace[$orgNamespace] must be trimmed")
   assert(version.trim == version, s"version[$version] must be trimmed")
 
-  private[this] val ApplicationNamespaceNonLetterRegexp = """\.([^a-zA-Z])""".r
+  private val ApplicationNamespaceNonLetterRegexp = """\.([^a-zA-Z])""".r
 
   /**
     * Example: apidocSpec => apidoc.spec.v0

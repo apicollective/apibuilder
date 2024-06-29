@@ -14,11 +14,11 @@ class ScheduleTasksActor @Inject()(
   env: Environment
 ) extends Actor with ActorLogging with ErrorHandler  {
 
-  private[this] implicit val ec: ExecutionContext = context.system.dispatchers.lookup("schedule-tasks-actor-context")
+  private implicit val ec: ExecutionContext = context.system.dispatchers.lookup("schedule-tasks-actor-context")
 
-  private[this] case class UpsertTask(typ: TaskType)
+  private case class UpsertTask(typ: TaskType)
 
-  private[this] def schedule(
+  private def schedule(
     taskType: TaskType,
     interval: FiniteDuration
   )(implicit
@@ -31,14 +31,14 @@ class ScheduleTasksActor @Inject()(
     context.system.scheduler.scheduleWithFixedDelay(finalInitial, interval, self, UpsertTask(taskType))
   }
 
-  private[this] def scheduleOnce(taskType: TaskType): Unit = {
+  private def scheduleOnce(taskType: TaskType): Unit = {
     context.system.scheduler.scheduleOnce(FiniteDuration(10, SECONDS)) {
       UpsertTask(taskType)
     }
   }
 
 
-  private[this] val cancellables: Seq[Cancellable] = {
+  private val cancellables: Seq[Cancellable] = {
     import TaskType._
     scheduleOnce(ScheduleMigrateVersions)
     Seq(

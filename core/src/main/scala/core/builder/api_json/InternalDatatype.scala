@@ -48,15 +48,15 @@ object InternalDatatype {
 
 private[api_json] case class InternalDatatypeBuilder() {
 
-  private[this] val dynamicEnums = scala.collection.mutable.ListBuffer[InternalEnumForm]()
-  private[this] val dynamicModels = scala.collection.mutable.ListBuffer[InternalModelForm]()
-  private[this] val dynamicInterfaces = scala.collection.mutable.ListBuffer[InternalInterfaceForm]()
-  private[this] val dynamicUnions = scala.collection.mutable.ListBuffer[InternalUnionForm]()
+  private val dynamicEnums = scala.collection.mutable.ListBuffer[InternalEnumForm]()
+  private val dynamicModels = scala.collection.mutable.ListBuffer[InternalModelForm]()
+  private val dynamicInterfaces = scala.collection.mutable.ListBuffer[InternalInterfaceForm]()
+  private val dynamicUnions = scala.collection.mutable.ListBuffer[InternalUnionForm]()
 
-  private[this] val EnumMarker = "enum"
-  private[this] val InterfaceMarker = "interface"
-  private[this] val ModelMarker = "model"
-  private[this] val UnionMarker = "union"
+  private val EnumMarker = "enum"
+  private val InterfaceMarker = "interface"
+  private val ModelMarker = "model"
+  private val UnionMarker = "union"
 
   def enumForms: List[InternalEnumForm] = dynamicEnums.toList
   def modelForms: List[InternalModelForm] = dynamicModels.toList
@@ -67,14 +67,14 @@ private[api_json] case class InternalDatatypeBuilder() {
   private val MapRx = "^map\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
 
-  private[this] def apply(r: JsLookupResult): ValidatedNec[String, InternalDatatype] = {
+  private def apply(r: JsLookupResult): ValidatedNec[String, InternalDatatype] = {
     JsonUtil.asOptJsValue(r) match {
       case None => "must be an object".invalidNec
       case Some(v) => apply(v)
     }
   }
 
-  private[this] def apply(value: JsValue): ValidatedNec[String, InternalDatatype] = {
+  private def apply(value: JsValue): ValidatedNec[String, InternalDatatype] = {
     value.asOpt[String] match {
       case Some(v) => fromString(v)
       case None => value.asOpt[JsObject] match {
@@ -84,7 +84,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineEnum(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
+  private def inlineEnum(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicEnums.append(
         InternalEnumForm(dt.name, value - EnumMarker)
@@ -93,7 +93,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineModel(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
+  private def inlineModel(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicModels.append(
         InternalModelForm(this, dt.name, value - ModelMarker, prefix = None)
@@ -102,7 +102,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineInterface(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
+  private def inlineInterface(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicInterfaces.append(
         InternalInterfaceForm(this, dt.name, value - InterfaceMarker)
@@ -111,7 +111,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineUnion(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
+  private def inlineUnion(name: String, value: JsObject): ValidatedNec[String, InternalDatatype] = {
     fromString(name).map { dt =>
       dynamicUnions.append(
         InternalUnionForm(this, dt.name, value - UnionMarker)
@@ -120,7 +120,7 @@ private[api_json] case class InternalDatatypeBuilder() {
     }
   }
 
-  private[this] def inlineType(value: JsObject): ValidatedNec[String, InternalDatatype] = {
+  private def inlineType(value: JsObject): ValidatedNec[String, InternalDatatype] = {
     JsonUtil.asOptString(value \ EnumMarker) match {
       case Some(name) => inlineEnum(name, value)
       case None => {

@@ -31,13 +31,13 @@ class UsersDao @Inject() (
 ) {
 
   // TODO: Inject directly - here because of circular references
-  private[this] def membershipRequestsDao = injector.instanceOf[MembershipRequestsDao]
+  private def membershipRequestsDao = injector.instanceOf[MembershipRequestsDao]
 
   lazy val AdminUser: User = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
   }
 
-  private[this] val BaseQuery = Query(
+  private val BaseQuery = Query(
     s"""
     select users.guid,
            users.email,
@@ -49,7 +49,7 @@ class UsersDao @Inject() (
       from users
   """)
 
-  private[this] val InsertQuery =
+  private val InsertQuery =
     """
     insert into users
     (guid, email, name, nickname, avatar_url, gravatar_id, created_by_guid, updated_by_guid)
@@ -57,7 +57,7 @@ class UsersDao @Inject() (
     ({guid}::uuid, {email}, {name}, {nickname}, {avatar_url}, {gravatar_id}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private[this] val UpdateQuery =
+  private val UpdateQuery =
     """
   update users
      set email = {email},
@@ -166,11 +166,11 @@ class UsersDao @Inject() (
     }
   }
 
-  private[this] def toOptionString(value: Option[String]): Option[String] = {
+  private def toOptionString(value: Option[String]): Option[String] = {
     value.flatMap(toOptionString)
   }
 
-  private[this] def toOptionString(value: String): Option[String] = {
+  private def toOptionString(value: String): Option[String] = {
     Some(value.trim).filter(_.nonEmpty)
   }
 
@@ -198,7 +198,7 @@ class UsersDao @Inject() (
     }
   }
 
-  private[this] def doInsert(
+  private def doInsert(
     nickname: String,
     email: String,
     name: Option[String],

@@ -37,11 +37,11 @@ object VersionTag {
 }
 
 case class VersionTag(version: String) extends Ordered[VersionTag] {
-  private[this] val trimmedVersion = version.trim
+  private val trimmedVersion = version.trim
 
-  private[this] val Padding = 10000
-  private[this] val GithubVersionRx = """^v(\d+)$""".r
-  private[this] val parsed: List[VersionTagType] = trimmedVersion.split(VersionTag.Dash).map(VersionTag.parse).toList
+  private val Padding = 10000
+  private val GithubVersionRx = """^v(\d+)$""".r
+  private val parsed: List[VersionTagType] = trimmedVersion.split(VersionTag.Dash).map(VersionTag.parse).toList
 
   val sortKey: String = {
     parsed.map {

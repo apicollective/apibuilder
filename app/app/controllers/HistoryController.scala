@@ -9,7 +9,7 @@ class HistoryController @Inject() (
                                     val apiBuilderControllerComponents: ApiBuilderControllerComponents
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(
     orgKey: Option[String],

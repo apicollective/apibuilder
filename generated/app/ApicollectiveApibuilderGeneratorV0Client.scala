@@ -121,7 +121,7 @@ package io.apibuilder.generator.v0.models {
      */
     val all: scala.List[FileFlag] = scala.List(Scaffolding)
 
-    private[this]
+    private
     val byName: Map[String, FileFlag] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): FileFlag = fromString(value).getOrElse(UNDEFINED(value))
@@ -499,7 +499,7 @@ package io.apibuilder.generator.v0 {
     import io.apibuilder.generator.v0.models.json._
     import io.apibuilder.spec.v0.models.json._
 
-    private[this] val logger = play.api.Logger("io.apibuilder.generator.v0.Client")
+    private val logger = play.api.Logger("io.apibuilder.generator.v0.Client")
 
     logger.info(s"Initializing io.apibuilder.generator.v0.Client for url $baseUrl")
 

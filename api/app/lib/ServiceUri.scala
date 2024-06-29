@@ -12,7 +12,7 @@ case class ServiceUri(
   */
 object ServiceUri {
 
-  private[this] val Pattern = """^https?:\/\/([^\/]+)/([^\/]+)/([^\/]+)/([^\/]+)\/service.json$""".r
+  private val Pattern = """^https?:\/\/([^\/]+)/([^\/]+)/([^\/]+)/([^\/]+)\/service.json$""".r
 
   def parse(uri: String): Option[ServiceUri] = {
     uri.toLowerCase.trim match {

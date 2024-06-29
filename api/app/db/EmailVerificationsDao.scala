@@ -31,12 +31,12 @@ class EmailVerificationsDao @Inject() (
   organizationsDao: OrganizationsDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "email_verifications")
+  private val dbHelpers = DbHelpers(db, "email_verifications")
 
-  private[this] val TokenLength = 80
-  private[this] val HoursUntilTokenExpires = 168
+  private val TokenLength = 80
+  private val HoursUntilTokenExpires = 168
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
     select email_verifications.guid,
            email_verifications.user_guid,
            email_verifications.email,
@@ -45,7 +45,7 @@ class EmailVerificationsDao @Inject() (
       from email_verifications
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into email_verifications
     (guid, user_guid, email, token, expires_at, created_by_guid)
     values
@@ -136,7 +136,7 @@ class EmailVerificationsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[EmailVerification] = {
+  private def parser(): RowParser[EmailVerification] = {
     SqlParser.get[UUID]("guid") ~
     SqlParser.get[UUID]("user_guid") ~
     SqlParser.str("email") ~

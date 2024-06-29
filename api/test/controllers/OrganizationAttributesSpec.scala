@@ -8,7 +8,7 @@ class OrganizationAttributesSpec extends PlaySpec with MockClient with GuiceOneS
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val org = createOrganization()
+  private lazy val org = createOrganization()
 
   "PUT /organizations/:key/attributes" in {
     val attribute = createAttribute()

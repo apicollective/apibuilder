@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 class InternalDatatypeSpec extends AnyFunSpec with Matchers {
 
-  private[this] val internalDatatypeBuilder = InternalDatatypeBuilder()
+  private val internalDatatypeBuilder = InternalDatatypeBuilder()
 
   it("label") {
     Seq("string", "uuid", "[string]", "[uuid]", "map[string]", "map[uuid]").foreach { name =>

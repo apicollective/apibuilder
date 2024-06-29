@@ -9,7 +9,7 @@ import org.scalatestplus.play.PlaySpec
 class SubscriptionsSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val org = createOrganization()
+  private lazy val org = createOrganization()
 
   "POST /subscriptions" in {
     val user = createUser()

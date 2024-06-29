@@ -38,7 +38,7 @@ class RequestAuthenticationUtil @Inject() (
   apiClientProvider: ApiClientProvider
 ) {
 
-  private[this] def getMemberships(
+  private def getMemberships(
     sessionId: Option[String],
     org: Organization,
     user: User
@@ -53,7 +53,7 @@ class RequestAuthenticationUtil @Inject() (
     }
   }
 
-  private[this] def getOrganization(
+  private def getOrganization(
     sessionId: Option[String],
     key: String
   ) (

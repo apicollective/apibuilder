@@ -58,7 +58,7 @@ class PurgeDeletedProcessor @Inject()(
   }
 
   @tailrec
-  private[this] def deleteAll(table: Table)(f: DbRow[_] => Any): Unit =  {
+  private def deleteAll(table: Table)(f: DbRow[_] => Any): Unit =  {
     val all = nextDeletedRows(table)
     if (all.nonEmpty) {
       all.foreach { row =>
@@ -71,9 +71,9 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] val Limit = 1000
-  private[this] case class DbRow[T](pkey: T, deletedAt: DateTime)
-  private[this] def nextDeletedRows(table: Table): Seq[DbRow[_]] = {
+  private val Limit = 1000
+  private case class DbRow[T](pkey: T, deletedAt: DateTime)
+  private def nextDeletedRows(table: Table): Seq[DbRow[_]] = {
     db.withConnection { c =>
       Query(
         s"select ${table.pkey.name}::text as pkey, deleted_at from ${table.qualified}"
@@ -83,7 +83,7 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] def parser(primaryKey: PrimaryKey): RowParser[DbRow[_]] = {
+  private def parser(primaryKey: PrimaryKey): RowParser[DbRow[_]] = {
     import PrimaryKey._
     SqlParser.get[String]("pkey") ~
       SqlParser.get[DateTime]("deleted_at") map {
@@ -97,8 +97,8 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private[this] val deletedAtCache = TrieMap[Table, Boolean]()
-  private[this] val DeletedAtQuery = Query(
+  private val deletedAtCache = TrieMap[Table, Boolean]()
+  private val DeletedAtQuery = Query(
     """
       |select count(*)
       |  from information_schema.columns
@@ -106,7 +106,7 @@ class PurgeDeletedProcessor @Inject()(
       |   and table_name = {table_name}
       |   and column_name = 'deleted_at'
       |""".stripMargin)
-  private[this] def hasDeletedAt(table: Table): Boolean = {
+  private def hasDeletedAt(table: Table): Boolean = {
     deletedAtCache.getOrElseUpdate(table, {
       db.withConnection { c =>
         DeletedAtQuery
@@ -117,7 +117,7 @@ class PurgeDeletedProcessor @Inject()(
     })
   }
 
-  private[this] def softDelete(table: Table)(filter: Query => Query): Unit = {
+  private def softDelete(table: Table)(filter: Query => Query): Unit = {
     exec(
       filter(Query(
         s"update ${table.qualified} set deleted_at = now() - interval '45 days', deleted_by_guid = {deleted_by_guid}::uuid"
@@ -126,7 +126,7 @@ class PurgeDeletedProcessor @Inject()(
       ))
   }
 
-  private[this] def delete(table: Table)(filter: Query => Query): Unit = {
+  private def delete(table: Table)(filter: Query => Query): Unit = {
     if (hasDeletedAt(table)) {
       softDelete(table)(filter)
     }
@@ -136,7 +136,7 @@ class PurgeDeletedProcessor @Inject()(
     )
   }
 
-  private[this] def exec(q: Query): Unit = {
+  private def exec(q: Query): Unit = {
     db.withConnection { c =>
       q.anormSql().executeUpdate()(c)
     }

@@ -36,7 +36,7 @@ sealed trait PasswordAlgorithm {
 
 case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
 
-  private[this] val LogRounds = 13
+  private val LogRounds = 13
 
   override def hash(password: String): HashedPassword = {
     val salt = BCrypt.gensalt(LogRounds)
@@ -90,15 +90,15 @@ class UserPasswordsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val MinLength = 5
+  private val MinLength = 5
 
-  private[this] val BaseQuery = Query(
+  private val BaseQuery = Query(
     """
     select guid, user_guid, algorithm_key, hash
       from user_passwords
   """)
 
-  private[this] val InsertQuery =
+  private val InsertQuery =
     """
     insert into user_passwords
     (guid, user_guid, algorithm_key, hash, created_by_guid, updated_by_guid)
@@ -106,7 +106,7 @@ class UserPasswordsDao @Inject() (
     ({guid}::uuid, {user_guid}::uuid, {algorithm_key}, {hash}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private[this] val SoftDeleteByUserGuidQuery =
+  private val SoftDeleteByUserGuidQuery =
     """
     update user_passwords
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
@@ -154,7 +154,7 @@ class UserPasswordsDao @Inject() (
     ).execute()
   }
 
-  private[this] def softDeleteByUserGuid(implicit c: Connection, user: User, userGuid: UUID): Unit = {
+  private def softDeleteByUserGuid(implicit c: Connection, user: User, userGuid: UUID): Unit = {
     SQL(SoftDeleteByUserGuidQuery).on("deleted_by_guid" -> user.guid, "user_guid" -> userGuid).execute()
   }
 
@@ -175,7 +175,7 @@ class UserPasswordsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[UserPassword] = {
+  private def parser(): RowParser[UserPassword] = {
     SqlParser.get[UUID]("guid") ~
       SqlParser.get[UUID]("user_guid") ~
       SqlParser.str("algorithm_key") ~

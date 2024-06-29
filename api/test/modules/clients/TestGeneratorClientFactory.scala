@@ -27,8 +27,8 @@ case class MockGeneratorsClient (
 
 @Singleton
 class MockGeneratorsData @Inject() () {
-  private[this] case class InternalCacheKey(baseUrl: String, generatorKey: String)
-  private[this] val data = TrieMap[InternalCacheKey, Generator]()
+  private case class InternalCacheKey(baseUrl: String, generatorKey: String)
+  private val data = TrieMap[InternalCacheKey, Generator]()
 
   def add(baseUrl: String, generator: Generator): Unit = {
     data.put(InternalCacheKey(baseUrl, generator.key), generator)

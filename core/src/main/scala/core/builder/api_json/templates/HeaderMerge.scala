@@ -3,7 +3,7 @@ package builder.api_json.templates
 import io.apibuilder.api.json.v0.models.Header
 
 trait HeaderMerge extends AttributeMerge {
-  private[this] val merger = new ArrayMerge[Header] {
+  private val merger = new ArrayMerge[Header] {
     override def uniqueIdentifier(i: Header): String = i.name
 
     override def merge(original: Header, tpl: Header): Header = {

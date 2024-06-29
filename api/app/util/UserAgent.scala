@@ -10,7 +10,7 @@ class UserAgent @Inject() (
   appConfig: AppConfig
 ) {
 
-  private[this] val Prefixes: Seq[String] = Seq("http://", "https://")
+  private val Prefixes: Seq[String] = Seq("http://", "https://")
 
   def generate(
     orgKey: String,

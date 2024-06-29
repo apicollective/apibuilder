@@ -17,12 +17,12 @@ class OrganizationLogsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
     select guid::text, organization_guid, message
       from organization_logs
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into organization_logs
     (guid, organization_guid, message, created_by_guid)
     values
@@ -68,7 +68,7 @@ class OrganizationLogsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[OrganizationLog] = {
+  private def parser(): RowParser[OrganizationLog] = {
     SqlParser.get[UUID]("guid") ~
       SqlParser.get[UUID]("organization_guid") ~
       SqlParser.str("message") map {

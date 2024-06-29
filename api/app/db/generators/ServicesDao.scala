@@ -18,16 +18,16 @@ class ServicesDao @Inject() (
   generatorsDao: GeneratorsDao,
   internalTasksDao: InternalTasksDao
 ) {
-  private[this] val dbHelpers = DbHelpers(db, "generators.services")
+  private val dbHelpers = DbHelpers(db, "generators.services")
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select services.guid,
            services.uri,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("services")}
       from generators.services
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into generators.services
     (guid, uri, created_by_guid)
     values

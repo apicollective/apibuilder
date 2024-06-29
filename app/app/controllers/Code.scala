@@ -64,7 +64,7 @@ class Code @Inject() (
     }
   }
 
-  private[this] def withFiles(
+  private def withFiles(
     api: Client, orgKey: String, applicationKey: String, version: String, generatorKey: String
   ) (
     f: Seq[File] => Result

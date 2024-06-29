@@ -24,7 +24,7 @@ class GeneratorServiceUtil @Inject() (
   generatorClientFactory: GeneratorClientFactory
 ) extends ValidatedHelpers {
 
-  private[this] val log: Logger = Logger(this.getClass)
+  private val log: Logger = Logger(this.getClass)
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync(_) }
@@ -69,7 +69,7 @@ class GeneratorServiceUtil @Inject() (
   }
 
   @tailrec
-  private[this] def doSync(
+  private def doSync(
     client: Client,
     service: GeneratorService,
     pageSize: Long,
@@ -89,7 +89,7 @@ class GeneratorServiceUtil @Inject() (
     }
   }
 
-  private[this] def storeGenerators(service: GeneratorService, generators: Seq[Generator]): Unit = {
+  private def storeGenerators(service: GeneratorService, generators: Seq[Generator]): Unit = {
     sequenceUnique {
       generators.map { gen =>
         generatorsDao.upsert(

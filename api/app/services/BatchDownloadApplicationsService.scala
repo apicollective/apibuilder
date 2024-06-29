@@ -25,7 +25,7 @@ class BatchDownloadApplicationsService @Inject() (
     }
   }
 
-  private[this] def validateForm(
+  private def validateForm(
     auth: Authorization,
     orgKey: String,
     form: BatchDownloadApplicationForm,

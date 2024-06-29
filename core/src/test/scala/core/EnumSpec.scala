@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 class EnumSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-  private[this] val baseJson: String = """
+  private val baseJson: String = """
     {
       "name": "API Builder",
 

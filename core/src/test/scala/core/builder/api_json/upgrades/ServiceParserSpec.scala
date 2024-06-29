@@ -11,7 +11,7 @@ import scala.annotation.nowarn
 @nowarn("msg=value apidoc in class Service is deprecated: This field is no longer used in API Builder and may be removed in the future.")
 class ServiceParserSpec extends AnyFunSpec with Matchers with ServiceHelpers with ValidatedTestHelpers {
 
-  private[this] def parser: ServiceParser = ServiceParser()
+  private def parser: ServiceParser = ServiceParser()
 
   it("fromString") {
     expectInvalid {
