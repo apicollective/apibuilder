@@ -50,7 +50,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def applicationCreated(applicationGuid: UUID): Unit = {
+  private def applicationCreated(applicationGuid: UUID): Unit = {
     applicationsDao.findByGuid(Authorization.All, applicationGuid).foreach { application =>
       organizationsDao.findByGuid(Authorization.All, application.guid).foreach { org =>
         emails.deliver(
@@ -64,7 +64,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def emailVerificationCreated(guid: UUID): Unit = {
+  private def emailVerificationCreated(guid: UUID): Unit = {
     emailVerificationsDao.findByGuid(guid).foreach { verification =>
       usersDao.findByGuid(verification.userGuid).foreach { user =>
         email.sendHtml(
@@ -76,7 +76,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def membershipCreated(guid: UUID): Unit = {
+  private def membershipCreated(guid: UUID): Unit = {
     membershipsDao.findByGuid(Authorization.All, guid).foreach { membership =>
       emails.deliver(
         context = Emails.Context.OrganizationAdmin,
@@ -88,7 +88,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def membershipRequestCreated(guid: UUID): Unit = {
+  private def membershipRequestCreated(guid: UUID): Unit = {
     membershipRequestsDao.findByGuid(Authorization.All, guid).foreach { request =>
       emails.deliver(
         context = Emails.Context.OrganizationAdmin,
@@ -100,7 +100,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def membershipRequestAccepted(orgGuid: UUID, userGuid: UUID, role: MembershipRole): Unit = {
+  private def membershipRequestAccepted(orgGuid: UUID, userGuid: UUID, role: MembershipRole): Unit = {
     organizationsDao.findByGuid(Authorization.All, orgGuid).foreach { org =>
       usersDao.findByGuid(userGuid).foreach { user =>
         email.sendHtml(
@@ -112,7 +112,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def membershipRequestDeclined(orgGuid: UUID, userGuid: UUID): Unit = {
+  private def membershipRequestDeclined(orgGuid: UUID, userGuid: UUID): Unit = {
     organizationsDao.findByGuid(Authorization.All, orgGuid).foreach { org =>
       usersDao.findByGuid(userGuid).foreach { user =>
         email.sendHtml(
@@ -124,7 +124,7 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private[this] def passwordResetRequestCreated(guid: UUID): Unit = {
+  private def passwordResetRequestCreated(guid: UUID): Unit = {
     passwordResetRequestsDao.findByGuid(guid).foreach { request =>
       usersDao.findByGuid(request.userGuid).foreach { user =>
         email.sendHtml(

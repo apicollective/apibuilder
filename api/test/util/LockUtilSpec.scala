@@ -17,12 +17,12 @@ class LockUtilSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfter
 
   private implicit val ec: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(8))
 
-  private[this] def lockUtil: LockUtil = app.injector.instanceOf[LockUtil]
-  private[this] def db: Database = app.injector.instanceOf[Database]
+  private def lockUtil: LockUtil = app.injector.instanceOf[LockUtil]
+  private def db: Database = app.injector.instanceOf[Database]
 
   private val tableName = "lock_table1"
 
-  private[this] def exec(query: Query): Unit = {
+  private def exec(query: Query): Unit = {
     db.withConnection { c =>
       query.anormSql().executeUpdate()(c)
     }
@@ -33,7 +33,7 @@ class LockUtilSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfter
     exec(Query(s"create table $tableName(id bigint primary key, data text)"))
   }
 
-  private[this] def doWork(called: AtomicInteger): Unit = {
+  private def doWork(called: AtomicInteger): Unit = {
     Thread.sleep(50)
     called.incrementAndGet(): Unit
   }

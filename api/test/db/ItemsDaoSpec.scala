@@ -9,7 +9,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class ItemsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] def upsertItem(
+  private def upsertItem(
     org: Organization = createOrganization(),
     guid: UUID = UUID.randomUUID,
     label: String = "Test",

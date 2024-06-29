@@ -19,9 +19,9 @@ class Organizations @Inject() (
                                 config: Config
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] val apiBuilderSupportEmail: String = config.requiredString("apibuilder.supportEmail")
+  private val apiBuilderSupportEmail: String = config.requiredString("apibuilder.supportEmail")
 
   def show(orgKey: String, page: Int = 0, sortBy: Option[AppSortBy] = None, ord: Option[SortOrder] = None): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     request.api.Applications.get(
@@ -234,7 +234,7 @@ class Organizations @Inject() (
     }
   }
 
-  private[this] def hasMembershipRequests(api: Client, isAdmin: Boolean, orgGuid: UUID): Future[Boolean] = {
+  private def hasMembershipRequests(api: Client, isAdmin: Boolean, orgGuid: UUID): Future[Boolean] = {
     if (isAdmin) {
       api.MembershipRequests.get(orgGuid = Some(orgGuid), limit = 1).map(_.nonEmpty)
     } else {

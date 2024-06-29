@@ -171,7 +171,7 @@ class Organizations @Inject() (
     }
   }
 
-  private[this] def withAttribute(
+  private def withAttribute(
     name: String
   ) (
     f: Attribute => Result

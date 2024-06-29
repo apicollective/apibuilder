@@ -377,7 +377,7 @@ package io.apibuilder.spec.v0.models {
      */
     val all: scala.List[Method] = scala.List(Get, Post, Put, Patch, Delete, Head, Connect, Options, Trace)
 
-    private[this]
+    private
     val byName: Map[String, Method] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): Method = fromString(value).getOrElse(UNDEFINED(value))
@@ -412,7 +412,7 @@ package io.apibuilder.spec.v0.models {
      */
     val all: scala.List[ParameterLocation] = scala.List(Path, Query, Form, Header)
 
-    private[this]
+    private
     val byName: Map[String, ParameterLocation] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): ParameterLocation = fromString(value).getOrElse(UNDEFINED(value))
@@ -444,7 +444,7 @@ package io.apibuilder.spec.v0.models {
      */
     val all: scala.List[ResponseCodeOption] = scala.List(Default)
 
-    private[this]
+    private
     val byName: Map[String, ResponseCodeOption] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): ResponseCodeOption = fromString(value).getOrElse(UNDEFINED(value))
@@ -1565,7 +1565,7 @@ package io.apibuilder.spec.v0 {
   ) extends interfaces.Client {
     import io.apibuilder.spec.v0.models.json._
 
-    private[this] val logger = play.api.Logger("io.apibuilder.spec.v0.Client")
+    private val logger = play.api.Logger("io.apibuilder.spec.v0.Client")
 
     logger.info(s"Initializing io.apibuilder.spec.v0.Client for url $baseUrl")
 

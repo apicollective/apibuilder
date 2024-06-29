@@ -7,20 +7,20 @@ import org.scalatest.matchers.should.Matchers
 
 class InterfaceSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-  private[this] val person: Interface = makeInterface(
+  private val person: Interface = makeInterface(
     fields = Some(Seq(
       makeField(name = "name", required = true)
     ))
   )
 
-  private[this] val user: Model = makeModel(
+  private val user: Model = makeModel(
     interfaces = Some(Seq("person")),
     fields = Seq(
       makeField(name = "id")
     )
   )
 
-  private[this] def servicePersonUnionAndInterface(
+  private def servicePersonUnionAndInterface(
     interfaces: Seq[String],
     userModel: Model = makeModel()
   ): ApiJson = makeApiJson(

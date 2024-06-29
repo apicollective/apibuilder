@@ -41,7 +41,7 @@ class IndexApplicationProcessor @Inject()(
     ().validNec
   }
 
-  private[this] def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {
+  private def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {
     applicationsDao.findByGuid(Authorization.All, applicationGuid).flatMap { application =>
       organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
         (org, application)

@@ -52,7 +52,7 @@ class Util @Inject() (
   config: Config
 ) {
 
-  private[this] val ApiHost: String = config.requiredString("apibuilder.api.host")
+  private val ApiHost: String = config.requiredString("apibuilder.api.host")
   val Host: String = config.requiredString("apibuilder.app.host")
 
   def fullUrl(stub: String): String = s"$Host$stub"
@@ -66,7 +66,7 @@ class Util @Inject() (
     }
   }
 
-  private[this] val ApprovedDomains = Seq(
+  private val ApprovedDomains = Seq(
     "http://apidoc.me", "http://www.apidoc.me",
     "https://apidoc.me", "https://www.apidoc.me",
     "http://apibuilder.io", "http://www.apibuilder.io", "http://app.apibuilder.io", "http://ui.apibuilder.io",

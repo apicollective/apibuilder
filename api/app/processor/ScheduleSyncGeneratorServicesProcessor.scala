@@ -22,7 +22,7 @@ class ScheduleSyncGeneratorServicesProcessor @Inject()(
   }
 
   @tailrec
-  private[this] def doSyncAll(pageSize: Long, offset: Long): Unit = {
+  private def doSyncAll(pageSize: Long, offset: Long): Unit = {
     val all = servicesDao.findAll(
       Authorization.All,
       limit = pageSize,

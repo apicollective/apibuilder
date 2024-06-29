@@ -10,7 +10,7 @@ class SessionHelper @Inject() (
   sessionsDao: db.generated.SessionsDao
 ) {
 
-  private[this] val DefaultSessionExpirationHours = 24 * 30
+  private val DefaultSessionExpirationHours = 24 * 30
 
   def createAuthentication(u: User): Authentication = {
     val id = SessionIdGenerator.generate()

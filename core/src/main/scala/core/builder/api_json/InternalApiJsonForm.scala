@@ -39,7 +39,7 @@ private[api_json] case class InternalApiJsonForm(
     }
   }
 
-  private[this] lazy val declaredUnions: Seq[InternalUnionForm] = {
+  private lazy val declaredUnions: Seq[InternalUnionForm] = {
     (json \ "unions").asOpt[JsValue] match {
       case Some(unions: JsObject) => {
         unions.fields.flatMap { v =>
@@ -54,7 +54,7 @@ private[api_json] case class InternalApiJsonForm(
 
   def unions: Seq[InternalUnionForm] = declaredUnions ++ internalDatatypeBuilder.unionForms
 
-  private[this] def parseModels(js: JsValue, prefix: Option[String]): Seq[InternalModelForm] = {
+  private def parseModels(js: JsValue, prefix: Option[String]): Seq[InternalModelForm] = {
     (js \ "models").asOpt[JsObject] match {
       case Some(models) => {
         models.fields.flatMap { v =>
@@ -67,7 +67,7 @@ private[api_json] case class InternalApiJsonForm(
     }
   }
 
-  private[this] lazy val declaredModels: Seq[InternalModelForm] = parseModels(json, prefix = None)
+  private lazy val declaredModels: Seq[InternalModelForm] = parseModels(json, prefix = None)
 
   def templates: InternalTemplateForm = {
     (json \ "templates").asOpt[JsObject] match {
@@ -98,7 +98,7 @@ private[api_json] case class InternalApiJsonForm(
 
   def models: Seq[InternalModelForm] = declaredModels ++ internalDatatypeBuilder.modelForms
 
-  private[this] lazy val declaredEnums: Seq[InternalEnumForm] = {
+  private lazy val declaredEnums: Seq[InternalEnumForm] = {
     (json \ "enums").asOpt[JsValue] match {
       case Some(enums: JsObject) => {
         enums.fields.flatMap { v =>
@@ -126,7 +126,7 @@ private[api_json] case class InternalApiJsonForm(
 
   lazy val headers: Seq[InternalHeaderForm] = InternalHeaderForm(internalDatatypeBuilder, json)
 
-  private[this] def parseResources(json: JsValue): Seq[InternalResourceForm] = {
+  private def parseResources(json: JsValue): Seq[InternalResourceForm] = {
     (json \ "resources").asOpt[JsValue] match {
       case None => Seq.empty
 
@@ -553,7 +553,7 @@ object InternalModelForm {
     )
   }
 
-  private[this] def addPrefix(label: String, prefix: Option[String]): String = {
+  private def addPrefix(label: String, prefix: Option[String]): String = {
     prefix match {
       case None => label
       case Some(p) => s"$p $label"

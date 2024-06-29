@@ -55,7 +55,7 @@ class Emails @Inject() (
     })
   }
 
-  private[this] def eachSubscription(
+  private def eachSubscription(
     context: Emails.Context,
     organization: Organization,
     publication: Publication,

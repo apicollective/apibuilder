@@ -73,7 +73,7 @@ trait ErrorHandler {
     logger.error(msg(s"got an unhandled message: $description"))
   }
 
-  private[this] def msg(value: String) = {
+  private def msg(value: String) = {
     s"${getClass.getName}: $value"
   }
 

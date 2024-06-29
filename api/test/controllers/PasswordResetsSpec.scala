@@ -12,7 +12,7 @@ class PasswordResetsSpec extends PlaySpec with MockClient with GuiceOneServerPer
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] def resetPassword(token: String, pwd: String): Future[Authentication] = {
+  private def resetPassword(token: String, pwd: String): Future[Authentication] = {
     client.passwordResets.post(
       PasswordReset(token = token, password = pwd)
     )

@@ -12,9 +12,9 @@ case class TypeLabel(
   typeName: String
 ) {
 
-  private[this] val logger: Logger = Logger(this.getClass)
+  private val logger: Logger = Logger(this.getClass)
 
-  private[this] val localResolver = DatatypeResolver(
+  private val localResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name),
     interfaceNames = service.interfaces.map(_.name),
     modelNames = service.models.map(_.name),
@@ -23,9 +23,9 @@ case class TypeLabel(
 
   // The last type will be the concrete type. All other types are
   // wrappers (e.g. Map, List)
-  private[this] val types = TextDatatype.parse(typeName)
+  private val types = TextDatatype.parse(typeName)
 
-  private[this] val typeLink = types.lastOption match {
+  private val typeLink = types.lastOption match {
     case None => {
       // Unknown type - just display the type name w/out a link
       typeName
@@ -49,7 +49,7 @@ case class TypeLabel(
   val link: String = buildLabel(typeLink, types.reverse.drop(1))
 
   @scala.annotation.tailrec
-  private[this] def buildLabel(label: String, types: Seq[TextDatatype]): String = {
+  private def buildLabel(label: String, types: Seq[TextDatatype]): String = {
     types match {
       case Nil => {
         label
@@ -68,7 +68,7 @@ case class TypeLabel(
     * Looks for the specified type in the imports for this service. If
     * found, returns a link to that type.
     */
-  private[this] def importedTypeLink(typeName: String): Option[String] = {
+  private def importedTypeLink(typeName: String): Option[String] = {
     service.imports.flatMap { imp =>
       imp.enums.find { name => s"${imp.namespace}.enums.$name" == typeName } match {
         case Some(shortName) => {
@@ -98,7 +98,7 @@ case class TypeLabel(
     }.headOption
   }
 
-  private[this] def importLink(imp: Import, kind: String, shortName: String, fullName: String): String = {
+  private def importLink(imp: Import, kind: String, shortName: String, fullName: String): String = {
     Href(
       s"$fullName:${imp.version}",
       Href.prefix(imp.organization.key, imp.application.key, imp.version) + s"#$kind-${UrlKey.generate(shortName)}"

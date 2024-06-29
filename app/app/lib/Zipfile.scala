@@ -6,7 +6,7 @@ import io.apibuilder.generator.v0.models.File
 
 object Zipfile {
 
-  private[this] val UTF8 = "UTF-8"
+  private val UTF8 = "UTF-8"
 
   def create(dirName: String, files: Seq[File]): java.io.File = {
     val path = java.io.File.createTempFile(dirName, ".zip")
@@ -14,7 +14,7 @@ object Zipfile {
     path
   }
 
-  private[this] def createForFile(
+  private def createForFile(
     zip: java.io.File,
     files: Seq[File],
     prefix: String

@@ -24,13 +24,13 @@ trait MockClient extends db.Helpers
 
   def wsClient: WSClient = injector.instanceOf[WSClient]
 
-  private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
+  private val DefaultDuration = FiniteDuration(3, SECONDS)
 
-  private[this] lazy val apiToken = {
+  private lazy val apiToken = {
     val token = tokensDao.create(testUser, TokenForm(userGuid = testUser.guid))
     tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
-  private[this] lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
+  private lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
 
   lazy val client: Client = newClient(testUser)
 

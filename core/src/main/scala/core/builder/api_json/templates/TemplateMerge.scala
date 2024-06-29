@@ -12,9 +12,9 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
 
   def templateDeclarations(tpl: T): Seq[TemplateDeclaration]
 
-  private[this] def format(value: String): String = value.toLowerCase().trim
+  private def format(value: String): String = value.toLowerCase().trim
 
-  private[this] val templatesByName: Map[String, T] = templates.map { case (name, t) =>
+  private val templatesByName: Map[String, T] = templates.map { case (name, t) =>
     format(name) -> t
   }
 
@@ -22,7 +22,7 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
     resolveTemplateDeclarations(templates.getOrElse(Nil).distinctBy(_.name), resolved = Nil)
   }
 
-  private[this] def resolveTemplateDeclarations(templates: Seq[TemplateDeclaration], resolved: Seq[String]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
+  private def resolveTemplateDeclarations(templates: Seq[TemplateDeclaration], resolved: Seq[String]): ValidatedNec[String, Seq[TemplateDeclaration]] = {
     templates.map { tpl =>
       val fName = format(tpl.name)
       if (resolved.contains(fName)) {

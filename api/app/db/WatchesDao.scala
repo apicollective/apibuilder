@@ -22,9 +22,9 @@ class WatchesDao @Inject() (
   usersDao: UsersDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "watches")
+  private val dbHelpers = DbHelpers(db, "watches")
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select watches.guid,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("watches")},
            users.guid as user_guid,
@@ -67,7 +67,7 @@ class WatchesDao @Inject() (
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into watches
     (guid, user_guid, application_guid, created_by_guid)
     values

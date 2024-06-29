@@ -26,7 +26,7 @@ class OrgAttributeUtil @Inject() (
    * Fetch all attribute values specified for this organization,
    * filtered by those matching names.
    */
-  private[this] def getAllAttributes(organizationGuid: UUID, names: Seq[String]): Seq[Attribute] = {
+  private def getAllAttributes(organizationGuid: UUID, names: Seq[String]): Seq[Attribute] = {
     names match {
       case Nil => Nil
       case _ => {

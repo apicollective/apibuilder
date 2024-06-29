@@ -5,7 +5,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class UserPasswordsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] lazy val user = upsertUser("michael@mailinator.com")
+  private lazy val user = upsertUser("michael@mailinator.com")
 
   "have distinct keys for all algorithms" in {
     val keys = PasswordAlgorithm.All.map(_.key.toLowerCase)

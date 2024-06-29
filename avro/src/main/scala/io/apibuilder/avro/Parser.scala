@@ -103,7 +103,7 @@ private[avro] case class Builder() {
 
 case class Parser(config: ServiceConfiguration) {
 
-  private[this] val builder: Builder = Builder()
+  private val builder: Builder = Builder()
 
   def parse(
     path: File

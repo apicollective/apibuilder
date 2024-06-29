@@ -49,7 +49,7 @@ object OriginalUtil {
     }
   }
 
-  private[this] def guessApiOrServiceJson(o: JsObject): Option[OriginalType] = {
+  private def guessApiOrServiceJson(o: JsObject): Option[OriginalType] = {
     // service.json has these defined as array; api.json as maps
     val fields = Seq("enums", "interfaces", "unions", "models")
 

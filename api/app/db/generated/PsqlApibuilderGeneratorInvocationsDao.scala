@@ -55,7 +55,7 @@ trait BaseGeneratorInvocationsDao {
 
   def db: Database
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
       | select generator_invocations.id,
       |        generator_invocations.key,
       |        generator_invocations.organization_key,
@@ -166,18 +166,18 @@ class GeneratorInvocationsDao @Inject() (
   override val db: Database
 ) extends BaseGeneratorInvocationsDao {
 
-  private[this] val idGenerator = IdGenerator("gni")
+  private val idGenerator = IdGenerator("gni")
 
   def randomId(): String = idGenerator.randomId()
 
-  private[this] val InsertQuery = Query("""
+  private val InsertQuery = Query("""
     | insert into generator_invocations
     | (id, key, organization_key, application_key, updated_by_guid, hash_code)
     | values
     | ({id}, {key}, {organization_key}, {application_key}, {updated_by_guid}, {hash_code}::bigint)
   """.stripMargin)
 
-  private[this] val UpdateQuery = Query("""
+  private val UpdateQuery = Query("""
     | update generator_invocations
     |    set key = {key},
     |        organization_key = {organization_key},
@@ -188,7 +188,7 @@ class GeneratorInvocationsDao @Inject() (
     |    and generator_invocations.hash_code != {hash_code}::bigint
   """.stripMargin)
 
-  private[this] def bindQuery(query: Query, form: GeneratorInvocationForm): Query = {
+  private def bindQuery(query: Query, form: GeneratorInvocationForm): Query = {
     query.
       bind("key", form.key).
       bind("organization_key", form.organizationKey).
@@ -196,7 +196,7 @@ class GeneratorInvocationsDao @Inject() (
       bind("hash_code", form.hashCode())
   }
 
-  private[this] def toNamedParameter(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Seq[NamedParameter] = {
+  private def toNamedParameter(updatedBy: UUID, id: String, form: GeneratorInvocationForm): Seq[NamedParameter] = {
     Seq(
       "id" -> id,
       "key" -> form.key,

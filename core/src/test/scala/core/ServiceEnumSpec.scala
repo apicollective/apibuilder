@@ -10,11 +10,11 @@ import play.api.libs.json.JsString
 
 class ServiceEnumSpec extends AnyFunSpec with Matchers with ApiJsonHelpers with ValidatedTestHelpers {
 
-  private[this] val ageGroupField: Field = makeField(name = "age_group", `type` = "age_group")
-  private[this] val ageGroupParameter: Parameter = makeParameter(name = "age_group", `type` = "age_group")
-  private[this] val twentiesEnumValue: EnumValue = makeEnumValue(name = "Twenties")
+  private val ageGroupField: Field = makeField(name = "age_group", `type` = "age_group")
+  private val ageGroupParameter: Parameter = makeParameter(name = "age_group", `type` = "age_group")
+  private val twentiesEnumValue: EnumValue = makeEnumValue(name = "Twenties")
 
-  private[this] def setup[T](
+  private def setup[T](
     twentiesEnumValue: EnumValue = twentiesEnumValue,
     field: Field = ageGroupField,
     parameter: Parameter = ageGroupParameter,

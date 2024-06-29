@@ -15,10 +15,10 @@ class ApiClientProvider @Inject() (
   config: Config
 ) {
 
-  private[this] val baseUrl = config.requiredString("apibuilder.api.host")
-  private[this] val apiAuth = Authorization.Basic(config.requiredString("apibuilder.api.token"))
+  private val baseUrl = config.requiredString("apibuilder.api.host")
+  private val apiAuth = Authorization.Basic(config.requiredString("apibuilder.api.token"))
 
-  private[this] def newClient(sessionId: Option[String]): Client = {
+  private def newClient(sessionId: Option[String]): Client = {
     new io.apibuilder.api.v0.Client(
       wSClient,
       baseUrl = baseUrl,
@@ -29,7 +29,7 @@ class ApiClientProvider @Inject() (
     )
   }
 
-  private[this] val unauthenticatedClient = newClient(None)
+  private val unauthenticatedClient = newClient(None)
 
   def clientForSessionId(sessionId: Option[String]): Client  = {
     sessionId match {

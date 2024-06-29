@@ -6,7 +6,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 final class ProductionTaskProcessorsSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  private[this] def companion = app.injector.instanceOf[TaskActorCompanion]
+  private def companion = app.injector.instanceOf[TaskActorCompanion]
 
   "each task type is assigned a processor" in {
     val missing = TaskType.all.filterNot(companion.all.contains)

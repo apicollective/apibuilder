@@ -10,7 +10,7 @@ class SearchController @Inject() (
                                    util: Util
 ) extends ApiBuilderController {
   
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(q: Option[String], org: Option[String], page: Int = 0) = Anonymous.async { implicit request =>
     val finalQuery = Seq(

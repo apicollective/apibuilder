@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 
 class TemplateSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-  private[this] def makeModelWithTemplate(templateName: String): Model = {
+  private def makeModelWithTemplate(templateName: String): Model = {
     makeModel(templates = Some(Seq(makeTemplateDeclaration(name = templateName))))
   }
 

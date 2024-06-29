@@ -34,7 +34,7 @@ package io.apibuilder.generator.v0.anorm.conversions {
       }
     }
 
-    private[this] def parseJson[T](f: play.api.libs.json.JsValue => T, columnName: String, value: String) = {
+    private def parseJson[T](f: play.api.libs.json.JsValue => T, columnName: String, value: String) = {
       Try {
         f(
           play.api.libs.json.Json.parse(value)

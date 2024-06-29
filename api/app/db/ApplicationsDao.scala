@@ -19,9 +19,9 @@ class ApplicationsDao @Inject() (
   tasksDao: InternalTasksDao,
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "applications")
+  private val dbHelpers = DbHelpers(db, "applications")
 
-  private[this] val BaseQuery = Query(
+  private val BaseQuery = Query(
     s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
            ${AuditsDao.query("applications")},
@@ -42,7 +42,7 @@ class ApplicationsDao @Inject() (
     """
   )
 
-  private[this] val InsertQuery =
+  private val InsertQuery =
     """
     insert into applications
     (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
@@ -50,7 +50,7 @@ class ApplicationsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val UpdateQuery =
+  private val UpdateQuery =
     """
     update applications
        set name = {name},
@@ -60,7 +60,7 @@ class ApplicationsDao @Inject() (
      where guid = {guid}::uuid
   """
 
-  private[this] val InsertMoveQuery =
+  private val InsertMoveQuery =
     """
     insert into application_moves
     (guid, application_guid, from_organization_guid, to_organization_guid, created_by_guid)
@@ -68,7 +68,7 @@ class ApplicationsDao @Inject() (
     ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val UpdateOrganizationQuery =
+  private val UpdateOrganizationQuery =
     """
     update applications
        set organization_guid = {org_guid}::uuid,
@@ -76,7 +76,7 @@ class ApplicationsDao @Inject() (
      where guid = {guid}::uuid
   """
 
-  private[this] val UpdateVisibilityQuery =
+  private val UpdateVisibilityQuery =
     """
     update applications
        set visibility = {visibility},
@@ -355,7 +355,7 @@ class ApplicationsDao @Inject() (
     }
   }
 
-  private[this] def withTasks(
+  private def withTasks(
     guid: UUID,
     f: java.sql.Connection => Unit
   ): Unit = {

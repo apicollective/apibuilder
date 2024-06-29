@@ -10,9 +10,9 @@ class ApiBuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
   with db.Helpers
 {
 
-  private[this] def apibuilderServiceImportResolver: ApiBuilderServiceImportResolver = app.injector.instanceOf[ApiBuilderServiceImportResolver]
+  private def apibuilderServiceImportResolver: ApiBuilderServiceImportResolver = app.injector.instanceOf[ApiBuilderServiceImportResolver]
 
-  private[this] def createServiceVersion(
+  private def createServiceVersion(
     name: String = "user",
     version: String,
     imports: Seq[Import] = Nil,
@@ -29,11 +29,11 @@ class ApiBuilderServiceImportResolverSpec extends PlaySpec with GuiceOneAppPerSu
     svc
   }
 
-  private[this] def resolve(service: Service): Seq[String] = {
+  private def resolve(service: Service): Seq[String] = {
     apibuilderServiceImportResolver.resolve(Authorization.All, service).map(toLabel)
   }
 
-  private[this] def toLabel(service: Service): String = {
+  private def toLabel(service: Service): String = {
     s"${service.organization.key}/${service.application.key}/${service.version}"
   }
 

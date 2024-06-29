@@ -5,7 +5,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class UserAgentSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  private[this] val userAgent = app.injector.instanceOf[UserAgent]
+  private val userAgent = app.injector.instanceOf[UserAgent]
 
   "user agent generates valid strings" in {
     userAgent.generate(

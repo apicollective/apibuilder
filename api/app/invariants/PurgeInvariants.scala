@@ -4,8 +4,8 @@ import io.flow.postgresql.Query
 import org.joda.time.DateTime
 
 object PurgeInvariants {
-  private[this] case class PurgeTable(name: String, retentionMonths: Int)
-  private[this] val Tables = Seq(
+  private case class PurgeTable(name: String, retentionMonths: Int)
+  private val Tables = Seq(
     PurgeTable("organizations", 12),
     PurgeTable("applications", 6),
     PurgeTable("versions", 6)

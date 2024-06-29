@@ -19,10 +19,10 @@ class MembershipRequestsDao @Inject() (
   organizationLogsDao: OrganizationLogsDao
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "membership_requests")
+  private val dbHelpers = DbHelpers(db, "membership_requests")
 
   // TODO: Properly select domains
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select membership_requests.guid,
            membership_requests.role,
            membership_requests.created_at::text,
@@ -44,7 +44,7 @@ class MembershipRequestsDao @Inject() (
       join users on users.guid = membership_requests.user_guid
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
    insert into membership_requests
    (guid, organization_guid, user_guid, role, created_by_guid)
    values
@@ -92,7 +92,7 @@ class MembershipRequestsDao @Inject() (
     doAccept(createdBy, request, s"$email joined as ${request.role} by verifying their email address")
   }
 
-  private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
+  private def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
     db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy, request.organization, message)
       dbHelpers.delete(c, createdBy, request.guid)
@@ -116,7 +116,7 @@ class MembershipRequestsDao @Inject() (
     }
   }
 
-  private[this] def assertUserCanReview(user: User, request: MembershipRequest): Unit = {
+  private def assertUserCanReview(user: User, request: MembershipRequest): Unit = {
     require(
       membershipsDao.isUserAdmin(user, request.organization),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"

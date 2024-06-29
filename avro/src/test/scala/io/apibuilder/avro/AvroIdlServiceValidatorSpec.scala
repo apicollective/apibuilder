@@ -9,7 +9,7 @@ import java.io.File
 
 class AvroIdlServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
-  private[this] val validator: AvroIdlServiceValidator = AvroIdlServiceValidator(
+  private val validator: AvroIdlServiceValidator = AvroIdlServiceValidator(
     ServiceConfiguration(
       orgKey = "gilt",
       orgNamespace = "io.apibuilder",

@@ -19,11 +19,11 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] def makeCodeForm(attributes: Seq[Attribute] = Nil) = CodeForm(
+  private def makeCodeForm(attributes: Seq[Attribute] = Nil) = CodeForm(
     attributes = attributes
   )
 
-  private[this] def makeAttribute(): Attribute = {
+  private def makeAttribute(): Attribute = {
     Attribute(
       name = randomString(),
       value = randomString()

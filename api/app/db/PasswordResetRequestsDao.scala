@@ -28,12 +28,12 @@ class PasswordResetRequestsDao @Inject() (
   usersDao: UsersDao
 ) {
 
-  private[this] val TokenLength = 80
-  private[this] val HoursUntilTokenExpires = 72
+  private val TokenLength = 80
+  private val HoursUntilTokenExpires = 72
 
-  private[this] val dbHelpers = DbHelpers(db, "password_resets")
+  private val dbHelpers = DbHelpers(db, "password_resets")
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
     select password_resets.guid,
            password_resets.user_guid,
            password_resets.token,
@@ -41,7 +41,7 @@ class PasswordResetRequestsDao @Inject() (
       from password_resets
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into password_resets
     (guid, user_guid, token, expires_at, created_by_guid)
     values
@@ -121,7 +121,7 @@ class PasswordResetRequestsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[PasswordReset] = {
+  private def parser(): RowParser[PasswordReset] = {
     SqlParser.get[UUID]("guid") ~
     SqlParser.get[UUID]("user_guid") ~
     SqlParser.str("token") ~

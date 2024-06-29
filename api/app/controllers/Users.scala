@@ -24,11 +24,11 @@ class Users @Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] case class UserAuthenticationForm(email: String, password: String)
-  private[this] implicit val userAuthenticationFormReads: Reads[UserAuthenticationForm] = Json.reads[UserAuthenticationForm]
+  private case class UserAuthenticationForm(email: String, password: String)
+  private implicit val userAuthenticationFormReads: Reads[UserAuthenticationForm] = Json.reads[UserAuthenticationForm]
 
-  private[this] case class GithubAuthenticationForm(token: String)
-  private[this] implicit val githubAuthenticationFormReads: Reads[GithubAuthenticationForm] = Json.reads[GithubAuthenticationForm]
+  private case class GithubAuthenticationForm(token: String)
+  private implicit val githubAuthenticationFormReads: Reads[GithubAuthenticationForm] = Json.reads[GithubAuthenticationForm]
 
   def get(
     guid: Option[UUID],
@@ -188,7 +188,7 @@ class Users @Inject() (
     }
   }
 
-  private[this] def requireSystemUser(user: User): Unit = {
+  private def requireSystemUser(user: User): Unit = {
     require(
       user.guid == UsersDao.AdminUserGuid,
       "Action restricted to the system admin user"

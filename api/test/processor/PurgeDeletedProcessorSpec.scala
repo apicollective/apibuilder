@@ -13,10 +13,10 @@ import java.util.UUID
 
 class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers {
 
-  private[this] def processor: PurgeDeletedProcessor = app.injector.instanceOf[PurgeDeletedProcessor]
-  private[this] def database: Database = app.injector.instanceOf[Database]
+  private def processor: PurgeDeletedProcessor = app.injector.instanceOf[PurgeDeletedProcessor]
+  private def database: Database = app.injector.instanceOf[Database]
 
-  private[this] def isDeleted(table: String, guid: UUID): Boolean = {
+  private def isDeleted(table: String, guid: UUID): Boolean = {
     database.withConnection { c =>
       Query(s"select count(*) from $table")
         .equals("guid", guid)
@@ -24,7 +24,7 @@ class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with H
     }.head == 0
   }
 
-  private[this] def softDelete(table: String, guid: UUID, deletedAt: DateTime): Unit = {
+  private def softDelete(table: String, guid: UUID, deletedAt: DateTime): Unit = {
     database.withConnection { c =>
       Query(s"update $table set deleted_at = {deleted_at}::timestamptz, deleted_by_guid = {deleted_by_guid}::uuid")
         .equals("guid", guid)

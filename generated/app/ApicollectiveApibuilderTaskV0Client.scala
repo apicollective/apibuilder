@@ -88,7 +88,7 @@ package io.apibuilder.task.v0.models {
      */
     val all: scala.List[TaskType] = scala.List(Email, CheckInvariants, IndexApplication, ScheduleMigrateVersions, MigrateVersion, PurgeDeleted, ScheduleSyncGeneratorServices, SyncGeneratorService, DiffVersion, UserCreated)
 
-    private[this]
+    private
     val byName: Map[String, TaskType] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): TaskType = fromString(value).getOrElse(UNDEFINED(value))
@@ -479,7 +479,7 @@ package io.apibuilder.task.v0 {
     import io.apibuilder.common.v0.models.json._
     import io.apibuilder.task.v0.models.json._
 
-    private[this] val logger = play.api.Logger("io.apibuilder.task.v0.Client")
+    private val logger = play.api.Logger("io.apibuilder.task.v0.Client")
 
     logger.info(s"Initializing io.apibuilder.task.v0.Client for url $baseUrl")
 

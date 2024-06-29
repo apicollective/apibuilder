@@ -13,9 +13,9 @@ class ExampleJsonSpec  extends PlaySpec
 {
   import ServiceBuilder._
 
-  private[this] lazy val service: Service = readService("../spec/apibuilder-spec.json")
-  private[this] lazy val exampleAll = ExampleJson.allFields(service)
-  private[this] lazy val exampleMinimal = ExampleJson.requiredFieldsOnly(service)
+  private lazy val service: Service = readService("../spec/apibuilder-spec.json")
+  private lazy val exampleAll = ExampleJson.allFields(service)
+  private lazy val exampleMinimal = ExampleJson.requiredFieldsOnly(service)
 
   "simple model" in {
     val js = exampleAll.sample("info").get

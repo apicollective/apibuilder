@@ -13,8 +13,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class GeneratorServiceUtilSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHelpers {
 
-  private[this] def util: GeneratorServiceUtil = app.injector.instanceOf[GeneratorServiceUtil]
-  private[this] val data: MockGeneratorsData = app.injector.instanceOf[MockGeneratorsData]
+  private def util: GeneratorServiceUtil = app.injector.instanceOf[GeneratorServiceUtil]
+  private val data: MockGeneratorsData = app.injector.instanceOf[MockGeneratorsData]
 
   "syncAll" in {
     val s1 = createGeneratorService()

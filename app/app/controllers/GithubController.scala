@@ -51,7 +51,7 @@ class GithubController @javax.inject.Inject() (
     }
   }
 
-  private[this] def getAccessToken(code: String): Future[Either[Throwable, String]] = {
+  private def getAccessToken(code: String): Future[Either[Throwable, String]] = {
     val form = Json.obj(
       "client_id" -> github.clientId,
       "client_secret" -> github.clientSecret,

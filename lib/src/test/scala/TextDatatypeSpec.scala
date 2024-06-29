@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 class TextDatatypeSpec extends AnyFunSpec with Matchers {
 
-  private[this] def label(types: Seq[TextDatatype]): String = TextDatatype.label(types)
+  private def label(types: Seq[TextDatatype]): String = TextDatatype.label(types)
 
   it("primitives") {
     label(TextDatatype.parse("string")) should be("string")

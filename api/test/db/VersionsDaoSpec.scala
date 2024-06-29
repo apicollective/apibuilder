@@ -9,7 +9,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with ValidatedTestHelpers {
 
-  private[this] val Original = createOriginal()
+  private val Original = createOriginal()
 
   "with an application" must {
 

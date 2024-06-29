@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 class KindSpec extends AnyFunSpec with Matchers {
 
-  private[this] val resolver = DatatypeResolver(
+  private val resolver = DatatypeResolver(
     enumNames = Nil,
     interfaceNames = Nil,
     modelNames = Nil,

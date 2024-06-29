@@ -8,8 +8,8 @@ class ApplicationMetadataSpec extends PlaySpec with MockClient with GuiceOneServ
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val org = createOrganization()
-  private[this] lazy val application = {
+  private lazy val org = createOrganization()
+  private lazy val application = {
     val a = createApplication(org)
     createVersion(a, version = "1.0.0")
     createVersion(a, version = "2.0.0")

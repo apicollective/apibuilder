@@ -20,7 +20,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val BaseQuery = Query(
+  private val BaseQuery = Query(
     """
     select email_verification_confirmations.guid,
            email_verification_confirmations.email_verification_guid,
@@ -28,7 +28,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() (
       from email_verification_confirmations
   """)
 
-  private[this] val InsertQuery =
+  private val InsertQuery =
     """
     insert into email_verification_confirmations
     (guid, email_verification_guid, created_by_guid)
@@ -77,7 +77,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[EmailVerificationConfirmation] = {
+  private def parser(): RowParser[EmailVerificationConfirmation] = {
     SqlParser.get[UUID]("guid") ~
       SqlParser.get[UUID]("email_verification_guid") ~
       SqlParser.get[DateTime]("created_at") map {

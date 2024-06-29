@@ -66,7 +66,7 @@ class Code @Inject() (
     }
   }
 
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def getByGeneratorKey(
     orgKey: String,
@@ -211,22 +211,22 @@ class Code @Inject() (
     }
   }
 
-  private[this] def withCodeForm(body: JsValue)(f: CodeForm => Future[Result]) = {
+  private def withCodeForm(body: JsValue)(f: CodeForm => Future[Result]) = {
     body.validate[CodeForm] match {
       case e: JsError => Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
       case s: JsSuccess[CodeForm] => f(s.get)
     }
   }
 
-  private[this] def conflict(message: String): Result = {
+  private def conflict(message: String): Result = {
     conflict(Seq(message))
   }
 
-  private[this] def conflict(messages: Seq[String]): Result = {
+  private def conflict(messages: Seq[String]): Result = {
     Conflict(Json.toJson(Validation.errors(messages)))
   }
 
-  private[this] def recordInvocation(params: CodeParams, generatorKey: String): Unit = {
+  private def recordInvocation(params: CodeParams, generatorKey: String): Unit = {
     generatorInvocationsDao.insert(Constants.DefaultUserGuid, GeneratorInvocationForm(
       key = generatorKey,
       organizationKey = Some(params.orgKey),

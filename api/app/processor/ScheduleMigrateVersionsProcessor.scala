@@ -23,8 +23,8 @@ class ScheduleMigrateVersionsProcessor @Inject()(
   }
 
 
-  private[this] val Limit = 1000
-  private[this] val VersionsNeedingUpgrade = Query(
+  private val Limit = 1000
+  private val VersionsNeedingUpgrade = Query(
     s"""
       |select v.guid
       |  from versions v
@@ -41,7 +41,7 @@ class ScheduleMigrateVersionsProcessor @Inject()(
     .bind("task_type", TaskType.MigrateVersion.toString)
 
   @tailrec
-  private[this] def scheduleMigrationTasks(): Unit = {
+  private def scheduleMigrationTasks(): Unit = {
     val versionGuids = db.withConnection { implicit c =>
       VersionsNeedingUpgrade
         .as(SqlParser.get[_root_.java.util.UUID](1).*)

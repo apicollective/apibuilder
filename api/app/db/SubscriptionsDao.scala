@@ -21,14 +21,14 @@ class SubscriptionsDao @Inject() (
   injector: Injector
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "subscriptions")
+  private val dbHelpers = DbHelpers(db, "subscriptions")
 
   // TODO: resolve cicrular dependency
-  private[this] def organizationsDao = injector.instanceOf[OrganizationsDao]
-  private[this] def subscriptionsDao = injector.instanceOf[SubscriptionsDao]
-  private[this] def usersDao = injector.instanceOf[UsersDao]
+  private def organizationsDao = injector.instanceOf[OrganizationsDao]
+  private def subscriptionsDao = injector.instanceOf[SubscriptionsDao]
+  private def usersDao = injector.instanceOf[UsersDao]
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select subscriptions.guid,
            subscriptions.publication,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")},
@@ -49,7 +49,7 @@ class SubscriptionsDao @Inject() (
       join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into subscriptions
     (guid, organization_guid, publication, user_guid, created_by_guid)
     values

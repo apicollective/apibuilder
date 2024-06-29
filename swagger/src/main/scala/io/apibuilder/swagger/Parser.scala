@@ -168,7 +168,7 @@ case class Parser(config: ServiceConfiguration) {
    * Selects the first successful response by looking first for '*' and then the lowest response code in
    * the range [200, 300)
    */
-  private[this] def selectSuccessfulResponse(responses: Map[String, swagger.Response]): Option[swagger.Response] = {
+  private def selectSuccessfulResponse(responses: Map[String, swagger.Response]): Option[swagger.Response] = {
     responses.get("*").orElse {
       responses.keys.flatMap(_.toIntOption)
         .filter(_ >= 200)

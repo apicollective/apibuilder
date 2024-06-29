@@ -21,7 +21,7 @@ class GeneratorsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select generators.guid,
            generators.key,
            generators.name,
@@ -38,14 +38,14 @@ class GeneratorsDao @Inject() (
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into generators.generators
     (guid, service_guid, key, name, description, language, attributes, created_by_guid)
     values
     ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {attributes}::json, {created_by_guid}::uuid)
   """
 
-  private[this] val SoftDeleteByKeyQuery = """
+  private val SoftDeleteByKeyQuery = """
     update generators.generators
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where key = lower(trim({key}))
@@ -93,7 +93,7 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  private[this] def isDifferent(generator: Generator, form: GeneratorForm): Boolean = {
+  private def isDifferent(generator: Generator, form: GeneratorForm): Boolean = {
     generator.name != form.generator.name ||
     generator.language != form.generator.language ||
     generator.attributes != form.generator.attributes ||
@@ -136,7 +136,7 @@ class GeneratorsDao @Inject() (
     guid
   }
 
-  private[this] def optionIfEmpty(value: String): Option[String] = {
+  private def optionIfEmpty(value: String): Option[String] = {
     value.trim match {
       case "" => None
       case v => Some(v)
@@ -149,7 +149,7 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String): Unit = {
+  private def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String): Unit = {
     SQL(SoftDeleteByKeyQuery).on(
       "deleted_by_guid" -> deletedBy.guid,
       "service_guid" -> serviceGuid,
@@ -196,7 +196,7 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[GeneratorWithService] = {
+  private def parser(): RowParser[GeneratorWithService] = {
     SqlParser.get[_root_.java.util.UUID]("service_guid") ~
       SqlParser.str("service_uri") ~
       io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("service") ~

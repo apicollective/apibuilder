@@ -11,7 +11,7 @@ import play.api.libs.json.{JsString, JsValue, Json}
 
 class ServiceMapSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-  private[this] def setup[T](field: Field)(f: ValidatedNec[String, Service] => T): T= {
+  private def setup[T](field: Field)(f: ValidatedNec[String, Service] => T): T= {
     f(
       TestHelper.serviceValidator(
         makeApiJson(
@@ -21,7 +21,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
     )
   }
 
-  private[this] def expectError(typ: String, default: JsValue): Assertion = {
+  private def expectError(typ: String, default: JsValue): Assertion = {
     setup(makeField(name = "tags", `type` = typ, default = Some(
       default
     ))) { v =>
@@ -29,7 +29,7 @@ class ServiceMapSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
     }
   }
 
-  private[this] def expectSuccess(typ: String, default: JsValue): Assertion = {
+  private def expectSuccess(typ: String, default: JsValue): Assertion = {
     setup(makeField(name = "tags", `type` = typ, default = Some(
       default
     ))) { v =>

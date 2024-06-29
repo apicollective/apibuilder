@@ -19,7 +19,7 @@ class VersionValidator @Inject() (
     authErrors ++ keyErrors
   }
 
-  private[this] def validateAuthorization(user: User, org: Organization): Seq[String] = {
+  private def validateAuthorization(user: User, org: Organization): Seq[String] = {
     if (membershipsDao.isUserMember(user, org)) {
       Nil
     } else {
@@ -27,7 +27,7 @@ class VersionValidator @Inject() (
     }
   }
 
-  private[this] def validateKey(
+  private def validateKey(
     org: Organization,
     newApplicationKey: String,
     existingApplicationKey: Option[String]

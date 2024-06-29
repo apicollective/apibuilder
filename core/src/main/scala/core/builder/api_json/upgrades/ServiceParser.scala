@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
  */
 case class ServiceParser() {
 
-  private[this] val logger: Logger = Logger(this.getClass)
+  private val logger: Logger = Logger(this.getClass)
 
   def fromString(js: String): ValidatedNec[String, Service] = {
     Try {
@@ -45,10 +45,10 @@ case class ServiceParser() {
     }
   }
 
-  private[this] val DefaultApidoc: Apidoc = Apidoc(version = "1.0.0")
+  private val DefaultApidoc: Apidoc = Apidoc(version = "1.0.0")
 
   @nowarn("msg=value apidoc in class Service is deprecated: This field is no longer used in API Builder and may be removed in the future.")
-  private[this] def upgrade(service: Service): Service = {
+  private def upgrade(service: Service): Service = {
     service.apidoc match {
       case Some(_) => service
       case None => {

@@ -19,7 +19,7 @@ class Members @Inject() (
                           apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
-  private[this] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
     request.withMember {
@@ -170,7 +170,7 @@ class Members @Inject() (
     }
   }
 
-  private[this] def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: MembershipRole): Unit = {
+  private def createMembership(api: io.apibuilder.api.v0.Client, org: Organization, userGuid: UUID, role: MembershipRole): Unit = {
     val membershipRequest = Await.result(
       api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role),
       1500.millis
@@ -181,7 +181,7 @@ class Members @Inject() (
     )
   }
 
-  private[this] def toOption(value: String): Option[String] = {
+  private def toOption(value: String): Option[String] = {
     value.trim match {
       case "" => None
       case v => Some(v)

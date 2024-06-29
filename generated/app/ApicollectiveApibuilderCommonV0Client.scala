@@ -52,7 +52,7 @@ package io.apibuilder.common.v0.models {
      */
     val all: scala.List[MembershipRole] = scala.List(Member, Admin)
 
-    private[this]
+    private
     val byName: Map[String, MembershipRole] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): MembershipRole = fromString(value).getOrElse(UNDEFINED(value))
@@ -336,7 +336,7 @@ package io.apibuilder.common.v0 {
   ) extends interfaces.Client {
     import io.apibuilder.common.v0.models.json._
 
-    private[this] val logger = play.api.Logger("io.apibuilder.common.v0.Client")
+    private val logger = play.api.Logger("io.apibuilder.common.v0.Client")
 
     logger.info(s"Initializing io.apibuilder.common.v0.Client for url $baseUrl")
 

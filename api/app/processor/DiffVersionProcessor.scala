@@ -29,7 +29,7 @@ class DiffVersionProcessor @Inject()(
     ().validNec
   }
 
-  private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID): Unit = {
+  private def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID): Unit = {
     versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).foreach { oldVersion =>
       versionsDao.findByGuid(Authorization.All, newVersionGuid).foreach { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
@@ -51,7 +51,7 @@ class DiffVersionProcessor @Inject()(
     }
   }
 
-  private[this] def versionUpdated(
+  private def versionUpdated(
                                     version: Version,
                                     diffs: Seq[Diff],
                                   ): Unit = {
@@ -73,7 +73,7 @@ class DiffVersionProcessor @Inject()(
     }
   }
 
-  private[this] def versionUpdatedMaterialOnly(
+  private def versionUpdatedMaterialOnly(
                                                 version: Version,
                                                 diffs: Seq[Diff],
                                               ): Unit = {
@@ -96,7 +96,7 @@ class DiffVersionProcessor @Inject()(
     }
   }
 
-  private[this] def sendVersionUpsertedEmail(
+  private def sendVersionUpsertedEmail(
                                               publication: Publication,
                                               version: Version,
                                               diffs: Seq[Diff],

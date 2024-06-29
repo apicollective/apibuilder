@@ -8,13 +8,13 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] def getApplication(version: Version): Application = {
+  private def getApplication(version: Version): Application = {
     applicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
       sys.error("Could not find application for version: " + version)
     }
   }
 
-  private[this] def createChange(
+  private def createChange(
     description: String = "Breaking difference - " + UUID.randomUUID.toString,
     org: Organization = createOrganization()
   ): Change = {

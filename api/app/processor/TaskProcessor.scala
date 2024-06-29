@@ -69,7 +69,7 @@ abstract class TaskProcessorWithData[T](
     }
   }
 
-  private[this] def parseData(data: JsValue): ValidatedNec[String, T] = {
+  private def parseData(data: JsValue): ValidatedNec[String, T] = {
     data.asOpt[T] match {
       case None => "Failed to parse data".invalidNec
       case Some(instance) => instance.validNec
@@ -83,7 +83,7 @@ abstract class BaseTaskProcessor(
   val typ: TaskType
 ) {
 
-  private[this] val Limit = 100
+  private val Limit = 100
 
   final def process(): Unit = {
     args.lockUtil.lock(s"tasks:$typ") { _ =>
@@ -100,7 +100,7 @@ abstract class BaseTaskProcessor(
 
   def processTask(task: Task): ValidatedNec[String, Unit]
 
-  private[this] def processRecordSafe(task: Task): Unit = {
+  private def processRecordSafe(task: Task): Unit = {
     Try {
       processTask(task)
     } match {
@@ -117,7 +117,7 @@ abstract class BaseTaskProcessor(
     }
   }
 
-  private[this] def setErrors(task: Task, errors: Seq[String], stacktrace: Option[String]): Unit = {
+  private def setErrors(task: Task, errors: Seq[String], stacktrace: Option[String]): Unit = {
     val numAttempts = task.numAttempts + 1
 
     args.dao.update(

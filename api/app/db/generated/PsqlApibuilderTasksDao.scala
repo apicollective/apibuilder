@@ -78,7 +78,7 @@ trait BaseTasksDao {
 
   def db: Database
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
       | select tasks.id,
       |        tasks.type,
       |        tasks.type_id,
@@ -310,7 +310,7 @@ class TasksDao @Inject() (
   override val db: Database
 ) extends BaseTasksDao {
 
-  private[this] val UpsertQuery = Query("""
+  private val UpsertQuery = Query("""
     | insert into tasks
     | (id, type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, updated_by_guid, hash_code)
     | values
@@ -329,7 +329,7 @@ class TasksDao @Inject() (
     | returning id
   """.stripMargin)
 
-  private[this] val UpdateQuery = Query("""
+  private val UpdateQuery = Query("""
     | update tasks
     |    set type = {type},
     |        type_id = {type_id},
@@ -345,7 +345,7 @@ class TasksDao @Inject() (
     |    and tasks.hash_code != {hash_code}::bigint
   """.stripMargin)
 
-  private[this] def bindQuery(query: Query, form: TaskForm): Query = {
+  private def bindQuery(query: Query, form: TaskForm): Query = {
     query.
       bind("type", form.`type`).
       bind("type_id", form.typeId).
@@ -358,7 +358,7 @@ class TasksDao @Inject() (
       bind("hash_code", form.hashCode())
   }
 
-  private[this] def toNamedParameter(updatedBy: UUID, form: TaskForm): Seq[NamedParameter] = {
+  private def toNamedParameter(updatedBy: UUID, form: TaskForm): Seq[NamedParameter] = {
     Seq(
       "id" -> form.id,
       "type" -> form.`type`,

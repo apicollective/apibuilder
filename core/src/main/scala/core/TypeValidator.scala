@@ -157,7 +157,7 @@ case class TypeValidator(
   enums: Iterable[TypesProviderEnum] = Seq.empty
 ) {
 
-  private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
+  private val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
 
   private def parseJsonOrNone(value: String): Option[JsValue] = {
     Try(Json.parse(value)) match {

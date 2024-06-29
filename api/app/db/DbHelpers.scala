@@ -13,14 +13,14 @@ case class DbHelpers(
   tableName: String
 ) {
 
-  private[this] val softDeleteQueryById = Query(s"""
+  private val softDeleteQueryById = Query(s"""
       update $tableName
          set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
        where id = {id}
          and deleted_at is null
   """)
 
-  private[this] val softDeleteQueryByGuid = Query(s"""
+  private val softDeleteQueryByGuid = Query(s"""
       update $tableName
          set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
        where guid = {guid}::uuid

@@ -10,7 +10,7 @@ import javax.inject.Inject
 class TaskDispatchActorCompanion @Inject() (
   database: Database
 ) {
-  private[this] val TypesQuery = Query(
+  private val TypesQuery = Query(
     "select distinct type from tasks where next_attempt_at <= now()"
   )
 

@@ -9,9 +9,9 @@ import java.util.UUID
 
 class IndexApplicationProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with TestHelper {
 
-  private[this] def processor = injector.instanceOf[IndexApplicationProcessor]
+  private def processor = injector.instanceOf[IndexApplicationProcessor]
 
-  private[this] def indexApplication(guid: UUID): Unit = {
+  private def indexApplication(guid: UUID): Unit = {
     expectValid {
       processor.processRecord(guid)
     }

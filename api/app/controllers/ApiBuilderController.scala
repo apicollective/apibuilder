@@ -58,7 +58,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  private[this] def withRole(org: Organization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
+  private def withRole(org: Organization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
     val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
       Authorization.All, org, user, roles
     ).map(_.role)
@@ -77,7 +77,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  private[this] def jsonError(message: String): JsValue = {
+  private def jsonError(message: String): JsValue = {
     Json.toJson(
       Validation.error(
         message

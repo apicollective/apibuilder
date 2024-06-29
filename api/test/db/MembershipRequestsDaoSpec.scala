@@ -9,8 +9,8 @@ import java.util.UUID
 
 class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] lazy val org: Organization = createOrganization()
-  private[this] lazy val member: User = upsertUser("gilt-member@bryzek.com")
+  private lazy val org: Organization = createOrganization()
+  private lazy val member: User = upsertUser("gilt-member@bryzek.com")
   
   "create member" in {
     val thisOrg = createOrganization()

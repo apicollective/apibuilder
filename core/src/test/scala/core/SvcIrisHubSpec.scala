@@ -9,8 +9,8 @@ import org.scalatest.matchers.should.Matchers
 
 class SvcIrisHubSpec extends AnyFunSpec with Matchers with ValidatedHelpers with ValidatedTestHelpers {
 
-  private[this] val Filenames: Seq[String] = Seq("svc-iris-hub-0-0-1.json")
-  private[this] val Dir: String = "core/src/test/resources"
+  private val Filenames: Seq[String] = Seq("svc-iris-hub-0-0-1.json")
+  private val Dir: String = "core/src/test/resources"
 
   it("should parse valid json") {
     Filenames.foreach { name =>

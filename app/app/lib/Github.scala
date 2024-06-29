@@ -10,11 +10,11 @@ class Github @Inject() (
 
   lazy val clientId: String = config.requiredString("apibuilder.github.oauth.client.id")
   lazy val clientSecret: String = config.requiredString("apibuilder.github.oauth.client.secret")
-  private[this] lazy val baseUrl = util.fullUrl("/login/github/callback")
+  private lazy val baseUrl = util.fullUrl("/login/github/callback")
 
-  private[this] val Scopes = Seq("user:email")
+  private val Scopes = Seq("user:email")
 
-  private[this] val OauthUrl = "https://github.com/login/oauth/authorize"
+  private val OauthUrl = "https://github.com/login/oauth/authorize"
 
   def oauthUrl(returnUrl: Option[String]): String = {
     val finalUrl = URLEncoder.encode(

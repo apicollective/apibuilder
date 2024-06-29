@@ -30,7 +30,7 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private[this] def parseRawJson(rawJson: String): ValidatedNec[String, InternalApiJsonForm] = {
+  private def parseRawJson(rawJson: String): ValidatedNec[String, InternalApiJsonForm] = {
     if (rawJson.trim == "") {
       "No Data".invalidNec
     } else {
@@ -83,7 +83,7 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private[this] def validateInternalApiJsonForm(rawInput: String, form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
+  private def validateInternalApiJsonForm(rawInput: String, form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
     sequenceUnique(Seq(
       validateInfo(form.info),
       validateKey(form.key),

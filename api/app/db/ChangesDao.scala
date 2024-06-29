@@ -21,7 +21,7 @@ class ChangesDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val BaseQuery = Query(
+  private val BaseQuery = Query(
     s"""
     select changes.guid,
            changes.type,
@@ -48,7 +48,7 @@ class ChangesDao @Inject() (
       join users on users.guid = changes.changed_by_guid
   """)
 
-  private[this] val InsertQuery =
+  private val InsertQuery =
     """
     insert into changes
     (guid, application_guid, from_version_guid, to_version_guid, type, description, is_material, changed_at, changed_by_guid, created_by_guid)
@@ -158,7 +158,7 @@ class ChangesDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[io.apibuilder.api.v0.models.Change] = {
+  private def parser(): RowParser[io.apibuilder.api.v0.models.Change] = {
     SqlParser.get[UUID]("guid") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~

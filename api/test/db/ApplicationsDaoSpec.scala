@@ -10,14 +10,14 @@ import java.util.UUID
 
 class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private[this] val Original = io.apibuilder.api.v0.models.Original(
+  private val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj(
       "name" -> s"test-${UUID.randomUUID}"
     ).toString
   )
 
-  private[this] def upsertApplication(
+  private def upsertApplication(
     nameOption: Option[String] = None,
     org: Organization = testOrg,
     visibility: Visibility = Visibility.Organization
@@ -33,7 +33,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     }
   }
 
-  private[this] def findByKey(org: Organization, key: String): Option[Application] = {
+  private def findByKey(org: Organization, key: String): Option[Application] = {
     applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
   }
 

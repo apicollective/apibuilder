@@ -13,9 +13,9 @@ class AttributesDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "attributes")
+  private val dbHelpers = DbHelpers(db, "attributes")
 
-  private[this] val BaseQuery = Query(s"""
+  private val BaseQuery = Query(s"""
     select attributes.guid,
            attributes.name,
            attributes.description,
@@ -23,7 +23,7 @@ class AttributesDao @Inject() (
       from attributes
   """)
 
-  private[this] val InsertQuery = """
+  private val InsertQuery = """
     insert into attributes
     (guid, name, description, created_by_guid, updated_by_guid)
     values

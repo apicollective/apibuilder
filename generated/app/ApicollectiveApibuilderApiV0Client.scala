@@ -29,7 +29,7 @@ package io.apibuilder.api.v0.models {
 
     val all: scala.List[DiffType] = scala.List(DiffBreaking, DiffNonBreaking)
 
-    private[this] val byName: Map[String, DiffType] = all.map(x => x.toString.toLowerCase -> x).toMap
+    private val byName: Map[String, DiffType] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): DiffType = fromString(value).getOrElse(UNDEFINED(value))
 
@@ -61,7 +61,7 @@ package io.apibuilder.api.v0.models {
 
     val all: scala.List[ItemDetailType] = scala.List(ApplicationSummary)
 
-    private[this] val byName: Map[String, ItemDetailType] = all.map(x => x.toString.toLowerCase -> x).toMap
+    private val byName: Map[String, ItemDetailType] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): ItemDetailType = fromString(value).getOrElse(UNDEFINED(value))
 
@@ -707,7 +707,7 @@ package io.apibuilder.api.v0.models {
      */
     val all: scala.List[AppSortBy] = scala.List(Name, CreatedAt, UpdatedAt, Visibility)
 
-    private[this]
+    private
     val byName: Map[String, AppSortBy] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): AppSortBy = fromString(value).getOrElse(UNDEFINED(value))
@@ -763,7 +763,7 @@ package io.apibuilder.api.v0.models {
      */
     val all: scala.List[OriginalType] = scala.List(ApiJson, AvroIdl, ServiceJson, Swagger)
 
-    private[this]
+    private
     val byName: Map[String, OriginalType] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): OriginalType = fromString(value).getOrElse(UNDEFINED(value))
@@ -834,7 +834,7 @@ package io.apibuilder.api.v0.models {
      */
     val all: scala.List[Publication] = scala.List(MembershipRequestsCreate, MembershipsCreate, ApplicationsCreate, VersionsCreate, VersionsMaterialChange)
 
-    private[this]
+    private
     val byName: Map[String, Publication] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): Publication = fromString(value).getOrElse(UNDEFINED(value))
@@ -867,7 +867,7 @@ package io.apibuilder.api.v0.models {
      */
     val all: scala.List[SortOrder] = scala.List(Asc, Desc)
 
-    private[this]
+    private
     val byName: Map[String, SortOrder] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): SortOrder = fromString(value).getOrElse(UNDEFINED(value))
@@ -919,7 +919,7 @@ package io.apibuilder.api.v0.models {
      */
     val all: scala.List[Visibility] = scala.List(User, Organization, Public)
 
-    private[this]
+    private
     val byName: Map[String, Visibility] = all.map(x => x.toString.toLowerCase -> x).toMap
 
     def apply(value: String): Visibility = fromString(value).getOrElse(UNDEFINED(value))
@@ -2509,7 +2509,7 @@ package io.apibuilder.api.v0 {
     import io.apibuilder.generator.v0.models.json._
     import io.apibuilder.spec.v0.models.json._
 
-    private[this] val logger = play.api.Logger("io.apibuilder.api.v0.Client")
+    private val logger = play.api.Logger("io.apibuilder.api.v0.Client")
 
     logger.info(s"Initializing io.apibuilder.api.v0.Client for url $baseUrl")
 

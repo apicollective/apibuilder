@@ -7,7 +7,7 @@ import io.apibuilder.api.v0.models.User
 
 object DateHelper {
 
-  private[this] val DefaultLabel = "N/A"
+  private val DefaultLabel = "N/A"
 
   def shortDate(
     tz: UserTimeZone,

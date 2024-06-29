@@ -15,14 +15,14 @@ class OrganizationDomainsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  private[this] val dbHelpers = DbHelpers(db, "organization_domains")
+  private val dbHelpers = DbHelpers(db, "organization_domains")
 
-  private[this] val BaseQuery = Query("""
+  private val BaseQuery = Query("""
     select guid, organization_guid, domain
       from organization_domains
   """)
 
-  private[this] val UpsertQuery = """
+  private val UpsertQuery = """
     insert into organization_domains
     (guid, organization_guid, domain, created_by_guid)
     values
@@ -78,7 +78,7 @@ class OrganizationDomainsDao @Inject() (
     }
   }
 
-  private[this] def parser(): RowParser[OrganizationDomain] = {
+  private def parser(): RowParser[OrganizationDomain] = {
     SqlParser.get[UUID]("guid") ~
     SqlParser.get[UUID]("organization_guid") ~
     SqlParser.str("domain") map {
