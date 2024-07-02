@@ -708,8 +708,8 @@ case class ServiceDiff(
     }
 
     def diffAttributes(prefix: String, a: Seq[Attribute], b: Seq[Attribute]): Seq[Diff] = {
-      val aMap = Map(a map ( attr => attr.name -> attr ): _*)
-      val bMap = Map(b map ( attr => attr.name -> attr ): _*)
+      val aMap = Map(a map ( attr => attr.name -> attr )*)
+      val bMap = Map(b map ( attr => attr.name -> attr )*)
 
       val aNames = aMap.keys.toSeq
       val bNames = bMap.keys.toSeq

@@ -66,7 +66,7 @@ private[templates] abstract class TemplateMerge[T](templates: Map[String, T]) {
     remaining.toList match {
       case Nil if first.isEmpty => None
       case Nil => Some(first)
-      case one :: rest => union((first ++ one).distinct, rest: _*)
+      case one :: rest => union((first ++ one).distinct, rest*)
     }
   }
 }

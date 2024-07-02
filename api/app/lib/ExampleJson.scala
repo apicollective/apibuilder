@@ -67,7 +67,7 @@ case class ExampleJson(service: Service, selection: Selection) {
           filter { f => selection == Selection.All || f.required }.
           map { field =>
             (field.name, mockValue(field, typeAcc))
-          }: _*
+          }*
       )
     )
 

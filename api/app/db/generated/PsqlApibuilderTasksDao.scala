@@ -403,7 +403,7 @@ class TasksDao @Inject() (
   def upsertBatchByTypeIdAndType(c: Connection, updatedBy: UUID, forms: Seq[TaskForm]): Unit = {
     if (forms.nonEmpty) {
       val params = forms.map(toNamedParameter(updatedBy, _))
-      BatchSql(UpsertQuery.sql(), params.head, params.tail: _*).execute()(c)
+      BatchSql(UpsertQuery.sql(), params.head, params.tail*).execute()(c)
       ()
     }
   }
@@ -447,7 +447,7 @@ class TasksDao @Inject() (
   def updateBatchWithConnection(c: Connection, updatedBy: UUID, forms: Seq[TaskForm]): Unit = {
     if (forms.nonEmpty) {
       val params = forms.map(toNamedParameter(updatedBy, _))
-      BatchSql(UpdateQuery.sql(), params.head, params.tail: _*).execute()(c)
+      BatchSql(UpdateQuery.sql(), params.head, params.tail*).execute()(c)
       ()
     }
   }

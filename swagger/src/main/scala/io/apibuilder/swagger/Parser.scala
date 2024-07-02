@@ -229,7 +229,7 @@ case class Parser(config: ServiceConfiguration) {
               plural = Text.pluralize(enumTypeName),
               description = None,
               deprecation = None,
-              values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.asScala.map { value =>
+              values = param.asInstanceOf[AbstractSerializableParameter[?]].getEnum.asScala.map { value =>
                 EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
               }.toSeq,
               attributes = Seq(),

@@ -573,7 +573,7 @@ package io.apibuilder.generator.v0 {
         "User-Agent" -> Constants.UserAgent,
         "X-Apidoc-Version" -> Constants.Version,
         "X-Apidoc-Version-Major" -> Constants.VersionMajor.toString
-      ).addHttpHeaders(defaultHeaders : _*)
+      ).addHttpHeaders(defaultHeaders *)
       auth.fold(holder) {
         case Authorization.Basic(username, password) => {
           holder.withAuth(username, password.getOrElse(""), play.api.libs.ws.WSAuthScheme.BASIC)

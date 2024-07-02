@@ -13,7 +13,7 @@ lazy val allScalacOptions = Seq(
 
 lazy val lib = project
   .in(file("lib"))
-  .settings(commonSettings: _*)
+  .settings(commonSettings*)
 
 val avroVersion = "1.11.1"
 
@@ -59,7 +59,7 @@ lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)
   .aggregate(generated, lib)
-  .settings(commonSettings: _*)
+  .settings(commonSettings*)
   .settings(
     resolvers += "Typesafe Maven Repository" at "https://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
@@ -73,7 +73,7 @@ lazy val core = project
 lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
-  .settings(commonSettings: _*)
+  .settings(commonSettings*)
   .settings(
     libraryDependencies ++= Seq(
       ws
@@ -85,7 +85,7 @@ lazy val api = project
   .dependsOn(generated, core % "compile->compile;test->test")
   .aggregate(generated, core)
   .enablePlugins(PlayScala, JavaAgent)
-  .settings(commonSettings: _*)
+  .settings(commonSettings*)
   .settings(
     scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
@@ -126,7 +126,7 @@ lazy val app = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala, JavaAgent, SbtTwirl)
-  .settings(commonSettings: _*)
+  .settings(commonSettings*)
   .settings(
     scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),

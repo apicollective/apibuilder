@@ -5,14 +5,14 @@ import cats.data.ValidatedNec
 
 trait ValidatedTestHelpers {
 
-  def expectValid[T](r: ValidatedNec[_, T]): T = {
+  def expectValid[T](r: ValidatedNec[?, T]): T = {
     r match {
       case Valid(o) => o
       case Invalid(errors) => sys.error(s"Expected valid but was invalid: ${errors.toNonEmptyList}")
     }
   }
 
-  def expectInvalid[T](r: ValidatedNec[T, _]): Seq[T] = {
+  def expectInvalid[T](r: ValidatedNec[T, ?]): Seq[T] = {
     r match {
       case Valid(_) => sys.error("Expected invalid but was valid")
       case Invalid(errors) => errors.toNonEmptyList.toList

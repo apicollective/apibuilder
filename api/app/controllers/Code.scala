@@ -132,7 +132,7 @@ class Code @Inject() (
 
   @nowarn
   private def _invoke(
-    request: AnonymousRequest[_],
+    request: AnonymousRequest[?],
     params: CodeParams,
     data: InvocationFormData,
     generatorKey: String
@@ -189,7 +189,7 @@ class Code @Inject() (
   }
 
   private def invocationForm[T](
-    request: AnonymousRequest[_],
+    request: AnonymousRequest[?],
     params: CodeParams
   ): Either[Seq[String], InvocationFormData] = {
     versionsDao.findVersion(request.authorization, params.orgKey, params.applicationKey, params.versionName) match {
