@@ -54,7 +54,7 @@ lazy val swagger = project
     )
   )
 
-val circeVersion = "0.14.8"
+val circeVersion = "0.14.9"
 lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)

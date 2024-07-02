@@ -3,34 +3,34 @@ code:
     apibuilder-api:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_x_routes: api/conf/routes
         anorm_2_8_parsers: api/app/generated
     apibuilder-api-json:
       version: latest
       generators:
-        play_2_x_json: core/src/main/scala/core/generated
+        play_2_x_scala_3_json: core/src/main/scala/core/generated
     apibuilder-spec:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
         anorm_2_8_parsers: api/app/generated
     apibuilder-common:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
         anorm_2_8_parsers: api/app/generated
     apibuilder-generator:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
         anorm_2_8_parsers: api/app/generated
     apibuilder-task:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
 
