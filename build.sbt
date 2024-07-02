@@ -14,6 +14,13 @@ lazy val allScalacOptions = Seq(
 lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings*)
+  .settings(resolversSettings)
+
+lazy val resolversSettings = Seq(
+  resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/",
+  resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
+  resolvers += "jitpack" at "https://jitpack.io",
+)
 
 val playJsonVersion = "2.10.6"
 
@@ -63,7 +70,6 @@ lazy val core = project
   .aggregate(generated, lib)
   .settings(commonSettings*)
   .settings(
-    resolvers += "Typesafe Maven Repository" at "https://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "io.circe" %% "circe-core" % circeVersion,
@@ -97,8 +103,6 @@ lazy val api = project
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesImport += "io.apibuilder.common.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
-    resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
-    resolvers += "jitpack" at "https://jitpack.io",
     libraryDependencies ++= Seq(
       filters,
       jdbc,
