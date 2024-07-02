@@ -173,7 +173,6 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   name ~= ("apibuilder-" + _),
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.17.1",
     "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
     "org.atteo" % "evo-inflector" % "1.3",
     "org.typelevel" %% "cats-core" % "2.12.0",
