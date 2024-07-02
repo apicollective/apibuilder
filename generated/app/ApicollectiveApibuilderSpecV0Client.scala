@@ -1389,16 +1389,7 @@ package io.apibuilder.spec.v0.models {
       (__ \ "value").read[Int].map { x => ResponseCodeInt(value = x) }
     }
 
-    implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = {
-      (
-        (__ \ "integer").read(jsonReadsApibuilderSpecResponseCodeInt).orElse {
-          (__ \ "response_code_option").read(jsonReadsApibuilderSpecResponseCodeOption).orElse {
-            play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(ResponseCodeUndefinedType(jsValue.toString)))
-          }
-        }
-      )
-    }
-
+    implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = ???
 
     implicit def jsonReadsApibuilderSpecResponseCodeSeq[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[Seq[T]] = {
       case a: play.api.libs.json.JsArray => {
