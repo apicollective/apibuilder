@@ -36,6 +36,7 @@
 
   "unions": {
     "email_data": {
+      "discriminator": "discriminator",
       "types": [
         { "type": "email_data_application_created" },
         { "type": "email_data_email_verification_created" },
