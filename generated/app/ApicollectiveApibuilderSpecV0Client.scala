@@ -1391,11 +1391,11 @@ package io.apibuilder.spec.v0.models {
 
     implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = {
       (
-        (__ \ "integer").read(jsonReadsApibuilderSpecResponseCodeInt).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
-        orElse
-        (__ \ "response_code_option").read(jsonReadsApibuilderSpecResponseCodeOption).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
-        orElse
-        play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(ResponseCodeUndefinedType(jsValue.toString))).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
+        (__ \ "integer").read(jsonReadsApibuilderSpecResponseCodeInt).orElse {
+          (__ \ "response_code_option").read(jsonReadsApibuilderSpecResponseCodeOption).orElse {
+            play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(ResponseCodeUndefinedType(jsValue.toString)))
+          }
+        }
       )
     }
 

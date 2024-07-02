@@ -15,9 +15,10 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings*)
 
-val avroVersion = "1.11.1"
-
 val playJsonVersion = "2.10.6"
+
+/*
+val avroVersion = "1.11.1"
 
 lazy val avro = project
   .in(file("avro"))
@@ -53,11 +54,12 @@ lazy val swagger = project
       "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
     )
   )
+ */
 
 val circeVersion = "0.14.9"
 lazy val core = project
   .in(file("core"))
-  .dependsOn(generated, lib, avro, swagger)
+  .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .settings(commonSettings*)
   .settings(
@@ -104,8 +106,8 @@ lazy val api = project
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.32" % "provided",
-      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "org.postgresql"    %  "postgresql"     % "42.7.3",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
@@ -140,8 +142,8 @@ lazy val app = project
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
-      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "org.apache.commons" % "commons-compress" % "1.26.2",
       "com.github.tototoshi" %% "scala-csv" % "1.4.0",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
@@ -176,7 +178,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
     "org.atteo" % "evo-inflector" % "1.3",
     "org.typelevel" %% "cats-core" % "2.12.0",
-    "org.slf4j" % "slf4j-api" % "2.0.13",
+   //"org.slf4j" % "slf4j-api" % "2.0.13",
     "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
   ),
   scalacOptions ++= allScalacOptions,

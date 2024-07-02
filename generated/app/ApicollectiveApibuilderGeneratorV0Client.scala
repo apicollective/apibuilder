@@ -309,7 +309,7 @@ package io.apibuilder.generator.v0.models {
 
     implicit def jsonWritesApibuilderGeneratorHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
       (obj: io.apibuilder.generator.v0.models.Healthcheck) => {
-        jsObjectHealthcheck(obj)
+        io.apibuilder.generator.v0.models.json.jsObjectHealthcheck(obj)
       }
     }
 
