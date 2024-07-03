@@ -83,6 +83,7 @@ lazy val generated = project
   .enablePlugins(PlayScala)
   .settings(commonSettings*)
   .settings(
+    scalacOptions ++= Seq("-deprecation:false"),
     libraryDependencies ++= Seq(
       ws
     )
