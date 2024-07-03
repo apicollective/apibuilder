@@ -457,6 +457,8 @@ package io.apibuilder.spec.v0.models {
 
 package io.apibuilder.spec.v0.models {
 
+  import play.api.libs.json.{JsError, JsResult, JsValue}
+
   package object json {
     import play.api.libs.json.__
     import play.api.libs.json.JsString
@@ -1389,7 +1391,16 @@ package io.apibuilder.spec.v0.models {
       (__ \ "value").read[Int].map { x => ResponseCodeInt(value = x) }
     }
 
-    implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = ???
+    implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = new play.api.libs.json.Reads[T] {
+      def reads(json: JsValue): JsResult[T] = {
+        val all: Seq[JsResult[T]] = Seq(
+          jsonReadsApibuilderSpecResponseCodeInt.reads(json).map(_.asInstanceOf[T])
+        )
+        all.find(_.isSuccess).getOrElse {
+          all.head
+        }
+      }
+    }
 
 
     implicit def jsonReadsApibuilderSpecResponseCodeSeq[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[Seq[T]] = {
