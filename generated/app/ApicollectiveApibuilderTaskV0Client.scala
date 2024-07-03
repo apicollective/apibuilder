@@ -205,7 +205,7 @@ package io.apibuilder.task.v0.models {
 
     implicit def jsonWritesApibuilderTaskTaskType: play.api.libs.json.Writes[TaskType] = {
       (obj: io.apibuilder.task.v0.models.TaskType) => {
-        jsonWritesApibuilderTaskTaskType(obj)
+        io.apibuilder.task.v0.models.json.jsonWritesApibuilderTaskTaskType(obj)
       }
     }
 
@@ -225,7 +225,7 @@ package io.apibuilder.task.v0.models {
 
     implicit def jsonWritesApibuilderTaskDiffVersionData: play.api.libs.json.Writes[DiffVersionData] = {
       (obj: io.apibuilder.task.v0.models.DiffVersionData) => {
-        jsObjectDiffVersionData(obj)
+        io.apibuilder.task.v0.models.json.jsObjectDiffVersionData(obj)
       }
     }
 
@@ -241,7 +241,7 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataApplicationCreated: play.api.libs.json.Writes[EmailDataApplicationCreated] = {
       (obj: io.apibuilder.task.v0.models.EmailDataApplicationCreated) => {
-        jsObjectEmailDataApplicationCreated(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataApplicationCreated(obj)
       }
     }
 
@@ -257,7 +257,7 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataEmailVerificationCreated: play.api.libs.json.Writes[EmailDataEmailVerificationCreated] = {
       (obj: io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated) => {
-        jsObjectEmailDataEmailVerificationCreated(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataEmailVerificationCreated(obj)
       }
     }
 
@@ -273,7 +273,7 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataMembershipCreated: play.api.libs.json.Writes[EmailDataMembershipCreated] = {
       (obj: io.apibuilder.task.v0.models.EmailDataMembershipCreated) => {
-        jsObjectEmailDataMembershipCreated(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipCreated(obj)
       }
     }
 
@@ -295,7 +295,7 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataMembershipRequestAccepted: play.api.libs.json.Writes[EmailDataMembershipRequestAccepted] = {
       (obj: io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted) => {
-        jsObjectEmailDataMembershipRequestAccepted(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestAccepted(obj)
       }
     }
 
@@ -311,7 +311,7 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataMembershipRequestCreated: play.api.libs.json.Writes[EmailDataMembershipRequestCreated] = {
       (obj: io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated) => {
-        jsObjectEmailDataMembershipRequestCreated(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestCreated(obj)
       }
     }
 
@@ -331,7 +331,7 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataMembershipRequestDeclined: play.api.libs.json.Writes[EmailDataMembershipRequestDeclined] = {
       (obj: io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined) => {
-        jsObjectEmailDataMembershipRequestDeclined(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestDeclined(obj)
       }
     }
 
@@ -347,20 +347,20 @@ package io.apibuilder.task.v0.models {
 
     def jsonWritesApibuilderTaskEmailDataPasswordResetRequestCreated: play.api.libs.json.Writes[EmailDataPasswordResetRequestCreated] = {
       (obj: io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated) => {
-        jsObjectEmailDataPasswordResetRequestCreated(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailDataPasswordResetRequestCreated(obj)
       }
     }
 
     implicit def jsonReadsApibuilderTaskEmailData[T <: io.apibuilder.task.v0.models.EmailData]: play.api.libs.json.Reads[T] = (js: play.api.libs.json.JsValue) => {
       def readDiscriminator(discriminator: String) = {
         discriminator match {
-          case "email_data_application_created" => jsonReadsApibuilderTaskEmailDataApplicationCreated.reads(js)
-          case "email_data_email_verification_created" => jsonReadsApibuilderTaskEmailDataEmailVerificationCreated.reads(js)
-          case "email_data_membership_created" => jsonReadsApibuilderTaskEmailDataMembershipCreated.reads(js)
-          case "email_data_membership_request_created" => jsonReadsApibuilderTaskEmailDataMembershipRequestCreated.reads(js)
-          case "email_data_membership_request_accepted" => jsonReadsApibuilderTaskEmailDataMembershipRequestAccepted.reads(js)
-          case "email_data_membership_request_declined" => jsonReadsApibuilderTaskEmailDataMembershipRequestDeclined.reads(js)
-          case "email_data_password_reset_request_created" => jsonReadsApibuilderTaskEmailDataPasswordResetRequestCreated.reads(js)
+          case "email_data_application_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataApplicationCreated.reads(js)
+          case "email_data_email_verification_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataEmailVerificationCreated.reads(js)
+          case "email_data_membership_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipCreated.reads(js)
+          case "email_data_membership_request_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipRequestCreated.reads(js)
+          case "email_data_membership_request_accepted" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipRequestAccepted.reads(js)
+          case "email_data_membership_request_declined" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipRequestDeclined.reads(js)
+          case "email_data_password_reset_request_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataPasswordResetRequestCreated.reads(js)
           case other => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.EmailDataUndefinedType(other))
         }
       }
@@ -385,13 +385,13 @@ package io.apibuilder.task.v0.models {
 
     def jsObjectEmailData(obj: io.apibuilder.task.v0.models.EmailData): play.api.libs.json.JsObject = {
       obj match {
-        case x: io.apibuilder.task.v0.models.EmailDataApplicationCreated => jsObjectEmailDataApplicationCreated(x)
-        case x: io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated => jsObjectEmailDataEmailVerificationCreated(x)
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipCreated => jsObjectEmailDataMembershipCreated(x)
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated => jsObjectEmailDataMembershipRequestCreated(x)
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted => jsObjectEmailDataMembershipRequestAccepted(x)
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined => jsObjectEmailDataMembershipRequestDeclined(x)
-        case x: io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated => jsObjectEmailDataPasswordResetRequestCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataApplicationCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataApplicationCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataEmailVerificationCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestAccepted(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestDeclined(x)
+        case x: io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataPasswordResetRequestCreated(x)
         case other => {
           sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
         }
@@ -400,7 +400,7 @@ package io.apibuilder.task.v0.models {
 
     implicit def jsonWritesApibuilderTaskEmailData[T <: io.apibuilder.task.v0.models.EmailData]: play.api.libs.json.Writes[T] = {
       (obj: io.apibuilder.task.v0.models.EmailData) => {
-        jsObjectEmailData(obj)
+        io.apibuilder.task.v0.models.json.jsObjectEmailData(obj)
       }
     }
   }
