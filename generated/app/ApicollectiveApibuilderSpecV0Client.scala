@@ -1390,16 +1390,13 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = (json: play.api.libs.json.JsValue) => {
-          val all: Seq[play.api.libs.json.JsResult[T]] = Seq(
-            jsonReadsApibuilderSpecResponseCodeInt.reads(json).map(_.asInstanceOf[T]),
-            jsonReadsApibuilderSpecResponseCodeOption.reads(json).map(_.asInstanceOf[T])
-          )
-          all.view.find(_.isSuccess).getOrElse {
-            all.head
-          }
-        }
-
-
+      val default = jsonReadsApibuilderSpecResponseCodeInt.reads(json).map(_.asInstanceOf[T])
+      val all: Seq[play.api.libs.json.JsResult[T]] = Seq(
+        default,
+        jsonReadsApibuilderSpecResponseCodeOption.reads(json).map(_.asInstanceOf[T])
+      )
+      all.view.find(_.isSuccess).getOrElse(default)
+    }
 
     implicit def jsonReadsApibuilderSpecResponseCodeSeq[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[Seq[T]] = {
       case a: play.api.libs.json.JsArray => {
