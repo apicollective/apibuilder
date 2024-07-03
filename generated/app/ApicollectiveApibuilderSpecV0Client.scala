@@ -1396,7 +1396,7 @@ package io.apibuilder.spec.v0.models {
         val all: Seq[JsResult[T]] = Seq(
           jsonReadsApibuilderSpecResponseCodeInt.reads(json).map(_.asInstanceOf[T])
         )
-        all.find(_.isSuccess).getOrElse {
+        all.view.find(_.isSuccess).getOrElse {
           all.head
         }
       }
