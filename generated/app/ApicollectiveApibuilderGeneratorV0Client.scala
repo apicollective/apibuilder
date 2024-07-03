@@ -193,7 +193,7 @@ package io.apibuilder.generator.v0.models {
 
     implicit def jsonWritesApibuilderGeneratorFileFlag: play.api.libs.json.Writes[FileFlag] = {
       (obj: io.apibuilder.generator.v0.models.FileFlag) => {
-        jsonWritesApibuilderGeneratorFileFlag(obj)
+        io.apibuilder.generator.v0.models.json.jsonWritesApibuilderGeneratorFileFlag(obj)
       }
     }
 
