@@ -32,7 +32,6 @@ lazy val avro = project
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json"       % playJsonVersion,
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     ),
     Test / javaOptions ++= Seq(
@@ -49,7 +48,6 @@ lazy val swagger = project
     scalacOptions ++= allScalacOptions,
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.61",
-      ("com.typesafe.play" %% "play-json" % playJsonVersion).cross(CrossVersion.for3Use2_13),
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
     ),
     Test / javaOptions ++= Seq(
@@ -66,7 +64,6 @@ lazy val core = project
   .settings(commonSettings*)
   .settings(
     libraryDependencies ++= Seq(
-      ("com.typesafe.play" %% "play-json" % playJsonVersion).cross(CrossVersion.for3Use2_13),
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-generic" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion
@@ -80,7 +77,11 @@ lazy val generated = project
   .settings(
     scalacOptions ++= Seq("-deprecation:false"),
     libraryDependencies ++= Seq(
-      ws
+      ws,
+      "joda-time" % "joda-time" % "2.12.7",
+      "org.playframework.anorm" %% "anorm-postgres" % "2.7.0",
+      "org.postgresql" % "postgresql" % "42.7.3",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
     )
   )
 
@@ -106,8 +107,6 @@ lazy val api = project
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.32" % "provided",
-      ("com.typesafe.play" %% "play-json" % playJsonVersion).cross(CrossVersion.for3Use2_13),
-      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "org.postgresql"    %  "postgresql"     % "42.7.3",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
@@ -142,8 +141,6 @@ lazy val app = project
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.28" % "provided",
-      ("com.typesafe.play" %% "play-json" % playJsonVersion).cross(CrossVersion.for3Use2_13),
-      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "org.apache.commons" % "commons-compress" % "1.26.2",
       "com.github.tototoshi" %% "scala-csv" % "1.4.0",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
@@ -176,7 +173,6 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.3",
-    "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
     ("org.typelevel" %% "cats-core" % "2.12.0").cross(CrossVersion.for3Use2_13),
     "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
   ),
