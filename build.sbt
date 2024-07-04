@@ -11,16 +11,16 @@ lazy val allScalacOptions = Seq(
   "-Xfatal-warnings"
 )
 
-lazy val lib = project
-  .in(file("lib"))
-  .settings(commonSettings*)
-  .settings(resolversSettings)
-
 lazy val resolversSettings = Seq(
   resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
   resolvers += "jitpack" at "https://jitpack.io",
 )
+
+lazy val lib = project
+  .in(file("lib"))
+  .settings(commonSettings*)
+  .settings(resolversSettings)
 
 val playJsonVersion = "2.10.6"
 

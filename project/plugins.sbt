@@ -12,3 +12,5 @@ addSbtPlugin("com.typesafe.play" % "sbt-twirl" % "1.6.8")
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.1.1")
 
 addSbtPlugin("com.github.sbt" % "sbt-javaagent" % "0.1.8")
+
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
