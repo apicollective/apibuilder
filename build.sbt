@@ -1,5 +1,3 @@
-import play.sbt.PlayScala._
-
 name := "apibuilder"
 
 organization := "io.apibuilder"
