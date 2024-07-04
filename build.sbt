@@ -180,8 +180,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ("com.typesafe.play" %% "play-json-joda" % playJsonVersion).cross(CrossVersion.for3Use2_13),
     "org.atteo" % "evo-inflector" % "1.3",
-    "org.typelevel" %% "cats-core" % "2.12.0",
-   //"org.slf4j" % "slf4j-api" % "2.0.13",
+    ("org.typelevel" %% "cats-core" % "2.12.0").cross(CrossVersion.for3Use2_13),
     "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
   ),
   scalacOptions ++= allScalacOptions,
