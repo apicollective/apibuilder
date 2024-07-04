@@ -1,8 +1,11 @@
 name := "apibuilder"
-
 organization := "io.apibuilder"
 
 ThisBuild / scalaVersion := "3.4.2"
+
+val playJsonVersion = "2.10.6"
+
+val avroVersion = "1.11.1"
 
 lazy val allScalacOptions = Seq(
   "-feature"
@@ -18,15 +21,17 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings*)
   .settings(resolversSettings)
-
-val playJsonVersion = "2.10.6"
-
-val avroVersion = "1.11.1"
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "joda-time" % "joda-time" % "2.12.7",
+    )
+  )
 
 lazy val avro = project
   .in(file("avro"))
-  .dependsOn(generated, lib % "compile->compile;test->test")
-  .aggregate(generated, lib)
+  .dependsOn(lib % "compile->compile;test->test")
+  .aggregate(lib)
   .settings(
     scalacOptions ++= allScalacOptions,
     libraryDependencies ++= Seq(
@@ -42,8 +47,8 @@ lazy val avro = project
 
 lazy val swagger = project
   .in(file("swagger"))
-  .dependsOn(generated, lib % "compile->compile;test->test")
-  .aggregate(generated, lib)
+  .dependsOn(lib % "compile->compile;test->test")
+  .aggregate(lib)
   .settings(
     scalacOptions ++= allScalacOptions,
     libraryDependencies ++= Seq(
@@ -59,16 +64,10 @@ lazy val swagger = project
 val circeVersion = "0.14.9"
 lazy val core = project
   .in(file("core"))
+  .enablePlugins(PlayScala)
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .settings(commonSettings*)
-  .settings(
-    libraryDependencies ++= Seq(
-      "io.circe" %% "circe-core" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion,
-      "io.circe" %% "circe-parser" % circeVersion
-    )
-  )
 
 lazy val generated = project
   .in(file("generated"))
