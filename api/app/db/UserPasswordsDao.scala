@@ -10,80 +10,8 @@ import java.util.UUID
 import java.sql.Connection
 
 import io.flow.postgresql.Query
-import org.mindrot.jbcrypt.BCrypt
-import org.apache.commons.codec.binary.Base64
 
-private[db] case class HashedPassword(hash: String)
-
-sealed trait PasswordAlgorithm {
-
-  /**
-   * Uniquely identifies this password algorithm
-   */
-  def key: String
-
-  /**
-   * Hashes the provided String, returning the hashed value
-   */
-  def hash(password: String): HashedPassword
-
-  /**
-   * Check if a cleartext password is valid
-   */
-  def check(candidate: String, hashed: String): Boolean
-
-}
-
-case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
-
-  private val LogRounds = 13
-
-  override def hash(password: String): HashedPassword = {
-    val salt = BCrypt.gensalt(LogRounds)
-    HashedPassword(BCrypt.hashpw(password, salt))
-  }
-
-  override def check(candidate: String, hashed: String): Boolean = {
-    BCrypt.checkpw(candidate, hashed)
-  }
-
-}
-
-/**
- * Used only when fetching unknown keys from DB but will fail if you try to hash
- */
-private[db] case class UnknownPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
-
-  override def hash(password: String): HashedPassword = {
-    sys.error("Unsupported operation for UnknownPasswordAlgorithm")
-  }
-
-  override def check(candidate: String, hashed: String) = false
-
-}
-
-object PasswordAlgorithm {
-
-  private[db] val All = Seq(
-    BcryptPasswordAlgorithm("bcrypt"),
-    UnknownPasswordAlgorithm("unknown")
-  )
-
-  val Latest: PasswordAlgorithm = fromString("bcrypt").getOrElse {
-    sys.error("Could not find latest algorithm")
-  }
-
-  private[db] val Unknown: PasswordAlgorithm = fromString("unknown").getOrElse {
-    sys.error("Could not find unknown algorithm")
-  }
-
-  def fromString(value: String): Option[PasswordAlgorithm] = {
-    All.find(_.key == value)
-  }
-
-}
-
-case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm, hash: String)
+case class UserPassword(guid: UUID, userGuid: UUID, hashed: HashedValue)
 
 @Singleton
 class UserPasswordsDao @Inject() (
