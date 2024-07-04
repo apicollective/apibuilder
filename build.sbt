@@ -24,7 +24,6 @@ lazy val resolversSettings = Seq(
 
 val playJsonVersion = "2.10.6"
 
-/*
 val avroVersion = "1.11.1"
 
 lazy val avro = project
@@ -61,7 +60,6 @@ lazy val swagger = project
       "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
     )
   )
- */
 
 val circeVersion = "0.14.9"
 lazy val core = project
