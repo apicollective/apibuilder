@@ -1,5 +1,8 @@
 {
   "name": "psql-apibuilder",
+  "attributes": [
+    { "name": "scala", "value": { "version": "3.4" } }
+  ],
 
   "models": {
     "generator_invocation": {

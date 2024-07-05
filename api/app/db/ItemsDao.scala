@@ -76,7 +76,7 @@ class ItemsDao @Inject() (
         "detail" -> Json.toJson(detail).toString,
         "label" -> label.trim,
         "description" -> description.map(_.trim).map(Text.truncate(_)),
-	"content" -> content.trim.toLowerCase
+      	"content" -> content.trim.toLowerCase
       ).execute()
     }
   }

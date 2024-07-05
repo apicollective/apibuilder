@@ -58,7 +58,7 @@ class PurgeDeletedProcessor @Inject()(
   }
 
   @tailrec
-  private def deleteAll(table: Table)(f: DbRow[_] => Any): Unit =  {
+  private def deleteAll(table: Table)(f: DbRow[?] => Any): Unit =  {
     val all = nextDeletedRows(table)
     if (all.nonEmpty) {
       all.foreach { row =>
@@ -73,7 +73,7 @@ class PurgeDeletedProcessor @Inject()(
 
   private val Limit = 1000
   private case class DbRow[T](pkey: T, deletedAt: DateTime)
-  private def nextDeletedRows(table: Table): Seq[DbRow[_]] = {
+  private def nextDeletedRows(table: Table): Seq[DbRow[?]] = {
     db.withConnection { c =>
       Query(
         s"select ${table.pkey.name}::text as pkey, deleted_at from ${table.qualified}"
@@ -83,7 +83,7 @@ class PurgeDeletedProcessor @Inject()(
     }
   }
 
-  private def parser(primaryKey: PrimaryKey): RowParser[DbRow[_]] = {
+  private def parser(primaryKey: PrimaryKey): RowParser[DbRow[?]] = {
     import PrimaryKey._
     SqlParser.get[String]("pkey") ~
       SqlParser.get[DateTime]("deleted_at") map {
