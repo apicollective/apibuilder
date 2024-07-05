@@ -91,8 +91,9 @@ lazy val api = project
   .enablePlugins(PlayScala, JavaAgent)
   .settings(commonSettings*)
   .settings(
+  scalacOptions ++= Seq("-deprecation:false"),
     scalacOptions ++= allScalacOptions,
-//    PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
+    PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     testOptions += Tests.Argument("-oF"),
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
