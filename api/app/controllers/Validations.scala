@@ -22,7 +22,7 @@ class Validations @Inject() (
   databaseServiceFetcher: DatabaseServiceFetcher
 ) extends ApiBuilderController {
 
-  Parameter[_] val config = ServiceConfiguration(
+  private val config = ServiceConfiguration(
     orgKey = "tmp",
     orgNamespace = "tmp.validations",
     version = "0.0.1-dev"

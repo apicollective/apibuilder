@@ -27,7 +27,7 @@ class Applications @Inject() (
     offset: Long = 0,
     sorting: Option[AppSortBy],
     ordering: Option[SortOrder]
-  ) = Identified.async {: _* request =>
+  ) = Identified { request =>
     val applications = applicationsDao.findAll(
       request.authorization,
       orgKey = Some(orgKey),
@@ -92,7 +92,7 @@ class Applications @Inject() (
     }
   }
 
-  def deleteByApplicationKey(orgKey: String, applicationKey: String) = Identified.async {: _* request =>
+  def deleteByApplicationKey(orgKey: String, applicationKey: String) = Identified { request =>
     withOrgMember(request.user, orgKey) { _ =>
       applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).foreach { application =>
         applicationsDao.softDelete(request.user, application)

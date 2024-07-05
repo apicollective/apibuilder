@@ -24,18 +24,18 @@ class Users @Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  Parameter[_] case class UserAuthenticationForm(email: String, password: String)
-  Parameter[_] implicit val userAuthenticationFormReads: Reads[UserAuthenticationForm] = Json.reads[UserAuthenticationForm]
+  private case class UserAuthenticationForm(email: String, password: String)
+  private implicit val userAuthenticationFormReads: Reads[UserAuthenticationForm] = Json.reads[UserAuthenticationForm]
 
-  Parameter[_] case class GithubAuthenticationForm(token: String)
-  Parameter[_] implicit val githubAuthenticationFormReads: Reads[GithubAuthenticationForm] = Json.reads[GithubAuthenticationForm]
+  private case class GithubAuthenticationForm(token: String)
+  private implicit val githubAuthenticationFormReads: Reads[GithubAuthenticationForm] = Json.reads[GithubAuthenticationForm]
 
   def get(
     guid: Option[UUID],
     email: Option[String],
     nickname: Option[String],
     token: Option[String]
-  ) = Identified.async {: _* request =>
+  ) = Identified { request =>
     if (!Seq(guid, email, nickname, token).exists(_.isDefined)) {
       // require system user to show more then one user
       requireSystemUser(request.user)
@@ -50,7 +50,7 @@ class Users @Inject() (
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = Identified.async {: _* request =>
+  def getByGuid(guid: UUID) = Identified { request =>
     requireSystemUser(request.user)
     usersDao.findByGuid(guid) match {
       case None => NotFound
@@ -188,7 +188,7 @@ class Users @Inject() (
     }
   }
 
-  Parameter[_] def requireSystemUser(user: User): Unit = {
+  private def requireSystemUser(user: User): Unit = {
     require(
       user.guid == UsersDao.AdminUserGuid,
       "Action restricted to the system admin user"

@@ -20,7 +20,7 @@ class Tokens @Inject() (
     guid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified.async {: _* request =>
+  ) = Identified { request =>
     val tokens = tokensDao.findAll(
       request.authorization,
       userGuid = Some(userGuid),
@@ -33,7 +33,7 @@ class Tokens @Inject() (
 
   def getCleartextByGuid(
     guid: UUID
-  ) = Identified.async {: _* request =>
+  ) = Identified { request =>
     tokensDao.findCleartextByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {
@@ -62,7 +62,7 @@ class Tokens @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified.async {: _* request =>
+  def deleteByGuid(guid: UUID) = Identified { request =>
     tokensDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {

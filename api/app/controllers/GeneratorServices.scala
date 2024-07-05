@@ -78,7 +78,7 @@ class GeneratorServices @Inject() (
 
   def deleteByGuid(
     guid: UUID
-  ) = Identified.async {: _* request =>
+  ) = Identified { request =>
     servicesDao.findByGuid(request.authorization, guid) match {
       case None => {
         NotFound

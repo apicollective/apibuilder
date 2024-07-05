@@ -57,7 +57,7 @@ class Attributes @Inject() (
     }
   }
 
-  def deleteByName(name: String) = Identified.async {: _* request =>
+  def deleteByName(name: String) = Identified { request =>
     attributesDao.findByName(name) match {
       case None => {
         NotFound
