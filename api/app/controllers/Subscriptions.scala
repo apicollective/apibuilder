@@ -42,7 +42,7 @@ class Subscriptions @Inject() (
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post() = Identified.async(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))

@@ -42,7 +42,7 @@ class Tokens @Inject() (
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post() = Identified.async(parse.json) { request =>
     request.body.validate[TokenForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))

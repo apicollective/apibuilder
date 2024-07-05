@@ -46,7 +46,7 @@ class GeneratorServices @Inject() (
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post() = Identified.async(parse.json) { request =>
     request.body.validate[GeneratorServiceForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

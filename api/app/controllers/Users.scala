@@ -78,7 +78,7 @@ class Users @Inject() (
     }
   }
 
-  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
+  def putByGuid(guid: UUID) = Identified.async(parse.json) { request =>
     request.body.validate[UserUpdateForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

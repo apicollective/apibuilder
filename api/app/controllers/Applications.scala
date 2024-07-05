@@ -43,7 +43,7 @@ class Applications @Inject() (
     Ok(Json.toJson(applications))
   }
 
-  def post(orgKey: String) = Identified(parse.json) { request =>
+  def post(orgKey: String) = Identified.async(parse.json) { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body.validate[ApplicationForm] match {
         case e: JsError => {
@@ -65,7 +65,7 @@ class Applications @Inject() (
     }
   }
 
-  def putByApplicationKey(orgKey: String, applicationKey: String) = Identified(parse.json) { request =>
+  def putByApplicationKey(orgKey: String, applicationKey: String) = Identified.async(parse.json) { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body.validate[ApplicationForm] match {
         case e: JsError => {
@@ -101,7 +101,7 @@ class Applications @Inject() (
     }
   }
 
-  def postMoveByApplicationKey(orgKey: String, applicationKey: String) = Identified(parse.json) { request =>
+  def postMoveByApplicationKey(orgKey: String, applicationKey: String) = Identified.async(parse.json) { request =>
     withOrg(request.authorization, orgKey) { org =>
       applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
         case None => NotFound

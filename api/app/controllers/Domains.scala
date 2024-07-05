@@ -15,7 +15,7 @@ class Domains @Inject() (
   organizationDomainsDao: OrganizationDomainsDao
 ) extends ApiBuilderController {
 
-  def post(orgKey: String) = Identified(parse.json) { request =>
+  def post(orgKey: String) = Identified.async(parse.json) { request =>
     withOrgAdmin(request.user, orgKey) { org =>
       request.body.validate[Domain] match {
         case e: JsError => {

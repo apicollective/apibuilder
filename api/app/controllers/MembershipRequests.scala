@@ -50,7 +50,7 @@ class MembershipRequests @Inject() (
     Ok(Json.toJson(requests))
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post() = Identified.async(parse.json) { request =>
     request.body.validate[MembershipRequestForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error(e.toString)))
