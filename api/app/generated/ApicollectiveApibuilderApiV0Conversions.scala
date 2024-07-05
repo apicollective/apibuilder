@@ -52,66 +52,6 @@ package io.apibuilder.api.v0.anorm.conversions {
   }
 
   object Types {
-    import io.apibuilder.api.v0.models.json._
-    implicit val columnToSeqApibuilderApiAppSortBy: Column[Seq[_root_.io.apibuilder.api.v0.models.AppSortBy]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AppSortBy]] }
-    implicit val columnToSeqApibuilderApiOriginalType: Column[Seq[_root_.io.apibuilder.api.v0.models.OriginalType]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.OriginalType]] }
-    implicit val columnToSeqApibuilderApiPublication: Column[Seq[_root_.io.apibuilder.api.v0.models.Publication]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Publication]] }
-    implicit val columnToSeqApibuilderApiSortOrder: Column[Seq[_root_.io.apibuilder.api.v0.models.SortOrder]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.SortOrder]] }
-    implicit val columnToSeqApibuilderApiVisibility: Column[Seq[_root_.io.apibuilder.api.v0.models.Visibility]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Visibility]] }
-    implicit val columnToSeqApibuilderApiApplication: Column[Seq[_root_.io.apibuilder.api.v0.models.Application]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Application]] }
-    implicit val columnToSeqApibuilderApiApplicationForm: Column[Seq[_root_.io.apibuilder.api.v0.models.ApplicationForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.ApplicationForm]] }
-    implicit val columnToSeqApibuilderApiApplicationMetadata: Column[Seq[_root_.io.apibuilder.api.v0.models.ApplicationMetadata]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.ApplicationMetadata]] }
-    implicit val columnToSeqApibuilderApiApplicationMetadataVersion: Column[Seq[_root_.io.apibuilder.api.v0.models.ApplicationMetadataVersion]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.ApplicationMetadataVersion]] }
-    implicit val columnToSeqApibuilderApiApplicationSummary: Column[Seq[_root_.io.apibuilder.api.v0.models.ApplicationSummary]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.ApplicationSummary]] }
-    implicit val columnToSeqApibuilderApiAttribute: Column[Seq[_root_.io.apibuilder.api.v0.models.Attribute]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Attribute]] }
-    implicit val columnToSeqApibuilderApiAttributeForm: Column[Seq[_root_.io.apibuilder.api.v0.models.AttributeForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AttributeForm]] }
-    implicit val columnToSeqApibuilderApiAttributeSummary: Column[Seq[_root_.io.apibuilder.api.v0.models.AttributeSummary]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AttributeSummary]] }
-    implicit val columnToSeqApibuilderApiAttributeValue: Column[Seq[_root_.io.apibuilder.api.v0.models.AttributeValue]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AttributeValue]] }
-    implicit val columnToSeqApibuilderApiAttributeValueForm: Column[Seq[_root_.io.apibuilder.api.v0.models.AttributeValueForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.AttributeValueForm]] }
-    implicit val columnToSeqApibuilderApiAuthentication: Column[Seq[_root_.io.apibuilder.api.v0.models.Authentication]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Authentication]] }
-    implicit val columnToSeqApibuilderApiBatchDownloadApplicationForm: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadApplicationForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadApplicationForm]] }
-    implicit val columnToSeqApibuilderApiBatchDownloadApplications: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadApplications]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadApplications]] }
-    implicit val columnToSeqApibuilderApiBatchDownloadApplicationsForm: Column[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadApplicationsForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.BatchDownloadApplicationsForm]] }
-    implicit val columnToSeqApibuilderApiChange: Column[Seq[_root_.io.apibuilder.api.v0.models.Change]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Change]] }
-    implicit val columnToSeqApibuilderApiChangeVersion: Column[Seq[_root_.io.apibuilder.api.v0.models.ChangeVersion]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.ChangeVersion]] }
-    implicit val columnToSeqApibuilderApiCleartextToken: Column[Seq[_root_.io.apibuilder.api.v0.models.CleartextToken]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.CleartextToken]] }
-    implicit val columnToSeqApibuilderApiCode: Column[Seq[_root_.io.apibuilder.api.v0.models.Code]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Code]] }
-    implicit val columnToSeqApibuilderApiCodeForm: Column[Seq[_root_.io.apibuilder.api.v0.models.CodeForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.CodeForm]] }
-    implicit val columnToSeqApibuilderApiDiffBreaking: Column[Seq[_root_.io.apibuilder.api.v0.models.DiffBreaking]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.DiffBreaking]] }
-    implicit val columnToSeqApibuilderApiDiffNonBreaking: Column[Seq[_root_.io.apibuilder.api.v0.models.DiffNonBreaking]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.DiffNonBreaking]] }
-    implicit val columnToSeqApibuilderApiDomain: Column[Seq[_root_.io.apibuilder.api.v0.models.Domain]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Domain]] }
-    implicit val columnToSeqApibuilderApiEmailVerificationConfirmationForm: Column[Seq[_root_.io.apibuilder.api.v0.models.EmailVerificationConfirmationForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.EmailVerificationConfirmationForm]] }
-    implicit val columnToSeqApibuilderApiError: Column[Seq[_root_.io.apibuilder.api.v0.models.Error]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Error]] }
-    implicit val columnToSeqApibuilderApiGeneratorForm: Column[Seq[_root_.io.apibuilder.api.v0.models.GeneratorForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.GeneratorForm]] }
-    implicit val columnToSeqApibuilderApiGeneratorService: Column[Seq[_root_.io.apibuilder.api.v0.models.GeneratorService]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.GeneratorService]] }
-    implicit val columnToSeqApibuilderApiGeneratorServiceForm: Column[Seq[_root_.io.apibuilder.api.v0.models.GeneratorServiceForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.GeneratorServiceForm]] }
-    implicit val columnToSeqApibuilderApiGeneratorWithService: Column[Seq[_root_.io.apibuilder.api.v0.models.GeneratorWithService]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.GeneratorWithService]] }
-    implicit val columnToSeqApibuilderApiItem: Column[Seq[_root_.io.apibuilder.api.v0.models.Item]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Item]] }
-    implicit val columnToSeqApibuilderApiMembership: Column[Seq[_root_.io.apibuilder.api.v0.models.Membership]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Membership]] }
-    implicit val columnToSeqApibuilderApiMembershipRequest: Column[Seq[_root_.io.apibuilder.api.v0.models.MembershipRequest]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.MembershipRequest]] }
-    implicit val columnToSeqApibuilderApiMoveForm: Column[Seq[_root_.io.apibuilder.api.v0.models.MoveForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.MoveForm]] }
-    implicit val columnToSeqApibuilderApiOrganization: Column[Seq[_root_.io.apibuilder.api.v0.models.Organization]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Organization]] }
-    implicit val columnToSeqApibuilderApiOrganizationForm: Column[Seq[_root_.io.apibuilder.api.v0.models.OrganizationForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.OrganizationForm]] }
-    implicit val columnToSeqApibuilderApiOriginal: Column[Seq[_root_.io.apibuilder.api.v0.models.Original]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Original]] }
-    implicit val columnToSeqApibuilderApiOriginalForm: Column[Seq[_root_.io.apibuilder.api.v0.models.OriginalForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.OriginalForm]] }
-    implicit val columnToSeqApibuilderApiPasswordReset: Column[Seq[_root_.io.apibuilder.api.v0.models.PasswordReset]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.PasswordReset]] }
-    implicit val columnToSeqApibuilderApiPasswordResetRequest: Column[Seq[_root_.io.apibuilder.api.v0.models.PasswordResetRequest]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.PasswordResetRequest]] }
-    implicit val columnToSeqApibuilderApiSession: Column[Seq[_root_.io.apibuilder.api.v0.models.Session]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Session]] }
-    implicit val columnToSeqApibuilderApiSubscription: Column[Seq[_root_.io.apibuilder.api.v0.models.Subscription]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Subscription]] }
-    implicit val columnToSeqApibuilderApiSubscriptionForm: Column[Seq[_root_.io.apibuilder.api.v0.models.SubscriptionForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.SubscriptionForm]] }
-    implicit val columnToSeqApibuilderApiToken: Column[Seq[_root_.io.apibuilder.api.v0.models.Token]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Token]] }
-    implicit val columnToSeqApibuilderApiTokenForm: Column[Seq[_root_.io.apibuilder.api.v0.models.TokenForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.TokenForm]] }
-    implicit val columnToSeqApibuilderApiUser: Column[Seq[_root_.io.apibuilder.api.v0.models.User]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.User]] }
-    implicit val columnToSeqApibuilderApiUserForm: Column[Seq[_root_.io.apibuilder.api.v0.models.UserForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.UserForm]] }
-    implicit val columnToSeqApibuilderApiUserSummary: Column[Seq[_root_.io.apibuilder.api.v0.models.UserSummary]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.UserSummary]] }
-    implicit val columnToSeqApibuilderApiUserUpdateForm: Column[Seq[_root_.io.apibuilder.api.v0.models.UserUpdateForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.UserUpdateForm]] }
-    implicit val columnToSeqApibuilderApiValidation: Column[Seq[_root_.io.apibuilder.api.v0.models.Validation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Validation]] }
-    implicit val columnToSeqApibuilderApiVersion: Column[Seq[_root_.io.apibuilder.api.v0.models.Version]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Version]] }
-    implicit val columnToSeqApibuilderApiVersionForm: Column[Seq[_root_.io.apibuilder.api.v0.models.VersionForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.VersionForm]] }
-    implicit val columnToSeqApibuilderApiWatch: Column[Seq[_root_.io.apibuilder.api.v0.models.Watch]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Watch]] }
-    implicit val columnToSeqApibuilderApiWatchForm: Column[Seq[_root_.io.apibuilder.api.v0.models.WatchForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.WatchForm]] }
-    implicit val columnToSeqApibuilderApiDiff: Column[Seq[_root_.io.apibuilder.api.v0.models.Diff]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.Diff]] }
-    implicit val columnToSeqApibuilderApiItemDetail: Column[Seq[_root_.io.apibuilder.api.v0.models.ItemDetail]] = Util.parser { _.as[Seq[_root_.io.apibuilder.api.v0.models.ItemDetail]] }
   }
 
   object Standard {

@@ -52,15 +52,6 @@ package io.apibuilder.generator.v0.anorm.conversions {
   }
 
   object Types {
-    import io.apibuilder.generator.v0.models.json._
-    implicit val columnToSeqApibuilderGeneratorFileFlag: Column[Seq[_root_.io.apibuilder.generator.v0.models.FileFlag]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.FileFlag]] }
-    implicit val columnToSeqApibuilderGeneratorAttribute: Column[Seq[_root_.io.apibuilder.generator.v0.models.Attribute]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Attribute]] }
-    implicit val columnToSeqApibuilderGeneratorError: Column[Seq[_root_.io.apibuilder.generator.v0.models.Error]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Error]] }
-    implicit val columnToSeqApibuilderGeneratorFile: Column[Seq[_root_.io.apibuilder.generator.v0.models.File]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.File]] }
-    implicit val columnToSeqApibuilderGeneratorGenerator: Column[Seq[_root_.io.apibuilder.generator.v0.models.Generator]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Generator]] }
-    implicit val columnToSeqApibuilderGeneratorHealthcheck: Column[Seq[_root_.io.apibuilder.generator.v0.models.Healthcheck]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Healthcheck]] }
-    implicit val columnToSeqApibuilderGeneratorInvocation: Column[Seq[_root_.io.apibuilder.generator.v0.models.Invocation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Invocation]] }
-    implicit val columnToSeqApibuilderGeneratorInvocationForm: Column[Seq[_root_.io.apibuilder.generator.v0.models.InvocationForm]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.InvocationForm]] }
   }
 
   object Standard {

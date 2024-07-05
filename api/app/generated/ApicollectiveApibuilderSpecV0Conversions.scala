@@ -52,35 +52,6 @@ package io.apibuilder.spec.v0.anorm.conversions {
   }
 
   object Types {
-    import io.apibuilder.spec.v0.models.json._
-    implicit val columnToSeqApibuilderSpecMethod: Column[Seq[_root_.io.apibuilder.spec.v0.models.Method]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Method]] }
-    implicit val columnToSeqApibuilderSpecParameterLocation: Column[Seq[_root_.io.apibuilder.spec.v0.models.ParameterLocation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.ParameterLocation]] }
-    implicit val columnToSeqApibuilderSpecResponseCodeOption: Column[Seq[_root_.io.apibuilder.spec.v0.models.ResponseCodeOption]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.ResponseCodeOption]] }
-    implicit val columnToSeqApibuilderSpecAnnotation: Column[Seq[_root_.io.apibuilder.spec.v0.models.Annotation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Annotation]] }
-    implicit val columnToSeqApibuilderSpecApidoc: Column[Seq[_root_.io.apibuilder.spec.v0.models.Apidoc]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Apidoc]] }
-    implicit val columnToSeqApibuilderSpecApplication: Column[Seq[_root_.io.apibuilder.spec.v0.models.Application]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Application]] }
-    implicit val columnToSeqApibuilderSpecAttribute: Column[Seq[_root_.io.apibuilder.spec.v0.models.Attribute]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Attribute]] }
-    implicit val columnToSeqApibuilderSpecBody: Column[Seq[_root_.io.apibuilder.spec.v0.models.Body]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Body]] }
-    implicit val columnToSeqApibuilderSpecContact: Column[Seq[_root_.io.apibuilder.spec.v0.models.Contact]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Contact]] }
-    implicit val columnToSeqApibuilderSpecDeprecation: Column[Seq[_root_.io.apibuilder.spec.v0.models.Deprecation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Deprecation]] }
-    implicit val columnToSeqApibuilderSpecEnum: Column[Seq[_root_.io.apibuilder.spec.v0.models.Enum]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Enum]] }
-    implicit val columnToSeqApibuilderSpecEnumValue: Column[Seq[_root_.io.apibuilder.spec.v0.models.EnumValue]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.EnumValue]] }
-    implicit val columnToSeqApibuilderSpecField: Column[Seq[_root_.io.apibuilder.spec.v0.models.Field]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Field]] }
-    implicit val columnToSeqApibuilderSpecHeader: Column[Seq[_root_.io.apibuilder.spec.v0.models.Header]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Header]] }
-    implicit val columnToSeqApibuilderSpecImport: Column[Seq[_root_.io.apibuilder.spec.v0.models.Import]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Import]] }
-    implicit val columnToSeqApibuilderSpecInfo: Column[Seq[_root_.io.apibuilder.spec.v0.models.Info]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Info]] }
-    implicit val columnToSeqApibuilderSpecInterface: Column[Seq[_root_.io.apibuilder.spec.v0.models.Interface]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Interface]] }
-    implicit val columnToSeqApibuilderSpecLicense: Column[Seq[_root_.io.apibuilder.spec.v0.models.License]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.License]] }
-    implicit val columnToSeqApibuilderSpecModel: Column[Seq[_root_.io.apibuilder.spec.v0.models.Model]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Model]] }
-    implicit val columnToSeqApibuilderSpecOperation: Column[Seq[_root_.io.apibuilder.spec.v0.models.Operation]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Operation]] }
-    implicit val columnToSeqApibuilderSpecOrganization: Column[Seq[_root_.io.apibuilder.spec.v0.models.Organization]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Organization]] }
-    implicit val columnToSeqApibuilderSpecParameter: Column[Seq[_root_.io.apibuilder.spec.v0.models.Parameter]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Parameter]] }
-    implicit val columnToSeqApibuilderSpecResource: Column[Seq[_root_.io.apibuilder.spec.v0.models.Resource]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Resource]] }
-    implicit val columnToSeqApibuilderSpecResponse: Column[Seq[_root_.io.apibuilder.spec.v0.models.Response]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Response]] }
-    implicit val columnToSeqApibuilderSpecService: Column[Seq[_root_.io.apibuilder.spec.v0.models.Service]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Service]] }
-    implicit val columnToSeqApibuilderSpecUnion: Column[Seq[_root_.io.apibuilder.spec.v0.models.Union]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.Union]] }
-    implicit val columnToSeqApibuilderSpecUnionType: Column[Seq[_root_.io.apibuilder.spec.v0.models.UnionType]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.UnionType]] }
-    implicit val columnToSeqApibuilderSpecResponseCode: Column[Seq[_root_.io.apibuilder.spec.v0.models.ResponseCode]] = Util.parser { _.as[Seq[_root_.io.apibuilder.spec.v0.models.ResponseCode]] }
   }
 
   object Standard {
