@@ -12,7 +12,7 @@ trait ValidatedTestHelpers {
     }
   }
 
-  def expectInvalid[T](r: ValidatedNec[T, ?]): Seq[T] = {
+  def expectInvalid[T, U](r: ValidatedNec[T, U]): Seq[T] = {
     r match {
       case Valid(_) => sys.error("Expected invalid but was valid")
       case Invalid(errors) => errors.toNonEmptyList.toList
