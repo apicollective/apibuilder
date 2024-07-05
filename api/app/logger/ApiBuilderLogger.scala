@@ -35,6 +35,10 @@ trait CommonLogger {
   final def withKeyValues(name: String, values: NonEmptyChain[String]): CommonLogger = {
     withKeyValues(name, values.toNonEmptyList.toList)
   }
+
+  final def organization(key: String): CommonLogger = {
+    withKeyValue("organization_key", key)
+  }
 }
 
 class ApiBuilderLogger @Inject() (

@@ -45,7 +45,6 @@ class Config @Inject() (
         logger.error(msg)
         sys.error(msg)
       }
-
     }
   }
 }
