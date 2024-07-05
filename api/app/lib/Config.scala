@@ -35,4 +35,17 @@ class Config @Inject() (
       }
     }
   }
+
+  def optionalBoolean(name: String): Option[Boolean] = {
+    optionalString(name).map(_.trim.toLowerCase()).map {
+      case "true" => true
+      case "false" => false
+      case other => {
+        val msg = s"Value for configuration parameter[$name], if specified, must be 'true' or 'false' and not '$other'"
+        logger.error(msg)
+        sys.error(msg)
+      }
+
+    }
+  }
 }

@@ -11,9 +11,8 @@ import scala.annotation.tailrec
 
 class ApiBuilderServiceImportResolver @Inject()(
   versionsDao: VersionsDao,
-  apiBuilderLogger: ApiBuilderLogger,
+  logger: ApiBuilderLogger,
 ) {
-  private val logger = apiBuilderLogger.fingerprint(getClass.getName)
 
   /**
    * Expands each import into its service definition, returning the list of imported services.

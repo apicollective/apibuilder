@@ -38,15 +38,15 @@ trait CommonLogger {
 }
 
 class ApiBuilderLogger @Inject() (
-  env: Environment,
-  config: AppConfig
+                                   env: Environment,
+                                   appConfig: AppConfig
 ) extends CommonLogger {
 
   private lazy val logger = LoggerFactory.getLogger("application")
 
   private lazy val rollbar: Rollbar = {
     val config = ConfigBuilder
-      .withAccessToken(hoaConfig.rollbarConfig.accessToken)
+      .withAccessToken(appConfig.rollbarConfig.accessToken)
       .environment(env.mode.toString)
       .build
     Rollbar.init(config)
@@ -56,7 +56,7 @@ class ApiBuilderLogger @Inject() (
     mode = env.mode,
     logger = logger,
     rollbar = rollbar,
-    enableRollbar = hoaConfig.rollbarConfig.enabled
+    enableRollbar = appConfig.rollbarConfig.enabled
   ).withKeyValue("environment", env.mode.toString)
 
   override def withKeyValue(name: String, value: String): CommonLogger = {
