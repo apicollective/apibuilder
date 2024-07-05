@@ -10,8 +10,8 @@ import logger.ApiBuilderLogger
 import scala.annotation.tailrec
 
 class ApiBuilderServiceImportResolver @Inject()(
-                                                 versionsDao: VersionsDao,
-                                                 apiBuilderLogger: ApiBuilderLogger,
+  versionsDao: VersionsDao,
+  apiBuilderLogger: ApiBuilderLogger,
 ) {
   private val logger = apiBuilderLogger.fingerprint(getClass.getName)
 
