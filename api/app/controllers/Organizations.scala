@@ -89,7 +89,7 @@ class Organizations @Inject() (
     }
   }
 
-  def deleteByKey(key: String) = Identified { request =>
+  def deleteByKey(key: String) = Identified.async {: _* request =>
     withOrgAdmin(request.user, key) { org =>
       organizationsDao.softDelete(request.user, org)
       NoContent
@@ -101,7 +101,7 @@ class Organizations @Inject() (
     attributeName: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     withOrg(request.authorization, key) { org =>
       Ok(
         Json.toJson(
@@ -119,7 +119,7 @@ class Organizations @Inject() (
   def getAttributesByKeyAndName(
     key: String,
     name: String
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
@@ -159,7 +159,7 @@ class Organizations @Inject() (
   def deleteAttributesByKeyAndName(
     key: String,
     name: String
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
@@ -171,7 +171,7 @@ class Organizations @Inject() (
     }
   }
 
-  private def withAttribute(
+  Parameter[_] def withAttribute(
     name: String
   ) (
     f: Attribute => Result

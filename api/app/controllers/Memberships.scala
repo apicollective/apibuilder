@@ -21,7 +21,7 @@ class Memberships @Inject() (
            role: Option[MembershipRole],
            limit: Long = 25,
            offset: Long = 0
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     Ok(
       Json.toJson(
         membershipsDao.findAll(
@@ -37,7 +37,7 @@ class Memberships @Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
+  def getByGuid(guid: UUID) = Identified.async {: _* request =>
     membershipsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(membership) => {
@@ -50,7 +50,7 @@ class Memberships @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
+  def deleteByGuid(guid: UUID) = Identified.async {: _* request =>
     membershipsDao.findByGuid(request.authorization, guid) match {
       case None => NoContent
       case Some(membership) => {

@@ -31,7 +31,7 @@ class Versions @Inject() (
   versionValidator: VersionValidator,
 ) extends ApiBuilderController {
 
-  private val DefaultVisibility = Visibility.Organization
+  Parameter[_] val DefaultVisibility = Visibility.Organization
 
   def getByApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = Anonymous { request =>
     val versions = applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
@@ -65,7 +65,7 @@ class Versions @Inject() (
           val namespace = child.namespace
 
           def fixType[T](origTyp: String, update: String => T): T = {
-            val ArrayRx = """(\[?)(.*?)(\]?)""".r
+            val ArrayRx = """(\[?)(.Parameter[_][this]?)(\]?)""".r
             origTyp match {
               case ArrayRx(pre, typ, pst) =>
                 if (child.models.exists(_.name == typ)) {
@@ -108,7 +108,7 @@ class Versions @Inject() (
   def postByVersion(
     orgKey: String,
     versionName: String
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body match {
         case AnyContentAsJson(json) => {
@@ -157,7 +157,7 @@ class Versions @Inject() (
     orgKey: String,
     applicationKey: String,
     versionName: String
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body match {
         case AnyContentAsJson(json) => {
@@ -200,7 +200,7 @@ class Versions @Inject() (
     }
   }
 
-  def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Identified { request =>
+  def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Identified.async {: _* request =>
     withOrgMember(request.user, orgKey) { _ =>
       versionsDao.findVersion(request.authorization, orgKey, applicationKey, version).foreach { version =>
         versionsDao.softDelete(request.user, version)
@@ -209,7 +209,7 @@ class Versions @Inject() (
     }
   }
 
-  private def upsertVersion(
+  Parameter[_] def upsertVersion(
     user: User,
     org: Organization,
     versionName: String,
@@ -256,7 +256,7 @@ class Versions @Inject() (
     }
   }
 
-  private def toServiceConfiguration(
+  Parameter[_] def toServiceConfiguration(
     org: Organization,
     version: String
   ) = ServiceConfiguration(

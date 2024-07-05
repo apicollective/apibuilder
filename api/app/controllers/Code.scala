@@ -66,7 +66,7 @@ class Code @Inject() (
     }
   }
 
-  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  Parameter[_] implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def getByGeneratorKey(
     orgKey: String,
@@ -131,8 +131,8 @@ class Code @Inject() (
   }
 
   @nowarn
-  private def _invoke(
-    request: AnonymousRequest[?],
+  Parameter[_] def _invoke(
+    request: AnonymousFuture[_],
     params: CodeParams,
     data: InvocationFormData,
     generatorKey: String
@@ -151,7 +151,7 @@ class Code @Inject() (
             // TODO: Should we merge the org attributes into the provided invocation form? I think that
             // was the original intent, but not sure if it would impact anybody. For now going to log
             // the instance for which this results in a change.
-            /*
+            /Parameter[_][this]
             val updatedAttributes = orgAttributeUtil.merge(data.version.organization, gws.generator.attributes, data.invocationForm.attributes)
             if (updatedAttributes != data.invocationForm.attributes) {
               val newAttributes = updatedAttributes.filterNot { a =>
@@ -161,7 +161,7 @@ class Code @Inject() (
             } else {
               println(s"Code.orgAttributes org[${data.version.organization.key}] newAttributes: NONE")
             }
-            */
+            Parameter[_][this]/
 
             recordInvocation(params, gws.generator.key)
 
@@ -188,8 +188,8 @@ class Code @Inject() (
     }
   }
 
-  private def invocationForm[T](
-    request: AnonymousRequest[?],
+  Parameter[_] def invocationForm[T](
+    request: AnonymousFuture[_],
     params: CodeParams
   ): Either[Seq[String], InvocationFormData] = {
     versionsDao.findVersion(request.authorization, params.orgKey, params.applicationKey, params.versionName) match {
@@ -211,22 +211,22 @@ class Code @Inject() (
     }
   }
 
-  private def withCodeForm(body: JsValue)(f: CodeForm => Future[Result]) = {
+  Parameter[_] def withCodeForm(body: JsValue)(f: CodeForm => Future[Result]) = {
     body.validate[CodeForm] match {
       case e: JsError => Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
       case s: JsSuccess[CodeForm] => f(s.get)
     }
   }
 
-  private def conflict(message: String): Result = {
+  Parameter[_] def conflict(message: String): Result = {
     conflict(Seq(message))
   }
 
-  private def conflict(messages: Seq[String]): Result = {
+  Parameter[_] def conflict(messages: Seq[String]): Result = {
     Conflict(Json.toJson(Validation.errors(messages)))
   }
 
-  private def recordInvocation(params: CodeParams, generatorKey: String): Unit = {
+  Parameter[_] def recordInvocation(params: CodeParams, generatorKey: String): Unit = {
     generatorInvocationsDao.insert(Constants.DefaultUserGuid, GeneratorInvocationForm(
       key = generatorKey,
       organizationKey = Some(params.orgKey),

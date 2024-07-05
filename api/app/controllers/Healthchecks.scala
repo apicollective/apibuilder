@@ -12,7 +12,7 @@ class Healthchecks @Inject() (
   organizationsDao: OrganizationsDao,
 ) extends ApiBuilderController {
 
-  private val Result = Json.toJson(Map("status" -> "healthy"))
+  Parameter[_] val Result = Json.toJson(Map("status" -> "healthy"))
 
   def getHealthcheck(): Action[AnyContent] = Action { _ =>
     organizationsDao.findAll(Authorization.PublicOnly, limit = 1).headOption

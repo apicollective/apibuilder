@@ -12,12 +12,12 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Main trait for controllers to implement.
-  * Extends the play base controller to wire up authentication to include:
-  *   - anonymous / api key / session based access
-  *   - utilities to check for organization role
-  */
+/Parameter[_][this]Parameter[_][this]
+  Parameter[_][this] Main trait for controllers to implement.
+  Parameter[_][this] Extends the play base controller to wire up authentication to include:
+  Parameter[_][this]   - anonymous / api key / session based access
+  Parameter[_][this]   - utilities to check for organization role
+  Parameter[_][this]/
 trait ApiBuilderController extends BaseController {
 
   protected def apiBuilderControllerComponents: ApiBuilderControllerComponents
@@ -58,7 +58,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  private def withRole(org: Organization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
+  Parameter[_] def withRole(org: Organization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
     val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
       Authorization.All, org, user, roles
     ).map(_.role)
@@ -77,7 +77,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  private def jsonError(message: String): JsValue = {
+  Parameter[_] def jsonError(message: String): JsValue = {
     Json.toJson(
       Validation.error(
         message

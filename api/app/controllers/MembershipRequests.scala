@@ -26,7 +26,7 @@ class MembershipRequests @Inject() (
 
   object MembershipRequestForm {
 
-      private[controllers] implicit val membershipRequestFormReads: Reads[MembershipRequestForm] = Json.reads[MembershipRequestForm]
+      Parameter[_][controllers] implicit val membershipRequestFormReads: Reads[MembershipRequestForm] = Json.reads[MembershipRequestForm]
 
   }
 
@@ -37,7 +37,7 @@ class MembershipRequests @Inject() (
     role: Option[MembershipRole],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ) = Identified.async {: _* request =>
     val requests = membershipRequestsDao.findAll(
       request.authorization,
       organizationGuid = organizationGuid,
@@ -88,7 +88,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postAcceptByGuid(guid: UUID) = Identified { request =>
+  def postAcceptByGuid(guid: UUID) = Identified.async {: _* request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
@@ -98,7 +98,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postDeclineByGuid(guid: UUID) = Identified { request =>
+  def postDeclineByGuid(guid: UUID) = Identified.async {: _* request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
