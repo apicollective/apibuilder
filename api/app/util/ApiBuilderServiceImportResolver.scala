@@ -3,17 +3,17 @@ package util
 import db.{Authorization, VersionsDao}
 import io.apibuilder.api.v0.models.Version
 import io.apibuilder.spec.v0.models.{Import, Service}
-import io.flow.log.RollbarLogger
 import javax.inject.Inject
 import lib.VersionTag
+import logger.ApiBuilderLogger
 
 import scala.annotation.tailrec
 
 class ApiBuilderServiceImportResolver @Inject()(
-  versionsDao: VersionsDao,
-  rollbarLogger: RollbarLogger,
+                                                 versionsDao: VersionsDao,
+                                                 apiBuilderLogger: ApiBuilderLogger,
 ) {
-  private val logger = rollbarLogger.fingerprint(getClass.getName)
+  private val logger = apiBuilderLogger.fingerprint(getClass.getName)
 
   /**
    * Expands each import into its service definition, returning the list of imported services.
