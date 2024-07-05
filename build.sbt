@@ -106,12 +106,12 @@ lazy val api = project
       ws,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
-//      "org.projectlombok" % "lombok" % "1.18.32" % "provided",
+      "org.projectlombok" % "lombok" % "1.18.32" % "provided",
       ("com.github.mbryzek" % "lib-cipher" % "0.0.2").cross(CrossVersion.for3Use2_13),
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
       "com.github.mbryzek" % "lib-query" % "0.0.2",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
-//      "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1" % Test
+      "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1" % Test
     ),
     bashScriptExtraDefines ++= Seq(
       """addJava "--add-opens=java.base/java.lang=ALL-UNNAMED""""
