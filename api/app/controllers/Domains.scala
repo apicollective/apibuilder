@@ -40,7 +40,7 @@ class Domains @Inject() (
     }
   }
 
-  def deleteByName(orgKey: String, name: String) = Identified { request =>
+  def deleteByName(orgKey: String, name: String) = Identified.async { request =>
     withOrgAdmin(request.user, orgKey) { org =>
       org.domains.find(_.name == name).foreach { domain =>
         organizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).foreach { orgDomain =>
