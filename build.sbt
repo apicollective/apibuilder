@@ -171,7 +171,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.3",
-    ("org.typelevel" %% "cats-core" % "2.12.0").cross(CrossVersion.for3Use2_13),
+    "org.typelevel" %% "cats-core" % "2.12.0",
     "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
   ),
   scalacOptions ++= allScalacOptions,
