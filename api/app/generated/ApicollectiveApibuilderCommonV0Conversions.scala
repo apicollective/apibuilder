@@ -55,7 +55,6 @@ package io.apibuilder.common.v0.anorm.conversions {
   }
 
   object Standard {
-    implicit val columnToJsObject: Column[play.api.libs.json.JsObject] = Util.parser { _.as[play.api.libs.json.JsObject] }
     implicit val columnToJsValue: Column[play.api.libs.json.JsValue] = Util.parser { _.as[play.api.libs.json.JsValue] }
   }
 
