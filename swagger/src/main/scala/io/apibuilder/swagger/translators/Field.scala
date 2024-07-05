@@ -54,7 +54,7 @@ object Field {
         base.copy(
           description = Option(p.getUniqueItems()).getOrElse(false) match {
             case true => Util.combine(Seq(base.description, Some(s"Note: items are unique")))
-            case false => base.description
+            case _ => base.description
           }
         )
       }

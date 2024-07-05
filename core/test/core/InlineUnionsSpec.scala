@@ -6,9 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 class InlineUnionsSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-
-
-    it("union types support inline models") {
+  it("union types support inline models") {
     val json =
       """
     {

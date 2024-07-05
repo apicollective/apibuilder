@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 
 class UnionTypeSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
-    private val baseJson = """
+  private val baseJson = """
     {
       "name": "Union Types Test",
 

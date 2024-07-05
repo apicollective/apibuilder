@@ -96,7 +96,7 @@ case class ServiceBuilder(
     ): Resolution = {
       resolver.enums.find(o => o.name == name || o.fullName == name) match {
         case Some(e) => {
-          Resolution(e = Some(e))
+          Resolution(`enum` = Some(e))
         }
         case None => {
           resolver.models.find(o => o.name == name || o.fullName == name) match {
@@ -124,7 +124,7 @@ case class ServiceBuilder(
     ): Resource = {
       val resolution = resolve(resolver.provider, internal.datatype.name)
 
-      resolution.e match {
+      resolution.`enum` match {
         case Some(e) => {
           val resourcePath = internal.path.getOrElse("/" + e.plural)
           Resource(

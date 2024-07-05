@@ -44,7 +44,7 @@ object Operation {
       description = Util.combine(Seq(summary, description, ExternalDoc(Option(op.getExternalDocs)))),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
-        case true => Some(apidoc.Deprecation())
+        case _ => Some(apidoc.Deprecation())
       },
       body = bodies.toList match {
         case Nil => None

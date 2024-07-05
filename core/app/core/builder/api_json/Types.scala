@@ -21,7 +21,7 @@ private[api_json] case class InternalApiJsonFormTypesProvider(internal: Internal
       name = u.name,
       plural = u.plural,
       types = u.types.flatMap { t =>
-        t.datatype.toOption.map(_.name).map(core.TypesProviderUnionType)
+        t.datatype.toOption.map(_.name).map(core.TypesProviderUnionType(_))
       }
     )
   }

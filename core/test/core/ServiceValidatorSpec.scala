@@ -484,7 +484,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
   }
 
   it("resources with duplicate plural names are NOT allowed") {
-        val json =
+    val json =
       """
     {
       "name": "API Builder",

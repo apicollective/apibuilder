@@ -158,7 +158,7 @@ class ModelMergeSpec extends AnyWordSpec with Matchers with ApiJsonHelpers {
             val field = makeField(default = None)
             setupFields(
               templateField = field.copy(default = Some(JsString("foo"))),
-              modelField = field.copy(default = modelFieldDefault.map(JsString)),
+              modelField = field.copy(default = modelFieldDefault.map(JsString(_))),
             ).head.default.get
           }
 
