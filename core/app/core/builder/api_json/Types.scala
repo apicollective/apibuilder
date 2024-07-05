@@ -6,12 +6,12 @@ import lib.Kind
 
 private[api_json] case class InternalApiJsonFormTypesProvider(internal: InternalApiJsonForm) extends TypesProvider {
 
-  override def enums: Seq[TypesProviderEnum] = internal.enums.map { enum =>
+  override def enums: Seq[TypesProviderEnum] = internal.enums.map { e =>
     TypesProviderEnum(
       namespace = internal.namespace.getOrElse(""),
-      name = enum.name,
-      plural = enum.plural,
-      values = enum.values.flatMap(_.name)
+      name = e.name,
+      plural = e.plural,
+      values = e.values.flatMap(_.name)
     )
   }
 

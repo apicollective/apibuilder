@@ -65,8 +65,8 @@ val circeVersion = "0.14.9"
 lazy val core = project
   .in(file("core"))
   .enablePlugins(PlayScala)
-  .dependsOn(generated, lib)
-  .aggregate(generated, lib)
+  .dependsOn(generated, lib, avro, swagger)
+  .aggregate(generated, lib, avro, swagger)
   .settings(commonSettings*)
   .settings(
     libraryDependencies ++= Seq(
