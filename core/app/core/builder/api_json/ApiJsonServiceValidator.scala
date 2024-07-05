@@ -155,8 +155,8 @@ case class ApiJsonServiceValidator(
 
   private def validateEnums(enums: Seq[InternalEnumForm]): ValidatedNec[String, Unit] = {
     sequenceUnique(
-      enums.map(_.warnings) ++ enums.map { enum =>
-        validateAttributes(s"Enum[${enum.name}]", enum.attributes)
+      enums.map(_.warnings) ++ enums.map { e =>
+        validateAttributes(s"Enum[${e.name}]", e.attributes)
       } ++ enums.map(validateEnumValues)
     )
   }

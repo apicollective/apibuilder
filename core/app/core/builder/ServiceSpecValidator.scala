@@ -19,8 +19,8 @@ case class ServiceSpecValidator(
 
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
-      service.enums.map { enum =>
-        s"${service.namespace}.enums.$enum"
+      service.enums.map { e =>
+        s"${service.namespace}.enums.$e"
       }
     },
 
@@ -150,7 +150,7 @@ case class ServiceSpecValidator(
     )
   }
 
-  def validateField(prefix: String, field: Field): ValidatedNec[String, Unit] = {
+  private def validateField(prefix: String, field: Field): ValidatedNec[String, Unit] = {
     sequenceUnique(
       Seq(
         validateName(s"$prefix name", field.name),
@@ -226,8 +226,8 @@ case class ServiceSpecValidator(
 
   private def validateEnumNames(): ValidatedNec[String, Unit] = {
     sequenceUnique(
-      service.enums.map { enum =>
-        validateName(s"Enum[${enum.name}] name", enum.name)
+      service.enums.map { e =>
+        validateName(s"Enum[${e.name}] name", e.name)
       } ++ Seq(
         DuplicateErrorMessage.validate("Enum", service.enums.map(_.name))
       )
@@ -235,12 +235,12 @@ case class ServiceSpecValidator(
   }
   private def validateEnumValues(): ValidatedNec[String, Unit] = {
     sequenceUnique (
-      service.enums.filter(_.name.nonEmpty).flatMap { enum =>
-        (if (enum.values.isEmpty) {
-          Seq(s"Enum[${enum.name}] must have at least one value".invalidNec)
+      service.enums.filter(_.name.nonEmpty).flatMap { e =>
+        (if (e.values.isEmpty) {
+          Seq(s"Enum[${e.name}] must have at least one value".invalidNec)
         } else {
-          enum.values.map { value =>
-            validateName(s"Enum[${enum.name}] name[${value.name}]", value.name)
+          e.values.map { value =>
+            validateName(s"Enum[${e.name}] name[${value.name}]", value.name)
           }
         }) ++ Seq(validateEnumValuesUniqueness())
       }
@@ -249,11 +249,11 @@ case class ServiceSpecValidator(
 
   private def validateEnumValuesUniqueness(): ValidatedNec[String, Unit] = {
     sequenceUnique(
-      service.enums.map { enum =>
-        DuplicateErrorMessage.validate(s"Enum[${enum.name}] value", enum.values.map(_.name))
-      } ++ service.enums.map { enum =>
+      service.enums.map { e =>
+        DuplicateErrorMessage.validate(s"Enum[${e.name}] value", e.values.map(_.name))
+      } ++ service.enums.map { e =>
         // Check uniqueness of the serialization values
-        DuplicateErrorMessage.validate(s"Enum[${enum.name}] value", enum.values.map { ev => ev.value.getOrElse(ev.name) })
+        DuplicateErrorMessage.validate(s"Enum[${e.name}] value", e.values.map { ev => ev.value.getOrElse(ev.name) })
       }
     )
   }

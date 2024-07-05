@@ -95,8 +95,8 @@ case class ServiceBuilder(
       name: String
     ): Resolution = {
       resolver.enums.find(o => o.name == name || o.fullName == name) match {
-        case Some(enum) => {
-          Resolution(enum = Some(enum))
+        case Some(e) => {
+          Resolution(e = Some(e))
         }
         case None => {
           resolver.models.find(o => o.name == name || o.fullName == name) match {
@@ -124,12 +124,12 @@ case class ServiceBuilder(
     ): Resource = {
       val resolution = resolve(resolver.provider, internal.datatype.name)
 
-      resolution.enum match {
-        case Some(enum) => {
-          val resourcePath = internal.path.getOrElse("/" + enum.plural)
+      resolution.e match {
+        case Some(e) => {
+          val resourcePath = internal.path.getOrElse("/" + e.plural)
           Resource(
             `type` = internal.datatype.label,
-            plural = enum.plural,
+            plural = e.plural,
             path = Some(resourcePath),
             description = internal.description,
             deprecation = internal.deprecation.map(DeprecationBuilder(_)),

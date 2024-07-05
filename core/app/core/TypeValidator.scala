@@ -102,12 +102,12 @@ object TypesProvider {
 
   case class FromService(service: Service) extends TypesProvider {
 
-    override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
+    override def enums: Iterable[TypesProviderEnum] = service.enums.map { e =>
       TypesProviderEnum(
         namespace = service.namespace,
-        name = enum.name,
-        plural = enum.plural,
-        values = enum.values.map(_.name)
+        name = e.name,
+        plural = e.plural,
+        values = e.values.map(_.name)
       )
     }
 
@@ -237,13 +237,13 @@ case class TypeValidator(
             None
           }
 
-          case Some(enum) => {
-            enum.values.find(_ == value) match {
+          case Some(e) => {
+            e.values.find(_ == value) match {
               case None => {
                 Some(
                   withPrefix(
                     errorPrefix,
-                    s"default[$value] is not a valid value for enum[$name]. Valid values are: " + enum.values.mkString(", ")
+                    s"default[$value] is not a valid value for enum[$name]. Valid values are: " + e.values.mkString(", ")
                   )
                 )
               }

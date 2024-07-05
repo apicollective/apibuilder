@@ -68,6 +68,13 @@ lazy val core = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .settings(commonSettings*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core" % circeVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
+      "io.circe" %% "circe-parser" % circeVersion
+    ),
+  )
 
 lazy val generated = project
   .in(file("generated"))

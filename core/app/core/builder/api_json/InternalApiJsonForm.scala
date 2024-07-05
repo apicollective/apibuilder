@@ -664,7 +664,7 @@ object InternalResourceForm extends ValidatedHelpers {
       }
       case None => {
         enums.find(e => e.name == typeName) match {
-          case Some(enum) => Some("/" + enum.plural)
+          case Some(e) => Some("/" + e.plural)
           case None => {
             models.find(m => m.name == typeName) match {
               case Some(model) => Some("/" + model.plural)
