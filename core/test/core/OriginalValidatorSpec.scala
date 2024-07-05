@@ -32,7 +32,7 @@ class OriginalValidatorSpec
 
     it("should validate valid swagger json with parameter of type array") {
       val filename = "simple-w-array.json"
-      val path = s"core/src/test/resources/$filename"
+      val path = s"test/resources/$filename"
       expectValid {
         validator.validate(readFile(path))
       }
@@ -40,7 +40,7 @@ class OriginalValidatorSpec
 
     it("should validate valid swagger json without parameter of type array") {
       val filename = "simple-without-array.json"
-      val path = s"core/src/test/resources/$filename"
+      val path = s"test/resources/$filename"
       expectValid {
         validator.validate(readFile(path))
       }

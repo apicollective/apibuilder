@@ -118,11 +118,11 @@ object TestHelper extends ValidatedHelpers with ValidatedTestHelpers {
     Files.write(outputPath, bytes)
   }
 
-  def readFile(path: String): String = FileUtils.readToString(new File(path))
+  def readFile(path: String): String = FileUtils.readToString(new File("../" + path))
 
   def parseFile(filename: String): ValidatedNec[String, Service] = {
     val fetcher = MockServiceFetcher()
-    if (filename == "spec/apibuilder-api.json") {
+    if (filename.indexOf("spec/apibuilder-api.json")>=0) {
       Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
         fetcher.add(s"/apibuilder-spec/$version/service.json", specService)
         fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
