@@ -1,8 +1,8 @@
 package db.generated
 
 import anorm._
+import com.mbryzek.util.IdGenerator
 import io.flow.postgresql.{OrderBy, Query}
-import io.flow.util.IdGenerator
 import java.sql.Connection
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -166,7 +166,7 @@ class GeneratorInvocationsDao @Inject() (
   override val db: Database
 ) extends BaseGeneratorInvocationsDao {
 
-  private val idGenerator = IdGenerator("gni")
+  private val idGenerator = com.mbryzek.util.IdGenerator("gni")
 
   def randomId(): String = idGenerator.randomId()
 

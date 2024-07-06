@@ -96,7 +96,7 @@ class UserPasswordsDao @Inject() (
           case Some(al) => {
             al.isValid(
               plaintext = cleartextPassword,
-              hash = up.hash,
+              hash = up.base64EncodedHash,
               salt = None
             )
           }

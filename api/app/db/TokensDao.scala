@@ -93,7 +93,7 @@ class TokensDao @Inject() (
         tokenFilter(FindCleartextQuery).
         isNull("tokens.deleted_at").
         equals("tokens.guid", guid).
-        anormSql().as(SqlParser.str("token").*).headOption.map(CleartextToken)
+        anormSql().as(SqlParser.str("token").*).headOption.map(CleartextToken(_))
     }
   }
 
