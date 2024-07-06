@@ -1,23 +1,24 @@
 package db
 
+import anorm.*
+import com.mbryzek.cipher.{CipherLibraryMindrot, Ciphers, HashedValue}
 import io.apibuilder.api.v0.models.{Error, User}
+import io.flow.postgresql.Query
 import lib.Validation
-import anorm._
+import play.api.db.*
+
+import java.sql.Connection
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-import play.api.db._
-import java.util.UUID
-import java.sql.Connection
-
-import io.flow.postgresql.Query
-
-case class UserPassword(guid: UUID, userGuid: UUID, hashed: HashedValue)
+case class UserPassword(guid: UUID, userGuid: UUID, algorithmKey: String, base64EncodedHash: String)
 
 @Singleton
 class UserPasswordsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
+  private val ciphers: Ciphers = Ciphers()
   private val MinLength = 5
 
   private val BaseQuery = Query(
@@ -69,14 +70,14 @@ class UserPasswordsDao @Inject() (
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
     val guid = UUID.randomUUID
-    val algorithm = PasswordAlgorithm.Latest
+    val algorithm = ciphers.latest
     val hashedPassword = algorithm.hash(cleartextPassword)
 
     SQL(InsertQuery).on(
       "guid" -> guid,
       "user_guid" -> userGuid,
       "algorithm_key" -> algorithm.key,
-      "hash" -> new String(Base64.encodeBase64(hashedPassword.hash.getBytes)),
+      "hash" -> hashedPassword.hash,
       "created_by_guid" -> creatingUserGuid,
       "updated_by_guid" -> creatingUserGuid
     ).execute()
@@ -89,7 +90,18 @@ class UserPasswordsDao @Inject() (
   def isValid(userGuid: UUID, cleartextPassword: String): Boolean = {
     findByUserGuid(userGuid) match {
       case None => false
-      case Some(up: UserPassword) => up.algorithm.check(cleartextPassword, up.hash)
+      case Some(up) => {
+        ciphers.libraries.find(_.key == up.algorithmKey) match {
+          case None => false
+          case Some(al) => {
+            al.isValid(
+              plaintext = cleartextPassword,
+              hash = up.hash,
+              salt = None
+            )
+          }
+        }
+      }
     }
   }
 
@@ -112,10 +124,8 @@ class UserPasswordsDao @Inject() (
         UserPassword(
           guid = guid,
           userGuid = userGuid,
-          algorithm = PasswordAlgorithm.fromString(algorithmKey).getOrElse {
-            sys.error(s"Invalid algorithmKey[$algorithmKey] for userGuid[$userGuid]")
-          },
-          hash = new String(Base64.decodeBase64(hash.getBytes))
+          algorithmKey = algorithmKey,
+          base64EncodedHash = hash
         )
       }
     }
