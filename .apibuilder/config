@@ -5,7 +5,6 @@ code:
       generators:
         play_2_8_client: generated/app
         play_2_x_routes: api/conf/routes
-        anorm_2_8_parsers: api/app/generated
     apibuilder-api-json:
       version: latest
       generators:
