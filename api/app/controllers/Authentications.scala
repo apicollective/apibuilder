@@ -15,7 +15,7 @@ class Authentications @Inject() (
   usersDao: UsersDao
 ) extends ApiBuilderController {
 
-  def getSessionById(sessionId: String) = Anonymous { _ =>
+  def getSessionById(sessionId: String): Action[AnyContent] = Anonymous { _ =>
     sessionsDao.findById(sessionId) match {
       case None => NotFound
       case Some(session) => {

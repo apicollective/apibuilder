@@ -1,11 +1,12 @@
 package controllers
 
 import db.{MembershipRequestsDao, OrganizationsDao, UsersDao}
-import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.json.*
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
 import lib.Validation
-import play.api.libs.json._
+import play.api.libs.json.*
+import play.api.mvc.{Action, AnyContent}
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -37,7 +38,7 @@ class MembershipRequests @Inject() (
     role: Option[MembershipRole],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val requests = membershipRequestsDao.findAll(
       request.authorization,
       organizationGuid = organizationGuid,
@@ -50,7 +51,7 @@ class MembershipRequests @Inject() (
     Ok(Json.toJson(requests))
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[MembershipRequestForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error(e.toString)))
@@ -88,7 +89,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postAcceptByGuid(guid: UUID) = Identified { request =>
+  def postAcceptByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
@@ -98,7 +99,7 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postDeclineByGuid(guid: UUID) = Identified { request =>
+  def postDeclineByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     membershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {

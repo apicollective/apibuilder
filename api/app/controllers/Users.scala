@@ -1,16 +1,17 @@
 package controllers
 
 import io.apibuilder.api.v0.models.{User, UserForm, UserUpdateForm}
-import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.json.*
 import lib.Validation
 import util.SessionHelper
 import db.{UserPasswordsDao, UsersDao}
 
 import javax.inject.Inject
-import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json, Reads}
+import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, JsValue, Json, Reads}
 
 import java.util.UUID
 import play.api.libs.ws.WSClient
+import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.Future
 
@@ -35,7 +36,7 @@ class Users @Inject() (
     email: Option[String],
     nickname: Option[String],
     token: Option[String]
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     if (!Seq(guid, email, nickname, token).exists(_.isDefined)) {
       // require system user to show more then one user
       requireSystemUser(request.user)
@@ -50,7 +51,7 @@ class Users @Inject() (
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
+  def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     requireSystemUser(request.user)
     usersDao.findByGuid(guid) match {
       case None => NotFound
@@ -58,7 +59,7 @@ class Users @Inject() (
     }
   }
 
-  def post() = Anonymous(parse.json) { request =>
+  def post(): Action[JsValue] = Anonymous(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -78,7 +79,7 @@ class Users @Inject() (
     }
   }
 
-  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
+  def putByGuid(guid: UUID): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[UserUpdateForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -120,7 +121,7 @@ class Users @Inject() (
     }
   }
 
-  def postAuthenticate() = Anonymous(parse.json) { request =>
+  def postAuthenticate(): Action[JsValue] = Anonymous(parse.json) { request =>
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -145,7 +146,7 @@ class Users @Inject() (
     }
   }
 
-  def postAuthenticateGithub() = Action.async(parse.json) { request =>
+  def postAuthenticateGithub(): Action[JsValue] = Action.async(parse.json) { request =>
     request.body.validate[GithubAuthenticationForm] match {
       case e: JsError => Future.successful {
         Conflict(Json.toJson(Validation.invalidJson(e)))

@@ -27,7 +27,7 @@ class Applications @Inject() (
     offset: Long = 0,
     sorting: Option[AppSortBy],
     ordering: Option[SortOrder]
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val applications = applicationsDao.findAll(
       request.authorization,
       orgKey = Some(orgKey),
@@ -43,7 +43,7 @@ class Applications @Inject() (
     Ok(Json.toJson(applications))
   }
 
-  def post(orgKey: String) = Identified(parse.json) { request =>
+  def post(orgKey: String): Action[JsValue] = Identified(parse.json) { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body.validate[ApplicationForm] match {
         case e: JsError => {
@@ -65,7 +65,7 @@ class Applications @Inject() (
     }
   }
 
-  def putByApplicationKey(orgKey: String, applicationKey: String) = Identified(parse.json) { request =>
+  def putByApplicationKey(orgKey: String, applicationKey: String): Action[JsValue] = Identified(parse.json) { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body.validate[ApplicationForm] match {
         case e: JsError => {
@@ -92,7 +92,7 @@ class Applications @Inject() (
     }
   }
 
-  def deleteByApplicationKey(orgKey: String, applicationKey: String) = Identified { request =>
+  def deleteByApplicationKey(orgKey: String, applicationKey: String): Action[AnyContent] = Identified { request =>
     withOrgMember(request.user, orgKey) { _ =>
       applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).foreach { application =>
         applicationsDao.softDelete(request.user, application)
@@ -101,7 +101,7 @@ class Applications @Inject() (
     }
   }
 
-  def postMoveByApplicationKey(orgKey: String, applicationKey: String) = Identified(parse.json) { request =>
+  def postMoveByApplicationKey(orgKey: String, applicationKey: String): Action[JsValue] = Identified(parse.json) { request =>
     withOrg(request.authorization, orgKey) { org =>
       applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
         case None => NotFound
@@ -133,7 +133,7 @@ class Applications @Inject() (
     applicationKey: String,
     limit: Long = 25,
     offset: Long = 0
-  ) = Anonymous { request =>
+  ): Action[AnyContent] = Anonymous { request =>
     applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey) match {
       case None => NotFound
       case Some(application) => {
@@ -153,7 +153,7 @@ class Applications @Inject() (
     applicationKey: String,
     limit: Long = 25,
     offset: Long = 0
-  ) = Anonymous { request =>
+  ): Action[AnyContent] = Anonymous { request =>
     applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey) match {
       case None => NotFound
       case Some(application) => {

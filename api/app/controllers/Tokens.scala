@@ -20,7 +20,7 @@ class Tokens @Inject() (
     guid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val tokens = tokensDao.findAll(
       request.authorization,
       userGuid = Some(userGuid),
@@ -33,7 +33,7 @@ class Tokens @Inject() (
 
   def getCleartextByGuid(
     guid: UUID
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     tokensDao.findCleartextByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {
@@ -42,7 +42,7 @@ class Tokens @Inject() (
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[TokenForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -62,7 +62,7 @@ class Tokens @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
+  def deleteByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     tokensDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {

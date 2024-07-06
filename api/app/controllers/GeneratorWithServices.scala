@@ -21,7 +21,7 @@ class GeneratorWithServices @Inject() (
     key: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Anonymous { request =>
+  ): Action[AnyContent] = Anonymous { request =>
     val generators = generatorsDao.findAll(
       request.authorization,
       guid = guid,
@@ -35,7 +35,7 @@ class GeneratorWithServices @Inject() (
     Ok(Json.toJson(generators))
   }
 
-  def getByKey(key: String) = Anonymous { request =>
+  def getByKey(key: String): Action[AnyContent] = Anonymous { request =>
     generatorsDao.findAll(
       request.authorization,
       key = Some(key),

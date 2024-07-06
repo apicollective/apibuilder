@@ -22,7 +22,7 @@ class Subscriptions @Inject() (
     publication: Option[Publication],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val subscriptions = subscriptionsDao.findAll(
       request.authorization,
       guid = guid,
@@ -35,14 +35,14 @@ class Subscriptions @Inject() (
     Ok(Json.toJson(subscriptions))
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
+  def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     subscriptionsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -62,7 +62,7 @@ class Subscriptions @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
+  def deleteByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     subscriptionsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(subscription) => {

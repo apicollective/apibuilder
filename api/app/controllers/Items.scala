@@ -17,7 +17,7 @@ class Items @Inject() (
     q: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Anonymous { request =>
+  ): Action[AnyContent] = Anonymous { request =>
     val items = itemsDao.findAll(
       request.authorization,
       q = q,
@@ -29,7 +29,7 @@ class Items @Inject() (
 
   def getByGuid(
     guid: UUID
-  ) = Anonymous { request =>
+  ): Action[AnyContent] = Anonymous { request =>
     itemsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(item) => Ok(Json.toJson(item))

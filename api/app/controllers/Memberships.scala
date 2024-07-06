@@ -1,9 +1,10 @@
 package controllers
 
 import db.MembershipsDao
-import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.json.*
 import io.apibuilder.common.v0.models.MembershipRole
 import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent}
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -21,7 +22,7 @@ class Memberships @Inject() (
            role: Option[MembershipRole],
            limit: Long = 25,
            offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     Ok(
       Json.toJson(
         membershipsDao.findAll(
@@ -37,7 +38,7 @@ class Memberships @Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
+  def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     membershipsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(membership) => {
@@ -50,7 +51,7 @@ class Memberships @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
+  def deleteByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     membershipsDao.findByGuid(request.authorization, guid) match {
       case None => NoContent
       case Some(membership) => {

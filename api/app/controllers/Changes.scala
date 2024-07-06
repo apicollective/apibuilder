@@ -20,7 +20,7 @@ class Changes @Inject() (
     `type`: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Anonymous { request =>
+  ): Action[AnyContent] = Anonymous { request =>
     val changes = changesDao.findAll(
       request.authorization,
       organizationKey = orgKey,
