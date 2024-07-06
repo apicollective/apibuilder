@@ -9,7 +9,7 @@ code:
     apibuilder-api-json:
       version: latest
       generators:
-        play_2_x_scala_3_json: core/app/core/generated
+        play_2_x_scala_3_json: core/app/generated
     apibuilder-spec:
       version: latest
       generators:
