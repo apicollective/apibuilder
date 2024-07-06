@@ -35,7 +35,7 @@ class Users @Inject() (
     email: Option[String],
     nickname: Option[String],
     token: Option[String]
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     if (!Seq(guid, email, nickname, token).exists(_.isDefined)) {
       // require system user to show more then one user
       requireSystemUser(request.user)
@@ -50,7 +50,7 @@ class Users @Inject() (
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = Identified.async { request =>
+  def getByGuid(guid: UUID) = Identified { request =>
     requireSystemUser(request.user)
     usersDao.findByGuid(guid) match {
       case None => NotFound
@@ -78,7 +78,7 @@ class Users @Inject() (
     }
   }
 
-  def putByGuid(guid: UUID) = Identified.async(parse.json) { request =>
+  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
     request.body.validate[UserUpdateForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

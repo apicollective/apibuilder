@@ -129,8 +129,8 @@ class AnonymousActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (AnonymousRequest[A]
-  ) => Future[Result]): Future[Result] = {
+    block: AnonymousRequest[A] => Future[Result]
+  ): Future[Result] = {
     block(
       AnonymousRequest(
         user = requestAuthenticationUtil.user(request.headers),

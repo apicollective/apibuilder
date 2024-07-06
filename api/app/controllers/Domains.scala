@@ -15,7 +15,7 @@ class Domains @Inject() (
   organizationDomainsDao: OrganizationDomainsDao
 ) extends ApiBuilderController {
 
-  def post(orgKey: String) = Identified.async(parse.json) { request =>
+  def post(orgKey: String) = Identified(parse.json) { request =>
     withOrgAdmin(request.user, orgKey) { org =>
       request.body.validate[Domain] match {
         case e: JsError => {
@@ -40,7 +40,7 @@ class Domains @Inject() (
     }
   }
 
-  def deleteByName(orgKey: String, name: String) = Identified.async { request =>
+  def deleteByName(orgKey: String, name: String) = Identified { request =>
     withOrgAdmin(request.user, orgKey) { org =>
       org.domains.find(_.name == name).foreach { domain =>
         organizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).foreach { orgDomain =>

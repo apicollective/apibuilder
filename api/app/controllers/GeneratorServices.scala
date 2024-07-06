@@ -46,7 +46,7 @@ class GeneratorServices @Inject() (
     }
   }
 
-  def post() = Identified.async(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[GeneratorServiceForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -78,7 +78,7 @@ class GeneratorServices @Inject() (
 
   def deleteByGuid(
     guid: UUID
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     servicesDao.findByGuid(request.authorization, guid) match {
       case None => {
         NotFound

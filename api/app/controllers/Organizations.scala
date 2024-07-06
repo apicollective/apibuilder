@@ -48,7 +48,7 @@ class Organizations @Inject() (
     }
   }
 
-  def post() = Identified.async(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[OrganizationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -66,7 +66,7 @@ class Organizations @Inject() (
     }
   }
 
-  def putByKey(key: String) = Identified.async(parse.json) { request =>
+  def putByKey(key: String) = Identified(parse.json) { request =>
     request.body.validate[OrganizationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -89,7 +89,7 @@ class Organizations @Inject() (
     }
   }
 
-  def deleteByKey(key: String) = Identified.async { request =>
+  def deleteByKey(key: String) = Identified { request =>
     withOrgAdmin(request.user, key) { org =>
       organizationsDao.softDelete(request.user, org)
       NoContent
@@ -101,7 +101,7 @@ class Organizations @Inject() (
     attributeName: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, key) { org =>
       Ok(
         Json.toJson(
@@ -119,7 +119,7 @@ class Organizations @Inject() (
   def getAttributesByKeyAndName(
     key: String,
     name: String
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
@@ -128,7 +128,7 @@ class Organizations @Inject() (
     }
   }
 
-  def putAttributesByKeyAndName(key: String, name: String) = Identified.async(parse.json) { request =>
+  def putAttributesByKeyAndName(key: String, name: String) = Identified(parse.json) { request =>
     withOrg(request.authorization, key) { org =>
       withAttribute(name) { attr =>
         request.body.validate[AttributeValueForm] match {
@@ -159,7 +159,7 @@ class Organizations @Inject() (
   def deleteAttributesByKeyAndName(
     key: String,
     name: String
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound

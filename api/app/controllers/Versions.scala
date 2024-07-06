@@ -108,7 +108,7 @@ class Versions @Inject() (
   def postByVersion(
     orgKey: String,
     versionName: String
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body match {
         case AnyContentAsJson(json) => {
@@ -157,7 +157,7 @@ class Versions @Inject() (
     orgKey: String,
     applicationKey: String,
     versionName: String
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     withOrg(request.authorization, orgKey) { org =>
       request.body match {
         case AnyContentAsJson(json) => {
@@ -200,7 +200,7 @@ class Versions @Inject() (
     }
   }
 
-  def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Identified.async { request =>
+  def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Identified { request =>
     withOrgMember(request.user, orgKey) { _ =>
       versionsDao.findVersion(request.authorization, orgKey, applicationKey, version).foreach { version =>
         versionsDao.softDelete(request.user, version)

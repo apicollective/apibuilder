@@ -37,7 +37,7 @@ class Attributes @Inject() (
     }
   }
 
-  def post() = Identified.async(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[AttributeForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -57,7 +57,7 @@ class Attributes @Inject() (
     }
   }
 
-  def deleteByName(name: String) = Identified.async { request =>
+  def deleteByName(name: String) = Identified { request =>
     attributesDao.findByName(name) match {
       case None => {
         NotFound

@@ -22,7 +22,7 @@ class Watches @Inject() (
     applicationKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     val watches = watchesDao.findAll(
       request.authorization,
       guid = guid,
@@ -35,7 +35,7 @@ class Watches @Inject() (
     Ok(Json.toJson(watches))
   }
 
-  def getByGuid(guid: UUID) = Identified.async { request =>
+  def getByGuid(guid: UUID) = Identified { request =>
     watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => Ok(Json.toJson(watch))
@@ -46,7 +46,7 @@ class Watches @Inject() (
     userGuid: scala.Option[_root_.java.util.UUID],
     organizationKey: String,
     applicationKey: String
-  ) = Identified.async { request =>
+  ) = Identified { request =>
     watchesDao.findAll(
       request.authorization,
       userGuid = userGuid,
@@ -59,7 +59,7 @@ class Watches @Inject() (
     }
   }
 
-  def post() = Identified.async(parse.json) { request =>
+  def post() = Identified(parse.json) { request =>
     request.body.validate[WatchForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -76,7 +76,7 @@ class Watches @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified.async { request =>
+  def deleteByGuid(guid: UUID) = Identified { request =>
     watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => {
