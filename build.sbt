@@ -23,7 +23,8 @@ lazy val lib = project
   .settings(resolversSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "joda-time" % "joda-time" % "2.12.7",
     )
   )
 
@@ -83,6 +84,7 @@ lazy val generated = project
     scalacOptions ++= Seq("-deprecation:false"),
     libraryDependencies ++= Seq(
       ws,
+      "joda-time" % "joda-time" % "2.12.7",
       "org.playframework.anorm" %% "anorm-postgres" % "2.7.0",
       "org.postgresql" % "postgresql" % "42.7.3",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
@@ -179,7 +181,6 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.3",
-    "joda-time" % "joda-time" % "2.12.7",
     "org.typelevel" %% "cats-core" % "2.12.0",
     "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
   ),
