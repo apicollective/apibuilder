@@ -41,7 +41,7 @@ class EmailUtil @Inject()(
       case None => new SendGrid(appConfig.sendgridConfig.getOrElse {
         sys.error(s"sendgridConfig required when localDeliveryDir is not set")
       }.apiKey)
-      case Some(_) => new SendGrid(appConfig.sendgridApiKey.map(_.apiKey).getOrElse("development"))
+      case Some(_) => new SendGrid(appConfig.sendgridConfig.map(_.apiKey).getOrElse("development"))
     }
   }
 
