@@ -8,7 +8,6 @@ package io.apibuilder.api.v0.anorm.conversions {
   import anorm.{Column, MetaDataItem, TypeDoesNotMatch}
   import play.api.libs.json.{JsArray, JsObject, JsValue}
   import scala.util.{Failure, Success, Try}
-  import play.api.libs.json.JodaReads._
 
   /**
     * Conversions to collections of objects using JSON.
