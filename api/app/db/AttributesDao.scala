@@ -4,7 +4,7 @@ import io.apibuilder.api.v0.models.{Attribute, AttributeForm, User}
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 import anorm._
-import io.apibuilder.common.v0.models.Audit
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
 import javax.inject.{Inject, Singleton}
 import play.api.db._
