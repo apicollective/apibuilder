@@ -43,7 +43,7 @@ class IndexApplicationProcessor @Inject()(
 
   private def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {
     applicationsDao.findByGuid(Authorization.All, applicationGuid).flatMap { application =>
-      organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+      organizationsDao.findAll(Authorization.All, application = Some(application), limit = Some(1)).headOption.map { org =>
         (org, application)
       }
     }
