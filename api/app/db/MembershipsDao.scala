@@ -120,10 +120,17 @@ class MembershipsDao @Inject() (
     user: User,
     organization: Organization
   ): Boolean = {
+    isUserMember(userGuid = user.guid, organizationGuid = organization.guid)
+  }
+
+  def isUserMember(
+                    userGuid: UUID,
+                    organizationGuid: UUID
+                  ): Boolean = {
     findAll(
       Authorization.All,
-      organizationGuid = Some(organization.guid),
-      userGuid = Some(user.guid),
+      organizationGuid = Some(organizationGuid),
+      userGuid = Some(userGuid),
       limit = Some(1)
     ).headOption match {
       case None => false

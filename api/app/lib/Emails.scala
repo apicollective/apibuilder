@@ -2,9 +2,10 @@ package lib
 
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import io.apibuilder.api.v0.models._
-import org.joda.time.DateTime
+import models.SubscriptionModel
 import play.api.Logging
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 object Emails {
@@ -33,7 +34,8 @@ class Emails @Inject() (
                          email: EmailUtil,
                          applicationsDao: ApplicationsDao,
                          membershipsDao: MembershipsDao,
-                         subscriptionsDao: SubscriptionsDao
+                         subscriptionsDao: SubscriptionsDao,
+                         subscriptionModel: SubscriptionModel,
 ) extends Logging {
 
   def deliver(
@@ -46,7 +48,7 @@ class Emails @Inject() (
     implicit filter: Subscription => Boolean = { _ => true }
   ): Unit = {
     eachSubscription(context, org, publication, { subscription =>
-      val result = filter(subscription)
+      val result = filter(subscription) // TODO: Should we use filter?
       email.sendHtml(
         to = Person(subscription.user),
         subject = subject,
@@ -62,12 +64,14 @@ class Emails @Inject() (
     f: Subscription => Unit
   ): Unit = {
     Pager.eachPage[Subscription] { offset =>
-      subscriptionsDao.findAll(
-        Authorization.All,
-        organization = Some(organization),
-        publication = Some(publication),
-        limit = 100,
-        offset = offset
+      subscriptionModel.toModels(
+        subscriptionsDao.findAll(
+          Authorization.All,
+          organizationGuid = Some(organization.guid),
+          publication = Some(publication),
+          limit = 100,
+          offset = offset
+        )
       )
     } { subscription =>
       if (isAuthorized(context, organization, subscription.user)) {
@@ -84,12 +88,23 @@ class Emails @Inject() (
     organization: Organization,
     user: User
   ): Boolean = {
+    isAuthorized(
+      context, organizationGuid = organization.guid, userGuid = user.guid
+    )
+  }
+
+  private[lib] def isAuthorized(
+                                 context: Emails.Context,
+                                 organizationGuid: UUID,
+                                 userGuid: UUID
+                               ): Boolean = {
+
     context match {
       case Emails.Context.Application(app) => {
         app.visibility match {
           case Visibility.Public => true
           case Visibility.User | Visibility.Organization => {
-            applicationsDao.findByGuid(Authorization.User(user.guid), app.guid) match {
+            applicationsDao.findByGuid(Authorization.User(userGuid), app.guid) match {
               case None => false
               case Some(_) => true
             }
@@ -101,10 +116,10 @@ class Emails @Inject() (
         }
       }
       case Emails.Context.OrganizationAdmin => {
-        membershipsDao.isUserAdmin(user, organization)
+        membershipsDao.isUserAdmin(userGuid = userGuid, organizationGuid = organizationGuid)
       }
       case Emails.Context.OrganizationMember => {
-        membershipsDao.isUserMember(user, organization)
+        membershipsDao.isUserMember(userGuid = userGuid, organizationGuid = organizationGuid)
       }
     }
   }
