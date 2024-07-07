@@ -4,15 +4,19 @@ import db.TokensDao
 import lib.Validation
 import io.apibuilder.api.v0.models.TokenForm
 import io.apibuilder.api.v0.models.json._
+import models.TokensModel
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
+
 import java.util.UUID
 
 @Singleton
 class Tokens @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  tokensDao: TokensDao
+  tokensDao: TokensDao,
+  model: TokensModel
 ) extends ApiBuilderController {
 
   def getUsersByUserGuid(
@@ -20,7 +24,7 @@ class Tokens @Inject() (
     guid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val tokens = tokensDao.findAll(
       request.authorization,
       userGuid = Some(userGuid),
@@ -28,12 +32,12 @@ class Tokens @Inject() (
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(tokens))
+    Ok(Json.toJson(model.toModels(tokens)))
   }
 
   def getCleartextByGuid(
     guid: UUID
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     tokensDao.findCleartextByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {
@@ -42,7 +46,7 @@ class Tokens @Inject() (
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[TokenForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -52,7 +56,11 @@ class Tokens @Inject() (
         tokensDao.validate(request.user, form) match {
           case Nil => {
             val token = tokensDao.create(request.user, form)
-            Created(Json.toJson(token))
+            Created(Json.toJson(
+              model.toModel(token).getOrElse {
+                sys.error("Failed to create token)")
+              }
+            ))
           }
           case errors => {
             Conflict(Json.toJson(errors))
@@ -62,7 +70,7 @@ class Tokens @Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
+  def deleteByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     tokensDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {

@@ -110,7 +110,7 @@ class DiffVersionProcessor @Inject()(
     }
 
     applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).foreach { application =>
-      organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).foreach { org =>
+      organizationsDao.findAll(Authorization.All, application = Some(application), limit = Some(1)).foreach { org =>
         emails.deliver(
           context = Emails.Context.Application(application),
           org = org,
