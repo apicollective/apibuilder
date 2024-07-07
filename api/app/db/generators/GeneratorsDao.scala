@@ -1,21 +1,17 @@
 package db.generators
 
+import anorm._
+import cats.data.ValidatedNec
 import cats.implicits._
-import db.{Authorization, Filters, InternalMembershipRequest}
+import db.{Authorization, Filters}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
-
-import javax.inject.{Inject, Singleton}
-import anorm._
-import cats.data.ValidatedNec
-import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import play.api.db._
-
-import java.util.UUID
 import play.api.libs.json.Json
 
-import java.sql.Connection
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success, Try}
 
 case class InternalGenerator(
@@ -26,7 +22,15 @@ case class InternalGenerator(
                             language: Option[String],
                             attributes: Seq[String],
                             serviceGuid: UUID
-                            )
+                            ) {
+  def model: Generator = Generator(
+    key = key,
+    name = name,
+    language = language,
+    description = description,
+    attributes = attributes
+  )
+}
 
 @Singleton
 class GeneratorsDao @Inject() (
@@ -211,9 +215,16 @@ class GeneratorsDao @Inject() (
   private def addService(generators: List[InternalGenerator]): Seq[GeneratorWithService] = {
     val services = servicesDao.findAll(
       Authorization.All,
+      guids = Some(generators.map(_.serviceGuid).distinct),
+      limit = None,
+    ).map { s => s.guid -> s }.toMap
 
+    generators.flatMap { g =>
+      services.get(g.serviceGuid).map { s =>
+        GeneratorWithService(s, g.model)
+      }
+    }
 
-    )
   }
 
   private def parser: RowParser[InternalGenerator] = {
