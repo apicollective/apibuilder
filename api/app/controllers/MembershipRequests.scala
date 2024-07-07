@@ -5,7 +5,9 @@ import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
 import lib.Validation
+import models.MembershipRequestsModel
 import play.api.libs.json._
+import play.api.mvc.{Action, AnyContent}
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -15,7 +17,8 @@ class MembershipRequests @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao,
-  usersDao: UsersDao
+  usersDao: UsersDao,
+  model: MembershipRequestsModel
 ) extends ApiBuilderController {
 
   case class MembershipRequestForm(
@@ -37,7 +40,7 @@ class MembershipRequests @Inject() (
     role: Option[MembershipRole],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val requests = membershipRequestsDao.findAll(
       request.authorization,
       organizationGuid = organizationGuid,
@@ -47,10 +50,10 @@ class MembershipRequests @Inject() (
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(requests))
+    Ok(Json.toJson(model.toModels(requests)))
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[MembershipRequestForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error(e.toString)))
@@ -77,7 +80,11 @@ class MembershipRequests @Inject() (
 
                   case Some(role) => {
                     val mr = membershipRequestsDao.upsert(request.user, org, user, role)
-                    Ok(Json.toJson(mr))
+                    Ok(Json.toJson(
+                      model.toModel(mr).getOrElse {
+                        sys.error("Failed to convert new membership request to model")
+                      }
+                    ))
                   }
                 }
               }
@@ -88,8 +95,8 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postAcceptByGuid(guid: UUID) = Identified { request =>
-    membershipRequestsDao.findByGuid(request.authorization, guid) match {
+  def postAcceptByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
+    membershipRequestsDao.findByGuid(request.authorization, guid).flatMap(model.toModel) match {
       case None => NotFound
       case Some(mr) => {
         membershipRequestsDao.accept(request.user, mr)
@@ -98,8 +105,8 @@ class MembershipRequests @Inject() (
     }
   }
 
-  def postDeclineByGuid(guid: UUID) = Identified { request =>
-    membershipRequestsDao.findByGuid(request.authorization, guid) match {
+  def postDeclineByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
+    membershipRequestsDao.findByGuid(request.authorization, guid).flatMap(model.toModel) match {
       case None => NotFound
       case Some(mr) => {
         membershipRequestsDao.decline(request.user, mr)

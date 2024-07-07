@@ -1,16 +1,22 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Change, ChangeVersion, DiffBreaking, DiffNonBreaking, DiffType, Domain, MembershipRequest, Organization, User, UserSummary, Visibility}
-import io.apibuilder.common.v0.models.{Audit, MembershipRole, Reference, ReferenceGuid}
+import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
+import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataMembershipRequestAccepted, EmailDataMembershipRequestCreated, EmailDataMembershipRequestDeclined}
 import io.flow.postgresql.Query
 import play.api.db._
-import play.api.libs.json.Json
 import processor.EmailProcessorQueue
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
+
+case class InternalMembershipRequest(
+                                      guid: UUID,
+                                      role: MembershipRole,
+                                      organizationGuid: UUID,
+                                      userGuid: UUID,
+                                      audit: Audit)
 
 @Singleton
 class MembershipRequestsDao @Inject() (
@@ -29,19 +35,8 @@ class MembershipRequestsDao @Inject() (
            membership_requests.created_at::text,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")},
            organizations.guid as organization_guid,
-           organizations.name as organization_name,
-           organizations.key as organization_key,
-           organizations.visibility as organization_visibility,
-           organizations.namespace as organization_namespace,
-           ${AuditsDao.queryWithAlias("organizations", "organization")},
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")}
+           users.guid as user_guid
       from membership_requests
-      join organizations on organizations.guid = membership_requests.organization_guid
-      join users on users.guid = membership_requests.user_guid
   """)
 
   private val InsertQuery = """
@@ -51,16 +46,16 @@ class MembershipRequestsDao @Inject() (
    ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: MembershipRole): MembershipRequest = {
+  def upsert(createdBy: User, organization: Organization, user: User, role: MembershipRole): InternalMembershipRequest = {
     findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role) match {
-      case Some(r: MembershipRequest) => r
+      case Some(r: InternalMembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
       }
     }
   }
 
-  private[db] def create(createdBy: User, organization: Organization, user: User, role: MembershipRole): MembershipRequest = {
+  private[db] def create(createdBy: User, organization: Organization, user: User, role: MembershipRole): InternalMembershipRequest = {
     val guid = UUID.randomUUID
     db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
@@ -132,7 +127,7 @@ class MembershipRequestsDao @Inject() (
     org: Organization,
     userGuid: UUID,
     role: MembershipRole
-  ): Option[MembershipRequest] = {
+  ): Option[InternalMembershipRequest] = {
     findAll(
       authorization,
       organizationGuid = Some(org.guid),
@@ -142,7 +137,7 @@ class MembershipRequestsDao @Inject() (
     ).headOption
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[MembershipRequest] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalMembershipRequest] = {
     findAll(authorization, guid = Some(guid)).headOption
   }
 
@@ -156,7 +151,7 @@ class MembershipRequestsDao @Inject() (
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[MembershipRequest] = {
+  ): Seq[InternalMembershipRequest] = {
     // TODO Implement authorization
 
     db.withConnection { implicit c =>
@@ -178,7 +173,7 @@ class MembershipRequestsDao @Inject() (
     }
   }
 
-  private val parser: RowParser[MembershipRequest] = {
+  private val parser: RowParser[InternalMembershipRequest] = {
     import org.joda.time.DateTime
 
     SqlParser.get[UUID]("guid") ~
@@ -186,54 +181,15 @@ class MembershipRequestsDao @Inject() (
       SqlParser.get[DateTime]("created_at") ~
       SqlParser.get[UUID]("created_by_guid") ~
       SqlParser.get[DateTime]("updated_at") ~
-      SqlParser.get[UUID]("updated_by_guid")
+      SqlParser.get[UUID]("updated_by_guid") ~
       SqlParser.get[UUID]("organization_guid") ~
-      SqlParser.str("organization_key") ~
-      SqlParser.str("organization_name") ~
-      SqlParser.str("organization_namespace") ~
-      SqlParser.str("organization_visibility") ~
-      SqlParser.get[DateTime]("organization_created_at") ~
-      SqlParser.get[UUID]("organization_created_by_guid") ~
-      SqlParser.get[DateTime]("organization_updated_at") ~
-      SqlParser.get[UUID]("organization_updated_by_guid")
-      SqlParser.get[UUID]("user_guid") ~
-      SqlParser.str("user_email") ~
-      SqlParser.str("user_nickname") ~
-      SqlParser.str("user_name").? ~
-      SqlParser.get[DateTime]("user_created_at") ~
-      SqlParser.get[UUID]("user_created_by_guid") ~
-      SqlParser.get[DateTime]("user_updated_at") ~
-      SqlParser.get[UUID]("user_updated_by_guid") map {
-      case guid ~ role ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ organizationKey ~ organizationName ~ organizationNamespace ~ organizationVisibility ~ organizationCreatedAt ~ organizationCreatedByGuid ~ organizationUpdatedAt ~ organizationUpdatedByGuid ~ userGuid ~ userEmail ~ userNickname ~ userName ~ userCreatedAt ~ userCreatedByGuid ~ userUpdatedAt ~ userUpdatedByGuid => {
-        MembershipRequest(
+      SqlParser.get[UUID]("user_guid") map {
+      case guid ~ role ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ userGuid => {
+        InternalMembershipRequest(
           guid = guid,
           role = MembershipRole.apply(role),
-          organization = Organization(
-            guid = organizationGuid,
-            key = organizationKey,
-            name = organizationName,
-            namespace = organizationNamespace,
-            visibility = Visibility(organizationVisibility),
-            domains = Nil, // TODO
-            audit = Audit(
-              createdAt = organizationCreatedAt,
-              createdBy = ReferenceGuid(organizationCreatedByGuid),
-              updatedAt = organizationUpdatedAt,
-              updatedBy = ReferenceGuid(organizationUpdatedByGuid),
-            )
-          ),
-          user = User(
-            guid = userGuid,
-            email = userEmail,
-            nickname = userNickname,
-            name = userName,
-            audit = Audit(
-              createdAt = userCreatedAt,
-              createdBy = ReferenceGuid(userCreatedByGuid),
-              updatedAt = userUpdatedAt,
-              updatedBy = ReferenceGuid(userUpdatedByGuid),
-            )
-          ),
+          organizationGuid = organizationGuid,
+          userGuid = userGuid,
           audit = Audit(
             createdAt = createdAt,
             createdBy = ReferenceGuid(createdByGuid),
