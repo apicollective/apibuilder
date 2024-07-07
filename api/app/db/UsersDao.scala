@@ -2,11 +2,11 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{Error, User, UserForm, UserUpdateForm}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import lib.{Constants, Misc, UrlKey, Validation}
 import play.api.db._
-import play.api.inject.Injector
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -24,14 +24,10 @@ object UsersDao {
 @Singleton
 class UsersDao @Inject() (
   @NamedDatabase("default") db: Database,
-  injector: Injector,
   emailVerificationsDao: EmailVerificationsDao,
   userPasswordsDao: UserPasswordsDao,
   internalTasksDao: InternalTasksDao,
 ) {
-
-  // TODO: Inject directly - here because of circular references
-  private def membershipRequestsDao = injector.instanceOf[MembershipRequestsDao]
 
   lazy val AdminUser: User = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
@@ -278,9 +274,7 @@ class UsersDao @Inject() (
         ).bind("token", token).
         and(isDeleted.map(Filters.isDeleted("users", _))).
         limit(1).
-        anormSql().as(
-        io.apibuilder.api.v0.anorm.parsers.User.parser().*
-      )
+        anormSql().as(parser.*)
     }
   }
 
@@ -301,6 +295,34 @@ class UsersDao @Inject() (
     findAll(nickname = Some(fullPrefix)).headOption match {
       case None => fullPrefix
       case Some(_) => generateNickname(input, iteration + 1)
+    }
+  }
+
+  private val parser: RowParser[User] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("email") ~
+      SqlParser.str("nickname") ~
+      SqlParser.str("name").? ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ email ~ nickname ~ name ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        User(
+          guid = guid,
+          email = email,
+          nickname = nickname,
+          name = name,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
     }
   }
 
