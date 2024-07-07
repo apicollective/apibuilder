@@ -8,6 +8,7 @@ import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models._
 import io.apibuilder.task.v0.models.json._
 import lib.{AppConfig, EmailUtil, Emails, Person}
+import models.{MembershipRequestsModel, MembershipsModel}
 import play.api.libs.json.Json
 
 import java.sql.Connection
@@ -19,7 +20,7 @@ class EmailProcessorQueue @Inject() (
                                     ) {
   def queueWithConnection(c: Connection, data: EmailData): Unit = {
     val dataJson = Json.toJson(data)
-    internalTasksDao.queue(TaskType.Email, id = Json.asciiStringify(dataJson), data = dataJson)
+    internalTasksDao.queueWithConnection(c, TaskType.Email, id = Json.asciiStringify(dataJson), data = dataJson)
   }
 }
 
@@ -31,7 +32,9 @@ class EmailProcessor @Inject()(
   emails: Emails,
   emailVerificationsDao: db.EmailVerificationsDao,
   membershipsDao: db.MembershipsDao,
+  membershipsModel: MembershipsModel,
   membershipRequestsDao: db.MembershipRequestsDao,
+  membershipRequestsModel: MembershipRequestsModel,
   organizationsDao: OrganizationsDao,
   passwordResetRequestsDao: db.PasswordResetRequestsDao,
   usersDao: UsersDao,
@@ -77,7 +80,9 @@ class EmailProcessor @Inject()(
   }
 
   private def membershipCreated(guid: UUID): Unit = {
-    membershipsDao.findByGuid(Authorization.All, guid).foreach { membership =>
+    membershipsDao.findByGuid(Authorization.All, guid)
+      .flatMap(membershipsModel.toModel)
+      .foreach { membership =>
       emails.deliver(
         context = Emails.Context.OrganizationAdmin,
         org = membership.organization,
@@ -89,7 +94,9 @@ class EmailProcessor @Inject()(
   }
 
   private def membershipRequestCreated(guid: UUID): Unit = {
-    membershipRequestsDao.findByGuid(Authorization.All, guid).foreach { request =>
+    membershipRequestsDao.findByGuid(Authorization.All, guid)
+      .flatMap(membershipRequestsModel.toModel)
+      .foreach { request =>
       emails.deliver(
         context = Emails.Context.OrganizationAdmin,
         org = request.organization,
