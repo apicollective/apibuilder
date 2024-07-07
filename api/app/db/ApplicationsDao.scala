@@ -2,6 +2,7 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
+import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
@@ -343,14 +344,46 @@ class ApplicationsDao @Inject() (
       sorting.fold(appQuery) { sorting =>
         val sort = sorting match {
           case AppSortBy.Visibility => "applications.visibility"
-          case AppSortBy.CreatedAt  => "applications.created_at"
-          case AppSortBy.UpdatedAt  => "last_updated_at"
-          case _                    => "applications.name"
+          case AppSortBy.CreatedAt => "applications.created_at"
+          case AppSortBy.UpdatedAt => "last_updated_at"
+          case _ => "applications.name"
         }
         val ord = ordering.getOrElse(SortOrder.Asc).toString
         appQuery.orderBy(s"$sort $ord")
-      }.anormSql().as {
-        io.apibuilder.api.v0.anorm.parsers.Application.parser().*
+      }.anormSql().as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[io.apibuilder.api.v0.models.Application] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("organization_key") ~
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.str("name") ~
+      SqlParser.str("key") ~
+      SqlParser.str("visibility") ~
+      SqlParser.str("description").? ~
+      SqlParser.get[DateTime]("last_updated_at") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map { case guid ~ organizationKey ~ organizationGuid ~ name ~ key ~ visibility ~ description ~ lastUpdatedAt ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        Application(
+          guid = guid,
+          organization = Reference(guid = organizationGuid, key = organizationKey),
+          name = name,
+          key = key,
+          visibility = Visibility(visibility),
+          description = description,
+          lastUpdatedAt = lastUpdatedAt,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
       }
     }
   }
