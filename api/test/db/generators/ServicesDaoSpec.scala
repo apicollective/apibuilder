@@ -39,8 +39,8 @@ class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHe
     val service = servicesDao.create(testUser, createGeneratorServiceForm())
     servicesDao.softDelete(testUser, service)
     servicesDao.findByGuid(Authorization.All, service.guid) must be(None)
-    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = None).map(_.guid) must be(Seq(service.guid))
-    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = Some(true)).map(_.guid) must be(Seq(service.guid))
+    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = None, limit = None).map(_.guid) must be(Seq(service.guid))
+    servicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = Some(true), limit = None).map(_.guid) must be(Seq(service.guid))
   }
 
   "findAll" must {
@@ -48,8 +48,8 @@ class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHe
     "uri" in {
       val form = createGeneratorServiceForm()
       servicesDao.create(testUser, form)
-      servicesDao.findAll(Authorization.All, uri = Some(form.uri)).map(_.uri) must be(Seq(form.uri))
-      servicesDao.findAll(Authorization.All, uri = Some(form.uri + "2")) must be(Nil)
+      servicesDao.findAll(Authorization.All, uri = Some(form.uri), limit = None).map(_.uri) must be(Seq(form.uri))
+      servicesDao.findAll(Authorization.All, uri = Some(form.uri + "2"), limit = None) must be(Nil)
     }
 
     "generatorKey" in {
@@ -57,10 +57,10 @@ class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHe
       val service = servicesDao.create(testUser, form)
       val gws = createGenerator(service)
 
-      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key)).map(_.guid) must be(Seq(service.guid))
-      servicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(gws.generator.key)).map(_.guid) must be(Seq(service.guid))
-      servicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(gws.generator.key)).map(_.guid) must be(Nil)
-      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key + "2")) must be(Nil)
+      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key), limit = None).map(_.guid) must be(Seq(service.guid))
+      servicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(gws.generator.key), limit = None).map(_.guid) must be(Seq(service.guid))
+      servicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(gws.generator.key), limit = None).map(_.guid) must be(Nil)
+      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key + "2"), limit = None) must be(Nil)
     }
 
   }
