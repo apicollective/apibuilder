@@ -1,23 +1,22 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
+import _root_.util.{ApiBuilderServiceImportResolver, UserAgent}
+import db.VersionsDao
+import db.generated.{GeneratorInvocationForm, GeneratorInvocationsDao}
+import db.generators.{GeneratorsDao, ServicesDao}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{CodeForm, Version}
 import io.apibuilder.generator.v0.Client
 import io.apibuilder.generator.v0.models.InvocationForm
 import io.apibuilder.generator.v0.models.json._
-import db.generators.{GeneratorsDao, ServicesDao}
-import db.VersionsDao
-import lib.{Constants, OrgAttributeUtil, Validation}
-import play.api.libs.json._
-import _root_.util.UserAgent
-import _root_.util.ApiBuilderServiceImportResolver
-import db.generated.{GeneratorInvocationForm, GeneratorInvocationsDao}
 import io.apibuilder.spec.v0.models.Service
+import lib.{Constants, Validation}
+import models.VersionsModel
+import play.api.libs.json._
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, AnyContent, Result}
 
-import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,10 +26,10 @@ class Code @Inject() (
   wSClient: WSClient,
   apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
   generatorInvocationsDao: GeneratorInvocationsDao,
-  orgAttributeUtil: OrgAttributeUtil,
   generatorsDao: GeneratorsDao,
   servicesDao: ServicesDao,
   versionsDao: VersionsDao,
+  versionsModel: VersionsModel,
   userAgentGenerator: UserAgent,
 ) extends ApiBuilderController {
 
@@ -192,7 +191,8 @@ class Code @Inject() (
     request: AnonymousRequest[_],
     params: CodeParams
   ): Either[Seq[String], InvocationFormData] = {
-    versionsDao.findVersion(request.authorization, params.orgKey, params.applicationKey, params.versionName) match {
+    versionsDao.findVersion(request.authorization, params.orgKey, params.applicationKey, params.versionName)
+      .flatMap(versionsModel.toModel) match {
       case None => {
         Left(Seq(s"Version [${params.versionName}] for application [${params.applicationKey}] not found"))
       }

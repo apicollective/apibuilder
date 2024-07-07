@@ -150,7 +150,7 @@ class VersionsDao @Inject() (
     guid
   }
 
-  def softDelete(deletedBy: User, version: Version): Unit =  {
+  def softDelete(deletedBy: User, version: InternalVersion): Unit =  {
     db.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
@@ -176,7 +176,7 @@ class VersionsDao @Inject() (
     )
   }
 
-  def replace(user: User, version: Version, application: Application, original: Original, service: Service): InternalVersion = {
+  def replace(user: User, version: InternalVersion, application: Application, original: Original, service: Service): InternalVersion = {
     val versionGuid = db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
