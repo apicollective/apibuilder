@@ -2,11 +2,13 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{Application, Error, Organization, User, Watch, WatchForm}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.Validation
 import play.api.db._
-import javax.inject.{Inject, Singleton}
+
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 case class ValidatedWatchForm(
   org: Organization,
@@ -14,6 +16,12 @@ case class ValidatedWatchForm(
   form: WatchForm
 )
 
+case class InternalWatch(
+                               guid: UUID,
+                               audit: Audit,
+                               applicationGuid: UUID,
+                               userGuid: UUID
+                             )
 @Singleton
 class WatchesDao @Inject() (
   @NamedDatabase("default") db: Database,
@@ -110,7 +118,7 @@ class WatchesDao @Inject() (
     }
   }
 
-  def upsert(createdBy: User, fullForm: ValidatedWatchForm): Watch = {
+  def upsert(createdBy: User, fullForm: ValidatedWatchForm): InternalWatch = {
     val application = fullForm.application
     val guid = UUID.randomUUID
 
@@ -128,11 +136,11 @@ class WatchesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, watch: Watch): Unit =  {
+  def softDelete(deletedBy: User, watch: InternalWatch): Unit =  {
     dbHelpers.delete(deletedBy, watch.guid)
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Watch] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalWatch] = {
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
@@ -146,7 +154,7 @@ class WatchesDao @Inject() (
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Watch] = {
+  ): Seq[InternalWatch] = {
     db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
         equals("watches.guid", guid).
@@ -158,7 +166,33 @@ class WatchesDao @Inject() (
         orderBy("applications.key, watches.created_at").
         limit(limit).
         offset(offset).
-        as(io.apibuilder.api.v0.anorm.parsers.Watch.parser().*)
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[InternalWatch] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") ~
+      SqlParser.get[UUID]("application_guid") ~
+      SqlParser.get[UUID]("user_guid") map {
+      case guid ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ applicationGuid ~ userGuid => {
+        InternalWatch(
+          guid = guid,
+          applicationGuid = applicationGuid,
+          userGuid = userGuid,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
     }
   }
 

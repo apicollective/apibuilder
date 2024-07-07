@@ -35,7 +35,7 @@ class Applications @Inject() (
       key = key,
       guid = guid,
       hasVersion = hasVersion,
-      limit = limit,
+      limit = Some(limit),
       offset = offset,
       sorting = sorting,
       ordering = ordering

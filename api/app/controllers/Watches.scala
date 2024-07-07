@@ -4,15 +4,19 @@ import db.WatchesDao
 import lib.Validation
 import io.apibuilder.api.v0.models.WatchForm
 import io.apibuilder.api.v0.models.json._
+import models.WatchesModel
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
+
 import java.util.UUID
 
 @Singleton
 class Watches @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  watchesDao: WatchesDao
+  watchesDao: WatchesDao,
+  model: WatchesModel,
 ) extends ApiBuilderController {
 
   def get(
@@ -22,7 +26,7 @@ class Watches @Inject() (
     applicationKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     val watches = watchesDao.findAll(
       request.authorization,
       guid = guid,
@@ -32,11 +36,11 @@ class Watches @Inject() (
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(watches))
+    Ok(Json.toJson(model.toModels(watches)))
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    watchesDao.findByGuid(request.authorization, guid) match {
+  def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
+    watchesDao.findByGuid(request.authorization, guid).flatMap(model.toModel) match {
       case None => NotFound
       case Some(watch) => Ok(Json.toJson(watch))
     }
@@ -46,7 +50,7 @@ class Watches @Inject() (
     userGuid: scala.Option[_root_.java.util.UUID],
     organizationKey: String,
     applicationKey: String
-  ) = Identified { request =>
+  ): Action[AnyContent] = Identified { request =>
     watchesDao.findAll(
       request.authorization,
       userGuid = userGuid,
@@ -59,7 +63,7 @@ class Watches @Inject() (
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[WatchForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -69,14 +73,18 @@ class Watches @Inject() (
           case Left(errors) => Conflict(Json.toJson(errors))
           case Right(validatedForm) => {
             val watch = watchesDao.upsert(request.user, validatedForm)
-            Created(Json.toJson(watch))
+            Created(Json.toJson(
+              model.toModel(watch).getOrElse {
+                sys.error("Failed to create watch")
+              }
+            ))
           }
         }
       }
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
+  def deleteByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     watchesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(watch) => {

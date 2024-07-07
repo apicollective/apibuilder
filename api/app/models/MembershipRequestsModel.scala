@@ -21,7 +21,7 @@ class MembershipRequestsModel @Inject() (
 
     val orgs = organizationsDao.findAll(
       Authorization.All,
-      guids = Some(requests.map(_.userGuid)),
+      guids = Some(requests.map(_.organizationGuid)),
       limit = None
     ).map { o => o.guid -> o }.toMap
 

@@ -268,7 +268,7 @@ class ApplicationsDao @Inject() (
       emailQueue.queueWithConnection(c, EmailDataApplicationCreated(guid))
     })
 
-    findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
+    findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = Some(1)).headOption.getOrElse {
       sys.error("Failed to create application")
     }
   }
@@ -280,31 +280,32 @@ class ApplicationsDao @Inject() (
   }
 
   def canUserUpdate(user: User, app: Application): Boolean = {
-    findAll(Authorization.User(user.guid), key = Some(app.key)).nonEmpty
+    findAll(Authorization.User(user.guid), key = Some(app.key), limit = Some(1)).nonEmpty
   }
 
   private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[Application] = {
-    findAll(authorization, orgKey = Some(org.key), name = Some(name), limit = 1).headOption
+    findAll(authorization, orgKey = Some(org.key), name = Some(name), limit = Some(1)).headOption
   }
 
   def findByOrganizationKeyAndApplicationKey(authorization: Authorization, orgKey: String, applicationKey: String): Option[Application] = {
-    findAll(authorization, orgKey = Some(orgKey), key = Some(applicationKey), limit = 1).headOption
+    findAll(authorization, orgKey = Some(orgKey), key = Some(applicationKey), limit = Some(1)).headOption
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Application] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
     authorization: Authorization,
     orgKey: Option[String] = None,
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     name: Option[String] = None,
     key: Option[String] = None,
     version: Option[Version] = None,
     hasVersion: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0,
     sorting: Option[AppSortBy] = None,
     ordering: Option[SortOrder] = None
@@ -312,6 +313,7 @@ class ApplicationsDao @Inject() (
     db.withConnection { implicit c =>
       val appQuery = authorization.applicationFilter(BaseQuery).
         equals("applications.guid", guid).
+        optionalIn("applications.guid", guids).
         equals("organizations.key", orgKey).
         and(
           name.map { _ =>
@@ -339,7 +341,7 @@ class ApplicationsDao @Inject() (
           }
         ).
         and(isDeleted.map(Filters.isDeleted("applications", _))).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset)
       sorting.fold(appQuery) { sorting =>
         val sort = sorting match {
