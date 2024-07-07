@@ -247,7 +247,8 @@ class UsersDao @Inject() (
   }
 
   def findAll(
-    guid: Option[UUID] = None,
+               guid: Option[UUID] = None,
+               guids: Option[Seq[UUID]] = None,
     email: Option[String] = None,
     nickname: Option[String] = None,
     sessionId: Option[String] = None,
@@ -255,13 +256,14 @@ class UsersDao @Inject() (
     isDeleted: Option[Boolean] = Some(false)
   ): Seq[User] = {
     require(
-      guid.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
+      guid.isDefined || guids.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
       "Must have either a guid, email, token, sessionId, or nickname"
     )
 
     db.withConnection { implicit c =>
       BaseQuery.
         equals("users.guid", guid).
+        optionalIn("users.guid", guids).
         and(
           email.map { _ => "users.email = trim(lower({email}))" }
         ).bind("email", email).

@@ -234,6 +234,7 @@ class OrganizationsDao @Inject() (
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,
     application: Option[Application] = None,
     key: Option[String] = None,
@@ -241,12 +242,13 @@ class OrganizationsDao @Inject() (
     namespace: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     deletedAtBefore: Option[DateTime] = None,
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Organization] = {
     db.withConnection { implicit c =>
       (authorization.organizationFilter(BaseQuery).
         equals("organizations.guid", guid).
+        optionalIn("organizations.guid", guids).
         equals("organizations.key", key).
         and(
           userGuid.map { _ =>
@@ -273,7 +275,7 @@ class OrganizationsDao @Inject() (
         })).bind("deleted_at_before", deletedAtBefore).
         and(isDeleted.map(Filters.isDeleted("organizations", _))).
         orderBy("lower(organizations.name), organizations.created_at").
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         anormSql().as(
           io.apibuilder.api.v0.anorm.parsers.Organization.parser().*

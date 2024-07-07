@@ -103,7 +103,14 @@ class MembershipsDao @Inject() (
     user: User,
     organization: Organization
   ): Boolean = {
-    findByOrganizationAndUserAndRole(Authorization.All, organization, user, MembershipRole.Admin) match {
+    isUserAdmin(userGuid = user.guid, organizationGuid = organization.guid)
+  }
+
+  def isUserAdmin(
+                   userGuid: UUID,
+                   organizationGuid: UUID
+                 ): Boolean = {
+    findByOrganizationGuidAndUserGuidAndRole(Authorization.All, organizationGuid, userGuid, MembershipRole.Admin) match {
       case None => false
       case Some(_) => true
     }
@@ -130,7 +137,22 @@ class MembershipsDao @Inject() (
     user: User,
     role: MembershipRole
   ): Option[InternalMembership] = {
-    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role), limit = Some(1)).headOption
+    findByOrganizationGuidAndUserGuidAndRole(
+      authorization,
+      organizationGuid = organization.guid,
+      userGuid = user.guid,
+      role = role
+    )
+  }
+
+  def findByOrganizationGuidAndUserGuidAndRole(
+                                        authorization: Authorization,
+                                        organizationGuid: UUID,
+                                        userGuid: UUID,
+                                        role: MembershipRole
+                                      ): Option[InternalMembership] = {
+
+    findAll(authorization, organizationGuid = Some(organizationGuid), userGuid = Some(userGuid), role = Some(role), limit = Some(1)).headOption
   }
 
   def findByOrganizationAndUserAndRoles(

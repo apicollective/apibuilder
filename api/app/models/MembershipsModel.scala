@@ -1,33 +1,33 @@
 package models
 
 import cats.implicits._
-import db.{Authorization, InternalMembershipRequest, OrganizationsDao, UsersDao}
-import io.apibuilder.api.v0.models.MembershipRequest
+import db.{Authorization, InternalMembership, OrganizationsDao, UsersDao}
+import io.apibuilder.api.v0.models.Membership
 
 import javax.inject.Inject
 
-class MembershipRequestsModel @Inject() (
+class MembershipsModel @Inject()(
                                         organizationsDao: OrganizationsDao,
                                         usersDao: UsersDao
                                         ) {
-  def toModel(mr: InternalMembershipRequest): Option[MembershipRequest] = {
+  def toModel(mr: InternalMembership): Option[Membership] = {
     toModels(Seq(mr)).headOption
   }
 
-  def toModels(requests: Seq[InternalMembershipRequest]): Seq[MembershipRequest] = {
+  def toModels(s: Seq[InternalMembership]): Seq[Membership] = {
     val users = usersDao.findAll(
-      guids = Some(requests.map(_.userGuid))
+      guids = Some(s.map(_.userGuid))
     ).map { u => u.guid -> u }.toMap
 
     val orgs = organizationsDao.findAll(
       Authorization.All,
-      guids = Some(requests.map(_.userGuid)),
+      guids = Some(s.map(_.userGuid)),
       limit = None
     ).map { o => o.guid -> o }.toMap
 
-    requests.flatMap { r =>
+    s.flatMap { r =>
       (users.get(r.userGuid), orgs.get(r.organizationGuid)).mapN { case (user, org) =>
-        MembershipRequest(
+        Membership(
           guid = r.guid,
           user = user,
           organization = org,
