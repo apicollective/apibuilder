@@ -8,6 +8,7 @@ import lib.{Misc, UrlKey, Validation}
 import org.joda.time.DateTime
 import play.api.db._
 import play.api.inject.Injector
+import play.api.libs.json.Json
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -35,12 +36,12 @@ class OrganizationsDao @Inject() (
            organizations.namespace,
            ${AuditsDao.query("organizations")},
            coalesce(
-             (select to_json(array_agg(json_build_object('name', domain)))
+             (select to_json(array_agg(domain))
                 from organization_domains
                where deleted_at is null
                  and organization_guid = organizations.guid),
              '[]'::json
-           ) as domains
+           )::text as domains
       from organizations
   """)
 
@@ -69,7 +70,7 @@ class OrganizationsDao @Inject() (
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
-      findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
+      findAll(Authorization.All, name = Some(form.name), limit = Some(1)).headOption match {
         case None => Nil
         case Some(org: Organization) => {
           if (existing.map(_.guid).contains(org.guid)) {
@@ -105,7 +106,7 @@ class OrganizationsDao @Inject() (
       }
     }
 
-    val namespaceErrors = findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
+    val namespaceErrors = findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = Some(1)).headOption match {
       case None => {
         if (isDomainValid(form.namespace.trim)) {
           Nil
@@ -224,11 +225,11 @@ class OrganizationsDao @Inject() (
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Organization] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findByKey(authorization: Authorization, orgKey: String): Option[Organization] = {
-    findAll(authorization, key = Some(orgKey), limit = 1).headOption
+    findAll(authorization, key = Some(orgKey), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -277,10 +278,39 @@ class OrganizationsDao @Inject() (
         orderBy("lower(organizations.name), organizations.created_at").
         optionalLimit(limit).
         offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.Organization.parser().*
-        )
+        anormSql().as(parser.*)
     }
   }
 
+  private val parser: RowParser[Organization] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("key") ~
+      SqlParser.str("name") ~
+      SqlParser.str("namespace") ~
+      SqlParser.str("visibility") ~
+      SqlParser.str("domains") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ key ~ name ~ namespace ~ visibility ~ domains ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        Organization(
+          guid = guid,
+          key = key,
+          name = name,
+          namespace = namespace,
+          visibility = Visibility.apply(visibility),
+          domains = Json.parse(domains).as[Seq[String]].map { n => Domain(name = n) },
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
+    }
+  }
 }
