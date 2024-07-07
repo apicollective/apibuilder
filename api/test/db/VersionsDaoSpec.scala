@@ -18,7 +18,9 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
     lazy val service = createService(application)
 
     "create" in {
-      val v = versionsDao.create(testUser, application, "1.0.0", Original, service)
+      val v = versionsModel.toModel(
+        versionsDao.create(testUser, application, "1.0.0", Original, service)
+      ).get
       v.version must be("1.0.0")
       v.service.namespace must be(service.namespace)
       createVersion().version must be("1.0.0")
@@ -27,6 +29,7 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
     "findByApplicationAndVersion" in {
       versionsDao.create(testUser, application, "1.0.1", Original, service)
       val versionOpt = versionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1")
+        .flatMap(versionsModel.toModel)
       val Some(svc) = versionOpt.map(_.service)
       svc.namespace must be(service.namespace)
     }

@@ -11,7 +11,7 @@ import play.api.libs.json.Json
 import java.util.UUID
 
 trait Helpers extends util.Daos with RandomHelpers {
-  private def versionsModel: VersionsModel = injector.instanceOf[VersionsModel]
+  def versionsModel: VersionsModel = injector.instanceOf[VersionsModel]
   private def membershipRequestsModel: MembershipRequestsModel = injector.instanceOf[MembershipRequestsModel]
 
   def createRandomUser(): User = {
