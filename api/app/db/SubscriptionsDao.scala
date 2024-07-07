@@ -125,15 +125,15 @@ class SubscriptionsDao @Inject() (
     dbHelpers.delete(deletedBy, subscription.guid)
   }
 
-  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User): Unit = {
+  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organizationGuid: UUID, userGuid: UUID): Unit = {
     SubscriptionsDao.PublicationsRequiredAdmin.foreach { publication =>
       subscriptionsDao.findAll(
         Authorization.All,
-        organization = Some(organization),
-        userGuid = Some(user.guid),
+        organization = Some(organizationGuid),
+        userGuid = Some(userGuid),
         publication = Some(publication)
       ).foreach { subscription =>
-        softDelete(user, subscription)
+        softDelete(deletedBy, subscription)
       }
     }
   }
@@ -146,6 +146,7 @@ class SubscriptionsDao @Inject() (
     authorization: Authorization,
     guid: Option[UUID] = None,
     organization: Option[Organization] = None,
+    organizationGuid: Option[UUID] = None,
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
@@ -157,6 +158,7 @@ class SubscriptionsDao @Inject() (
       authorization.subscriptionFilter(BaseQuery).
         equals("subscriptions.guid", guid).
         equals("subscriptions.organization_guid", organization.map(_.guid)).
+        equals("subscriptions.organization_guid", organizationGuid).
         equals("organizations.key", organizationKey.map(_.toLowerCase.trim)).
         equals("subscriptions.user_guid", userGuid).
         equals("subscriptions.publication", publication.map(_.toString)).

@@ -1,16 +1,23 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Membership, Organization, User}
+import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
-import org.joda.time.DateTime
 import play.api.db._
 import processor.EmailProcessorQueue
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
+
+case class InternalMembership(
+                             guid: UUID,
+                             role: MembershipRole,
+                             audit: Audit,
+                             organizationGuid: UUID,
+                             userGuid: UUID
+                             )
 
 @Singleton
 class MembershipsDao @Inject() (
@@ -28,29 +35,16 @@ class MembershipsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  // TODO: Properly select domains
   private val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")},
-           organizations.guid as organization_guid,
-           organizations.name as organization_name,
-           organizations.key as organization_key,
-           organizations.visibility as organization_visibility,
-           organizations.namespace as organization_namespace,
-           '[]' as organization_domains,
-           ${AuditsDao.queryWithAlias("organizations", "organization")},
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")}
+           memberships.organization_guid,
+           memberships.user_guid
       from memberships
-      join organizations on organizations.guid = memberships.organization_guid
-      join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): Membership = {
+  def upsert(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r) => r
       case None => create(createdBy, organization, user, role)
@@ -68,46 +62,40 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): Membership = {
+  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
     db.withTransaction { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: MembershipRole): Membership = {
-    val membership = Membership(
-      guid = UUID.randomUUID,
-      organization = organization,
-      user = user,
-      role = role,
-      audit = Audit(
-        createdAt = DateTime.now,
-        createdBy = ReferenceGuid(user.guid),
-        updatedAt = DateTime.now,
-        updatedBy = ReferenceGuid(user.guid)
-      )
-    )
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
+    val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
-      "guid" -> membership.guid,
-      "organization_guid" -> membership.organization.guid,
-      "user_guid" -> membership.user.guid,
-      "role" -> membership.role.toString,
+      "guid" -> guid,
+      "organization_guid" -> organization.guid,
+      "user_guid" -> user.guid,
+      "role" -> role.toString,
       "created_by_guid" -> createdBy
     ).execute()
 
-    emailQueue.queueWithConnection(c, EmailDataMembershipCreated(membership.guid))
+    emailQueue.queueWithConnection(c, EmailDataMembershipCreated(guid))
 
-    membership
-  }
+    BaseQuery.equals("guid", guid)
+      .as(parser.*)
+      .headOption
+      .getOrElse {
+        sys.error("Failed to create membership")
+      }
+    }
 
   /**
     * Deletes a membership record. Also removes the user from any
     * publication subscriptions that require the administrative role
     * for this org.
     */
-  def softDelete(user: User, membership: Membership): Unit = {
-    subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
+  def softDelete(user: User, membership: InternalMembership): Unit = {
+    subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organizationGuid, membership.userGuid)
     dbHelpers.delete(user, membership.guid)
   }
 
@@ -141,7 +129,7 @@ class MembershipsDao @Inject() (
     organization: Organization,
     user: User,
     role: MembershipRole
-  ): Option[Membership] = {
+  ): Option[InternalMembership] = {
     findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role), limit = Some(1)).headOption
   }
 
@@ -150,11 +138,11 @@ class MembershipsDao @Inject() (
     organization: Organization,
     user: User,
     roles: Seq[MembershipRole]
-  ): Seq[Membership] = {
+  ): Seq[InternalMembership] = {
     findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), roles = Some(roles), limit = None)
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Membership] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalMembership] = {
     findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
@@ -169,7 +157,7 @@ class MembershipsDao @Inject() (
     isDeleted: Option[Boolean] = Some(false),
     limit: Option[Long],
     offset: Long = 0
-  ): Seq[Membership] = {
+  ): Seq[InternalMembership] = {
     // TODO Implement authorization
     db.withConnection { implicit c =>
       BaseQuery.
@@ -187,10 +175,35 @@ class MembershipsDao @Inject() (
         orderBy("lower(users.name), lower(users.email)").
         optionalLimit(limit).
         offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.Membership.parser().*
-        )
+        anormSql().as(parser.*)
     }
   }
 
+  private val parser: RowParser[InternalMembership] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("role") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") ~
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.get[UUID]("user_guid") map {
+      case guid ~ role ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ userGuid => {
+        InternalMembership(
+          guid = guid,
+          role = MembershipRole.apply(role),
+          organizationGuid = organizationGuid,
+          userGuid = userGuid,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
+    }
+  }
 }
