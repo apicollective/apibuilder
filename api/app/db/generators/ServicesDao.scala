@@ -4,6 +4,7 @@ import anorm._
 import core.Util
 import db._
 import io.apibuilder.api.v0.models.{Error, GeneratorService, GeneratorServiceForm, User}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import lib.{Pager, Validation}
@@ -41,7 +42,8 @@ class ServicesDao @Inject() (
       case Nil => {
         findAll(
           Authorization.All,
-          uri = Some(form.uri.trim)
+          uri = Some(form.uri.trim),
+          limit = Some(1),
         ).headOption match {
           case None => Nil
           case Some(_) => {
@@ -93,21 +95,23 @@ class ServicesDao @Inject() (
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[GeneratorService] = {
-    findAll(authorization, guid = Some(guid)).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     uri: Option[String] = None,
     generatorKey: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[GeneratorService] = {
     db.withConnection { implicit c =>
       authorization.generatorServicesFilter(BaseQuery).
         equals("services.guid", guid).
+        optionalIn("services.guid", guids).
         and(
           uri.map { _ =>
             "lower(services.uri) = lower(trim({uri}))"
@@ -120,9 +124,33 @@ class ServicesDao @Inject() (
         ).bind("generator_key", generatorKey).
         and(isDeleted.map(Filters.isDeleted("services", _))).
         orderBy("lower(services.uri)").
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
-        as(io.apibuilder.api.v0.anorm.parsers.GeneratorService.parser().*)
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[GeneratorService] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("uri") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ uri ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        GeneratorService(
+          guid = guid,
+          uri = uri,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
     }
   }
 
