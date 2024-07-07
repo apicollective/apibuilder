@@ -59,7 +59,7 @@ class Memberships @Inject() (
     membershipsDao.findByGuid(request.authorization, guid) match {
       case None => NoContent
       case Some(membership) => {
-        if (membershipsDao.isUserAdmin(userGuid = request.user.guid, organizationGuid = membership.organization.guid)) {
+        if (membershipsDao.isUserAdmin(userGuid = request.user.guid, organizationGuid = membership.organizationGuid)) {
           membershipsDao.softDelete(request.user, membership)
           NoContent
         } else {

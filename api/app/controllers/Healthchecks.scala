@@ -15,7 +15,7 @@ class Healthchecks @Inject() (
   private val Result = Json.toJson(Map("status" -> "healthy"))
 
   def getHealthcheck(): Action[AnyContent] = Action { _ =>
-    organizationsDao.findAll(Authorization.PublicOnly, limit = 1).headOption
+    organizationsDao.findAll(Authorization.PublicOnly, limit = Some(1)).headOption
     Ok(Result)
   }
 
