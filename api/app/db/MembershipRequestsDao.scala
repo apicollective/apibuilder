@@ -1,11 +1,12 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
-import io.apibuilder.common.v0.models.MembershipRole
+import io.apibuilder.api.v0.models.{Change, ChangeVersion, DiffBreaking, DiffNonBreaking, DiffType, Domain, MembershipRequest, Organization, User, UserSummary, Visibility}
+import io.apibuilder.common.v0.models.{Audit, MembershipRole, Reference, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataMembershipRequestAccepted, EmailDataMembershipRequestCreated, EmailDataMembershipRequestDeclined}
 import io.flow.postgresql.Query
 import play.api.db._
+import play.api.libs.json.Json
 import processor.EmailProcessorQueue
 
 import java.util.UUID
@@ -32,7 +33,6 @@ class MembershipRequestsDao @Inject() (
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
-           '[]' as organization_domains,
            ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
@@ -174,10 +174,74 @@ class MembershipRequestsDao @Inject() (
         orderBy("membership_requests.created_at desc").
         limit(limit).
         offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.MembershipRequest.parser().*
-        )
+        anormSql().as(parser.*)
     }
   }
 
+  private val parser: RowParser[MembershipRequest] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("role") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid")
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.str("organization_key") ~
+      SqlParser.str("organization_name") ~
+      SqlParser.str("organization_namespace") ~
+      SqlParser.str("organization_visibility") ~
+      SqlParser.get[DateTime]("organization_created_at") ~
+      SqlParser.get[UUID]("organization_created_by_guid") ~
+      SqlParser.get[DateTime]("organization_updated_at") ~
+      SqlParser.get[UUID]("organization_updated_by_guid")
+      SqlParser.get[UUID]("user_guid") ~
+      SqlParser.str("user_email") ~
+      SqlParser.str("user_nickname") ~
+      SqlParser.str("user_name").? ~
+      SqlParser.get[DateTime]("user_created_at") ~
+      SqlParser.get[UUID]("user_created_by_guid") ~
+      SqlParser.get[DateTime]("user_updated_at") ~
+      SqlParser.get[UUID]("user_updated_by_guid") map {
+      case guid ~ role ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ organizationKey ~ organizationName ~ organizationNamespace ~ organizationVisibility ~ organizationCreatedAt ~ organizationCreatedByGuid ~ organizationUpdatedAt ~ organizationUpdatedByGuid ~ userGuid ~ userEmail ~ userNickname ~ userName ~ userCreatedAt ~ userCreatedByGuid ~ userUpdatedAt ~ userUpdatedByGuid => {
+        MembershipRequest(
+          guid = guid,
+          role = MembershipRole.apply(role),
+          organization = Organization(
+            guid = organizationGuid,
+            key = organizationKey,
+            name = organizationName,
+            namespace = organizationNamespace,
+            visibility = Visibility(organizationVisibility),
+            domains = Nil, // TODO
+            audit = Audit(
+              createdAt = organizationCreatedAt,
+              createdBy = ReferenceGuid(organizationCreatedByGuid),
+              updatedAt = organizationUpdatedAt,
+              updatedBy = ReferenceGuid(organizationUpdatedByGuid),
+            )
+          ),
+          user = User(
+            guid = userGuid,
+            email = userEmail,
+            nickname = userNickname,
+            name = userName,
+            audit = Audit(
+              createdAt = userCreatedAt,
+              createdBy = ReferenceGuid(userCreatedByGuid),
+              updatedAt = userUpdatedAt,
+              updatedBy = ReferenceGuid(userUpdatedByGuid),
+            )
+          ),
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
+    }
+  }
 }
