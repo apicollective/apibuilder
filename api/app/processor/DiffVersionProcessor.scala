@@ -6,7 +6,8 @@ import db._
 import io.apibuilder.api.v0.models._
 import io.apibuilder.task.v0.models.json._
 import io.apibuilder.task.v0.models.{DiffVersionData, TaskType}
-import lib.{AppConfig, ServiceDiff, Emails}
+import lib.{AppConfig, Emails, ServiceDiff}
+import models.VersionsModel
 import play.twirl.api.Html
 
 import java.util.UUID
@@ -21,6 +22,7 @@ class DiffVersionProcessor @Inject()(
                               emails: Emails,
                               changesDao: ChangesDao,
                               versionsDao: VersionsDao,
+                              versionsModel: VersionsModel,
                               watchesDao: WatchesDao,
 ) extends TaskProcessorWithData[DiffVersionData](args, TaskType.DiffVersion) {
 
@@ -30,8 +32,12 @@ class DiffVersionProcessor @Inject()(
   }
 
   private def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID): Unit = {
-    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).foreach { oldVersion =>
-      versionsDao.findByGuid(Authorization.All, newVersionGuid).foreach { newVersion =>
+    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None)
+      .flatMap(versionsModel.toModel)
+      .foreach { oldVersion =>
+      versionsDao.findByGuid(Authorization.All, newVersionGuid)
+        .flatMap(versionsModel.toModel)
+        .foreach { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
