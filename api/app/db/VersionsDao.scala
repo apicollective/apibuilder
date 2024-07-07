@@ -2,18 +2,19 @@ package db
 
 import anorm._
 import builder.OriginalValidator
-import builder.api_json.upgrades.ServiceParser
 import cats.data.ValidatedNec
 import cats.implicits._
 import core.{ServiceFetcher, VersionMigration}
 import io.apibuilder.api.v0.models._
-import io.apibuilder.common.v0.models.{Audit, Reference}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
 import io.apibuilder.task.v0.models._
 import io.apibuilder.task.v0.models.json._
 import io.flow.postgresql.Query
 import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
+import models.VersionsModel
+import org.joda.time.DateTime
 import play.api.Logger
 import play.api.db._
 import play.api.libs.json._
@@ -22,6 +23,15 @@ import processor.MigrateVersion
 import java.util.UUID
 import javax.inject.Inject
 
+case class InternalVersion(
+  guid: UUID,
+  applicationGuid: UUID,
+  version: String,
+  original: Option[Original],
+  serviceJson: Option[String],
+  audit: Audit
+)
+
 class VersionsDao @Inject() (
   @NamedDatabase("default") db: Database,
   applicationsDao: ApplicationsDao,
@@ -29,7 +39,7 @@ class VersionsDao @Inject() (
   tasksDao: InternalTasksDao,
   usersDao: UsersDao,
   organizationsDao: OrganizationsDao,
-  serviceParser: ServiceParser
+  versionsModel: VersionsModel
 ) extends ValidatedHelpers {
 
   private val logger: Logger = Logger(this.getClass)
@@ -52,11 +62,8 @@ class VersionsDao @Inject() (
            ${AuditsDao.queryCreationDefaultingUpdatedAt("versions")},
            originals.type as original_type,
            originals.data as original_data,
-           organizations.guid as organization_guid,
-           organizations.key as organization_key,
-           organizations.namespace as organization_namespace,
-           applications.guid as application_guid,
-           applications.key as application_key,
+           versions.organization_guid,
+           versions.application_guid,
            (select services.json::text
               from cache.services
              where services.deleted_at is null
@@ -65,8 +72,6 @@ class VersionsDao @Inject() (
               limit 1) as service_json
      from versions
      left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
-     join applications on applications.deleted_at is null and applications.guid = versions.application_guid
-     join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
   """)
 
   private val InsertQuery = """
@@ -100,8 +105,8 @@ class VersionsDao @Inject() (
        and version = {version}
   """
 
-  def create(user: User, application: Application, version: String, original: Original, service: Service): Version = {
-    val latestVersion: Option[Version] = findAll(
+  def create(user: User, application: Application, version: String, original: Original, service: Service): InternalVersion = {
+    val latestVersion: Option[InternalVersion] = findAll(
       Authorization.User(user.guid),
       applicationGuid = Some(application.guid),
       limit = 1
@@ -171,7 +176,7 @@ class VersionsDao @Inject() (
     )
   }
 
-  def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
+  def replace(user: User, version: Version, application: Application, original: Original, service: Service): InternalVersion = {
     val versionGuid = db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
@@ -190,7 +195,7 @@ class VersionsDao @Inject() (
     orgKey: String,
     applicationKey: String,
     version: String
-  ): Option[Version] = {
+  ): Option[InternalVersion] = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
         findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
@@ -210,7 +215,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[Version] = {
+  def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[InternalVersion] = {
     findAll(
       authorization,
       applicationGuid = Some(application.guid),
@@ -223,7 +228,7 @@ class VersionsDao @Inject() (
     authorization: Authorization,
     guid: UUID,
     isDeleted: Option[Boolean] = Some(false)
-  ): Option[Version] = {
+  ): Option[InternalVersion] = {
     findAll(authorization, guid = Some(guid), isDeleted = isDeleted, limit = 1).headOption
   }
 
@@ -236,7 +241,7 @@ class VersionsDao @Inject() (
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Version] = {
+  ): Seq[InternalVersion] = {
     db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
         and(HasServiceJsonClause).
@@ -249,8 +254,6 @@ class VersionsDao @Inject() (
         limit(limit).
         offset(offset).
         as(parser.*)
-    }.flatMap { v =>
-      v.toVersion.toOption
     }
   }
 
@@ -282,65 +285,44 @@ class VersionsDao @Inject() (
     }
   }
 
-  private case class TmpVersion(
-                                       guid: UUID,
-                                       organization: Reference,
-                                       application: Reference,
-                                       version: String,
-                                       original: Option[Original],
-                                       serviceJson: Option[String],
-                                       audit: Audit
-                                     ) {
-    def toVersion: ValidatedNec[String, Version] = {
-      service.map { svc =>
-        Version(
+  private val parser: RowParser[InternalVersion] = {
+    SqlParser.get[UUID]("guid") ~
+    SqlParser.get[UUID]("application_guid") ~
+    SqlParser.str("version") ~
+    SqlParser.str("original_type").? ~
+    SqlParser.str("original_data").? ~
+    SqlParser.str("service_json").? ~
+    SqlParser.get[DateTime]("created_at") ~
+    SqlParser.get[UUID]("created_by_guid") ~
+    SqlParser.get[DateTime]("updated_at") ~
+    SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ applicationGuid ~ version ~ originalType ~ originalData ~ serviceJson ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        InternalVersion(
           guid = guid,
-          organization = organization,
-          application = application,
+          applicationGuid = applicationGuid,
           version = version,
-          original = original,
-          service = svc,
-          audit = audit
-        )
-      }
-
-    }
-
-    private def service: ValidatedNec[String, Service] = {
-      serviceJson match {
-        case None => "Version does not have service json".invalidNec
-        case Some(json) => serviceParser.fromString(json)
-      }
-    }
-  }
-
-  private val parser: RowParser[TmpVersion] = {
-    SqlParser.get[_root_.java.util.UUID]("guid") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
-      SqlParser.str("version") ~
-      io.apibuilder.api.v0.anorm.parsers.Original.parserWithPrefix("original").? ~
-      SqlParser.str("service_json").? ~
-      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
-      case guid ~ organization ~ application ~ version ~ original ~ serviceJson ~ audit => {
-        TmpVersion(
-          guid = guid,
-          organization = organization,
-          application = application,
-          version = version,
-          original = original,
+          original = (originalType.map(OriginalType.apply), originalData).mapN(Original),
           serviceJson = serviceJson,
-          audit = audit
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
         )
       }
     }
   }
 
-  private def validateOrg(org: Reference): ValidatedNec[String, Organization] = {
-    organizationsDao.findByGuid(Authorization.All, org.guid).toValidNec(s"Cannot find organization where guid = '${org.guid}'")
+  private def validateApplication(guid: UUID): ValidatedNec[String, Application] = {
+    applicationsDao.findByGuid(Authorization.All, guid).toValidNec(s"Cannot find application where guid = '$guid'")
   }
 
-  private def lookupVersionToMigrate(guid: UUID): Option[TmpVersion] = {
+  private def validateOrg(guid: UUID): ValidatedNec[String, Organization] = {
+    organizationsDao.findByGuid(Authorization.All, guid).toValidNec(s"Cannot find organization where guid = '$guid'")
+  }
+
+  private def lookupVersionToMigrate(guid: UUID): Option[InternalVersion] = {
     db.withConnection { implicit c =>
       BaseQuery.
         equals("versions.guid", guid).
@@ -355,21 +337,22 @@ class VersionsDao @Inject() (
       }
 
       case Some(version) => {
-        val orgKey = version.organization.key
-        val applicationKey = version.application.key
         val versionName = version.version
         val versionGuid = version.guid
 
+
         (
-          validateOrg(version.organization),
+          validateApplication(version.applicationGuid).andThen { app =>
+            validateOrg(app.organization.guid).map { o => (o, app) }
+          },
           version.original.toValidNec("Missing original"),
-        ).mapN { case (org, original) =>
+        ).mapN { case ((org, app), original) =>
           val serviceConfig = ServiceConfiguration(
-            orgKey = orgKey,
+            orgKey = org.key,
             orgNamespace = org.namespace,
             version = versionName
           )
-          logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${MigrateVersion.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
+          logger.info(s"Migrating ${org.key}/${app.key}/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${MigrateVersion.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")
 
           val validator = OriginalValidator(
             config = serviceConfig,
@@ -421,7 +404,9 @@ class VersionsDao @Inject() (
           sys.error(s"could not parse URI[$uri]")
         }
 
-        findVersion(auth, serviceUri.org, serviceUri.app, serviceUri.version).map(_.service).getOrElse {
+        findVersion(auth, serviceUri.org, serviceUri.app, serviceUri.version)
+          .flatMap(versionsModel.toModel)
+          .map(_.service).getOrElse {
           sys.error(s"Error while fetching service for URI[$serviceUri] - could not find [${serviceUri.org}/${serviceUri.app}:${serviceUri.version}]")
         }
       }
