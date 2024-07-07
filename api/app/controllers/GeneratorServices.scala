@@ -33,7 +33,7 @@ class GeneratorServices @Inject() (
       guid = guid,
       uri = uri,
       generatorKey = generatorKey,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
     Ok(Json.toJson(services))

@@ -25,7 +25,7 @@ class ScheduleSyncGeneratorServicesProcessor @Inject()(
   private def doSyncAll(pageSize: Long, offset: Long): Unit = {
     val all = servicesDao.findAll(
       Authorization.All,
-      limit = pageSize,
+      limit = Some(pageSize),
       offset = offset
     ).map(_.guid.toString)
 

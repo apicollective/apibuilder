@@ -136,7 +136,7 @@ class Code @Inject() (
     data: InvocationFormData,
     generatorKey: String
   ): Future[Result] = {
-    servicesDao.findAll(request.authorization, generatorKey = Some(generatorKey)).headOption match {
+    servicesDao.findAll(request.authorization, generatorKey = Some(generatorKey), limit = Some(1)).headOption match {
       case None => {
         Future.successful(conflict(s"Service with generator key[$generatorKey] not found"))
       }
