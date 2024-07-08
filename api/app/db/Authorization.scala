@@ -12,7 +12,7 @@ sealed trait Authorization {
     * organizations to those that are able to be seen by this
     * authorization.
     * 
-    * @param organizationsTableName e.g "organizations"
+    * @param organizationGuidColumnName e.g "organizations.guid"
     */
   def organizationFilter(
     query: Query,
@@ -69,7 +69,7 @@ sealed trait Authorization {
 
 object Authorization {
 
-  private val OrgsByUserQuery =
+  private val OrgsByUserQuery: String =
     s"""
       |select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid
       |""".stripMargin
@@ -169,7 +169,8 @@ object Authorization {
              |)
            """
         )
-      ).withDebugging()
+      ).bind("authorization_user_guid", userGuid)
+        .withDebugging()
     }
 
     override def tokenFilter(
