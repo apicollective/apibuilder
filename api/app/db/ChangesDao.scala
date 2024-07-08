@@ -17,6 +17,10 @@ import scala.util.{Failure, Success, Try}
 class ChangesDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
+  private object DiffType {
+    val Breaking = "breaking"
+    val NonBreaking = "non_breaking"
+  }
 
   private val BaseQuery = Query(
     s"""
@@ -70,8 +74,8 @@ class ChangesDao @Inject() (
 
     db.withTransaction { implicit c =>
       differences.map {
-        case d: DiffBreaking => ("breaking", d)
-        case d: DiffNonBreaking => ("non_breaking", d)
+        case d: DiffBreaking => (DiffType.Breaking, d)
+        case d: DiffNonBreaking => (DiffType.NonBreaking, d)
         case DiffUndefinedType(desc) => sys.error(s"Unrecognized difference type: $desc")
       }.distinct.foreach {
         case (differenceType, diff) => {
@@ -182,10 +186,10 @@ class ChangesDao @Inject() (
           application = Reference(guid = applicationGuid, key = applicationKey),
           fromVersion = ChangeVersion(guid = fromVersionGuid, version = fromVersionVersion),
           toVersion = ChangeVersion(guid = toVersionGuid, version = toVersionVersion),
-          diff = DiffType.apply(typ) match {
-            case DiffType.DiffBreaking => DiffBreaking(description = description, isMaterial = isMaterial)
-            case DiffType.DiffNonBreaking => DiffNonBreaking(description = description, isMaterial = isMaterial)
-            case DiffType.UNDEFINED(other) => sys.error(s"Invalid diff type '$other'")
+          diff = typ match {
+            case DiffType.Breaking => DiffBreaking(description = description, isMaterial = isMaterial)
+            case DiffType.NonBreaking => DiffNonBreaking(description = description, isMaterial = isMaterial)
+            case other => sys.error(s"Invalid diff type '$other'")
           },
           changedAt = changedAt,
           changedBy = UserSummary(guid = changedByGuid, nickname = changedByNickname),

@@ -1,3 +1,7 @@
+[error]     db.ChangesDaoSpec
+[error]     db.generators.ServicesDaoSpec
+[error]     db.generators.GeneratorsDaoSpec
+
 "org.webjars" % "bootstrap" % "3.4.1",
       webjars
 
