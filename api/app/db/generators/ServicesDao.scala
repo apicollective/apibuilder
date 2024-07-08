@@ -25,7 +25,7 @@ class ServicesDao @Inject() (
     select guid, uri,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("services")}
       from generators.services
-  """).withDebugging()
+  """)
 
   private val InsertQuery = """
     insert into generators.services

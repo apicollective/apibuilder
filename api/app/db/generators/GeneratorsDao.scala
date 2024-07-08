@@ -40,13 +40,7 @@ class GeneratorsDao @Inject() (
 
   private val BaseQuery = Query(
     s"""
-    select guid,
-           key,
-           name,
-           description,
-           language,
-           attributes::text as attributes,
-           service_guid,
+    select guid, key, name, description, language, attributes::text as attributes, service_guid
       from generators.generators
   """)
 
