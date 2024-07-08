@@ -141,13 +141,13 @@ object Authorization {
       organizationGuidColumnName: String
     ): Query = {
       query.in(organizationGuidColumnName,
-        s"""
+        Query(s"""
           |${PublicOrganizationsQuery.interpolate()}
           |UNION ALL
           |$OrgsByUserQuery
           |""".stripMargin
-      ).withDebugging()
-       .bind("authorization_user_guid", userGuid)
+        )
+      ).bind("authorization_user_guid", userGuid)
     }
 
     override def applicationFilter(
@@ -167,7 +167,6 @@ object Authorization {
            """
         )
       ).bind("authorization_user_guid", userGuid)
-        .withDebugging()
     }
 
     override def tokenFilter(

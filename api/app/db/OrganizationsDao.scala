@@ -246,8 +246,9 @@ class OrganizationsDao @Inject() (
     limit: Option[Long],
     offset: Long = 0
   ): Seq[Organization] = {
+    println(s"FILTER:\n" + authorization.organizationFilter(BaseQuery, "organizations.guid").interpolate())
     db.withConnection { implicit c =>
-      (authorization.organizationFilter(BaseQuery, "organizations.guid").
+      authorization.organizationFilter(BaseQuery, "organizations.guid").
         equals("organizations.guid", guid).
         optionalIn("organizations.guid", guids).
         equals("key", key).
@@ -273,7 +274,7 @@ class OrganizationsDao @Inject() (
         ).bind("namespace", namespace).
         and(deletedAtBefore.map { _ =>
           "deleted_at < {deleted_at_before}::timestamptz"
-        })).bind("deleted_at_before", deletedAtBefore).
+        }).bind("deleted_at_before", deletedAtBefore).
         and(isDeleted.map(Filters.isDeleted("organizations", _))).
         orderBy("lower(name), created_at").
         optionalLimit(limit).

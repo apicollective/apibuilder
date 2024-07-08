@@ -1,4 +1,13 @@
-      "org.webjars" % "bootstrap" % "3.4.1",
+[error] 	db.VersionsDaoSpec
+[error] 	db.SubscriptionsDaoSpec
+[error] 	db.ApplicationsDaoSpec
+[error] 	db.EmailVerificationsDaoSpec
+[error] 	db.ChangesDaoSpec
+[error] 	db.generators.ServicesDaoSpec
+[error] 	db.MembershipRequestsDaoSpec
+[error] 	db.generators.GeneratorsDaoSpec
+
+"org.webjars" % "bootstrap" % "3.4.1",
       webjars
 
 Bindables with multiple services
