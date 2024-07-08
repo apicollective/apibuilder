@@ -22,11 +22,10 @@ class ServicesDao @Inject() (
   private val dbHelpers = DbHelpers(db, "generators.services")
 
   private val BaseQuery = Query(s"""
-    select services.guid,
-           services.uri,
+    select guid, uri,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("services")}
       from generators.services
-  """)
+  """).withDebugging()
 
   private val InsertQuery = """
     insert into generators.services
@@ -81,17 +80,10 @@ class ServicesDao @Inject() (
     * Also will soft delete all generators for this service
     */
   def softDelete(deletedBy: User, service: GeneratorService): Unit = {
-    Pager.eachPage { _ =>
-      // Note we do not include offset in the query as each iteration
-      // deletes records which will then NOT show up in the next loop
-      generatorsDao.findAll(
-        Authorization.All,
-        serviceGuid = Some(service.guid)
-      )
-    } { gen =>
-      generatorsDao.softDelete(deletedBy, gen)
+    db.withTransaction { c =>
+      generatorsDao.softDeleteAllByServiceGuid(c, deletedBy, service.guid)
+      dbHelpers.delete(c, deletedBy, service.guid)
     }
-    dbHelpers.delete(deletedBy, service.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[GeneratorService] = {
@@ -109,21 +101,21 @@ class ServicesDao @Inject() (
     offset: Long = 0
   ): Seq[GeneratorService] = {
     db.withConnection { implicit c =>
-      authorization.generatorServicesFilter(BaseQuery).
-        equals("services.guid", guid).
-        optionalIn("services.guid", guids).
+      BaseQuery.
+        equals("guid", guid).
+        optionalIn("guid", guids).
         and(
           uri.map { _ =>
-            "lower(services.uri) = lower(trim({uri}))"
+            "lower(uri) = lower(trim({uri}))"
           }
         ).bind("uri", uri).
         and(
           generatorKey.map { _ =>
-            "services.guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
+            "guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
           }
         ).bind("generator_key", generatorKey).
         and(isDeleted.map(Filters.isDeleted("services", _))).
-        orderBy("lower(services.uri)").
+        orderBy("lower(uri)").
         optionalLimit(limit).
         offset(offset).
         as(parser.*)

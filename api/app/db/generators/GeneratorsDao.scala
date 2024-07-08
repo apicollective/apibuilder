@@ -7,6 +7,7 @@ import db.{Authorization, Filters}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
+import lib.Pager
 import play.api.db._
 import play.api.libs.json.Json
 
@@ -39,13 +40,13 @@ class GeneratorsDao @Inject() (
 
   private val BaseQuery = Query(
     s"""
-    select generators.guid,
-           generators.key,
-           generators.name,
-           generators.description,
-           generators.language,
-           generators.attributes::text as attributes,
-           generators.service_guid,
+    select guid,
+           key,
+           name,
+           description,
+           language,
+           attributes::text as attributes,
+           service_guid,
       from generators.generators
   """)
 
@@ -57,14 +58,22 @@ class GeneratorsDao @Inject() (
     ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {attributes}::json, {created_by_guid}::uuid)
   """
 
-  private val SoftDeleteByKeyQuery =
+  private val SoftDeleteByKeyQuery: Query = Query(
     """
     update generators.generators
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where key = lower(trim({key}))
        and service_guid = {service_guid}::uuid
        and deleted_at is null
-  """
+  """)
+
+  private val SoftDeleteByServiceGuidQuery: Query = Query(
+    """
+    update generators.generators
+       set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
+     where service_guid = {service_guid}::uuid
+       and deleted_at is null
+  """_
 
   def upsert(user: User, form: GeneratorForm): ValidatedNec[String, InternalGenerator] = {
     findByKey(form.generator.key) match {
@@ -129,6 +138,14 @@ class GeneratorsDao @Inject() (
     ).headOption
   }
 
+  def softDeleteAllByServiceGuid(c: java.sql.Connection, deletedBy: User, serviceGuid: UUID): Unit = {
+    SoftDeleteByKeyQuery
+      .bind("deleted_by_guid", deletedBy.guid)
+      .bind("service_guid" -> serviceGuid)
+      .bind("key", generatorKey)
+      .anormSql().execute()(c)
+  }
+
   private def create(implicit c: java.sql.Connection, user: User, form: GeneratorForm): UUID = {
     val guid = UUID.randomUUID
 
@@ -163,11 +180,11 @@ class GeneratorsDao @Inject() (
   }
 
   private def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String): Unit = {
-    SQL(SoftDeleteByKeyQuery).on(
-      "deleted_by_guid" -> deletedBy.guid,
-      "service_guid" -> serviceGuid,
-      "key" -> generatorKey
-    ).execute()
+    SoftDeleteByKeyQuery
+      .bind("deleted_by_guid", deletedBy.guid)
+      .bind("service_guid" -> serviceGuid)
+      .bind("key", generatorKey)
+      .anormSql().execute()(c)
   }
 
   def findAll(
@@ -182,9 +199,9 @@ class GeneratorsDao @Inject() (
                offset: Long = 0
              ): Seq[InternalGenerator] = {
     db.withConnection { implicit c =>
-      authorization.generatorServicesFilter(BaseQuery).
-        equals("generators.guid", guid).
-        equals("generators.service_guid", serviceGuid).
+      BaseQuery.
+        equals("guid", guid).
+        equals("service_guid", serviceGuid).
         and(
           serviceUri.map { _ =>
             "lower(services.uri) = lower(trim({service_uri}))"
@@ -192,17 +209,17 @@ class GeneratorsDao @Inject() (
         ).bind("service_uri", serviceUri).
         and(
           key.map { _ =>
-            "lower(generators.key) = lower(trim({generator_key}))"
+            "lower(key) = lower(trim({generator_key}))"
           }
         ).bind("generator_key", key).
         and(
           attributeName.map { _ =>
             // TODO: structure this filter
-            "generators.attributes::text like '%' || lower(trim({attribute_name})) || '%'"
+            "attributes::text like '%' || lower(trim({attribute_name})) || '%'"
           }
         ).bind("attribute_name", attributeName).
         and(isDeleted.map(Filters.isDeleted("generators", _))).
-        orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
+        orderBy("lower(name), lower(key), created_at desc").
         limit(limit).
         offset(offset).
         as(parser.*)

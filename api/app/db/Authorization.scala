@@ -51,19 +51,6 @@ sealed trait Authorization {
     subscriptionsTableName: String
   ): Query
 
-  /**
-    * Generates a sql filter to restrict the returned set of generator
-    * services to those that this user is authorized to access. At the
-    * moment this is a placeholder as we currently do NOT restrict access
-    * to code generators.
-    * 
-    * @param generatorServicessTableName e.g "services"
-    */
-  def generatorServicesFilter(
-    query: Query,
-    generatorServicessTableName: String = "services"
-  ): Query = query
-
 }
 
 object Authorization {
