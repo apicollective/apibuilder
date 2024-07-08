@@ -32,14 +32,9 @@ class EmailVerificationsDao @Inject() (
   private val TokenLength = 80
   private val HoursUntilTokenExpires = 168
 
-  private val BaseQuery = Query("""
-    select email_verifications.guid,
-           email_verifications.user_guid,
-           email_verifications.email,
-           email_verifications.token,
-           email_verifications.expires_at
-      from email_verifications
-  """)
+  private val BaseQuery = Query(
+    "select guid, user_guid, email, token, expires_at from email_verifications"
+  )
 
   private val InsertQuery = """
     insert into email_verifications
@@ -97,13 +92,13 @@ class EmailVerificationsDao @Inject() (
   ): Seq[EmailVerification] = {
     db.withConnection { implicit c =>
       BaseQuery.
-        equals("email_verifications.guid", guid).
-        equals("email_verifications.user_guid", userGuid).
-        equals("lower(email_verifications.email)", email.map(_.toLowerCase)).
-        equals("email_verifications.token", token).
+        equals("guid", guid).
+        equals("user_guid", userGuid).
+        equals("lower(email)", email.map(_.toLowerCase)).
+        equals("token", token).
         and(isExpired.map(Filters.isExpired("email_verifications", _))).
         and(isDeleted.map(Filters.isDeleted("email_verifications", _))).
-        orderBy("email_verifications.created_at").
+        orderBy("created_at").
         limit(limit).
         offset(offset).
         as(parser.*)

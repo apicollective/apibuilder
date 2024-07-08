@@ -17,10 +17,7 @@ class OrganizationDomainsDao @Inject() (
 
   private val dbHelpers = DbHelpers(db, "organization_domains")
 
-  private val BaseQuery = Query("""
-    select guid, organization_guid, domain
-      from organization_domains
-  """)
+  private val BaseQuery = Query("select guid, organization_guid, domain from organization_domains")
 
   private val UpsertQuery = """
     insert into organization_domains
@@ -64,11 +61,11 @@ class OrganizationDomainsDao @Inject() (
   ): Seq[OrganizationDomain] = {
     db.withConnection { implicit c =>
       BaseQuery.
-        equals("organization_domains.guid", guid).
-        equals("organization_domains.organization_guid", organizationGuid).
+        equals("guid", guid).
+        equals("organization_guid", organizationGuid).
         and(
           domain.map { _ =>
-            "organization_domains.domain = lower(trim({domain}))"
+            "domain = lower(trim({domain}))"
           }
         ).bind("domain", domain).
         and(isDeleted.map(Filters.isDeleted("organization_domains", _))).
@@ -76,7 +73,7 @@ class OrganizationDomainsDao @Inject() (
     }
   }
 
-  private def parser(): RowParser[OrganizationDomain] = {
+  private val parser: RowParser[OrganizationDomain] = {
     SqlParser.get[UUID]("guid") ~
     SqlParser.get[UUID]("organization_guid") ~
     SqlParser.str("domain") map {
