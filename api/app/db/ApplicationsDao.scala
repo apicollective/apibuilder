@@ -11,6 +11,7 @@ import lib.{UrlKey, Validation}
 import org.joda.time.DateTime
 import play.api.db._
 import processor.EmailProcessorQueue
+import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -38,9 +39,8 @@ class ApplicationsDao @Inject() (
 
   private val BaseQuery = Query(
     s"""
-    select guid, name, key, description, visibility,
+    select guid, name, key, description, visibility, organization_guid,
            ${AuditsDao.query("applications")},
-           organizations.guid as organization_guid,
            coalesce(
              (select versions.created_at
                from versions
@@ -315,11 +315,21 @@ class ApplicationsDao @Inject() (
     sorting: Option[AppSortBy] = None,
     ordering: Option[SortOrder] = None
   ): Seq[InternalApplication] = {
+    val filters = List(
+      new OptionalQueryFilter(orgKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("organization_guid", Query("select guid from organizations").equals("key", orgKey))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      val appQuery = authorization.applicationFilter(BaseQuery, "guid").
+      val appQuery = authorization.applicationFilter(
+          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
+          "guid"
+        ).
         equals("guid", guid).
         optionalIn("guid", guids).
-        equals("organizations.key", orgKey).
         and(
           name.map { _ =>
             "lower(trim(name)) = lower(trim({name}))"
