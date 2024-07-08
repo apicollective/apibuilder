@@ -48,8 +48,7 @@ sealed trait Authorization {
     */
   def subscriptionFilter(
     query: Query,
-    subscriptionsTableName: String = "subscriptions",
-    organizationGuidColumnName: String
+    subscriptionsTableName: String
   ): Query
 
   /**
@@ -106,8 +105,7 @@ object Authorization {
 
     override def subscriptionFilter(
       query: Query,
-      subscriptionsTableName: String = "subscriptions",
-      organizationGuidColumnName: String
+      subscriptionsTableName: String
     ): Query = query.and("false")
 
   }
@@ -131,8 +129,7 @@ object Authorization {
 
     override def subscriptionFilter(
       query: Query,
-      subscriptionsTableName: String = "subscriptions",
-      organizationGuidColumnName: String
+      subscriptionsTableName: String
     ): Query = query
 
   }
@@ -182,8 +179,7 @@ object Authorization {
 
     override def subscriptionFilter(
       query: Query,
-      subscriptionsTableName: String = "subscriptions",
-      organizationGuidColumnName: String
+      subscriptionsTableName: String
     ): Query = {
       query.and(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or ${subscriptionsTableName}.organization_guid in (${OrgsByUserQuery})").
         bind("authorization_user_guid", userGuid)

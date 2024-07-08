@@ -29,11 +29,11 @@ class OrganizationsDao @Inject() (
   private val MinNameLength = 3
 
   private[db] val BaseQuery = Query(s"""
-    select organizations.guid,
-           organizations.name,
-           organizations.key,
-           organizations.visibility,
-           organizations.namespace,
+    select guid,
+           name,
+           key,
+           visibility,
+           namespace,
            ${AuditsDao.query("organizations")},
            coalesce(
              (select to_json(array_agg(domain))
@@ -247,35 +247,35 @@ class OrganizationsDao @Inject() (
     offset: Long = 0
   ): Seq[Organization] = {
     db.withConnection { implicit c =>
-      (authorization.organizationFilter(BaseQuery).
-        equals("organizations.guid", guid).
-        optionalIn("organizations.guid", guids).
-        equals("organizations.key", key).
+      (authorization.organizationFilter(BaseQuery, "guid").
+        equals("guid", guid).
+        optionalIn("guid", guids).
+        equals("key", key).
         and(
           userGuid.map { _ =>
-            "organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
+            "guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
           }
         ).bind("user_guid", userGuid).
         and(
           applicationGuid.map { _ =>
-            "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
+            "guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
           }
         ).bind("application_guid", applicationGuid).
         and(
           name.map { _ =>
-            "lower(trim(organizations.name)) = lower(trim({name}))"
+            "lower(trim(name)) = lower(trim({name}))"
           }
         ).bind("name", name).
         and(
           namespace.map { _ =>
-            "organizations.namespace = lower(trim({namespace}))"
+            "namespace = lower(trim({namespace}))"
           }
         ).bind("namespace", namespace).
         and(deletedAtBefore.map { _ =>
-          "organizations.deleted_at < {deleted_at_before}::timestamptz"
+          "deleted_at < {deleted_at_before}::timestamptz"
         })).bind("deleted_at_before", deletedAtBefore).
         and(isDeleted.map(Filters.isDeleted("organizations", _))).
-        orderBy("lower(organizations.name), organizations.created_at").
+        orderBy("lower(name), created_at").
         optionalLimit(limit).
         offset(offset).
         as(parser.*)

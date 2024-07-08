@@ -19,7 +19,7 @@ class ItemsDao @Inject() (
   private val BaseQuery = io.flow.postgresql.Query("""
     select guid, items.detail::text, label, description
       from search.items
-  """)
+  """).withDebugging()
 
   private val UpsertQuery = """
     insert into search.items

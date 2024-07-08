@@ -59,9 +59,9 @@ class OrganizationLogsDao @Inject() (
     offset: Long = 0
   ): Seq[OrganizationLog] = {
     db.withConnection { implicit c =>
-      authorization.organizationFilter(BaseQuery).
-        equals("organization_logs.organization_guid", organization.map(_.guid)).
-        orderBy("organization_logs.created_at desc").
+      authorization.organizationFilter(BaseQuery, "organization_guid").
+        equals("organization_guid", organization.map(_.guid)).
+        orderBy("created_at desc").
         limit(limit).
         offset(offset).
         anormSql().as(parser().*)
