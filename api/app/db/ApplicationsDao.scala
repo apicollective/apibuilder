@@ -352,7 +352,7 @@ class ApplicationsDao @Inject() (
         }
         val ord = ordering.getOrElse(SortOrder.Asc).toString
         appQuery.orderBy(s"$sort $ord")
-      }.anormSql().as(parser.*)
+      }.as(parser.*)
     }
   }
 

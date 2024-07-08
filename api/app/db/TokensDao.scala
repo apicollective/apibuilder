@@ -123,7 +123,7 @@ class TokensDao @Inject() (
         orderBy("tokens.created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(parser.*)
+        as(parser.*)
     }
   }
 

@@ -11,7 +11,7 @@ import io.apibuilder.generator.v0.models.InvocationForm
 import io.apibuilder.generator.v0.models.json._
 import io.apibuilder.spec.v0.models.Service
 import lib.{Constants, Validation}
-import models.VersionsModel
+import models.{GeneratorWithServiceModel, VersionsModel}
 import play.api.libs.json._
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, AnyContent, Result}
@@ -31,6 +31,7 @@ class Code @Inject() (
   versionsDao: VersionsDao,
   versionsModel: VersionsModel,
   userAgentGenerator: UserAgent,
+  model: GeneratorWithServiceModel
 ) extends ApiBuilderController {
 
   case class CodeParams(
@@ -142,7 +143,9 @@ class Code @Inject() (
       }
 
       case Some(service) => {
-        generatorsDao.findAll(request.authorization, key = Some(generatorKey)).headOption match {
+        generatorsDao.findAll(request.authorization, key = Some(generatorKey))
+          .flatMap(model.toModel)
+          .headOption match {
           case None => {
             Future.successful(conflict(s"Generator with key[$generatorKey] not found"))
           }

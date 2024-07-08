@@ -274,7 +274,7 @@ class UsersDao @Inject() (
         ).bind("token", token).
         and(isDeleted.map(Filters.isDeleted("users", _))).
         limit(1).
-        anormSql().as(parser.*)
+        as(parser.*)
     }
   }
 

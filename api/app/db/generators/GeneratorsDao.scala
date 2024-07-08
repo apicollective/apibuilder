@@ -34,8 +34,7 @@ case class InternalGenerator(
 
 @Singleton
 class GeneratorsDao @Inject() (
-  @NamedDatabase("default") db: Database,
-  servicesDao: ServicesDao,
+  @NamedDatabase("default") db: Database
 ) {
 
   private val BaseQuery = Query(
@@ -67,7 +66,7 @@ class GeneratorsDao @Inject() (
        and deleted_at is null
   """
 
-  def upsert(user: User, form: GeneratorForm): ValidatedNec[String, GeneratorWithService] = {
+  def upsert(user: User, form: GeneratorForm): ValidatedNec[String, InternalGenerator] = {
     findByKey(form.generator.key) match {
       case None => {
         val gen = db.withConnection { implicit c =>
@@ -87,11 +86,11 @@ class GeneratorsDao @Inject() (
         gen.validNec
       }
       case Some(existing) => {
-        if (existing.service.guid == form.serviceGuid) {
-          if (isDifferent(existing.generator, form)) {
+        if (existing.serviceGuid == form.serviceGuid) {
+          if (isDifferent(existing, form)) {
             // Update to catch any updates to properties
             val generatorGuid = db.withConnection { implicit c =>
-              softDelete(c, user, existing.service.guid, existing.generator.key)
+              softDelete(c, user, existing.serviceGuid, existing.key)
               create(c, user, form)
             }
             findByGuid(generatorGuid).getOrElse {
@@ -107,14 +106,14 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  private def isDifferent(generator: Generator, form: GeneratorForm): Boolean = {
+  private def isDifferent(generator: InternalGenerator, form: GeneratorForm): Boolean = {
     generator.name != form.generator.name ||
       generator.language != form.generator.language ||
       generator.attributes != form.generator.attributes ||
       generator.description != form.generator.description
   }
 
-  def findByKey(key: String): Option[GeneratorWithService] = {
+  def findByKey(key: String): Option[InternalGenerator] = {
     findAll(
       Authorization.All,
       key = Some(key),
@@ -122,7 +121,7 @@ class GeneratorsDao @Inject() (
     ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[GeneratorWithService] = {
+  def findByGuid(guid: UUID): Option[InternalGenerator] = {
     findAll(
       Authorization.All,
       guid = Some(guid),
@@ -157,9 +156,9 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, gws: GeneratorWithService): Unit = {
+  def softDelete(deletedBy: User, generator: InternalGenerator): Unit = {
     db.withConnection { implicit c =>
-      softDelete(c, deletedBy, gws.service.guid, gws.generator.key)
+      softDelete(c, deletedBy, generator.serviceGuid, generator.key)
     }
   }
 
@@ -181,50 +180,33 @@ class GeneratorsDao @Inject() (
                isDeleted: Option[Boolean] = Some(false),
                limit: Long = 25,
                offset: Long = 0
-             ): Seq[GeneratorWithService] = {
-    addService(
-      db.withConnection { implicit c =>
-        authorization.generatorServicesFilter(BaseQuery).
-          equals("generators.guid", guid).
-          equals("generators.service_guid", serviceGuid).
-          and(
-            serviceUri.map { _ =>
-              "lower(services.uri) = lower(trim({service_uri}))"
-            }
-          ).bind("service_uri", serviceUri).
-          and(
-            key.map { _ =>
-              "lower(generators.key) = lower(trim({generator_key}))"
-            }
-          ).bind("generator_key", key).
-          and(
-            attributeName.map { _ =>
-              // TODO: structure this filter
-              "generators.attributes::text like '%' || lower(trim({attribute_name})) || '%'"
-            }
-          ).bind("attribute_name", attributeName).
-          and(isDeleted.map(Filters.isDeleted("generators", _))).
-          orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
-          limit(limit).
-          offset(offset).
-          as(parser.*)
-      }
-    )
-  }
-
-  private def addService(generators: List[InternalGenerator]): Seq[GeneratorWithService] = {
-    val services = servicesDao.findAll(
-      Authorization.All,
-      guids = Some(generators.map(_.serviceGuid).distinct),
-      limit = None,
-    ).map { s => s.guid -> s }.toMap
-
-    generators.flatMap { g =>
-      services.get(g.serviceGuid).map { s =>
-        GeneratorWithService(s, g.model)
-      }
+             ): Seq[InternalGenerator] = {
+    db.withConnection { implicit c =>
+      authorization.generatorServicesFilter(BaseQuery).
+        equals("generators.guid", guid).
+        equals("generators.service_guid", serviceGuid).
+        and(
+          serviceUri.map { _ =>
+            "lower(services.uri) = lower(trim({service_uri}))"
+          }
+        ).bind("service_uri", serviceUri).
+        and(
+          key.map { _ =>
+            "lower(generators.key) = lower(trim({generator_key}))"
+          }
+        ).bind("generator_key", key).
+        and(
+          attributeName.map { _ =>
+            // TODO: structure this filter
+            "generators.attributes::text like '%' || lower(trim({attribute_name})) || '%'"
+          }
+        ).bind("attribute_name", attributeName).
+        and(isDeleted.map(Filters.isDeleted("generators", _))).
+        orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
+        limit(limit).
+        offset(offset).
+        as(parser.*)
     }
-
   }
 
   private def parser: RowParser[InternalGenerator] = {

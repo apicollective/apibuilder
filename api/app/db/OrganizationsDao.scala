@@ -278,7 +278,7 @@ class OrganizationsDao @Inject() (
         orderBy("lower(organizations.name), organizations.created_at").
         optionalLimit(limit).
         offset(offset).
-        anormSql().as(parser.*)
+        as(parser.*)
     }
   }
 

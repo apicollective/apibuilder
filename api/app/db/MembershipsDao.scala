@@ -204,7 +204,7 @@ class MembershipsDao @Inject() (
         orderBy("lower(users.name), lower(users.email)").
         optionalLimit(limit).
         offset(offset).
-        anormSql().as(parser.*)
+        as(parser.*)
     }
   }
 

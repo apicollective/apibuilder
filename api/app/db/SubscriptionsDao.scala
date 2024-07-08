@@ -171,7 +171,7 @@ class SubscriptionsDao @Inject() (
         orderBy("subscriptions.created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(parser.*)
+        as(parser.*)
     }
   }
 

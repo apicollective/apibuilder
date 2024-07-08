@@ -148,7 +148,7 @@ class OrganizationAttributeValuesDao @Inject() (
         orderBy("lower(organization_attribute_values.value), organization_attribute_values.created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(parser.*)
+        as(parser.*)
     }
   }
 
