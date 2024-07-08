@@ -7,7 +7,7 @@ import io.apibuilder.api.v0.models.{Error, GeneratorService, GeneratorServiceFor
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
-import lib.{Pager, Validation}
+import lib.Validation
 import play.api.db._
 
 import java.util.UUID
@@ -82,7 +82,7 @@ class ServicesDao @Inject() (
   def softDelete(deletedBy: User, service: GeneratorService): Unit = {
     db.withTransaction { c =>
       generatorsDao.softDeleteAllByServiceGuid(c, deletedBy, service.guid)
-      dbHelpers.delete(c, deletedBy, service.guid)
+      dbHelpers.delete(c, deletedBy = deletedBy.guid, guid = service.guid)
     }
   }
 

@@ -73,7 +73,7 @@ class GeneratorsDao @Inject() (
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where service_guid = {service_guid}::uuid
        and deleted_at is null
-  """_
+  """)
 
   def upsert(user: User, form: GeneratorForm): ValidatedNec[String, InternalGenerator] = {
     findByKey(form.generator.key) match {
@@ -141,8 +141,7 @@ class GeneratorsDao @Inject() (
   def softDeleteAllByServiceGuid(c: java.sql.Connection, deletedBy: User, serviceGuid: UUID): Unit = {
     SoftDeleteByKeyQuery
       .bind("deleted_by_guid", deletedBy.guid)
-      .bind("service_guid" -> serviceGuid)
-      .bind("key", generatorKey)
+      .bind("service_guid", serviceGuid)
       .anormSql().execute()(c)
   }
 
@@ -182,7 +181,7 @@ class GeneratorsDao @Inject() (
   private def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String): Unit = {
     SoftDeleteByKeyQuery
       .bind("deleted_by_guid", deletedBy.guid)
-      .bind("service_guid" -> serviceGuid)
+      .bind("service_guid", serviceGuid)
       .bind("key", generatorKey)
       .anormSql().execute()(c)
   }
