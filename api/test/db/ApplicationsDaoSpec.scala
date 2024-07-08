@@ -147,6 +147,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     def initialize(): Unit = {
       publicApplication
       privateApplication
+      publicApplicationInPublicOrg
     }
 
     "by version" in {
@@ -247,7 +248,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
           privateOrgGuids.contains(privateApplication.guid) must be(false)  // app is private
 
           val publicOrgGuids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(publicOrg.key), limit = None).map(_.guid)
-          publicOrgGuids.contains(publicApplicationInPublicOrg.guid) mustBe(true)
+          publicOrgGuids mustBe Seq(publicApplicationInPublicOrg.guid)
         }
 
       }

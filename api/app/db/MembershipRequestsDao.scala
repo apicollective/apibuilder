@@ -172,7 +172,6 @@ class MembershipRequestsDao @Inject() (
         orderBy("created_at desc").
         limit(limit).
         offset(offset).
-        withDebugging().
         as(parser.*)
     }
   }

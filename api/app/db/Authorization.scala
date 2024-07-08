@@ -99,7 +99,7 @@ object Authorization {
       query: Query,
       applicationGuidColumnName: String
     ): Query = {
-      query.in(applicationGuidColumnName, PublicApplicationsQuery).withDebugging()
+      query.in(applicationGuidColumnName, PublicApplicationsQuery)
     }
 
     override def tokenFilter(

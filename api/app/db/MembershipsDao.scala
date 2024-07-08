@@ -200,7 +200,6 @@ class MembershipsDao @Inject() (
 
     db.withConnection { implicit c =>
       filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) }.
-        withDebugging().
         equals("memberships.guid", guid).
         equals("memberships.organization_guid", organizationGuid).
         equals("memberships.user_guid", userGuid).
