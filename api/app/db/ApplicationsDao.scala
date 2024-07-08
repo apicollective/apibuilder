@@ -355,7 +355,6 @@ class ApplicationsDao @Inject() (
             }
           }
         ).
-        withDebugging().
         and(isDeleted.map(Filters.isDeleted("applications", _))).
         optionalLimit(limit).
         offset(offset)
