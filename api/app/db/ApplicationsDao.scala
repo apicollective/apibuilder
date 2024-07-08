@@ -347,7 +347,7 @@ class ApplicationsDao @Inject() (
         ).bind("version_guid", version.map(_.guid.toString)).
         and(
           hasVersion.map { v =>
-            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = guid"
+            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
             if (v) {
               s"exists ($clause)"
             } else {
@@ -355,6 +355,7 @@ class ApplicationsDao @Inject() (
             }
           }
         ).
+        withDebugging().
         and(isDeleted.map(Filters.isDeleted("applications", _))).
         optionalLimit(limit).
         offset(offset)

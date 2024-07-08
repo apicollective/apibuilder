@@ -209,20 +209,17 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
       val service = createService(app)
       versionsDao.create(testUser, app, "1.0.0", Original, service)
 
-      applicationsDao.findAll(
-        Authorization.All,
-        guid = Some(app.guid),
-        hasVersion = Some(false),
-        limit = None
-      ).map(_.guid) must be(Nil)
+      def findByHasVersion(hasVersion: Boolean) = {
+        applicationsDao.findAll(
+          Authorization.All,
+          guid = Some(app.guid),
+          hasVersion = Some(hasVersion),
+          limit = None
+        ).map(_.guid)
+      }
 
-      applicationsDao.findAll(
-        Authorization.All,
-        guid = Some(app.guid),
-        hasVersion = Some(true),
-        limit = None
-      ).map(_.guid) must be(Seq(app.guid))
-
+      findByHasVersion(false) must be(Nil)
+      findByHasVersion(true) must be(Seq(app.guid))
     }
 
     "Authorization" must {
