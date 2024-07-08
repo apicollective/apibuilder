@@ -62,7 +62,6 @@ class VersionsDao @Inject() (
            ${AuditsDao.queryCreationDefaultingUpdatedAt("versions")},
            originals.type as original_type,
            originals.data as original_data,
-           versions.organization_guid,
            versions.application_guid,
            (select services.json::text
               from cache.services
