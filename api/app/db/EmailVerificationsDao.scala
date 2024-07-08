@@ -106,9 +106,7 @@ class EmailVerificationsDao @Inject() (
         orderBy("email_verifications.created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(
-          parser().*
-        )
+        as(parser.*)
     }
   }
 

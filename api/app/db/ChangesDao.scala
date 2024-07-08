@@ -148,9 +148,7 @@ class ChangesDao @Inject() (
         orderBy("changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description)").
         limit(limit).
         offset(offset).
-        anormSql().as(
-        parser.*
-      )
+        as(parser.*)
     }
   }
 
