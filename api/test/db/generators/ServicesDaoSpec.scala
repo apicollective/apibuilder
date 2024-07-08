@@ -55,12 +55,12 @@ class ServicesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHe
     "generatorKey" in {
       val form = createGeneratorServiceForm()
       val service = servicesDao.create(testUser, form)
-      val gws = createGenerator(service)
+      val generator = createGenerator(service)
 
-      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key), limit = None).map(_.guid) must be(Seq(service.guid))
-      servicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(gws.generator.key), limit = None).map(_.guid) must be(Seq(service.guid))
-      servicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(gws.generator.key), limit = None).map(_.guid) must be(Nil)
-      servicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key + "2"), limit = None) must be(Nil)
+      servicesDao.findAll(Authorization.All, generatorKey = Some(generator.key), limit = None).map(_.guid) must be(Seq(service.guid))
+      servicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(generator.key), limit = None).map(_.guid) must be(Seq(service.guid))
+      servicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(generator.key), limit = None).map(_.guid) must be(Nil)
+      servicesDao.findAll(Authorization.All, generatorKey = Some(generator.key + "2"), limit = None) must be(Nil)
     }
 
   }
