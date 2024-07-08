@@ -99,7 +99,7 @@ object Authorization {
       query: Query,
       applicationGuidColumnName: String
     ): Query = {
-      query.in(applicationGuidColumnName, PublicApplicationsQuery)
+      query.in(applicationGuidColumnName, PublicApplicationsQuery).withDebugging()
     }
 
     override def tokenFilter(
@@ -158,19 +158,17 @@ object Authorization {
       query: Query,
       applicationGuidColumnName: String
     ): Query = {
-      query.or(
-        List(
-          s"${applicationGuidColumnName} in (${PublicApplicationsQuery.interpolate()})",
-          s"""
-             |${applicationGuidColumnName} in (
-             |select guid
-             |  from applications
-             | where organization_guid in ($OrgsByUserQuery)
-             |    or organization_guid in (select guid from organizations where visibility = '${Visibility.Public}')
-             |)
-           """.stripMargin
-        )
-      ).bind("authorization_user_guid", userGuid)
+      query.in(
+        applicationGuidColumnName,
+        Query(s"""
+          |${PublicApplicationsQuery.interpolate()}
+          |UNION ALL
+          |select guid
+          |  from applications
+          | where organization_guid in ($OrgsByUserQuery)
+          """.stripMargin
+        ).bind("authorization_user_guid", userGuid)
+      )
     }
 
     override def tokenFilter(

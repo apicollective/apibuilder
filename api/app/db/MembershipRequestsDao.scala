@@ -33,7 +33,6 @@ class MembershipRequestsDao @Inject() (
   private val BaseQuery = Query(s"""
     select guid,
            role,
-           created_at::text,
            organization_guid,
            user_guid,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")}
@@ -173,6 +172,7 @@ class MembershipRequestsDao @Inject() (
         orderBy("created_at desc").
         limit(limit).
         offset(offset).
+        withDebugging().
         as(parser.*)
     }
   }
