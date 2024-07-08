@@ -156,7 +156,7 @@ object Authorization {
     ): Query = {
       query.or(
         List(
-          s"${applicationGuidColumnName} in ${PublicApplicationsQuery.interpolate()}",
+          s"${applicationGuidColumnName} in (${PublicApplicationsQuery.interpolate()})",
           s"""
              |${applicationGuidColumnName} in (
              |select guid
@@ -164,7 +164,7 @@ object Authorization {
              | where organization_guid in ($OrgsByUserQuery)
              |    or organization_guid in (select guid from organizations where visibility = '${Visibility.Public}')
              |)
-           """
+           """.stripMargin
         )
       ).bind("authorization_user_guid", userGuid)
     }

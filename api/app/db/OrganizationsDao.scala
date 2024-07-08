@@ -246,7 +246,6 @@ class OrganizationsDao @Inject() (
     limit: Option[Long],
     offset: Long = 0
   ): Seq[Organization] = {
-    println(s"FILTER:\n" + authorization.organizationFilter(BaseQuery, "organizations.guid").interpolate())
     db.withConnection { implicit c =>
       authorization.organizationFilter(BaseQuery, "organizations.guid").
         equals("organizations.guid", guid).

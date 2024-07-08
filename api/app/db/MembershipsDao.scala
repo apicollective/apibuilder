@@ -7,6 +7,7 @@ import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
 import play.api.db._
 import processor.EmailProcessorQueue
+import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -189,17 +190,20 @@ class MembershipsDao @Inject() (
     offset: Long = 0
   ): Seq[InternalMembership] = {
     // TODO Implement authorization
+    val filters = List(
+      new OptionalQueryFilter(organizationKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("membership_requests.organization_guid", Query("select guid from organizations").isNull("deleted_at").equals("key", organizationKey))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      BaseQuery.
+      filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) }.
         withDebugging().
         equals("memberships.guid", guid).
         equals("memberships.organization_guid", organizationGuid).
         equals("memberships.user_guid", userGuid).
-        and(
-          organizationKey.map { _ =>
-            "memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
-          }
-        ).bind("organization_key", organizationKey).
         equals("memberships.role", role.map(_.toString)).
         optionalIn("memberships.role", roles.map(_.map(_.toString))).
         and(isDeleted.map(Filters.isDeleted("memberships", _))).

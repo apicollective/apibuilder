@@ -7,6 +7,7 @@ import io.apibuilder.task.v0.models.{EmailDataMembershipRequestAccepted, EmailDa
 import io.flow.postgresql.Query
 import play.api.db._
 import processor.EmailProcessorQueue
+import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -30,12 +31,12 @@ class MembershipRequestsDao @Inject() (
 
   // TODO: Properly select domains
   private val BaseQuery = Query(s"""
-    select membership_requests.guid,
-           membership_requests.role,
-           membership_requests.created_at::text,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")},
-           organizations.guid as organization_guid,
-           users.guid as user_guid
+    select guid,
+           role,
+           created_at::text,
+           organization_guid,
+           user_guid,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")}
       from membership_requests
   """)
 
@@ -154,19 +155,22 @@ class MembershipRequestsDao @Inject() (
   ): Seq[InternalMembershipRequest] = {
     // TODO Implement authorization
 
+    val filters = List(
+      new OptionalQueryFilter(organizationKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("organization_guid", Query("select guid from organizations").isNull("deleted_at").equals("key", organizationKey))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      BaseQuery.
-        equals("membership_requests.guid", guid).
-        equals("membership_requests.organization_guid", organizationGuid).
-        equals("membership_requests.user_guid", userGuid).
-        and(
-          organizationKey.map { _ =>
-            "membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
-          }
-        ).bind("organization_key", organizationKey).
-        equals("membership_requests.role", role.map(_.toString)).
+      filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) }.
+        equals("guid", guid).
+        equals("organization_guid", organizationGuid).
+        equals("user_guid", userGuid).
+        equals("role", role.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("membership_requests", _))).
-        orderBy("membership_requests.created_at desc").
+        orderBy("created_at desc").
         limit(limit).
         offset(offset).
         as(parser.*)

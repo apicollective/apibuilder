@@ -1,9 +1,9 @@
 package db
 
 import anorm._
-import cats.implicits._
 import cats.data.ValidatedNec
-import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
+import cats.implicits._
+import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.Query
@@ -325,7 +325,7 @@ class ApplicationsDao @Inject() (
 
     db.withConnection { implicit c =>
       val appQuery = authorization.applicationFilter(
-          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
+          filters.foldLeft(BaseQuery.withDebugging()) { case (q, f) => f.filter(q) },
           "guid"
         ).
         equals("guid", guid).
