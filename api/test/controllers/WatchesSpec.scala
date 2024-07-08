@@ -54,7 +54,8 @@ class WatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
     )
 
     val watch = createWatch(form)
-    createWatch(form)
+    val watch2 = createWatch(form)
+    watch.guid mustBe watch2.guid
   }
 
   "GET /watches by application key" in {
