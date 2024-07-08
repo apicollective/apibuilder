@@ -9,6 +9,7 @@ import javax.inject.Inject
 class WatchesModel @Inject()(
                                         organizationsDao: OrganizationsDao,
                                         applicationsDao: ApplicationsDao,
+                                        applicationsModel: ApplicationsModel,
                                         usersDao: UsersDao
                                         ) {
   def toModel(watch: InternalWatch): Option[Watch] = {
@@ -20,15 +21,17 @@ class WatchesModel @Inject()(
       guids = Some(watches.map(_.userGuid))
     ).map { u => u.guid -> u }.toMap
 
-    val applications = applicationsDao.findAll(
-      Authorization.All,
-      guids = Some(watches.map(_.applicationGuid)),
-      limit = None
+    val applications = applicationsModel.toModels (
+      applicationsDao.findAll(
+        Authorization.All,
+        guids = Some(watches.map(_.applicationGuid)),
+        limit = None
+      )
     ).map { o => o.guid -> o }.toMap
 
     val organizations = organizationsDao.findAll(
       Authorization.All,
-      guids = Some(applications.values.map(_.organization.guid).toSeq),
+      guids = Some(applications.values.map(_.organization.guid).toSeq.distinct),
       limit = None
     ).map { o => o.guid -> o }.toMap
 

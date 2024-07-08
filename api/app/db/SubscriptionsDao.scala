@@ -36,24 +36,9 @@ class SubscriptionsDao @Inject() (
   private def usersDao = injector.instanceOf[UsersDao]
 
   private val BaseQuery = Query(s"""
-    select subscriptions.guid,
-           subscriptions.publication,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")},
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")},
-           organizations.guid as organization_guid,
-           organizations.key as organization_key,
-           organizations.name as organization_name,
-           organizations.namespace as organization_namespace,
-           organizations.visibility as organization_visibility,
-           '[]' as organization_domains,
-           ${AuditsDao.queryWithAlias("organizations", "organization")}
+    select guid, user_guid,organization_guid, publication,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")}
       from subscriptions
-      join users on users.guid = subscriptions.user_guid and users.deleted_at is null
-      join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
   """)
 
   private val InsertQuery = """
@@ -162,13 +147,13 @@ class SubscriptionsDao @Inject() (
   ): Seq[InternalSubscription] = {
     db.withConnection { implicit c =>
       authorization.subscriptionFilter(BaseQuery).
-        equals("subscriptions.guid", guid).
-        equals("subscriptions.organization_guid", organizationGuid).
+        equals("guid", guid).
+        equals("organization_guid", organizationGuid).
         equals("organizations.key", organizationKey.map(_.toLowerCase.trim)).
-        equals("subscriptions.user_guid", userGuid).
-        equals("subscriptions.publication", publication.map(_.toString)).
+        equals("user_guid", userGuid).
+        equals("publication", publication.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
-        orderBy("subscriptions.created_at").
+        orderBy("created_at").
         limit(limit).
         offset(offset).
         as(parser.*)

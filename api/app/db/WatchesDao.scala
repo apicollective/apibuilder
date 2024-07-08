@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Application, Error, Organization, User, Watch, WatchForm}
+import io.apibuilder.api.v0.models.{Error, Organization, User, WatchForm}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.Validation
@@ -33,46 +33,9 @@ class WatchesDao @Inject() (
   private val dbHelpers = DbHelpers(db, "watches")
 
   private val BaseQuery = Query(s"""
-    select watches.guid,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("watches")},
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")},
-           applications.guid as application_guid,
-           applications.name as application_name,
-           applications.key as application_key,
-           applications.visibility as application_visibility,
-           applications.description as application_description,
-           coalesce(
-             (select versions.created_at
-               from versions
-               where versions.application_guid = applications.guid
-               and versions.deleted_at is null
-               order by versions.version_sort_key desc, versions.created_at desc
-               limit 1),
-             applications.updated_at
-           ) as application_last_updated_at,
-           ${AuditsDao.queryWithAlias("applications", "application")},
-           organizations.guid as organization_guid,
-           organizations.key as organization_key,
-           organizations.name as organization_name,
-           organizations.namespace as organization_namespace,
-           organizations.visibility as organization_visibility,
-           '[]' as organization_domains,
-           ${AuditsDao.queryWithAlias("organizations", "organization")},
-           organizations.guid as application_organization_guid,
-           organizations.key as application_organization_key,
-           organizations.name as application_organization_name,
-           organizations.namespace as application_organization_namespace,
-           organizations.visibility as application_organization_visibility,
-           '[]' as application_organization_domains,
-           ${AuditsDao.queryWithAlias("organizations", "application_organization")}
+    select guid, user_guid, application_guid,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("watches")}
       from watches
-      join users on users.guid = watches.user_guid and users.deleted_at is null
-      join applications on applications.guid = watches.application_guid and applications.deleted_at is null
-      join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
   """)
 
   private val InsertQuery = """
