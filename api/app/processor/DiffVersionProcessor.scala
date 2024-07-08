@@ -107,7 +107,7 @@ class DiffVersionProcessor @Inject()(
                                               version: Version,
                                               diffs: Seq[Diff],
                                             )(
-                                              generateBody: (Organization, Application, Seq[Diff], Seq[Diff]) => Html,
+                                              generateBody: (Organization, InternalApplication, Seq[Diff], Seq[Diff]) => Html,
                                             ): Unit = {
     val (breakingDiffs, nonBreakingDiffs) = diffs.partition {
       case _: DiffBreaking => true
