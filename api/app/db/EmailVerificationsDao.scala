@@ -110,7 +110,7 @@ class EmailVerificationsDao @Inject() (
     }
   }
 
-  private def parser(): RowParser[EmailVerification] = {
+  private val parser: RowParser[EmailVerification] = {
     SqlParser.get[UUID]("guid") ~
     SqlParser.get[UUID]("user_guid") ~
     SqlParser.str("email") ~
