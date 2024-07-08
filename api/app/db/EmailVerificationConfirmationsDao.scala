@@ -1,13 +1,12 @@
 package db
 
 import anorm._
-import javax.inject.{Inject, Singleton}
-
-import play.api.db._
-import java.util.UUID
-
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
+import play.api.db._
+
+import java.util.UUID
+import javax.inject.Inject
 
 private[db] case class EmailVerificationConfirmation(
   guid: UUID,
@@ -15,8 +14,7 @@ private[db] case class EmailVerificationConfirmation(
   createdAt: DateTime
 )
 
-@Singleton
-private[db] class EmailVerificationConfirmationsDao @Inject() (
+class EmailVerificationConfirmationsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
@@ -57,7 +55,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() (
     findAll(guid = Some(guid), limit = 1).headOption
   }
 
-  private[db] def findAll(
+  def findAll(
     guid: Option[UUID] = None,
     emailVerificationGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),

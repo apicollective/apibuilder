@@ -3,11 +3,9 @@ package db
 import anorm.JodaParameterMetaData._
 import anorm._
 import io.apibuilder.api.v0.models.User
-import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated
 import io.flow.postgresql.Query
 import lib.TokenGenerator
-import models.MembershipRequestsModel
 import org.joda.time.DateTime
 import play.api.db._
 import processor.EmailProcessorQueue
@@ -27,10 +25,6 @@ case class EmailVerification(
 class EmailVerificationsDao @Inject() (
   @NamedDatabase("default") db: Database,
   emailQueue: EmailProcessorQueue,
-  emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
-  membershipRequestsDao: MembershipRequestsDao,
-  membershipRequestsModel: MembershipRequestsModel,
-  organizationsDao: OrganizationsDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "email_verifications")
@@ -76,28 +70,6 @@ class EmailVerificationsDao @Inject() (
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create email verification")
-    }
-  }
-
-  def isExpired(verification: EmailVerification): Boolean = {
-    verification.expiresAt.isBeforeNow
-  }
-
-  def confirm(user: Option[User], verification: EmailVerification): Unit = {
-    assert(
-      !isExpired(verification),
-      "Token for verificationGuid[${verification.guid}] is expired"
-    )
-
-    val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
-
-    emailVerificationConfirmationsDao.upsert(updatingUserGuid, verification)
-    organizationsDao.findAllByEmailDomain(verification.email).foreach { org =>
-      membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, MembershipRole.Member)
-        .flatMap(membershipRequestsModel.toModel)
-        .foreach { request =>
-        membershipRequestsDao.acceptViaEmailVerification(updatingUserGuid, request, verification.email)
-      }
     }
   }
 

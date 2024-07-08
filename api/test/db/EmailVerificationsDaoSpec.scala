@@ -1,15 +1,18 @@
 package db
 
-import java.util.UUID
+import helpers.ValidatedTestHelpers
 import io.apibuilder.api.v0.models.UserForm
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import processor.UserCreatedProcessor
+import services.EmailVerificationsService
 
-class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+import java.util.UUID
 
-  def userCreatedProcessor: UserCreatedProcessor = injector.instanceOf[UserCreatedProcessor]
-  def emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
+class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers with ValidatedTestHelpers {
+
+  private def userCreatedProcessor: UserCreatedProcessor = injector.instanceOf[UserCreatedProcessor]
+  private def service: EmailVerificationsService = injector.instanceOf[EmailVerificationsService]
 
   "upsert" in {
     val user = createRandomUser()
@@ -34,21 +37,6 @@ class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     val verification = emailVerificationsDao.create(testUser, user, user.email)
     verification.userGuid must be(user.guid)
     verification.email must be(user.email)
-  }
-
-  "isExpired" in {
-    val user = createRandomUser()
-    val verification = emailVerificationsDao.create(testUser, user, user.email)
-    emailVerificationsDao.isExpired(verification) must be(false)
-  }
-
-  "confirm" in {
-    val user = createRandomUser()
-    val verification = emailVerificationsDao.create(testUser, user, user.email)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) must be(Nil)
-
-    emailVerificationsDao.confirm(None, verification)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) must be(Seq(verification.guid))
   }
 
   "findByGuid" in {
@@ -120,7 +108,9 @@ class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
 
     val verification = emailVerificationsDao.upsert(testUser, user, user.email)
-    emailVerificationsDao.confirm(Some(testUser), verification)
+    expectValid {
+      service.confirm(Some(testUser), verification)
+    }
 
     membershipsDao.isUserMember(user, org) must be(true)
     membershipsDao.isUserMember(nonMatchingUser, org) must be(false)

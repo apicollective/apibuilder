@@ -83,7 +83,7 @@ class MembershipRequestsDao @Inject() (
     doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${request.role}")
   }
 
-  private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String): Unit = {
+  def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String): Unit = {
     doAccept(createdBy, request, s"$email joined as ${request.role} by verifying their email address")
   }
 
@@ -122,7 +122,7 @@ class MembershipRequestsDao @Inject() (
     dbHelpers.delete(user, membershipRequest.guid)
   }
 
-  private[db] def findByOrganizationAndUserGuidAndRole(
+  def findByOrganizationAndUserGuidAndRole(
     authorization: Authorization,
     org: Organization,
     userGuid: UUID,
