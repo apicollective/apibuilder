@@ -1,8 +1,7 @@
 package controllers
 
 import java.util.UUID
-
-import db.Authorization
+import db.{Authorization, InternalApplication}
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
@@ -117,19 +116,20 @@ trait MockClient extends db.Helpers
 
   def createTokenForm(
     user: User = createUser()
-  ) = TokenForm(
+  ): TokenForm = TokenForm(
     userGuid = user.guid,
     description = Some("test")
   )
 
   def createVersionThroughApi(
-    application: Application = createApplication(createOrganization()),
+    application: InternalApplication = createApplication(createOrganization()),
     form: Option[VersionForm] = None,
     version: String = "0.0.1"
   ): Version = {
+    val org = organizationsDao.findByGuid(Authorization.All, application.guid).get
     await(
       client.versions.putByApplicationKeyAndVersion(
-        orgKey = application.organization.key,
+        orgKey = org.key,
         applicationKey = application.key,
         version = version,
         versionForm = form.getOrElse { createVersionForm(application.name) }

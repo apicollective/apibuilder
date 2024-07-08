@@ -1,15 +1,15 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Application, Organization, User, Watch, WatchForm}
-
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import db.InternalApplication
+import io.apibuilder.api.v0.models.{Organization, User, Watch, WatchForm}
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
 class WatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val org = createOrganization()
+  lazy val org: Organization = createOrganization()
 
   def createWatch(
     form: WatchForm = createWatchForm()
@@ -20,8 +20,8 @@ class WatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
   def createWatchForm(
     user: User = createUser(),
     org: Organization = createOrganization(),
-    application: Option[Application] = None
-  ) = WatchForm(
+    application: Option[InternalApplication] = None
+  ): WatchForm = WatchForm(
     userGuid = user.guid,
     organizationKey = org.key,
     applicationKey = application.getOrElse(createApplication(org)).key
