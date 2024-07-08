@@ -316,28 +316,28 @@ class ApplicationsDao @Inject() (
     ordering: Option[SortOrder] = None
   ): Seq[InternalApplication] = {
     db.withConnection { implicit c =>
-      val appQuery = authorization.applicationFilter(BaseQuery).
-        equals("applications.guid", guid).
-        optionalIn("applications.guid", guids).
+      val appQuery = authorization.applicationFilter(BaseQuery, "guid").
+        equals("guid", guid).
+        optionalIn("guid", guids).
         equals("organizations.key", orgKey).
         and(
           name.map { _ =>
-            "lower(trim(applications.name)) = lower(trim({name}))"
+            "lower(trim(name)) = lower(trim({name}))"
           }
         ).bind("name", name).
         and(
           key.map { _ =>
-            "applications.key = lower(trim({application_key}))"
+            "key = lower(trim({application_key}))"
           }
         ).bind("application_key", key).
         and(
           version.map { _ =>
-            "applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
+            "guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
           }
         ).bind("version_guid", version.map(_.guid.toString)).
         and(
           hasVersion.map { v =>
-            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
+            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = guid"
             if (v) {
               s"exists ($clause)"
             } else {
@@ -350,10 +350,10 @@ class ApplicationsDao @Inject() (
         offset(offset)
       sorting.fold(appQuery) { sorting =>
         val sort = sorting match {
-          case AppSortBy.Visibility => "applications.visibility"
-          case AppSortBy.CreatedAt => "applications.created_at"
+          case AppSortBy.Visibility => "visibility"
+          case AppSortBy.CreatedAt => "created_at"
           case AppSortBy.UpdatedAt => "last_updated_at"
-          case _ => "applications.name"
+          case _ => "name"
         }
         val ord = ordering.getOrElse(SortOrder.Asc).toString
         appQuery.orderBy(s"$sort $ord")

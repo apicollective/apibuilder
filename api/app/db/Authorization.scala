@@ -2,6 +2,7 @@ package db
 
 import io.apibuilder.api.v0.models.Visibility
 import io.flow.postgresql.Query
+
 import java.util.UUID
 
 sealed trait Authorization {
@@ -25,8 +26,7 @@ sealed trait Authorization {
     */
   def applicationFilter(
     query: Query,
-    applicationsTableName: String = "applications",
-    organizationsTableName: String = "organizations"
+    applicationGuidColumnName: String
   ): Query
 
   /**
@@ -70,25 +70,28 @@ sealed trait Authorization {
 object Authorization {
 
   private val OrgsByUserQuery =
-    s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
+    s"""
+      |select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid
+      |""".stripMargin
 
-  private val PublicApplicationsQuery = s"%s.visibility = '${Visibility.Public.toString}'"
+  private val PublicApplicationsQuery: Query = Query(
+    "select guid from applications"
+  ).equals("visibility", Visibility.Public.toString)
 
   case object PublicOnly extends Authorization {
 
     override def organizationFilter(
       query: Query,
       organizationsTableName: String = "organizations"
-    ) = {
+    ): Query = {
       query.equals(s"$organizationsTableName.visibility", Visibility.Public.toString)
     }
 
     override def applicationFilter(
       query: Query,
-      applicationsTableName: String = "applications",
-      organizationsTableName: String = "organizations"
-    ) = {
-      query.equals(s"$applicationsTableName.visibility", Visibility.Public.toString)
+      applicationGuidColumnName: String
+    ): Query = {
+      query.in(applicationGuidColumnName, PublicApplicationsQuery)
     }
 
     override def tokenFilter(
@@ -109,13 +112,12 @@ object Authorization {
     override def organizationFilter(
       query: Query,
       organizationsTableName: String = "organizations"
-    ) = query
+    ): Query = query
 
     override def applicationFilter(
       query: Query,
-      applicationsTableName: String = "applications",
-      organizationsTableName: String = "organizations"
-    ) = query
+      applicationGuidColumnName: String
+    ): Query = query
 
     override def tokenFilter(
       query: Query,
@@ -135,7 +137,7 @@ object Authorization {
     override def organizationFilter(
       query: Query,
       organizationsTableName: String = "organizations"
-    ) = {
+    ): Query = {
       query.or(
         List(
           s"($organizationsTableName.visibility = '${Visibility.Public}'",
@@ -146,15 +148,21 @@ object Authorization {
 
     override def applicationFilter(
       query: Query,
-      applicationsTableName: String = "applications",
-      organizationsTableName: String = "organizations"
-    ) = {
-      organizationFilter(query, organizationsTableName).or(
+      applicationGuidColumnName: String
+    ): Query = {
+      query.or(
         List(
-          PublicApplicationsQuery.format(applicationsTableName),
-          s"$organizationsTableName.guid in ($OrgsByUserQuery)"
+          s"${applicationGuidColumnName} in ${PublicApplicationsQuery.interpolate()}",
+          s"""
+             |${applicationGuidColumnName} in (
+             |select guid
+             |  from applications
+             | where organization_guid in ($OrgsByUserQuery)
+             |    or organization_guid in (select guid from organizations where visibility = '${Visibility.Public}')
+             |)
+           """
         )
-      )
+      ).withDebugging()
     }
 
     override def tokenFilter(

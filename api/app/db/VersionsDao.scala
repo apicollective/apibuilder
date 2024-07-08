@@ -243,7 +243,7 @@ class VersionsDao @Inject() (
     offset: Long = 0
   ): Seq[InternalVersion] = {
     db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery, "application_guid").
         and(HasServiceJsonClause).
         equals("versions.guid", guid).
         equals("versions.application_guid", applicationGuid).
@@ -265,7 +265,7 @@ class VersionsDao @Inject() (
     offset: Long = 0
   ): Seq[ApplicationMetadataVersion] = {
     db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery, "application_guid").
         and(HasServiceJsonClause).
         equals("versions.application_guid", applicationGuid).
         and(isDeleted.map(Filters.isDeleted("versions", _))).
