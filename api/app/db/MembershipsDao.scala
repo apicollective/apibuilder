@@ -82,7 +82,7 @@ class MembershipsDao @Inject() (
 
     emailQueue.queueWithConnection(c, EmailDataMembershipCreated(guid))
 
-    BaseQuery.equals("guid", guid)
+    BaseQuery.equals("memberships.guid", guid)
       .as(parser.*)
       .headOption
       .getOrElse {
