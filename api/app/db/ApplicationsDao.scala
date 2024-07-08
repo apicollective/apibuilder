@@ -101,7 +101,7 @@ class ApplicationsDao @Inject() (
   }
 
 
-  def validateMove(
+  private def validateMove(
     authorization: Authorization,
     app: InternalApplication,
     form: MoveForm
@@ -278,7 +278,7 @@ class ApplicationsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, application: Application): Unit = {
+  def softDelete(deletedBy: User, application: InternalApplication): Unit = {
     withTasks(application.guid, { c =>
       dbHelpers.delete(c, deletedBy.guid, application.guid)
     })

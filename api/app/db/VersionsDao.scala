@@ -105,7 +105,7 @@ class VersionsDao @Inject() (
        and version = {version}
   """
 
-  def create(user: User, application: Application, version: String, original: Original, service: Service): InternalVersion = {
+  def create(user: User, application: InternalApplication, version: String, original: Original, service: Service): InternalVersion = {
     val latestVersion: Option[InternalVersion] = findAll(
       Authorization.User(user.guid),
       applicationGuid = Some(application.guid),
@@ -128,7 +128,7 @@ class VersionsDao @Inject() (
   private def doCreate(
     implicit c: java.sql.Connection,
     user: User,
-    application: Application,
+    application: InternalApplication,
     version: String,
     original: Original,
     service: Service
@@ -176,7 +176,7 @@ class VersionsDao @Inject() (
     )
   }
 
-  def replace(user: User, version: InternalVersion, application: Application, original: Original, service: Service): InternalVersion = {
+  def replace(user: User, version: InternalVersion, application: InternalApplication, original: Original, service: Service): InternalVersion = {
     val versionGuid = db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
@@ -215,7 +215,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[InternalVersion] = {
+  def findByApplicationAndVersion(authorization: Authorization, application: InternalApplication, version: String): Option[InternalVersion] = {
     findAll(
       authorization,
       applicationGuid = Some(application.guid),
@@ -314,7 +314,7 @@ class VersionsDao @Inject() (
     }
   }
 
-  private def validateApplication(guid: UUID): ValidatedNec[String, Application] = {
+  private def validateApplication(guid: UUID): ValidatedNec[String, InternalApplication] = {
     applicationsDao.findByGuid(Authorization.All, guid).toValidNec(s"Cannot find application where guid = '$guid'")
   }
 
@@ -343,7 +343,7 @@ class VersionsDao @Inject() (
 
         (
           validateApplication(version.applicationGuid).andThen { app =>
-            validateOrg(app.organization.guid).map { o => (o, app) }
+            validateOrg(app.organizationGuid).map { o => (o, app) }
           },
           version.original.toValidNec("Missing original"),
         ).mapN { case ((org, app), original) =>

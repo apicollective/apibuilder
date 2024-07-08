@@ -237,7 +237,7 @@ class OrganizationsDao @Inject() (
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,
-    application: Option[Application] = None,
+    applicationGuid: Option[UUID] = None,
     key: Option[String] = None,
     name: Option[String] = None,
     namespace: Option[String] = None,
@@ -257,10 +257,10 @@ class OrganizationsDao @Inject() (
           }
         ).bind("user_guid", userGuid).
         and(
-          application.map { _ =>
+          applicationGuid.map { _ =>
             "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
           }
-        ).bind("application_guid", application.map(_.guid)).
+        ).bind("application_guid", applicationGuid).
         and(
           name.map { _ =>
             "lower(trim(organizations.name)) = lower(trim({name}))"
