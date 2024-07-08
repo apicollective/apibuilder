@@ -43,7 +43,7 @@ class UsersDao @Inject() (
            users.gravatar_id,
            ${AuditsDao.query("users")}
       from users
-  """)
+  """).withDebugging()
 
   private val InsertQuery =
     """

@@ -11,8 +11,8 @@ import io.apibuilder.spec.v0.models.Service
 import javax.inject.Inject
 
 class VersionsModel @Inject()(
-                                        organizationsDao: OrganizationsDao,
                                         applicationsDao: ApplicationsDao,
+                                        organizationsDao: OrganizationsDao,
                                         serviceParser: ServiceParser,
                                         ) {
   def toModel(v: InternalVersion): Option[Version] = {
@@ -28,14 +28,14 @@ class VersionsModel @Inject()(
 
     val organizations = organizationsDao.findAll(
       Authorization.All,
-      guids = Some(applications.values.map(_.organization.guid).toSeq),
+      guids = Some(applications.values.map(_.organizationGuid).toSeq),
       limit = None
     ).map { o => o.guid -> o }.toMap
 
     versions.flatMap { v =>
       (
         applications.get(v.applicationGuid).flatMap { app =>
-          organizations.get(app.organization.guid).flatMap { org =>
+          organizations.get(app.organizationGuid).flatMap { org =>
             service(v).toOption.map { svc =>
               Version(
                 guid = v.guid,
