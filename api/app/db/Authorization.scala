@@ -73,14 +73,18 @@ object Authorization {
       |select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid
       |""".stripMargin
 
-  private def publicQuery(table: String): Query = {
-    Query(
-      s"select guid from $table"
-    ).equals("visibility", Visibility.Public.toString)
-  }
+  private val PublicApplicationsQuery: Query = Query(
+    """
+      |select a.guid
+      |  from applications a
+      |  join organizations o on o.guid = a.organization_guid and o.deleted_at is null and o.visibility = {visibility}
+      | where a.visibility = {visibility}
+      |""".stripMargin
+  ).bind("visibility", Visibility.Public.toString)
 
-  private val PublicApplicationsQuery: Query = publicQuery("applications")
-  private val PublicOrganizationsQuery: Query = publicQuery("organizations")
+  private val PublicOrganizationsQuery: Query = Query(
+    "select guid from organizations"
+  ).equals("visibility", Visibility.Public.toString)
 
   case object PublicOnly extends Authorization {
 
