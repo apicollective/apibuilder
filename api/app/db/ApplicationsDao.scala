@@ -325,7 +325,7 @@ class ApplicationsDao @Inject() (
 
     db.withConnection { implicit c =>
       val appQuery = authorization.applicationFilter(
-          filters.foldLeft(BaseQuery.withDebugging()) { case (q, f) => f.filter(q) },
+          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
           "guid"
         ).
         equals("guid", guid).
