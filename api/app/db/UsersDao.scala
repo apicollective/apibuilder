@@ -35,15 +35,10 @@ class UsersDao @Inject() (
 
   private val BaseQuery = Query(
     s"""
-    select users.guid,
-           users.email,
-           users.name,
-           users.nickname,
-           users.avatar_url,
-           users.gravatar_id,
+    select guid, email, name, nickname, avatar_url, gravatar_id,
            ${AuditsDao.query("users")}
       from users
-  """).withDebugging()
+  """)
 
   private val InsertQuery =
     """
@@ -258,19 +253,19 @@ class UsersDao @Inject() (
 
     db.withConnection { implicit c =>
       BaseQuery.
-        equals("users.guid", guid).
-        optionalIn("users.guid", guids).
+        equals("guid", guid).
+        optionalIn("guid", guids).
         and(
-          email.map { _ => "users.email = trim(lower({email}))" }
+          email.map { _ => "email = trim(lower({email}))" }
         ).bind("email", email).
         and(
-          nickname.map { _ => "users.nickname = trim(lower({nickname}))" }
+          nickname.map { _ => "nickname = trim(lower({nickname}))" }
         ).bind("nickname", nickname).
         and(
-          sessionId.map { _ => "users.guid = (select user_guid from sessions where id = {session_id})" }
+          sessionId.map { _ => "guid = (select user_guid from sessions where id = {session_id})" }
         ).bind("session_id", sessionId).
         and(
-          token.map { _ => "users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
+          token.map { _ => "guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
         ).bind("token", token).
         and(isDeleted.map(Filters.isDeleted("users", _))).
         limit(1).
