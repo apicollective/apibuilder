@@ -21,7 +21,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     nameOption: Option[String] = None,
     org: Organization = testOrg,
     visibility: Visibility = Visibility.Organization
-  ): Application = {
+  ): InternalApplication = {
     val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
     applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(n), limit = Some(1)).headOption.getOrElse {
       val applicationForm = ApplicationForm(
@@ -33,7 +33,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     }
   }
 
-  private def findByKey(org: Organization, key: String): Option[Application] = {
+  private def findByKey(org: Organization, key: String): Option[InternalApplication] = {
     applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = Some(1)).headOption
   }
 
@@ -97,7 +97,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
   "update" must {
 
-    def toForm(app: Application): ApplicationForm = {
+    def toForm(app: InternalApplication): ApplicationForm = {
       ApplicationForm(
         name = app.name,
         key = Some(app.key),

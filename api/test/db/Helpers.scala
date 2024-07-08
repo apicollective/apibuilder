@@ -83,7 +83,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createApplication(
     org: Organization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
-  ): Application = {
+  ): InternalApplication = {
     applicationsDao.create(testUser, org, form)
   }
 
@@ -110,7 +110,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def upsertApplicationByOrganizationAndKey(
     org: Organization,
     key: String,
-  ): io.apibuilder.api.v0.models.Application = {
+  ): InternalApplication = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(
       Authorization.All, org.key, key,
     ).getOrElse {
@@ -131,7 +131,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createApplicationByKey(
     org: Organization = testOrg,
     key: String = "test-" + UUID.randomUUID.toString,
-  ): io.apibuilder.api.v0.models.Application = {
+  ): InternalApplication = {
     createApplication(
       org = org,
       form = createApplicationForm().copy(key = Some(key))
@@ -139,7 +139,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createVersion(
-    application: Application = createApplication(),
+    application: InternalApplication = createApplication(),
     version: String = "1.0.0",
     original: Original = createOriginal(),
     service: Option[spec.Service] = None
@@ -190,20 +190,23 @@ trait Helpers extends util.Daos with RandomHelpers {
     subscriptionsDao.create(testUser, form)
   }
 
-  def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(
-    info = spec.Info(contact = None, license = None),
-    name = app.name,
-    organization = spec.Organization(key = app.organization.key),
-    application = spec.Application(key = app.key),
-    namespace = "test." + app.key,
-    version = "0.0.1-dev",
-    headers = Nil,
-    imports = Nil,
-    enums = Nil,
-    models = Nil,
-    unions = Nil,
-    resources = Nil
-  )
+  def createService(app: InternalApplication): spec.Service = {
+    val org = organizationsDao.findByGuid(Authorization.All, app.organizationGuid).get
+    spec.Service(
+      info = spec.Info(contact = None, license = None),
+      name = app.name,
+      organization = spec.Organization(key = org.key),
+      application = spec.Application(key = app.key),
+      namespace = "test." + app.key,
+      version = "0.0.1-dev",
+      headers = Nil,
+      imports = Nil,
+      enums = Nil,
+      models = Nil,
+      unions = Nil,
+      resources = Nil
+    )
+  }
 
   def createOriginal(svc: spec.Service): io.apibuilder.api.v0.models.Original = {
     createOriginal(name = svc.name)
