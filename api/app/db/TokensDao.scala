@@ -12,7 +12,7 @@ import javax.inject.{Inject, Singleton}
 
 case class InternalToken(
                    guid: UUID,
-                   description: String,
+                   description: Option[String],
                    userGuid: UUID,
                    audit: Audit
                    ) {
@@ -133,7 +133,7 @@ class TokensDao @Inject() (
     import org.joda.time.DateTime
 
     SqlParser.get[UUID]("guid") ~
-      SqlParser.str("description") ~
+      SqlParser.str("description").? ~
       SqlParser.get[DateTime]("created_at") ~
       SqlParser.get[UUID]("created_by_guid") ~
       SqlParser.get[DateTime]("updated_at") ~
