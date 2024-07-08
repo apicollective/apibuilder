@@ -139,7 +139,7 @@ class GeneratorsDao @Inject() (
   }
 
   def softDeleteAllByServiceGuid(c: java.sql.Connection, deletedBy: User, serviceGuid: UUID): Unit = {
-    SoftDeleteByKeyQuery
+    SoftDeleteByServiceGuidQuery
       .bind("deleted_by_guid", deletedBy.guid)
       .bind("service_guid", serviceGuid)
       .anormSql().execute()(c)
