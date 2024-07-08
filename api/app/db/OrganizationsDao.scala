@@ -247,18 +247,18 @@ class OrganizationsDao @Inject() (
     offset: Long = 0
   ): Seq[Organization] = {
     db.withConnection { implicit c =>
-      (authorization.organizationFilter(BaseQuery, "guid").
-        equals("guid", guid).
-        optionalIn("guid", guids).
+      (authorization.organizationFilter(BaseQuery, "organizations.guid").
+        equals("organizations.guid", guid).
+        optionalIn("organizations.guid", guids).
         equals("key", key).
         and(
           userGuid.map { _ =>
-            "guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
+            "organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
           }
         ).bind("user_guid", userGuid).
         and(
           applicationGuid.map { _ =>
-            "guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
+            "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
           }
         ).bind("application_guid", applicationGuid).
         and(
