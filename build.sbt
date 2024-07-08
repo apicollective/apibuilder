@@ -118,7 +118,7 @@ lazy val api = project
       "org.postgresql"    %  "postgresql"     % "42.7.3",
       "org.mindrot"       %  "jbcrypt"        % "0.4",
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
-      "io.flow"           %% "lib-postgresql-play-play28" % "0.5.53",
+      "com.github.mbryzek" % "lib-query" % "0.0.2",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1" % Test
     ),

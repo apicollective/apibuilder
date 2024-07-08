@@ -38,10 +38,11 @@ class MembershipsDao @Inject() (
   private val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")},
            memberships.organization_guid,
-           memberships.user_guid
+           memberships.user_guid,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")}
       from memberships
+      join users on users.guid = memberships.user_guid
   """)
 
   def upsert(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
@@ -190,6 +191,7 @@ class MembershipsDao @Inject() (
     // TODO Implement authorization
     db.withConnection { implicit c =>
       BaseQuery.
+        withDebugging().
         equals("memberships.guid", guid).
         equals("memberships.organization_guid", organizationGuid).
         equals("memberships.user_guid", userGuid).

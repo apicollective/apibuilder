@@ -17,6 +17,7 @@ class ItemsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
     content: String = "test"
   ): Item = {
     val app = createApplication(org = org)
+    println(s"Created app: ${app.key}")
     itemsDao.upsert(
       guid = guid,
       detail = ApplicationSummary(

@@ -52,7 +52,7 @@ class ApplicationsDao @Inject() (
            ) as last_updated_at
       from applications
     """
-  ).withDebugging()
+  )
 
   private val InsertQuery =
     """
