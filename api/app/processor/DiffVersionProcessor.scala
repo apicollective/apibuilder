@@ -116,7 +116,7 @@ class DiffVersionProcessor @Inject()(
     }
 
     applicationsDao.findAll(Authorization.All, version = Some(version), limit = Some(1)).foreach { application =>
-      organizationsDao.findAll(Authorization.All, application = Some(application), limit = Some(1)).foreach { org =>
+      organizationsDao.findAll(Authorization.All, applicationGuid = Some(application.guid), limit = Some(1)).foreach { org =>
         emails.deliver(
           context = Emails.Context.Application(application),
           org = org,
@@ -126,7 +126,7 @@ class DiffVersionProcessor @Inject()(
         ) { subscription =>
           watchesDao.findAll(
             Authorization.All,
-            application = Some(application),
+            applicationGuid = Some(application.guid),
             userGuid = Some(subscription.user.guid),
             limit = 1
           ).nonEmpty

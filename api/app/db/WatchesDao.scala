@@ -148,7 +148,7 @@ class WatchesDao @Inject() (
     authorization: Authorization,
     guid: Option[UUID] = None,
     organizationKey: Option[String] = None,
-    application: Option[Application] = None,
+    applicationGuid: Option[UUID] = None,
     applicationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -159,7 +159,7 @@ class WatchesDao @Inject() (
       authorization.applicationFilter(BaseQuery).
         equals("watches.guid", guid).
         equals("organizations.key", organizationKey).
-        equals("watches.application_guid", application.map(_.guid)).
+        equals("watches.application_guid", applicationGuid).
         equals("applications.key", applicationKey).
         equals("watches.user_guid", userGuid).
         and(isDeleted.map(Filters.isDeleted("watches", _))).

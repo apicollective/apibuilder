@@ -1,6 +1,6 @@
 package lib
 
-import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
+import db.{ApplicationsDao, Authorization, InternalApplication, MembershipsDao, SubscriptionsDao}
 import io.apibuilder.api.v0.models._
 import models.SubscriptionModel
 import play.api.Logging
@@ -22,7 +22,7 @@ object Emails {
     */
   sealed trait Context
   object Context {
-    case class Application(application: io.apibuilder.api.v0.models.Application) extends Context
+    case class Application(application: InternalApplication) extends Context
     case object OrganizationAdmin extends Context
     case object OrganizationMember extends Context
   }
