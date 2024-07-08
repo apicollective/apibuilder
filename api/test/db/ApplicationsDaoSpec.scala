@@ -141,10 +141,8 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     lazy val publicApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
     lazy val privateApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-private", visibility = Visibility.Organization))
 
-    lazy val publicApplicationInPublicOrg = {
-      val publicOrg = createOrganization(user, Some("Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
-      applicationsDao.create(user, publicOrg, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
-    }
+    lazy val publicOrg = createOrganization(user, Some("Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
+    lazy val publicApplicationInPublicOrg = applicationsDao.create(user, publicOrg, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
 
     def initialize(): Unit = {
       publicApplication
@@ -244,10 +242,12 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
         "sees only the public application" in {
           initialize()
-          val guids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(org.key), limit = None).map(_.guid)
-          guids.contains(publicApplication.guid) must be(false)   // org is privatee
-          guids.contains(privateApplication.guid) must be(false)  // app is private
-          guids.contains(publicApplicationInPublicOrg.guid) mustBe(true)
+          val privateOrgGuids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(org.key), limit = None).map(_.guid)
+          privateOrgGuids.contains(publicApplication.guid) must be(false)   // org is privatee
+          privateOrgGuids.contains(privateApplication.guid) must be(false)  // app is private
+
+          val publicOrgGuids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(publicOrg.key), limit = None).map(_.guid)
+          publicOrgGuids.contains(publicApplicationInPublicOrg.guid) mustBe(true)
         }
 
       }
