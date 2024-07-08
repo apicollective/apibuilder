@@ -12,7 +12,7 @@ import javax.inject.{Inject, Singleton}
 
 case class ValidatedWatchForm(
   org: Organization,
-  application: Application,
+  application: InternalApplication,
   form: WatchForm
 )
 
@@ -92,7 +92,7 @@ class WatchesDao @Inject() (
     }
 
     val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
-    val application: Option[Application] = org.flatMap { o =>
+    val application: Option[InternalApplication] = org.flatMap { o =>
       applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
     }
 
