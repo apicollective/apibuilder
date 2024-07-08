@@ -39,12 +39,12 @@ class IndexApplicationProcessorSpec extends PlaySpec with GuiceOneAppPerSuite wi
     }
 
     "on create" in {
-      val app = createApplication()
+      val app = createApplication(testOrg)
       indexApplication(app.guid)
 
       itemsDao.findAll(Authorization.All, 
         guid = Some(app.guid)
-      ).map(_.label) must be(Seq(s"${app.organization.key}/${app.key}"))
+      ).map(_.label) must be(Seq(s"${testOrg.key}/${app.key}"))
     }
 
     "on update" in {

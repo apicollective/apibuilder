@@ -14,7 +14,7 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
   "with an application" must {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    lazy val application: io.apibuilder.api.v0.models.Application = createApplicationByKey(key = applicationKey)
+    lazy val application: InternalApplication = createApplicationByKey(key = applicationKey)
     lazy val service = createService(application)
 
     "create" in {
@@ -61,13 +61,13 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
   }
 
   "can parse original" in {
-    val app = createApplicationByKey()
+    val app = createApplicationByKey(testOrg)
     val service = createService(app)
     val original = createOriginal(service)
-    val version = versionsDao.create(testUser, app, "1.0.2", original, service)
+    versionsDao.create(testUser, app, "1.0.2", original, service)
 
     val serviceConfig = ServiceConfiguration(
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       orgNamespace = testOrg.namespace,
       version = "0.0.2"
     )
@@ -105,7 +105,7 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
   }
 
   "findVersion" in {
-    val app = createApplicationByKey()
+    val app = createApplicationByKey(testOrg)
     val service = createService(app)
 
     //create 1.0.0 to 3.9.9
@@ -114,7 +114,7 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
     //Latest
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "latest"
     ).map(_.version) must be(Some("3.9.9"))
@@ -123,49 +123,49 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~1.0"
     ).map(_.version) must be(Some("1.9.9"))
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~1.2"
     ).map(_.version) must be(Some("1.9.9"))
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~1.2.3"
     ).map(_.version) must be(Some("1.2.9"))
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~2.0"
     ).map(_.version) must be(Some("2.9.9"))
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~1"
     ).map(_.version) must be(Some("3.9.9")) //collapses to 'latest'
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~4.2"
     ).map(_.version) must be(None)
 
     versionsDao.findVersion(
       Authorization.All,
-      orgKey = app.organization.key,
+      orgKey = testOrg.key,
       applicationKey = app.key,
       version = "~4.1.3"
     ).map(_.version) must be(None)
