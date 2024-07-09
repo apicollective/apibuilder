@@ -155,6 +155,12 @@ class LoginController @Inject() (
 object LoginController {
 
   case class LoginData(email: String, password: String, returnUrl: Option[String])
+  object LoginData {
+    def unapply(d: LoginData): Option[(String, String, Option[String])] = {
+      Some(d.email, d.password, d.returnUrl)
+    }
+  }
+
   val loginForm: Form[LoginData] = Form(
     mapping(
       "email" -> nonEmptyText,
@@ -164,6 +170,11 @@ object LoginController {
   )
 
   case class RegisterData(name: Option[String], email: String, password: String, passwordVerify: String, returnUrl: Option[String])
+  object RegisterData {
+    def unapply(d: RegisterData): Option[(Option[String], String, String, String, Option[String])] = {
+      Some((d.name, d.email, d.password, d.passwordVerify, d.returnUrl))
+    }
+  }
   val registerForm: Form[RegisterData] = Form(
     mapping(
       "name" -> optional(text),
@@ -177,14 +188,21 @@ object LoginController {
   )
 
   case class ForgotPasswordData(email: String)
-  val forgotPasswordForm: Form[ForgotPasswordData] = Form(
+  object ForgotPasswordData {
+    def unapply(d: ForgotPasswordData): Option[String] = Some(d.email)
+  }
+  private val forgotPasswordForm: Form[ForgotPasswordData] = Form(
     mapping(
       "email" -> nonEmptyText
     )(ForgotPasswordData.apply)(ForgotPasswordData.unapply)
   )
 
   case class ResetPasswordData(password: String, passwordVerify: String)
-  val resetPasswordForm: Form[ResetPasswordData] = Form(
+  object ResetPasswordData {
+    def unapply(d: ResetPasswordData): Option[(String, String)] = Some((d.password, d.passwordVerify))
+  }
+
+  private val resetPasswordForm: Form[ResetPasswordData] = Form(
     mapping(
       "password" -> nonEmptyText(minLength=5),
       "password_verify" -> nonEmptyText

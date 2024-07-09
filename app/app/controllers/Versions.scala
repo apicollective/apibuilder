@@ -362,6 +362,12 @@ object Versions {
     originalType: Option[String]
   )
 
+  object UploadData {
+    def unapply(d: UploadData): Option[(String, String, Option[String])] = {
+      Some((d.version, d.visibility, d.originalType))
+    }
+  }
+
   private[controllers] val uploadForm = Form(
     mapping(
       "version" -> nonEmptyText,

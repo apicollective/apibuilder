@@ -114,6 +114,10 @@ object OrganizationAttributesController {
     value: Option[String]
   )
 
+  object FormData {
+    def unapply(d: FormData): Option[Option[String]] = Some(d.value)
+  }
+
   private[controllers] val formData = Form(
     mapping(
       "value" -> optional(text)

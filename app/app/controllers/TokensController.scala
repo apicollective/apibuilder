@@ -112,6 +112,9 @@ object TokensController {
   case class TokenData(
     description: Option[String]
   )
+  object TokenData {
+    def unapply(d: TokenData): Option[Option[String]] = Some(d.description)
+  }
 
   private[controllers] val tokenForm = Form(
     mapping(
