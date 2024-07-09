@@ -54,9 +54,9 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
     "post payload containing imported services to generator" in {
 
       val randomPort = RandomPortFinder.getRandomPort
-      val generatorWithService = createGenerator(createGeneratorService(createGeneratorServiceForm(s"http://localhost:$randomPort")))
+      val generator = createGenerator(createGeneratorService(createGeneratorServiceForm(s"http://localhost:$randomPort")))
 
-      val generatorKey = generatorWithService.generator.key
+      val generatorKey = generator.key
 
       val wireMockServer = new WireMockServer(randomPort)
 
@@ -104,7 +104,7 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
 
         val result = await(resultF)
         result.files mustEqual mockGeneratorFileList
-        result.generator mustEqual generatorWithService
+        result.generator.generator.key mustEqual generator.key
 
         val wireMockRequestList = wireMockServer.findRequestsMatching(RequestPattern.ANYTHING).getRequests
         val postRequestBodyString = Try(wireMockRequestList.get(0))

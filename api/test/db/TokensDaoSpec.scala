@@ -12,7 +12,7 @@ class TokensDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       user,
       TokenForm(userGuid = user.guid)
     )
-    token.user.guid must be(user.guid)
+    token.userGuid must be(user.guid)
     token.maskedToken must be("XXX-XXX-XXX")
 
     val clear = tokensDao.findCleartextByGuid(Authorization.All, token.guid).get

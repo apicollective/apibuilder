@@ -1,14 +1,14 @@
 package db
 
-import io.apibuilder.api.v0.models.{Attribute, AttributeSummary, AttributeValue, AttributeValueForm, Organization, User}
-import io.apibuilder.common.v0.models.Audit
+import anorm._
+import io.apibuilder.api.v0.models._
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.Validation
-import anorm._
-import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.json._
+
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class OrganizationAttributeValuesDao @Inject() (
@@ -60,9 +60,10 @@ class OrganizationAttributeValuesDao @Inject() (
       findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
         case None => Nil
         case Some(found) => {
-          Some(found.guid) == existing.map(_.guid) match {
-            case true => Nil
-            case false => Seq("Value for this attribute already exists")
+          if (existing.map(_.guid).contains(found.guid)) {
+            Nil
+          } else {
+            Seq("Value for this attribute already exists")
           }
         }
       }
@@ -147,9 +148,34 @@ class OrganizationAttributeValuesDao @Inject() (
         orderBy("lower(organization_attribute_values.value), organization_attribute_values.created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.AttributeValue.parser().*
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[AttributeValue] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("value") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") ~
+      SqlParser.get[UUID]("attribute_guid") ~
+      SqlParser.str("attribute_name") map {
+      case guid ~ value ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ attributeGuid ~ attributeName => {
+        AttributeValue(
+          guid = guid,
+          attribute = AttributeSummary(guid = attributeGuid, name = attributeName),
+          value = value,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
         )
+      }
     }
   }
 

@@ -2,6 +2,7 @@ package db
 
 import io.apibuilder.api.v0.models.Visibility
 import io.flow.postgresql.Query
+
 import java.util.UUID
 
 sealed trait Authorization {
@@ -11,11 +12,11 @@ sealed trait Authorization {
     * organizations to those that are able to be seen by this
     * authorization.
     * 
-    * @param organizationsTableName e.g "organizations"
+    * @param organizationGuidColumnName e.g "organizations.guid"
     */
   def organizationFilter(
     query: Query,
-    organizationsTableName: String = "organizations"
+    organizationGuidColumnName: String
   ): Query
 
   /**
@@ -25,8 +26,7 @@ sealed trait Authorization {
     */
   def applicationFilter(
     query: Query,
-    applicationsTableName: String = "applications",
-    organizationsTableName: String = "organizations"
+    applicationGuidColumnName: String
   ): Query
 
   /**
@@ -48,47 +48,45 @@ sealed trait Authorization {
     */
   def subscriptionFilter(
     query: Query,
-    subscriptionsTableName: String = "subscriptions",
-    organizationsTableName: String = "organizations"
+    subscriptionsTableName: String
   ): Query
-
-  /**
-    * Generates a sql filter to restrict the returned set of generator
-    * services to those that this user is authorized to access. At the
-    * moment this is a placeholder as we currently do NOT restrict access
-    * to code generators.
-    * 
-    * @param generatorServicessTableName e.g "services"
-    */
-  def generatorServicesFilter(
-    query: Query,
-    generatorServicessTableName: String = "services"
-  ): Query = query
 
 }
 
 object Authorization {
 
-  private val OrgsByUserQuery =
-    s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
+  private val OrgsByUserQuery: String =
+    s"""
+      |select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid
+      |""".stripMargin
 
-  private val PublicApplicationsQuery = s"%s.visibility = '${Visibility.Public.toString}'"
+  private val PublicApplicationsQuery: Query = Query(
+    """
+      |select a.guid
+      |  from applications a
+      |  join organizations o on o.guid = a.organization_guid and o.deleted_at is null and o.visibility = {visibility}
+      | where a.visibility = {visibility}
+      |""".stripMargin
+  ).bind("visibility", Visibility.Public.toString)
+
+  private val PublicOrganizationsQuery: Query = Query(
+    "select guid from organizations"
+  ).equals("visibility", Visibility.Public.toString)
 
   case object PublicOnly extends Authorization {
 
     override def organizationFilter(
       query: Query,
-      organizationsTableName: String = "organizations"
-    ) = {
-      query.equals(s"$organizationsTableName.visibility", Visibility.Public.toString)
+      organizationGuidColumnName: String
+    ): Query = {
+      query.in(organizationGuidColumnName, PublicOrganizationsQuery)
     }
 
     override def applicationFilter(
       query: Query,
-      applicationsTableName: String = "applications",
-      organizationsTableName: String = "organizations"
-    ) = {
-      query.equals(s"$applicationsTableName.visibility", Visibility.Public.toString)
+      applicationGuidColumnName: String
+    ): Query = {
+      query.in(applicationGuidColumnName, PublicApplicationsQuery)
     }
 
     override def tokenFilter(
@@ -98,8 +96,7 @@ object Authorization {
 
     override def subscriptionFilter(
       query: Query,
-      subscriptionsTableName: String = "subscriptions",
-      organizationsTableName: String = "organizations"
+      subscriptionsTableName: String
     ): Query = query.and("false")
 
   }
@@ -108,14 +105,13 @@ object Authorization {
 
     override def organizationFilter(
       query: Query,
-      organizationsTableName: String = "organizations"
-    ) = query
+      organizationGuidColumnName: String
+    ): Query = query
 
     override def applicationFilter(
       query: Query,
-      applicationsTableName: String = "applications",
-      organizationsTableName: String = "organizations"
-    ) = query
+      applicationGuidColumnName: String
+    ): Query = query
 
     override def tokenFilter(
       query: Query,
@@ -124,8 +120,7 @@ object Authorization {
 
     override def subscriptionFilter(
       query: Query,
-      subscriptionsTableName: String = "subscriptions",
-      organizationsTableName: String = "organizations"
+      subscriptionsTableName: String
     ): Query = query
 
   }
@@ -134,26 +129,32 @@ object Authorization {
 
     override def organizationFilter(
       query: Query,
-      organizationsTableName: String = "organizations"
-    ) = {
-      query.or(
-        List(
-          s"($organizationsTableName.visibility = '${Visibility.Public}'",
-          s"$organizationsTableName.guid in ($OrgsByUserQuery))"
+      organizationGuidColumnName: String
+    ): Query = {
+      query.in(organizationGuidColumnName,
+        Query(s"""
+          |${PublicOrganizationsQuery.interpolate()}
+          |UNION ALL
+          |$OrgsByUserQuery
+          |""".stripMargin
         )
       ).bind("authorization_user_guid", userGuid)
     }
 
     override def applicationFilter(
       query: Query,
-      applicationsTableName: String = "applications",
-      organizationsTableName: String = "organizations"
-    ) = {
-      organizationFilter(query, organizationsTableName).or(
-        List(
-          PublicApplicationsQuery.format(applicationsTableName),
-          s"$organizationsTableName.guid in ($OrgsByUserQuery)"
-        )
+      applicationGuidColumnName: String
+    ): Query = {
+      query.in(
+        applicationGuidColumnName,
+        Query(s"""
+          |${PublicApplicationsQuery.interpolate()}
+          |UNION ALL
+          |select guid
+          |  from applications
+          | where organization_guid in ($OrgsByUserQuery)
+          """.stripMargin
+        ).bind("authorization_user_guid", userGuid)
       )
     }
 
@@ -166,14 +167,11 @@ object Authorization {
 
     override def subscriptionFilter(
       query: Query,
-      subscriptionsTableName: String = "subscriptions",
-      organizationsTableName: String = "organizations"
+      subscriptionsTableName: String
     ): Query = {
-      val orgsFilter = s"$organizationsTableName.guid in ($OrgsByUserQuery)"
-      query.and(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or $orgsFilter)").
+      query.and(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or ${subscriptionsTableName}.organization_guid in (${OrgsByUserQuery}))").
         bind("authorization_user_guid", userGuid)
     }
-
   }
 
   def apply(userGuid: Option[UUID]): Authorization = {

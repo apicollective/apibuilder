@@ -1,15 +1,31 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{AppSortBy, Application, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
+import cats.data.ValidatedNec
+import cats.implicits._
+import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
+import org.joda.time.DateTime
 import play.api.db._
 import processor.EmailProcessorQueue
+import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
+
+case class InternalApplication(
+                              guid: UUID,
+                              name: String,
+                              key: String,
+                              description: Option[String],
+                              visibility: Visibility,
+                              organizationGuid: UUID,
+                              lastUpdatedAt: DateTime,
+                              audit: Audit
+                              )
 
 @Singleton
 class ApplicationsDao @Inject() (
@@ -23,11 +39,8 @@ class ApplicationsDao @Inject() (
 
   private val BaseQuery = Query(
     s"""
-    select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
+    select guid, name, key, description, visibility, organization_guid,
            ${AuditsDao.query("applications")},
-           organizations.guid as organization_guid,
-           organizations.key as organization_key,
-           ${AuditsDao.queryWithAlias("organizations", "organization")},
            coalesce(
              (select versions.created_at
                from versions
@@ -38,7 +51,6 @@ class ApplicationsDao @Inject() (
              applications.updated_at
            ) as last_updated_at
       from applications
-      join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
     """
   )
 
@@ -84,39 +96,39 @@ class ApplicationsDao @Inject() (
      where guid = {guid}::uuid
   """
 
-  def validateMove(
-    authorization: Authorization,
-    app: Application,
-    form: MoveForm
-  ): Seq[Error] = {
-    val orgErrors = organizationsDao.findByKey(authorization, form.orgKey) match {
-      case None => Seq(s"Organization[${form.orgKey}] not found")
-      case Some(_) => Nil
-    }
+  private def validateOrganizationByKey(auth: Authorization, key: String): ValidatedNec[Error, Organization] = {
+    organizationsDao.findByKey(auth, key).toValidNec(Validation.singleError(s"Organization[$key] not found"))
+  }
 
-    val appErrors = findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
-      case None => Nil
-      case Some(existing) => {
-        if (existing.guid == app.guid) {
-          Nil
-        } else {
-          Seq(s"Organization[${form.orgKey}] already has an application[${app.key}]]")
+
+  private def validateMove(
+    authorization: Authorization,
+    app: InternalApplication,
+    form: MoveForm
+  ): ValidatedNec[Error, Organization] = {
+    validateOrganizationByKey(authorization, form.orgKey).andThen { org =>
+      findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, app.key) match {
+        case None => org.validNec
+        case Some(existing) => {
+          if (existing.guid == app.guid) {
+            org.validNec
+          } else {
+            Validation.singleError(s"Organization[${form.orgKey}] already has an application[${app.key}]]").invalidNec
+          }
         }
       }
     }
-
-    Validation.errors(orgErrors ++ appErrors)
   }
 
   def validate(
     org: Organization,
     form: ApplicationForm,
-    existing: Option[Application] = None
+    existing: Option[InternalApplication] = None
   ): Seq[Error] = {
     val nameErrors = findByOrganizationAndName(Authorization.All, org, form.name) match {
       case None => Nil
-      case Some(application: Application) => {
-        if (existing.map(_.guid).contains(application.guid)) {
+      case Some(app) => {
+        if (existing.map(_.guid).contains(app.guid)) {
           Nil
         } else {
           Seq("Application with this name already exists")
@@ -131,8 +143,8 @@ class ApplicationsDao @Inject() (
           case Nil => {
             findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) match {
               case None => Nil
-              case Some(application: Application) => {
-                if (existing.map(_.guid).contains(application.guid)) {
+              case Some(app) => {
+                if (existing.map(_.guid).contains(app.guid)) {
                   Nil
                 } else {
                   Seq("Application with this key already exists")
@@ -155,11 +167,11 @@ class ApplicationsDao @Inject() (
 
   def update(
     updatedBy: User,
-    app: Application,
+    app: InternalApplication,
     form: ApplicationForm
-  ): Application = {
-    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organization.guid).getOrElse {
-      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.organization.guid}]")
+  ): InternalApplication = {
+    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organizationGuid).getOrElse {
+      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.organizationGuid}]")
     }
     val errors = validate(org, form, Some(app))
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
@@ -181,49 +193,43 @@ class ApplicationsDao @Inject() (
 
   def move(
     updatedBy: User,
-    app: Application,
+    app: InternalApplication,
     form: MoveForm
-  ): Application = {
-    val errors = validateMove(Authorization.User(updatedBy.guid), app, form)
-    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+  ): ValidatedNec[Error, InternalApplication] = {
+    validateMove(Authorization.User(updatedBy.guid), app, form).map { newOrg =>
+      if (newOrg.guid == app.organizationGuid) {
+        // No-op
+        app
 
-    if (app.organization.key == form.orgKey) {
-      // No-op
-      app
+      } else {
+        withTasks(app.guid, { implicit c =>
+          SQL(InsertMoveQuery).on(
+            "guid" -> UUID.randomUUID,
+            "application_guid" -> app.guid,
+            "from_organization_guid" -> app.organizationGuid,
+            "to_organization_guid" -> newOrg.guid,
+            "created_by_guid" -> updatedBy.guid
+          ).execute()
 
-    } else {
-      organizationsDao.findByKey(Authorization.All, form.orgKey) match {
-        case None => sys.error(s"Could not find organization with key[${form.orgKey}]")
-        case Some(newOrg) => {
-          withTasks(app.guid, { implicit c =>
-            SQL(InsertMoveQuery).on(
-              "guid" -> UUID.randomUUID,
-              "application_guid" -> app.guid,
-              "from_organization_guid" -> app.organization.guid,
-              "to_organization_guid" -> newOrg.guid,
-              "created_by_guid" -> updatedBy.guid
-            ).execute()
+          SQL(UpdateOrganizationQuery).on(
+            "guid" -> app.guid,
+            "org_guid" -> newOrg.guid,
+            "updated_by_guid" -> updatedBy.guid
+          ).execute()
+        })
 
-            SQL(UpdateOrganizationQuery).on(
-              "guid" -> app.guid,
-              "org_guid" -> newOrg.guid,
-              "updated_by_guid" -> updatedBy.guid
-            ).execute()
-          })
+        findByGuid(Authorization.All, app.guid).getOrElse {
+          sys.error("Error moving application")
         }
-      }
-
-      findByGuid(Authorization.All, app.guid).getOrElse {
-        sys.error("Error updating visibility")
       }
     }
   }
 
   def setVisibility(
     updatedBy: User,
-    app: Application,
+    app: InternalApplication,
     visibility: Visibility
-  ): Application = {
+  ): InternalApplication = {
     assert(
       canUserUpdate(updatedBy, app),
       "User[${user.guid}] not authorized to update app[${app.key}]"
@@ -246,7 +252,7 @@ class ApplicationsDao @Inject() (
     createdBy: User,
     org: Organization,
     form: ApplicationForm
-  ): Application = {
+  ): InternalApplication = {
     val errors = validate(org, form)
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
@@ -267,64 +273,76 @@ class ApplicationsDao @Inject() (
       emailQueue.queueWithConnection(c, EmailDataApplicationCreated(guid))
     })
 
-    findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
+    findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = Some(1)).headOption.getOrElse {
       sys.error("Failed to create application")
     }
   }
 
-  def softDelete(deletedBy: User, application: Application): Unit = {
+  def softDelete(deletedBy: User, application: InternalApplication): Unit = {
     withTasks(application.guid, { c =>
       dbHelpers.delete(c, deletedBy.guid, application.guid)
     })
   }
 
-  def canUserUpdate(user: User, app: Application): Boolean = {
-    findAll(Authorization.User(user.guid), key = Some(app.key)).nonEmpty
+  def canUserUpdate(user: User, app: InternalApplication): Boolean = {
+    findAll(Authorization.User(user.guid), key = Some(app.key), limit = Some(1)).nonEmpty
   }
 
-  private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[Application] = {
-    findAll(authorization, orgKey = Some(org.key), name = Some(name), limit = 1).headOption
+  private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[InternalApplication] = {
+    findAll(authorization, orgKey = Some(org.key), name = Some(name), limit = Some(1)).headOption
   }
 
-  def findByOrganizationKeyAndApplicationKey(authorization: Authorization, orgKey: String, applicationKey: String): Option[Application] = {
-    findAll(authorization, orgKey = Some(orgKey), key = Some(applicationKey), limit = 1).headOption
+  def findByOrganizationKeyAndApplicationKey(authorization: Authorization, orgKey: String, applicationKey: String): Option[InternalApplication] = {
+    findAll(authorization, orgKey = Some(orgKey), key = Some(applicationKey), limit = Some(1)).headOption
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Application] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalApplication] = {
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
     authorization: Authorization,
     orgKey: Option[String] = None,
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     name: Option[String] = None,
     key: Option[String] = None,
     version: Option[Version] = None,
     hasVersion: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0,
     sorting: Option[AppSortBy] = None,
     ordering: Option[SortOrder] = None
-  ): Seq[Application] = {
+  ): Seq[InternalApplication] = {
+    val filters = List(
+      new OptionalQueryFilter(orgKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("organization_guid", Query("select guid from organizations").equals("key", orgKey))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      val appQuery = authorization.applicationFilter(BaseQuery).
-        equals("applications.guid", guid).
-        equals("organizations.key", orgKey).
+      val appQuery = authorization.applicationFilter(
+          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
+          "guid"
+        ).
+        equals("guid", guid).
+        optionalIn("guid", guids).
         and(
           name.map { _ =>
-            "lower(trim(applications.name)) = lower(trim({name}))"
+            "lower(trim(name)) = lower(trim({name}))"
           }
         ).bind("name", name).
         and(
           key.map { _ =>
-            "applications.key = lower(trim({application_key}))"
+            "key = lower(trim({application_key}))"
           }
         ).bind("application_key", key).
         and(
           version.map { _ =>
-            "applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
+            "guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
           }
         ).bind("version_guid", version.map(_.guid.toString)).
         and(
@@ -338,19 +356,50 @@ class ApplicationsDao @Inject() (
           }
         ).
         and(isDeleted.map(Filters.isDeleted("applications", _))).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset)
       sorting.fold(appQuery) { sorting =>
         val sort = sorting match {
-          case AppSortBy.Visibility => "applications.visibility"
-          case AppSortBy.CreatedAt  => "applications.created_at"
-          case AppSortBy.UpdatedAt  => "last_updated_at"
-          case _                    => "applications.name"
+          case AppSortBy.Visibility => "visibility"
+          case AppSortBy.CreatedAt => "created_at"
+          case AppSortBy.UpdatedAt => "last_updated_at"
+          case _ => "name"
         }
         val ord = ordering.getOrElse(SortOrder.Asc).toString
         appQuery.orderBy(s"$sort $ord")
-      }.anormSql().as {
-        io.apibuilder.api.v0.anorm.parsers.Application.parser().*
+      }.as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[InternalApplication] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.str("name") ~
+      SqlParser.str("key") ~
+      SqlParser.str("visibility") ~
+      SqlParser.str("description").? ~
+      SqlParser.get[DateTime]("last_updated_at") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map { case guid ~ organizationGuid ~ name ~ key ~ visibility ~ description ~ lastUpdatedAt ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        InternalApplication(
+          guid = guid,
+          organizationGuid = organizationGuid,
+          name = name,
+          key = key,
+          visibility = Visibility(visibility),
+          description = description,
+          lastUpdatedAt = lastUpdatedAt,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
       }
     }
   }

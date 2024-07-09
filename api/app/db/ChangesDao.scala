@@ -1,25 +1,26 @@
 package db
 
-import io.apibuilder.api.v0.models.{Change, User, Version}
-import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
-import anorm._
 import anorm.JodaParameterMetaData._
-import javax.inject.{Inject, Singleton}
-
-import play.api.db._
-import java.util.UUID
-
+import anorm._
+import io.apibuilder.api.v0.models._
+import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.VersionTag
-import org.joda.time.DateTime
 import org.postgresql.util.PSQLException
+import play.api.db._
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success, Try}
 
 @Singleton
 class ChangesDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
+  private object DiffType {
+    val Breaking = "breaking"
+    val NonBreaking = "non_breaking"
+  }
 
   private val BaseQuery = Query(
     s"""
@@ -38,7 +39,6 @@ class ChangesDao @Inject() (
            from_version.version as from_version_version,
            to_version.guid::text as to_version_guid,
            to_version.version as to_version_version,
-           users.guid as changed_by_guid,
            users.nickname as changed_by_nickname
       from changes
       join applications on applications.guid = changes.application_guid and applications.deleted_at is null
@@ -74,8 +74,8 @@ class ChangesDao @Inject() (
 
     db.withTransaction { implicit c =>
       differences.map {
-        case d: DiffBreaking => ("breaking", d)
-        case d: DiffNonBreaking => ("non_breaking", d)
+        case d: DiffBreaking => (DiffType.Breaking, d)
+        case d: DiffNonBreaking => (DiffType.NonBreaking, d)
         case DiffUndefinedType(desc) => sys.error(s"Unrecognized difference type: $desc")
       }.distinct.foreach {
         case (differenceType, diff) => {
@@ -133,7 +133,7 @@ class ChangesDao @Inject() (
     offset: Long = 0
   ): Seq[Change] = {
     db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery, "applications.guid").
         equals("changes.guid", guid).
         equals("organizations.guid", organizationGuid).
         equals("organizations.key", organizationKey).
@@ -152,39 +152,53 @@ class ChangesDao @Inject() (
         orderBy("changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description)").
         limit(limit).
         offset(offset).
-        anormSql().as(
-        parser().*
-      )
+        as(parser.*)
     }
   }
 
-  private def parser(): RowParser[io.apibuilder.api.v0.models.Change] = {
+
+  private val parser: RowParser[Change] = {
+    import org.joda.time.DateTime
+
     SqlParser.get[UUID]("guid") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
-      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
-      io.apibuilder.api.v0.anorm.parsers.ChangeVersion.parserWithPrefix("from_version") ~
-      io.apibuilder.api.v0.anorm.parsers.ChangeVersion.parserWithPrefix("to_version") ~
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.str("organization_key") ~
+      SqlParser.get[UUID]("application_guid") ~
+      SqlParser.str("application_key") ~
+      SqlParser.get[UUID]("from_version_guid") ~
+      SqlParser.str("from_version_version") ~
+      SqlParser.get[UUID]("to_version_guid") ~
+      SqlParser.str("to_version_version") ~
       SqlParser.str("type") ~
       SqlParser.str("description") ~
       SqlParser.bool("is_material") ~
       SqlParser.get[DateTime]("changed_at") ~
-      io.apibuilder.api.v0.anorm.parsers.UserSummary.parserWithPrefix("changed_by") ~
-      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
-      case guid ~ organization ~ application ~ fromVersion ~ toVersion ~ diffType ~ diffDescription ~ diffIsMaterial ~ changedAt ~ changedBy ~ audit => {
-        io.apibuilder.api.v0.models.Change(
+      SqlParser.get[UUID]("changed_by_guid") ~
+      SqlParser.str("changed_by_nickname") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ organizationGuid ~ organizationKey ~ applicationGuid ~ applicationKey ~ fromVersionGuid ~ fromVersionVersion ~ toVersionGuid ~ toVersionVersion ~ typ ~ description ~ isMaterial ~ changedAt ~ changedByGuid ~ changedByNickname ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        Change(
           guid = guid,
-          organization = organization,
-          application = application,
-          fromVersion = fromVersion,
-          toVersion = toVersion,
-          diff = diffType match {
-            case "breaking" => DiffBreaking(description = diffDescription, isMaterial = diffIsMaterial)
-            case "non_breaking" => DiffNonBreaking(description = diffDescription, isMaterial = diffIsMaterial)
-            case other => sys.error(s"Unknown diff type[$other] for guid[$guid]")
+          organization = Reference(guid = organizationGuid, key = organizationKey),
+          application = Reference(guid = applicationGuid, key = applicationKey),
+          fromVersion = ChangeVersion(guid = fromVersionGuid, version = fromVersionVersion),
+          toVersion = ChangeVersion(guid = toVersionGuid, version = toVersionVersion),
+          diff = typ match {
+            case DiffType.Breaking => DiffBreaking(description = description, isMaterial = isMaterial)
+            case DiffType.NonBreaking => DiffNonBreaking(description = description, isMaterial = isMaterial)
+            case other => sys.error(s"Invalid diff type '$other'")
           },
           changedAt = changedAt,
-          changedBy = changedBy,
-          audit = audit
+          changedBy = UserSummary(guid = changedByGuid, nickname = changedByNickname),
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
         )
       }
     }

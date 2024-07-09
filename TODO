@@ -1,4 +1,4 @@
-      "org.webjars" % "bootstrap" % "3.4.1",
+"org.webjars" % "bootstrap" % "3.4.1",
       webjars
 
 Bindables with multiple services

@@ -7,7 +7,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class EmailVerificationConfirmationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  def emailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
+  private def emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao = injector.instanceOf[db.EmailVerificationConfirmationsDao]
 
   "upsert" in {
     val user = createRandomUser()

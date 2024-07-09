@@ -28,6 +28,10 @@ object Validation {
     Seq(Error(Unauthorized, message))
   }
 
+  def singleError(message: String): Error = {
+    Error(ErrorCode, message)
+  }
+
   def error(message: String): Seq[Error] = {
     errors(Seq(message))
   }

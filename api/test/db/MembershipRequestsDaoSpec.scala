@@ -2,6 +2,7 @@ package db
 
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
+import models.MembershipRequestsModel
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -11,6 +12,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
 
   private lazy val org: Organization = createOrganization()
   private lazy val member: User = upsertUser("gilt-member@bryzek.com")
+  private[this] def membershipRequestsModel: MembershipRequestsModel = app.injector.instanceOf[MembershipRequestsModel]
   
   "create member" in {
     val thisOrg = createOrganization()
@@ -19,14 +21,14 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     membershipsDao.isUserAdmin(member, thisOrg) must equal(false)
   
     val request = membershipRequestsDao.upsert(testUser, thisOrg, member, MembershipRole.Member)
-    request.organization.name must equal(thisOrg.name)
-    request.user must equal(member)
+    request.organizationGuid must equal(thisOrg.guid)
+    request.userGuid must equal(member.guid)
     request.role must equal(MembershipRole.Member)
   
     membershipsDao.isUserMember(member, thisOrg) must equal(false)
     membershipsDao.isUserAdmin(member, thisOrg) must equal(false)
   
-    membershipRequestsDao.accept(testUser, request)
+    membershipRequestsDao.accept(testUser, membershipRequestsModel.toModel(request).value)
     membershipsDao.isUserMember(member, thisOrg) must equal(true)
     membershipsDao.isUserAdmin(member, thisOrg) must equal(false)
   }
@@ -38,14 +40,14 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     membershipsDao.isUserAdmin(member, thisOrg) must equal(false)
   
     val request = membershipRequestsDao.upsert(testUser, thisOrg, member, MembershipRole.Admin)
-    request.organization.name must equal(thisOrg.name)
-    request.user must equal(member)
+    request.organizationGuid must equal(thisOrg.guid)
+    request.userGuid must equal(member.guid)
     request.role must equal(MembershipRole.Admin)
   
     membershipsDao.isUserMember(member, thisOrg) must equal(false)
     membershipsDao.isUserAdmin(member, thisOrg) must equal(false)
   
-    membershipRequestsDao.accept(testUser, request)
+    membershipRequestsDao.accept(testUser, membershipRequestsModel.toModel(request).value)
     membershipsDao.isUserMember(member, thisOrg) must equal(true)
     membershipsDao.isUserAdmin(member, thisOrg) must equal(true)
   }
@@ -56,7 +58,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
   }
   
   "findAll for organization guid" in {
-    val otherOrg = createOrganization()
+    createOrganization() // create another org for testing
     val newOrg = createOrganization()
     val request = membershipRequestsDao.upsert(testUser, newOrg, member, MembershipRole.Admin)
     membershipRequestsDao.findAll(Authorization.All, organizationGuid = Some(newOrg.guid)) must equal(
@@ -90,7 +92,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
   
   "softDelete" in {
     val request = membershipRequestsDao.upsert(testUser, org, member, MembershipRole.Admin)
-    membershipRequestsDao.softDelete(testUser, request)
+    membershipRequestsDao.softDelete(testUser, membershipRequestsModel.toModel(request).value)
     membershipRequestsDao.findByGuid(Authorization.All, request.guid).isEmpty must be(true)
   }
   
@@ -100,8 +102,8 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
 
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member) must be(None)
 
-    membershipRequestsDao.accept(testUser, request)
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member).get.user must equal(member)
+    membershipRequestsDao.accept(testUser, membershipRequestsModel.toModel(request).value)
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member).get.userGuid must equal(member.guid)
 
     organizationLogsDao.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message) must equal(
       Seq("Accepted membership request for %s to join as member".format(member.email))
@@ -114,7 +116,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
 
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member) must be(None)
   
-    membershipRequestsDao.decline(testUser, request)
+    membershipRequestsDao.decline(testUser, membershipRequestsModel.toModel(request).value)
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, MembershipRole.Member) must be(None)
     organizationLogsDao.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message) must equal(
       Seq("Declined membership request for %s to join as member".format(member.email))

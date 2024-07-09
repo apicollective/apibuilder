@@ -4,13 +4,16 @@ import db.{Authorization, VersionsDao}
 import io.apibuilder.api.v0.models.Version
 import io.apibuilder.spec.v0.models.{Import, Service}
 import io.flow.log.RollbarLogger
+
 import javax.inject.Inject
 import lib.VersionTag
+import models.VersionsModel
 
 import scala.annotation.tailrec
 
 class ApiBuilderServiceImportResolver @Inject()(
   versionsDao: VersionsDao,
+  versionModel: VersionsModel,
   rollbarLogger: RollbarLogger,
 ) {
   private val logger = rollbarLogger.fingerprint(getClass.getName)
@@ -31,7 +34,7 @@ class ApiBuilderServiceImportResolver @Inject()(
         if (builder.hasImport(imp)) {
           resolve(auth, rest, builder)
         } else {
-          versionsDao.findVersion(auth, imp.organization.key, imp.application.key, imp.version) match {
+          versionsDao.findVersion(auth, imp.organization.key, imp.application.key, imp.version).flatMap(versionModel.toModel) match {
             case None => {
               logger
                 .organization(imp.organization.key)

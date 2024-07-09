@@ -118,41 +118,41 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
     "by key" in {
       initialize()
-      organizationsDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, key = Some(org2.key)).map(_.guid) must be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, key = Some(UUID.randomUUID.toString)) must be(Nil)
+      organizationsDao.findAll(Authorization.All, key = Some(org1.key), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, key = Some(org2.key), limit = None).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, key = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
     }
 
     "by name" in {
       initialize()
-      organizationsDao.findAll(Authorization.All, name = Some(org1.name)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toUpperCase)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toLowerCase)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(org2.name)).map(_.guid) must be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)) must be(Nil)
+      organizationsDao.findAll(Authorization.All, name = Some(org1.name), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toUpperCase), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(org1.name.toLowerCase), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(org2.name), limit = None).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
     }
 
     "by namespace" in {
       initialize()
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toUpperCase)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toLowerCase)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org2.namespace)).map(_.guid) must be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(UUID.randomUUID.toString)) must be(Nil)
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toUpperCase), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toLowerCase), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org2.namespace), limit = None).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
     }
 
     "by guid" in {
       initialize()
-      organizationsDao.findAll(Authorization.All, guid = Some(org1.guid)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, guid = Some(org2.guid)).map(_.guid) must be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) must be(Nil)
+      organizationsDao.findAll(Authorization.All, guid = Some(org1.guid), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, guid = Some(org2.guid), limit = None).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), limit = None) must be(Nil)
     }
 
     "by userGuid" in {
       initialize()
-      organizationsDao.findAll(Authorization.All, userGuid = Some(user1.guid)).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, userGuid = Some(user2.guid)).map(_.guid) must be(Seq(org2.guid))
-      organizationsDao.findAll(Authorization.All, userGuid = Some(UUID.randomUUID)) must be(Nil)
+      organizationsDao.findAll(Authorization.All, userGuid = Some(user1.guid), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, userGuid = Some(user2.guid), limit = None).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, userGuid = Some(UUID.randomUUID), limit = None) must be(Nil)
     }
   }
 
@@ -210,8 +210,8 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
       "sees both organizations" in {
         initialize()
-        organizationsDao.findAll(Authorization.All, guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.All, guid = Some(privateOrg.guid)).map(_.guid) must be(Seq(privateOrg.guid))
+        organizationsDao.findAll(Authorization.All, guid = Some(publicOrg.guid), limit = None).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.All, guid = Some(privateOrg.guid), limit = None).map(_.guid) must be(Seq(privateOrg.guid))
       }
 
     }
@@ -220,20 +220,20 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
       "sees only the public org" in {
         initialize()
-        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(privateOrg.guid)).map(_.guid) must be(Nil)
+        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(publicOrg.guid), limit = None).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.PublicOnly, guid = Some(privateOrg.guid), limit = None).map(_.guid) must be(Nil)
       }
 
       "user can see own org" in {
         initialize()
-        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(privateOrg.guid)).map(_.guid) must be(Seq(privateOrg.guid))
+        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(publicOrg.guid), limit = None).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.User(privateUser.guid), guid = Some(privateOrg.guid), limit = None).map(_.guid) must be(Seq(privateOrg.guid))
       }
 
       "other user cannot see private org" in {
         initialize()
-        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(publicOrg.guid)).map(_.guid) must be(Seq(publicOrg.guid))
-        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(privateOrg.guid)).map(_.guid) must be(Nil)
+        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(publicOrg.guid), limit = None).map(_.guid) must be(Seq(publicOrg.guid))
+        organizationsDao.findAll(Authorization.User(publicUser.guid), guid = Some(privateOrg.guid), limit = None).map(_.guid) must be(Nil)
       }
 
     }

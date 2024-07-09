@@ -6,7 +6,8 @@ import db._
 import io.apibuilder.api.v0.models._
 import io.apibuilder.task.v0.models.json._
 import io.apibuilder.task.v0.models.{DiffVersionData, TaskType}
-import lib.{AppConfig, ServiceDiff, Emails}
+import lib.{AppConfig, Emails, ServiceDiff}
+import models.VersionsModel
 import play.twirl.api.Html
 
 import java.util.UUID
@@ -21,6 +22,7 @@ class DiffVersionProcessor @Inject()(
                               emails: Emails,
                               changesDao: ChangesDao,
                               versionsDao: VersionsDao,
+                              versionsModel: VersionsModel,
                               watchesDao: WatchesDao,
 ) extends TaskProcessorWithData[DiffVersionData](args, TaskType.DiffVersion) {
 
@@ -30,8 +32,12 @@ class DiffVersionProcessor @Inject()(
   }
 
   private def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID): Unit = {
-    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).foreach { oldVersion =>
-      versionsDao.findByGuid(Authorization.All, newVersionGuid).foreach { newVersion =>
+    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None)
+      .flatMap(versionsModel.toModel)
+      .foreach { oldVersion =>
+      versionsDao.findByGuid(Authorization.All, newVersionGuid)
+        .flatMap(versionsModel.toModel)
+        .foreach { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
@@ -101,7 +107,7 @@ class DiffVersionProcessor @Inject()(
                                               version: Version,
                                               diffs: Seq[Diff],
                                             )(
-                                              generateBody: (Organization, Application, Seq[Diff], Seq[Diff]) => Html,
+                                              generateBody: (Organization, InternalApplication, Seq[Diff], Seq[Diff]) => Html,
                                             ): Unit = {
     val (breakingDiffs, nonBreakingDiffs) = diffs.partition {
       case _: DiffBreaking => true
@@ -109,8 +115,8 @@ class DiffVersionProcessor @Inject()(
       case _: DiffUndefinedType => true
     }
 
-    applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).foreach { application =>
-      organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).foreach { org =>
+    applicationsDao.findAll(Authorization.All, version = Some(version), limit = Some(1)).foreach { application =>
+      organizationsDao.findAll(Authorization.All, applicationGuid = Some(application.guid), limit = Some(1)).foreach { org =>
         emails.deliver(
           context = Emails.Context.Application(application),
           org = org,
@@ -120,9 +126,9 @@ class DiffVersionProcessor @Inject()(
         ) { subscription =>
           watchesDao.findAll(
             Authorization.All,
-            application = Some(application),
+            applicationGuid = Some(application.guid),
             userGuid = Some(subscription.user.guid),
-            limit = 1
+            limit = Some(1)
           ).nonEmpty
         }
       }

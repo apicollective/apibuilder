@@ -42,7 +42,7 @@ class SyncGeneratorServiceProcessor @Inject()(
     Pager.eachPage { offset =>
       servicesDao.findAll(
         Authorization.All,
-        limit = pageSize,
+        limit = Some(pageSize),
         offset = offset
       )
     } { service =>

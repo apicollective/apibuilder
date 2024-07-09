@@ -4,9 +4,10 @@ import anorm._
 import core.Util
 import db._
 import io.apibuilder.api.v0.models.{Error, GeneratorService, GeneratorServiceForm, User}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
-import lib.{Pager, Validation}
+import lib.Validation
 import play.api.db._
 
 import java.util.UUID
@@ -21,8 +22,7 @@ class ServicesDao @Inject() (
   private val dbHelpers = DbHelpers(db, "generators.services")
 
   private val BaseQuery = Query(s"""
-    select services.guid,
-           services.uri,
+    select guid, uri,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("services")}
       from generators.services
   """)
@@ -41,7 +41,8 @@ class ServicesDao @Inject() (
       case Nil => {
         findAll(
           Authorization.All,
-          uri = Some(form.uri.trim)
+          uri = Some(form.uri.trim),
+          limit = Some(1),
         ).headOption match {
           case None => Nil
           case Some(_) => {
@@ -79,50 +80,69 @@ class ServicesDao @Inject() (
     * Also will soft delete all generators for this service
     */
   def softDelete(deletedBy: User, service: GeneratorService): Unit = {
-    Pager.eachPage { _ =>
-      // Note we do not include offset in the query as each iteration
-      // deletes records which will then NOT show up in the next loop
-      generatorsDao.findAll(
-        Authorization.All,
-        serviceGuid = Some(service.guid)
-      )
-    } { gen =>
-      generatorsDao.softDelete(deletedBy, gen)
+    db.withTransaction { c =>
+      generatorsDao.softDeleteAllByServiceGuid(c, deletedBy, service.guid)
+      dbHelpers.delete(c, deletedBy = deletedBy.guid, guid = service.guid)
     }
-    dbHelpers.delete(deletedBy, service.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[GeneratorService] = {
-    findAll(authorization, guid = Some(guid)).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     uri: Option[String] = None,
     generatorKey: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[GeneratorService] = {
     db.withConnection { implicit c =>
-      authorization.generatorServicesFilter(BaseQuery).
-        equals("services.guid", guid).
+      BaseQuery.
+        equals("guid", guid).
+        optionalIn("guid", guids).
         and(
           uri.map { _ =>
-            "lower(services.uri) = lower(trim({uri}))"
+            "lower(uri) = lower(trim({uri}))"
           }
         ).bind("uri", uri).
         and(
           generatorKey.map { _ =>
-            "services.guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
+            "guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
           }
         ).bind("generator_key", generatorKey).
         and(isDeleted.map(Filters.isDeleted("services", _))).
-        orderBy("lower(services.uri)").
-        limit(limit).
+        orderBy("lower(uri)").
+        optionalLimit(limit).
         offset(offset).
-        as(io.apibuilder.api.v0.anorm.parsers.GeneratorService.parser().*)
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[GeneratorService] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("uri") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ uri ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        GeneratorService(
+          guid = guid,
+          uri = uri,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
     }
   }
 

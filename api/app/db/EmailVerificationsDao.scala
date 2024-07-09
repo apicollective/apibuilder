@@ -3,7 +3,6 @@ package db
 import anorm.JodaParameterMetaData._
 import anorm._
 import io.apibuilder.api.v0.models.User
-import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated
 import io.flow.postgresql.Query
 import lib.TokenGenerator
@@ -26,9 +25,6 @@ case class EmailVerification(
 class EmailVerificationsDao @Inject() (
   @NamedDatabase("default") db: Database,
   emailQueue: EmailProcessorQueue,
-  emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
-  membershipRequestsDao: MembershipRequestsDao,
-  organizationsDao: OrganizationsDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "email_verifications")
@@ -36,14 +32,9 @@ class EmailVerificationsDao @Inject() (
   private val TokenLength = 80
   private val HoursUntilTokenExpires = 168
 
-  private val BaseQuery = Query("""
-    select email_verifications.guid,
-           email_verifications.user_guid,
-           email_verifications.email,
-           email_verifications.token,
-           email_verifications.expires_at
-      from email_verifications
-  """)
+  private val BaseQuery = Query(
+    "select guid, user_guid, email, token, expires_at from email_verifications"
+  )
 
   private val InsertQuery = """
     insert into email_verifications
@@ -77,26 +68,6 @@ class EmailVerificationsDao @Inject() (
     }
   }
 
-  def isExpired(verification: EmailVerification): Boolean = {
-    verification.expiresAt.isBeforeNow
-  }
-
-  def confirm(user: Option[User], verification: EmailVerification): Unit = {
-    assert(
-      !isExpired(verification),
-      "Token for verificationGuid[${verification.guid}] is expired"
-    )
-
-    val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
-
-    emailVerificationConfirmationsDao.upsert(updatingUserGuid, verification)
-    organizationsDao.findAllByEmailDomain(verification.email).foreach { org =>
-      membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, MembershipRole.Member).foreach { request =>
-        membershipRequestsDao.acceptViaEmailVerification(updatingUserGuid, request, verification.email)
-      }
-    }
-  }
-
   def softDelete(deletedBy: User, verification: EmailVerification): Unit = {
     dbHelpers.delete(deletedBy.guid, verification.guid)
   }
@@ -121,22 +92,20 @@ class EmailVerificationsDao @Inject() (
   ): Seq[EmailVerification] = {
     db.withConnection { implicit c =>
       BaseQuery.
-        equals("email_verifications.guid", guid).
-        equals("email_verifications.user_guid", userGuid).
-        equals("lower(email_verifications.email)", email.map(_.toLowerCase)).
-        equals("email_verifications.token", token).
+        equals("guid", guid).
+        equals("user_guid", userGuid).
+        equals("lower(email)", email.map(_.toLowerCase)).
+        equals("token", token).
         and(isExpired.map(Filters.isExpired("email_verifications", _))).
         and(isDeleted.map(Filters.isDeleted("email_verifications", _))).
-        orderBy("email_verifications.created_at").
+        orderBy("created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(
-          parser().*
-        )
+        as(parser.*)
     }
   }
 
-  private def parser(): RowParser[EmailVerification] = {
+  private val parser: RowParser[EmailVerification] = {
     SqlParser.get[UUID]("guid") ~
     SqlParser.get[UUID]("user_guid") ~
     SqlParser.str("email") ~
