@@ -60,21 +60,34 @@ class WatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
 
   "GET /watches by application key" in {
     val org1 = createOrganization()
-    val application1 = createApplication(org1)
+    val app1 = createApplication(org1)
 
     val org2 = createOrganization()
-    val application2 = createApplication(org2, createApplicationForm(key = Some(application1.key)))
-    val application3 = createApplication(org2)
+    val app2 = createApplication(org2, createApplicationForm(key = Some(app1.key)))
+    val app3 = createApplication(org2)
 
     val user = createUser()
 
-    createWatch(WatchForm(user.guid, org1.key, application1.key))
-    createWatch(WatchForm(user.guid, org2.key, application2.key))
-    createWatch(WatchForm(user.guid, org2.key, application3.key))
+    def create(orgKey: String, appKey: String) = createWatch(WatchForm(user.guid, orgKey, appKey))
 
-    await(client.watches.get(userGuid = Some(user.guid))).map(_.application.key).sorted must equal(Seq(application1.key, application2.key, application3.key).sorted)
-    await(client.watches.get(userGuid = Some(user.guid), applicationKey = Some(application1.key))).map(_.application.key).sorted must equal(Seq(application1.key, application2.key).sorted)
-    await(client.watches.get(userGuid = Some(user.guid), organizationKey = Some(org1.key), applicationKey = Some(application1.key))).map(_.application.key).sorted must equal(Seq(application1.key).sorted)
+    create(org1.key, app1.key)
+    create(org2.key, app2.key)
+    create(org2.key, app3.key)
+
+    def get(
+             organizationKey: Option[String] = None,
+             applicationKey: Option[String] = None,
+           ): Seq[String] = {
+      await(client.watches.get(
+        userGuid = Some(user.guid),
+        organizationKey = organizationKey,
+        applicationKey = applicationKey)
+      ).map(_.application.key).sorted
+    }
+
+    get() must equal(Seq(app1.key, app2.key, app3.key).sorted)
+    get(applicationKey = Some(app1.key)) must equal(Seq(app1.key, app2.key).sorted)
+    get(organizationKey = Some(org1.key), applicationKey = Some(app1.key)) must equal(Seq(app1.key))
   }
 
 }
