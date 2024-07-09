@@ -1,4 +1,3 @@
-[error] 	controllers.WatchesSpec
 [error] 	controllers.VersionsSpec
 [error] 	controllers.SubscriptionsSpec
 [error] 	services.EmailVerificationsServiceSpec

@@ -39,7 +39,7 @@ class SubscriptionsDao @Inject() (
     select guid, user_guid,organization_guid, publication,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")}
       from subscriptions
-  """)
+  """).withDebugging()
 
   private val InsertQuery = """
     insert into subscriptions

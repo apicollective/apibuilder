@@ -169,7 +169,7 @@ object Authorization {
       query: Query,
       subscriptionsTableName: String
     ): Query = {
-      query.and(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or ${subscriptionsTableName}.organization_guid in (${OrgsByUserQuery})").
+      query.and(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or ${subscriptionsTableName}.organization_guid in (${OrgsByUserQuery}))").
         bind("authorization_user_guid", userGuid)
     }
   }
