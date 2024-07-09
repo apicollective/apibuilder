@@ -12,7 +12,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
 
   private lazy val org: Organization = createOrganization()
   private lazy val member: User = upsertUser("gilt-member@bryzek.com")
-  private[this] def membershipRequestsModel: MembershipRequestsModel = app.injector.instanceOf[MembershipRequestsModel]
+  private def membershipRequestsModel: MembershipRequestsModel = app.injector.instanceOf[MembershipRequestsModel]
   
   "create member" in {
     val thisOrg = createOrganization()

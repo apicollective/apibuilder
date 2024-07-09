@@ -1,5 +1,6 @@
 package db
 
+import com.mbryzek.cipher.Ciphers
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -7,17 +8,12 @@ class UserPasswordsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
   private lazy val user = upsertUser("michael@mailinator.com")
 
-  "have distinct keys for all algorithms" in {
-    val keys = PasswordAlgorithm.All.map(_.key.toLowerCase)
-    keys must equal(keys.distinct.sorted)
-  }
-
   "findByUserGuid" in {
     userPasswordsDao.create(user, user.guid, "password")
 
     val up = userPasswordsDao.findByUserGuid(user.guid).get
     up.userGuid must equal(user.guid)
-    up.algorithm must equal(PasswordAlgorithm.Latest)
+    up.algorithmKey must equal(Ciphers().latest.key)
   }
 
   "validate matching passwords" in {
@@ -37,13 +33,7 @@ class UserPasswordsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
   "hash the password" in {
     userPasswordsDao.create(user, user.guid, "password")
     val up = userPasswordsDao.findByUserGuid(user.guid).get
-    -1 must equal(up.hash.indexOf("password"))
-  }
-
-  "generates unique hashes, even for same password" in {
-    PasswordAlgorithm.All.filter { _ != PasswordAlgorithm.Unknown }.foreach { algo =>
-      algo.hash("password") != algo.hash("password") must be(true)
-    }
+    -1 must equal(up.base64EncodedHash.indexOf("password"))
   }
 
 }

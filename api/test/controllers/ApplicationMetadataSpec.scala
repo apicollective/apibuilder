@@ -36,6 +36,6 @@ class ApplicationMetadataSpec extends PlaySpec with MockClient with GuiceOneServ
       ).get()
     )
     result.status must equal(200)
-    result.body must equal("2.0.0")
+    result.bodyAsBytes.utf8String must equal("2.0.0")
   }
 }
