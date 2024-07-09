@@ -1,7 +1,7 @@
 @(org: io.apibuilder.api.v0.models.Organization,
   app: io.apibuilder.api.v0.models.Application,
   version: String,
-  enum: io.apibuilder.spec.v0.models.Enum)
+  e: io.apibuilder.spec.v0.models.Enum)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -12,15 +12,16 @@
     </tr>
   </thead>
   <tbody>
-   @enum.values.map { value =>
+      @e.deprecation.map { depr =>
+        <tr>
+            <td>@depr</td>
+        </tr>
+      }
+      @e.values.map { value =>
      <tr>
        <td>@value.name</td>
        <td>@value.value.getOrElse(value.name)</td>
-       <td>@Html(lib.Markdown(value.description))
-           <p>
-           @enum.deprecation.map(deprecation(_))
-           </p>
-       </td>
+       <td>@Html(lib.Markdown(value.description))</td>
      </tr>
    }
   </tbody>
