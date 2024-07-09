@@ -4,6 +4,7 @@ import db._
 import db.generated.SessionsDao
 import db.generators.{GeneratorsDao, ServicesDao}
 import lib.{DatabaseServiceFetcher, Emails}
+import models.VersionsModel
 import play.api.Application
 import play.api.inject.Injector
 

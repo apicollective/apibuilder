@@ -4,11 +4,14 @@ import cats.data.ValidatedNec
 import db.{ApplicationsDao, Authorization, VersionsDao}
 import cats.implicits._
 import io.apibuilder.api.v0.models.{BatchDownloadApplicationForm, BatchDownloadApplications, BatchDownloadApplicationsForm, Version}
+import models.VersionsModel
+
 import javax.inject.Inject
 
 class BatchDownloadApplicationsService @Inject() (
   applicationsDao: ApplicationsDao,
   versionsDao: VersionsDao,
+  versionsModel: VersionsModel,
 ) {
 
   def process(
@@ -38,7 +41,7 @@ class BatchDownloadApplicationsService @Inject() (
           orgKey = orgKey,
           applicationKey = a.key,
           version = form.version,
-        ) match {
+        ).flatMap(versionsModel.toModel) match {
           case None => s"Cannot find version '${form.version}' for application with key '${form.applicationKey}'".invalidNec
           case Some(v) => v.validNec
         }

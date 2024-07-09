@@ -5,11 +5,14 @@ import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.{models => spec}
+import models.{MembershipRequestsModel, VersionsModel}
 import play.api.libs.json.Json
 
 import java.util.UUID
 
 trait Helpers extends util.Daos with RandomHelpers {
+  def versionsModel: VersionsModel = injector.instanceOf[VersionsModel]
+  private def membershipRequestsModel: MembershipRequestsModel = injector.instanceOf[MembershipRequestsModel]
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
@@ -27,7 +30,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def upsertOrganization(name: String): Organization = {
-    organizationsDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
+    organizationsDao.findAll(Authorization.All, name = Some(name), limit = Some(1)).headOption.getOrElse {
       createOrganization(name = Some(name))
     }
   }
@@ -80,7 +83,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createApplication(
     org: Organization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
-  ): Application = {
+  ): InternalApplication = {
     applicationsDao.create(testUser, org, form)
   }
 
@@ -107,7 +110,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def upsertApplicationByOrganizationAndKey(
     org: Organization,
     key: String,
-  ): io.apibuilder.api.v0.models.Application = {
+  ): InternalApplication = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(
       Authorization.All, org.key, key,
     ).getOrElse {
@@ -121,13 +124,14 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createVersion(service: Service): Version = {
     val org = upsertOrganizationByKey(service.organization.key)
     val application = upsertApplicationByOrganizationAndKey(org, service.application.key)
-    versionsDao.create(testUser, application, service.version, createOriginal(service), service)
+    val v = versionsDao.create(testUser, application, service.version, createOriginal(service), service)
+    versionsModel.toModel(v).get
   }
 
   def createApplicationByKey(
     org: Organization = testOrg,
     key: String = "test-" + UUID.randomUUID.toString,
-  ): io.apibuilder.api.v0.models.Application = {
+  ): InternalApplication = {
     createApplication(
       org = org,
       form = createApplicationForm().copy(key = Some(key))
@@ -135,26 +139,30 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createVersion(
-    application: Application = createApplication(),
+    application: InternalApplication = createApplication(),
     version: String = "1.0.0",
     original: Original = createOriginal(),
     service: Option[spec.Service] = None
   ): Version = {
-    versionsDao.create(
-      testUser,
-      application,
-      version,
-      original,
-      service.getOrElse { createService(application) }
-    )
+    versionsModel.toModel(
+      versionsDao.create(
+        testUser,
+        application,
+        version,
+        original,
+        service.getOrElse { createService(application) }
+      )
+    ).get
   }
 
   def createMembership(
     org: Organization,
     user: User = createRandomUser(),
     role: MembershipRole = MembershipRole.Admin
-  ): io.apibuilder.api.v0.models.Membership = {
-    val request = membershipRequestsDao.upsert(testUser, org, user, role)
+  ): InternalMembership = {
+    val request = membershipRequestsModel.toModel(
+      membershipRequestsDao.upsert(testUser, org, user, role)
+    ).get
     membershipRequestsDao.accept(testUser, request)
 
     membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
@@ -166,9 +174,8 @@ trait Helpers extends util.Daos with RandomHelpers {
     org: Organization,
     user: User = createRandomUser(),
     publication: Publication = Publication.all.head
-  ): Subscription = {
+  ): InternalSubscription = {
     createSubscription(
-      user,
       SubscriptionForm(
         organizationKey = org.key,
         userGuid = user.guid,
@@ -178,26 +185,28 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createSubscription(
-    user: User,
     form: SubscriptionForm
-  ): Subscription = {
+  ): InternalSubscription = {
     subscriptionsDao.create(testUser, form)
   }
 
-  def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(
-    info = spec.Info(contact = None, license = None),
-    name = app.name,
-    organization = spec.Organization(key = app.organization.key),
-    application = spec.Application(key = app.key),
-    namespace = "test." + app.key,
-    version = "0.0.1-dev",
-    headers = Nil,
-    imports = Nil,
-    enums = Nil,
-    models = Nil,
-    unions = Nil,
-    resources = Nil
-  )
+  def createService(app: InternalApplication): spec.Service = {
+    val org = organizationsDao.findByGuid(Authorization.All, app.organizationGuid).get
+    spec.Service(
+      info = spec.Info(contact = None, license = None),
+      name = app.name,
+      organization = spec.Organization(key = org.key),
+      application = spec.Application(key = app.key),
+      namespace = "test." + app.key,
+      version = "0.0.1-dev",
+      headers = Nil,
+      imports = Nil,
+      enums = Nil,
+      models = Nil,
+      unions = Nil,
+      resources = Nil
+    )
+  }
 
   def createOriginal(svc: spec.Service): io.apibuilder.api.v0.models.Original = {
     createOriginal(name = svc.name)

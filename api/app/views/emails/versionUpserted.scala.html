@@ -1,7 +1,7 @@
 @(
   appConfig: lib.AppConfig,
   org: io.apibuilder.api.v0.models.Organization,
-  application: io.apibuilder.api.v0.models.Application,
+  application: db.InternalApplication,
   version: io.apibuilder.api.v0.models.Version,
   breakingDiffs: Seq[io.apibuilder.api.v0.models.Diff],
   nonBreakingDiffs: Seq[io.apibuilder.api.v0.models.Diff],

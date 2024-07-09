@@ -11,6 +11,7 @@ import lib.{FileUtils, ServiceConfiguration, ValidatedHelpers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
+
 import java.io.File
 
 class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers with ValidatedHelpers {
@@ -853,57 +854,6 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
               resource.`type` shouldBe "pet"
               resource.operations.size shouldBe 4
               resource.operations.map(_.path).toSet shouldBe Set("/pets", "/pets/:id")
-
-              service.resources.foreach {
-                r =>
-                  println(s" Resource ${r.`type`}")
-                  r.operations.foreach {
-                    op =>
-                      println(s"  ${op.method} ${op.path}")
-
-                      println(s"   body:")
-                      op.body match {
-                        case None => {
-                          println("    none")
-                        }
-                        case Some(b) => {
-                          println(s"    ${b.`type`}")
-                        }
-                      }
-
-                      println(s"   parameters:")
-                      op.parameters match {
-                        case Nil => {
-                          println("    none")
-                        }
-                        case params => {
-                          params.foreach {
-                            p =>
-                              println(s"    ${p.name}: ${p.`type`} (${p.location}) ${printRequired(p.required)}")
-                          }
-                        }
-                      }
-
-                      println(s"   attributes:")
-                      op.attributes match {
-                        case Nil | Seq() => {
-                          println("    none")
-                        }
-                        case attributes => {
-                          attributes.foreach {
-                            a =>
-                              println(s"    ${a.name}: ${a.value}")
-                          }
-                        }
-                      }
-
-                      println(s"   responses:")
-                      op.responses.foreach {
-                        r =>
-                          println(s"    ${r.code}: ${r.`type`}")
-                      }
-                  }
-              }
             }
           }
       }

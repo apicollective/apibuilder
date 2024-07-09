@@ -1,20 +1,24 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{ApplicationForm, AppSortBy, MoveForm, SortOrder}
+import cats.data.Validated.{Invalid, Valid}
+import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, MoveForm, SortOrder}
 import io.apibuilder.api.v0.models.json._
 import db._
-import javax.inject.{Inject, Singleton}
 
+import javax.inject.{Inject, Singleton}
 import lib.Validation
+import models.ApplicationsModel
 import play.api.mvc._
 import play.api.libs.json._
+
 import java.util.UUID
 
 @Singleton
 class Applications @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   applicationsDao: ApplicationsDao,
-  versionsDao: VersionsDao
+  versionsDao: VersionsDao,
+  model: ApplicationsModel
 ) extends ApiBuilderController {
 
   def get(
@@ -35,12 +39,12 @@ class Applications @Inject() (
       key = key,
       guid = guid,
       hasVersion = hasVersion,
-      limit = limit,
+      limit = Some(limit),
       offset = offset,
       sorting = sorting,
       ordering = ordering
     )
-    Ok(Json.toJson(applications))
+    Ok(Json.toJson(model.toModels(applications)))
   }
 
   def post(orgKey: String): Action[JsValue] = Identified(parse.json) { request =>
@@ -54,7 +58,7 @@ class Applications @Inject() (
           applicationsDao.validate(org, form) match {
             case Nil => {
               val app = applicationsDao.create(request.user, org, form)
-              Ok(Json.toJson(app))
+              Ok(Json.toJson(model.toModel(app)))
             }
             case errors => {
               Conflict(Json.toJson(errors))
@@ -79,7 +83,7 @@ class Applications @Inject() (
               applicationsDao.validate(org, form, Some(existing)) match {
                 case Nil => {
                   val app = applicationsDao.update(request.user, existing, form)
-                  Ok(Json.toJson(app))
+                  Ok(Json.toJson(model.toModel(app)))
                 }
                 case errors => {
                   Conflict(Json.toJson(errors))
@@ -112,13 +116,12 @@ class Applications @Inject() (
             }
             case s: JsSuccess[MoveForm] => {
               val form = s.get
-              applicationsDao.validateMove(request.authorization, app, form) match {
-                case Nil => {
-                  val updatedApp = applicationsDao.move(request.user, app, form)
-                  Ok(Json.toJson(updatedApp))
+              applicationsDao.move(request.user, app, form) match {
+                case Valid(updatedApp) => {
+                  Ok(Json.toJson(model.toModel(updatedApp)))
                 }
-                case errors => {
-                  Conflict(Json.toJson(errors))
+                case Invalid(errors) => {
+                  Conflict(Json.toJson(errors.toNonEmptyList.toList))
                 }
               }
             }

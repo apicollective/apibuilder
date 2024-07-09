@@ -19,7 +19,7 @@ class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
     val subscriptions = subscriptionsDao.findAll(
       Authorization.All,
-      organization = Some(org),
+      organizationGuid = Some(org.guid),
       userGuid = Some(user.guid)
     ).map(_.publication)
 

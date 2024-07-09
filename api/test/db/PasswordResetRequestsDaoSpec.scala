@@ -1,11 +1,15 @@
 package db
 
-import java.util.UUID
+import helpers.ValidatedTestHelpers
 
+import java.util.UUID
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import services.EmailVerificationsService
 
-class PasswordResetRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class PasswordResetRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers with ValidatedTestHelpers {
+
+  private val service = app.injector.instanceOf[EmailVerificationsService]
 
   "create" in {
     val user = createRandomUser()
@@ -16,7 +20,9 @@ class PasswordResetRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite wit
   "isExpired" in {
     val user = createRandomUser()
     val verification = emailVerificationsDao.create(testUser, user, user.email)
-    emailVerificationsDao.isExpired(verification) must be(false)
+    expectValid {
+      service.confirm(None, verification)
+    }
   }
 
   "resetPassword" in {

@@ -21,9 +21,9 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     nameOption: Option[String] = None,
     org: Organization = testOrg,
     visibility: Visibility = Visibility.Organization
-  ): Application = {
+  ): InternalApplication = {
     val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
-    applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(n), limit = 1).headOption.getOrElse {
+    applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(n), limit = Some(1)).headOption.getOrElse {
       val applicationForm = ApplicationForm(
         name = n,
         description = None,
@@ -33,8 +33,8 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     }
   }
 
-  private def findByKey(org: Organization, key: String): Option[Application] = {
-    applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
+  private def findByKey(org: Organization, key: String): Option[InternalApplication] = {
+    applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = Some(1)).headOption
   }
 
   "create" in {
@@ -97,7 +97,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
   "update" must {
 
-    def toForm(app: Application): ApplicationForm = {
+    def toForm(app: InternalApplication): ApplicationForm = {
       ApplicationForm(
         name = app.name,
         key = Some(app.key),
@@ -141,9 +141,13 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     lazy val publicApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
     lazy val privateApplication = applicationsDao.create(user, org, ApplicationForm(name = "svc-private", visibility = Visibility.Organization))
 
+    lazy val publicOrg = createOrganization(user, Some("Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
+    lazy val publicApplicationInPublicOrg = applicationsDao.create(user, publicOrg, ApplicationForm(name = "svc-public", visibility = Visibility.Public))
+
     def initialize(): Unit = {
       publicApplication
       privateApplication
+      publicApplicationInPublicOrg
     }
 
     "by version" in {
@@ -152,7 +156,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
       val privateVersion = createVersion(privateApplication)
 
       def findByVersion(version: Version) = {
-        applicationsDao.findAll(Authorization.All, version = Some(version)).map(_.guid)
+        applicationsDao.findAll(Authorization.All, version = Some(version), limit = None).map(_.guid)
       }
 
       findByVersion(v1) mustBe Seq(publicApplication.guid)
@@ -162,28 +166,28 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
     "by orgKey" in {
       initialize()
-      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
+      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), limit = None).map(_.guid)
       guids.contains(publicApplication.guid) must be(true)
       guids.contains(privateApplication.guid) must be(true)
     }
 
     "by guid" in {
       initialize()
-      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), guid = Some(publicApplication.guid)).map(_.guid)
+      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), guid = Some(publicApplication.guid), limit = None).map(_.guid)
       guids.contains(publicApplication.guid) must be(true)
       guids.contains(privateApplication.guid) must be(false)
     }
 
     "by key" in {
       initialize()
-      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(publicApplication.key)).map(_.guid)
+      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(publicApplication.key), limit = None).map(_.guid)
       guids.contains(publicApplication.guid) must be(true)
       guids.contains(privateApplication.guid) must be(false)
     }
 
     "by name" in {
       initialize()
-      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(publicApplication.name)).map(_.guid)
+      val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(publicApplication.name), limit = None).map(_.guid)
       guids.contains(publicApplication.guid) must be(true)
       guids.contains(privateApplication.guid) must be(false)
     }
@@ -195,30 +199,31 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
       applicationsDao.findAll(
         Authorization.All,
         guid = Some(app.guid),
-        hasVersion = Some(false)
+        hasVersion = Some(false),
+        limit = None
       ).map(_.guid) must be(Seq(app.guid))
 
       applicationsDao.findAll(
         Authorization.All,
         guid = Some(app.guid),
-        hasVersion = Some(true)
+        hasVersion = Some(true),
+        limit = None
       ).map(_.guid) must be(Nil)
 
       val service = createService(app)
       versionsDao.create(testUser, app, "1.0.0", Original, service)
 
-      applicationsDao.findAll(
-        Authorization.All,
-        guid = Some(app.guid),
-        hasVersion = Some(false)
-      ).map(_.guid) must be(Nil)
+      def findByHasVersion(hasVersion: Boolean) = {
+        applicationsDao.findAll(
+          Authorization.All,
+          guid = Some(app.guid),
+          hasVersion = Some(hasVersion),
+          limit = None
+        ).map(_.guid)
+      }
 
-      applicationsDao.findAll(
-        Authorization.All,
-        guid = Some(app.guid),
-        hasVersion = Some(true)
-      ).map(_.guid) must be(Seq(app.guid))
-
+      findByHasVersion(false) must be(Nil)
+      findByHasVersion(true) must be(Seq(app.guid))
     }
 
     "Authorization" must {
@@ -227,7 +232,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
         "sees both applications" in {
           initialize()
-          val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
+          val guids = applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), limit = None).map(_.guid)
           guids.contains(publicApplication.guid) must be(true)
           guids.contains(privateApplication.guid) must be(true)
         }
@@ -238,9 +243,12 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
         "sees only the public application" in {
           initialize()
-          val guids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(org.key)).map(_.guid)
-          guids.contains(publicApplication.guid) must be(true)
-          guids.contains(privateApplication.guid) must be(false)
+          val privateOrgGuids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(org.key), limit = None).map(_.guid)
+          privateOrgGuids.contains(publicApplication.guid) must be(false)   // org is privatee
+          privateOrgGuids.contains(privateApplication.guid) must be(false)  // app is private
+
+          val publicOrgGuids = applicationsDao.findAll(Authorization.PublicOnly, orgKey = Some(publicOrg.key), limit = None).map(_.guid)
+          publicOrgGuids mustBe Seq(publicApplicationInPublicOrg.guid)
         }
 
       }
@@ -249,14 +257,14 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
         "user can see own application" in {
           initialize()
-          val guids = applicationsDao.findAll(Authorization.User(user.guid), orgKey = Some(org.key)).map(_.guid)
+          val guids = applicationsDao.findAll(Authorization.User(user.guid), orgKey = Some(org.key), limit = None).map(_.guid)
           guids.contains(publicApplication.guid) must be(true)
           guids.contains(privateApplication.guid) must be(true)
         }
 
         "other user cannot see public nor private applications for a private org" in {
           initialize()
-          val guids = applicationsDao.findAll(Authorization.User(testUser.guid), orgKey = Some(org.key)).map(_.guid)
+          val guids = applicationsDao.findAll(Authorization.User(testUser.guid), orgKey = Some(org.key), limit = None).map(_.guid)
           guids.contains(publicApplication.guid) must be(false)
           guids.contains(privateApplication.guid) must be(false)
         }
@@ -275,11 +283,11 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
           val otherPrivateApp = upsertApplication(org = otherOrg)
           val otherPublicApp = upsertApplication(org = otherOrg, visibility = Visibility.Public)
 
-          val myGuids = applicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(myOrg.key)).map(_.guid)
+          val myGuids = applicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(myOrg.key), limit = None).map(_.guid)
           myGuids.contains(myPrivateApp.guid) must be(true)
           myGuids.contains(myPublicApp.guid) must be(true)
 
-          val otherGuids = applicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(otherOrg.key)).map(_.guid)
+          val otherGuids = applicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(otherOrg.key), limit = None).map(_.guid)
           otherGuids.contains(otherPrivateApp.guid) must be(false)
           otherGuids.contains(otherPublicApp.guid) must be(true)
         }

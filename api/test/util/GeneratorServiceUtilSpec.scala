@@ -2,8 +2,6 @@ package util
 
 import db.Authorization
 import db.generators.GeneratorHelpers
-import io.apibuilder.generator.v0.mock.Factories
-import io.apibuilder.generator.v0.models.Generator
 import modules.clients.MockGeneratorsData
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -35,7 +33,7 @@ class GeneratorServiceUtilSpec extends PlaySpec with GuiceOneAppPerSuite with Ge
     find(s1.guid) mustBe None
 
     util.syncAll(pageSize = 1)
-    find(s1.guid).value.service.guid mustBe s1.guid
-    find(s2.guid).value.service.guid mustBe s2.guid
+    find(s1.guid).value.serviceGuid mustBe s1.guid
+    find(s2.guid).value.serviceGuid mustBe s2.guid
   }
 }

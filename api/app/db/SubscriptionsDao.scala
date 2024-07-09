@@ -1,18 +1,26 @@
 package db
 
-import io.apibuilder.api.v0.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
-import io.flow.postgresql.Query
 import anorm._
+import io.apibuilder.api.v0.models.{Error, Publication, SubscriptionForm, User}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.flow.postgresql.Query
 import lib.Validation
+import play.api.db._
+import play.api.inject.Injector
+import util.OptionalQueryFilter
+
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-import play.api.db._
-import java.util.UUID
-
-import play.api.inject.Injector
+case class InternalSubscription(
+                                      guid: UUID,
+                                      publication: Publication,
+                                      organizationGuid: UUID,
+                                      userGuid: UUID,
+                                      audit: Audit)
 
 object SubscriptionsDao {
-  val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
+  val PublicationsRequiredAdmin: Seq[Publication] = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 }
 
 @Singleton
@@ -29,24 +37,9 @@ class SubscriptionsDao @Inject() (
   private def usersDao = injector.instanceOf[UsersDao]
 
   private val BaseQuery = Query(s"""
-    select subscriptions.guid,
-           subscriptions.publication,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")},
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")},
-           organizations.guid as organization_guid,
-           organizations.key as organization_key,
-           organizations.name as organization_name,
-           organizations.namespace as organization_namespace,
-           organizations.visibility as organization_visibility,
-           '[]' as organization_domains,
-           ${AuditsDao.queryWithAlias("organizations", "organization")}
+    select guid, user_guid,organization_guid, publication,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")}
       from subscriptions
-      join users on users.guid = subscriptions.user_guid and users.deleted_at is null
-      join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
   """)
 
   private val InsertQuery = """
@@ -82,7 +75,7 @@ class SubscriptionsDao @Inject() (
       case Some(o) => {
         subscriptionsDao.findAll(
           Authorization.All,
-          organization = Some(o),
+          organizationGuid = Some(o.guid),
           userGuid = Some(form.userGuid),
           publication = Some(form.publication),
           limit = 1
@@ -96,7 +89,7 @@ class SubscriptionsDao @Inject() (
     Validation.errors(organizationKeyErrors ++ publicationErrors ++ userErrors ++ alreadySubscribed)
   }
 
-  def create(createdBy: User, form: SubscriptionForm): Subscription = {
+  def create(createdBy: User, form: SubscriptionForm): InternalSubscription = {
     val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -121,52 +114,88 @@ class SubscriptionsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, subscription: Subscription): Unit = {
+  def softDelete(deletedBy: User, subscription: InternalSubscription): Unit = {
     dbHelpers.delete(deletedBy, subscription.guid)
   }
 
-  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User): Unit = {
+  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organizationGuid: UUID, userGuid: UUID): Unit = {
     SubscriptionsDao.PublicationsRequiredAdmin.foreach { publication =>
       subscriptionsDao.findAll(
         Authorization.All,
-        organization = Some(organization),
-        userGuid = Some(user.guid),
+        organizationGuid = Some(organizationGuid),
+        userGuid = Some(userGuid),
         publication = Some(publication)
       ).foreach { subscription =>
-        softDelete(user, subscription)
+        softDelete(deletedBy, subscription)
       }
     }
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Subscription] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalSubscription] = {
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
-    organization: Option[Organization] = None,
+    organizationGuid: Option[UUID] = None,
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Subscription] = {
+  ): Seq[InternalSubscription] = {
+    val filters = List(
+      new OptionalQueryFilter(organizationKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("organization_guid", Query("select guid from organizations").equals("key", value))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      authorization.subscriptionFilter(BaseQuery).
-        equals("subscriptions.guid", guid).
-        equals("subscriptions.organization_guid", organization.map(_.guid)).
-        equals("organizations.key", organizationKey.map(_.toLowerCase.trim)).
-        equals("subscriptions.user_guid", userGuid).
-        equals("subscriptions.publication", publication.map(_.toString)).
+      authorization.subscriptionFilter(
+          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
+          "subscriptions"
+        ).
+        equals("guid", guid).
+        equals("organization_guid", organizationGuid).
+        equals("user_guid", userGuid).
+        equals("publication", publication.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
-        orderBy("subscriptions.created_at").
+        orderBy("created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.Subscription.parser().*
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[InternalSubscription] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("publication") ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") ~
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.get[UUID]("user_guid") map {
+      case guid ~ publication ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ userGuid => {
+        InternalSubscription(
+          guid = guid,
+          publication = Publication.apply(publication),
+          organizationGuid = organizationGuid,
+          userGuid = userGuid,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
         )
+      }
     }
   }
 

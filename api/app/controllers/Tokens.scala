@@ -4,15 +4,19 @@ import db.TokensDao
 import lib.Validation
 import io.apibuilder.api.v0.models.TokenForm
 import io.apibuilder.api.v0.models.json._
+import models.TokensModel
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
+
 import java.util.UUID
 
 @Singleton
 class Tokens @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  tokensDao: TokensDao
+  tokensDao: TokensDao,
+  model: TokensModel
 ) extends ApiBuilderController {
 
   def getUsersByUserGuid(
@@ -28,7 +32,7 @@ class Tokens @Inject() (
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(tokens))
+    Ok(Json.toJson(model.toModels(tokens)))
   }
 
   def getCleartextByGuid(
@@ -52,7 +56,11 @@ class Tokens @Inject() (
         tokensDao.validate(request.user, form) match {
           case Nil => {
             val token = tokensDao.create(request.user, form)
-            Created(Json.toJson(token))
+            Created(Json.toJson(
+              model.toModel(token).getOrElse {
+                sys.error("Failed to create token)")
+              }
+            ))
           }
           case errors => {
             Conflict(Json.toJson(errors))

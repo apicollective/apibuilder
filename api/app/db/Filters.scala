@@ -6,9 +6,10 @@ object Filters {
     tableName: String,
     value: Boolean
   ): String = {
-    value match {
-      case true => s"$tableName.deleted_at is not null"
-      case false => s"$tableName.deleted_at is null"
+    if (value) {
+      s"$tableName.deleted_at is not null"
+    } else {
+      s"$tableName.deleted_at is null"
     }
   }
 
@@ -16,9 +17,10 @@ object Filters {
     tableName: String,
     value: Boolean
   ): String = {
-    value match {
-      case true => { s"$tableName.expires_at < now()" }
-      case false => { s"$tableName.expires_at >= now()" }
+    if (value) {
+      s"$tableName.expires_at < now()"
+    } else {
+      s"$tableName.expires_at >= now()"
     }
   }
 

@@ -5,7 +5,6 @@ code:
       generators:
         play_2_9_scala_3_client: generated/app
         play_2_x_routes: api/conf/routes
-        anorm_2_9_scala_3_parsers: api/app/generated
     apibuilder-api-json:
       version: latest
       generators:
@@ -16,19 +15,16 @@ code:
         play_2_x_standalone_json: lib/src/main/scala/generated
         play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
-        anorm_2_9_scala_3_parsers: api/app/generated
     apibuilder-common:
       version: latest
       generators:
         play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
-        anorm_2_9_scala_3_parsers: api/app/generated
     apibuilder-generator:
       version: latest
       generators:
         play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
-        anorm_2_9_scala_3_parsers: api/app/generated
     apibuilder-task:
       version: latest
       generators:

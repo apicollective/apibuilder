@@ -1,7 +1,7 @@
 package db.generators
 
 import db.Authorization
-import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService, GeneratorServiceForm, GeneratorWithService}
+import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService, GeneratorServiceForm}
 import io.apibuilder.generator.v0.mock.Factories
 import io.apibuilder.generator.v0.models.Generator
 
@@ -25,7 +25,7 @@ trait GeneratorHelpers extends db.Helpers {
 
   def createGenerator(
     service: GeneratorService = createGeneratorService()
-  ): GeneratorWithService = {
+  ): InternalGenerator = {
     val form = createGeneratorForm(service = service)
 
     generatorsDao.upsert(testUser, form)

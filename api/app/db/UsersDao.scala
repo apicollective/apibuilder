@@ -2,11 +2,11 @@ package db
 
 import anorm._
 import io.apibuilder.api.v0.models.{Error, User, UserForm, UserUpdateForm}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import lib.{Constants, Misc, UrlKey, Validation}
 import play.api.db._
-import play.api.inject.Injector
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -24,14 +24,10 @@ object UsersDao {
 @Singleton
 class UsersDao @Inject() (
   @NamedDatabase("default") db: Database,
-  injector: Injector,
   emailVerificationsDao: EmailVerificationsDao,
   userPasswordsDao: UserPasswordsDao,
   internalTasksDao: InternalTasksDao,
 ) {
-
-  // TODO: Inject directly - here because of circular references
-  private def membershipRequestsDao = injector.instanceOf[MembershipRequestsDao]
 
   lazy val AdminUser: User = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
@@ -39,12 +35,7 @@ class UsersDao @Inject() (
 
   private val BaseQuery = Query(
     s"""
-    select users.guid,
-           users.email,
-           users.name,
-           users.nickname,
-           users.avatar_url,
-           users.gravatar_id,
+    select guid, email, name, nickname, avatar_url, gravatar_id,
            ${AuditsDao.query("users")}
       from users
   """)
@@ -247,7 +238,8 @@ class UsersDao @Inject() (
   }
 
   def findAll(
-    guid: Option[UUID] = None,
+               guid: Option[UUID] = None,
+               guids: Option[Seq[UUID]] = None,
     email: Option[String] = None,
     nickname: Option[String] = None,
     sessionId: Option[String] = None,
@@ -255,30 +247,29 @@ class UsersDao @Inject() (
     isDeleted: Option[Boolean] = Some(false)
   ): Seq[User] = {
     require(
-      guid.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
+      guid.isDefined || guids.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
       "Must have either a guid, email, token, sessionId, or nickname"
     )
 
     db.withConnection { implicit c =>
       BaseQuery.
-        equals("users.guid", guid).
+        equals("guid", guid).
+        optionalIn("guid", guids).
         and(
-          email.map { _ => "users.email = trim(lower({email}))" }
+          email.map { _ => "email = trim(lower({email}))" }
         ).bind("email", email).
         and(
-          nickname.map { _ => "users.nickname = trim(lower({nickname}))" }
+          nickname.map { _ => "nickname = trim(lower({nickname}))" }
         ).bind("nickname", nickname).
         and(
-          sessionId.map { _ => "users.guid = (select user_guid from sessions where id = {session_id})" }
+          sessionId.map { _ => "guid = (select user_guid from sessions where id = {session_id})" }
         ).bind("session_id", sessionId).
         and(
-          token.map { _ => "users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
+          token.map { _ => "guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
         ).bind("token", token).
         and(isDeleted.map(Filters.isDeleted("users", _))).
         limit(1).
-        anormSql().as(
-        io.apibuilder.api.v0.anorm.parsers.User.parser().*
-      )
+        as(parser.*)
     }
   }
 
@@ -299,6 +290,34 @@ class UsersDao @Inject() (
     findAll(nickname = Some(fullPrefix)).headOption match {
       case None => fullPrefix
       case Some(_) => generateNickname(input, iteration + 1)
+    }
+  }
+
+  private val parser: RowParser[User] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("email") ~
+      SqlParser.str("nickname") ~
+      SqlParser.str("name").? ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ email ~ nickname ~ name ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+        User(
+          guid = guid,
+          email = email,
+          nickname = nickname,
+          name = name,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
+        )
+      }
     }
   }
 

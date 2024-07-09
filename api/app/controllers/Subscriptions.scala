@@ -1,18 +1,21 @@
 package controllers
 
 import db.SubscriptionsDao
-import lib.Validation
-import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 import io.apibuilder.api.v0.models.json._
-import javax.inject.{Inject, Singleton}
-import play.api.mvc._
+import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
+import lib.Validation
+import models.SubscriptionModel
 import play.api.libs.json._
+import play.api.mvc._
+
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Subscriptions @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  subscriptionsDao: SubscriptionsDao
+  subscriptionsDao: SubscriptionsDao,
+  model: SubscriptionModel,
 ) extends ApiBuilderController {
 
   def get(
@@ -32,11 +35,11 @@ class Subscriptions @Inject() (
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(subscriptions))
+    Ok(Json.toJson(model.toModels(subscriptions)))
   }
 
   def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
-    subscriptionsDao.findByGuid(request.authorization, guid) match {
+    subscriptionsDao.findByGuid(request.authorization, guid).flatMap(model.toModel) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
@@ -52,7 +55,11 @@ class Subscriptions @Inject() (
         subscriptionsDao.validate(request.user, form) match {
           case Nil => {
             val subscription = subscriptionsDao.create(request.user, form)
-            Created(Json.toJson(subscription))
+            Created(Json.toJson(
+              model.toModel(subscription).getOrElse {
+                sys.error("Failed to create subscription")
+              }
+            ))
           }
           case errors => {
             Conflict(Json.toJson(errors))

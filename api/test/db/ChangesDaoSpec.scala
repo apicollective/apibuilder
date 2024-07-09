@@ -1,14 +1,15 @@
 package db
 
-import java.util.UUID
 import io.apibuilder.api.v0.models._
 import lib.DiffFactories
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
+import java.util.UUID
+
 class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private def getApplication(version: Version): Application = {
+  private def getApplication(version: Version): InternalApplication = {
     applicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
       sys.error("Could not find application for version: " + version)
     }
@@ -165,10 +166,11 @@ class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       changesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid)).map(_.guid) must be(Nil)
 
       val app = applicationsDao.findByGuid(Authorization.All, change.application.guid).get
+
       createMembership(
         organizationsDao.findByGuid(
           Authorization.All,
-          app.organization.guid
+          app.organizationGuid
         ).get,
         user
       )

@@ -1,13 +1,23 @@
 package db
 
-import io.apibuilder.api.v0.models.{CleartextToken, Error, Token, TokenForm, User}
-import io.flow.postgresql.Query
-import lib.TokenGenerator
 import anorm._
-import javax.inject.{Inject, Singleton}
+import io.apibuilder.api.v0.models.{CleartextToken, Error, TokenForm, User}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.flow.postgresql.Query
+import lib.{TokenGenerator, Validation}
 import play.api.db._
+
 import java.util.UUID
-import lib.Validation
+import javax.inject.{Inject, Singleton}
+
+case class InternalToken(
+                   guid: UUID,
+                   description: Option[String],
+                   userGuid: UUID,
+                   audit: Audit
+                   ) {
+  val maskedToken: String = "XXX-XXX-XXX"
+}
 
 @Singleton
 class TokensDao @Inject() (
@@ -19,16 +29,10 @@ class TokensDao @Inject() (
 
   private val BaseQuery = Query(s"""
     select tokens.guid,
-           'XXX-XXX-XXX' as masked_token,
            tokens.description,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("tokens")},
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")}
+           tokens.user_guid,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("tokens")}
       from tokens
-      join users on users.guid = tokens.user_guid and users.deleted_at is null
   """)
 
   private val FindCleartextQuery = Query("select token from tokens")
@@ -58,7 +62,7 @@ class TokensDao @Inject() (
     Validation.errors(authErrors ++ userErrors)
   }
 
-  def create(user: User, form: TokenForm): Token = {
+  def create(user: User, form: TokenForm): InternalToken = {
     val errors = validate(user, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -79,11 +83,11 @@ class TokensDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, token: Token): Unit = {
+  def softDelete(deletedBy: User, token: InternalToken): Unit = {
     dbHelpers.delete(deletedBy, token.guid)
   }
 
-  def findByToken(token: String): Option[Token] = {
+  def findByToken(token: String): Option[InternalToken] = {
     findAll(Authorization.All, token = Some(token)).headOption
   }
 
@@ -93,11 +97,13 @@ class TokensDao @Inject() (
         tokenFilter(FindCleartextQuery).
         isNull("tokens.deleted_at").
         equals("tokens.guid", guid).
-        anormSql().as(SqlParser.str("token").*).headOption.map(CleartextToken(_))
+        as(SqlParser.str("token").*).
+        headOption.
+        map(CleartextToken)
     }
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Token] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalToken] = {
     findAll(authorization, guid = Some(guid)).headOption
   }
 
@@ -109,7 +115,7 @@ class TokensDao @Inject() (
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Token] = {
+  ): Seq[InternalToken] = {
     db.withConnection { implicit c =>
       authorization.tokenFilter(BaseQuery).
         equals("tokens.guid", guid).
@@ -119,9 +125,33 @@ class TokensDao @Inject() (
         orderBy("tokens.created_at").
         limit(limit).
         offset(offset).
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.Token.parser().*
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[InternalToken] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.str("description").? ~
+      SqlParser.get[DateTime]("created_at") ~
+      SqlParser.get[UUID]("created_by_guid") ~
+      SqlParser.get[DateTime]("updated_at") ~
+      SqlParser.get[UUID]("updated_by_guid") ~
+      SqlParser.get[UUID]("user_guid") map {
+      case guid ~ description ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ userGuid => {
+        InternalToken(
+          guid = guid,
+          description = description,
+          userGuid = userGuid,
+          audit = Audit(
+            createdAt = createdAt,
+            createdBy = ReferenceGuid(createdByGuid),
+            updatedAt = updatedAt,
+            updatedBy = ReferenceGuid(updatedByGuid),
+          )
         )
+      }
     }
   }
 }

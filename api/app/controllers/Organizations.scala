@@ -35,7 +35,7 @@ class Organizations @Inject() (
           key = key,
           name = name,
           namespace = namespace,
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
       )

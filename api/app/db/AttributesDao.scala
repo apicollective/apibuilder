@@ -2,10 +2,13 @@ package db
 
 import io.apibuilder.api.v0.models.{Attribute, AttributeForm, User}
 import io.flow.postgresql.Query
-import lib.{Validation, UrlKey}
+import lib.{UrlKey, Validation}
 import anorm._
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+
 import javax.inject.{Inject, Singleton}
 import play.api.db._
+
 import java.util.UUID
 
 @Singleton
@@ -106,7 +109,33 @@ class AttributesDao @Inject() (
         limit(limit).
         offset(offset).
         orderBy("lower(attributes.name)").
-        as(io.apibuilder.api.v0.anorm.parsers.Attribute.parser().*)
+        as(parser.*)
+    }
+  }
+
+  private val parser: RowParser[Attribute] = {
+    import org.joda.time.DateTime
+
+    SqlParser.get[UUID]("guid") ~
+    SqlParser.str("name") ~
+    SqlParser.str("description").? ~
+    SqlParser.get[DateTime]("created_at") ~
+    SqlParser.get[UUID]("created_by_guid") ~
+    SqlParser.get[DateTime]("updated_at") ~
+    SqlParser.get[UUID]("updated_by_guid") map {
+      case guid ~ name ~ description ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+      Attribute(
+        guid = guid,
+        name = name,
+        description = description,
+        audit = Audit(
+          createdAt = createdAt,
+          createdBy = ReferenceGuid(createdByGuid),
+          updatedAt = updatedAt,
+          updatedBy = ReferenceGuid(updatedByGuid),
+        )
+      )
+    }
     }
   }
 

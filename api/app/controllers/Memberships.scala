@@ -1,8 +1,9 @@
 package controllers
 
 import db.MembershipsDao
-import io.apibuilder.api.v0.models.json.*
+import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
+import models.MembershipsModel
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 
@@ -12,7 +13,8 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class Memberships @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  membershipsDao: MembershipsDao
+  membershipsDao: MembershipsDao,
+  model: MembershipsModel,
 ) extends ApiBuilderController {
 
   def get(
@@ -25,24 +27,26 @@ class Memberships @Inject() (
   ): Action[AnyContent] = Identified { request =>
     Ok(
       Json.toJson(
-        membershipsDao.findAll(
-          request.authorization,
-          organizationGuid = organizationGuid,
-          organizationKey = organizationKey,
-          userGuid = userGuid,
-          role = role,
-          limit = Some(limit),
-          offset = offset
+        model.toModels(
+          membershipsDao.findAll(
+            request.authorization,
+            organizationGuid = organizationGuid,
+            organizationKey = organizationKey,
+            userGuid = userGuid,
+            role = role,
+            limit = Some(limit),
+            offset = offset
+          )
         )
       )
     )
   }
 
   def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
-    membershipsDao.findByGuid(request.authorization, guid) match {
+    membershipsDao.findByGuid(request.authorization, guid).flatMap(model.toModel) match {
       case None => NotFound
       case Some(membership) => {
-        if (membershipsDao.isUserAdmin(request.user, membership.organization)) {
+        if (membershipsDao.isUserAdmin(user = request.user, organization = membership.organization)) {
           Ok(Json.toJson(membership))
         } else {
           Unauthorized
@@ -55,7 +59,7 @@ class Memberships @Inject() (
     membershipsDao.findByGuid(request.authorization, guid) match {
       case None => NoContent
       case Some(membership) => {
-        if (membershipsDao.isUserAdmin(request.user, membership.organization)) {
+        if (membershipsDao.isUserAdmin(userGuid = request.user.guid, organizationGuid = membership.organizationGuid)) {
           membershipsDao.softDelete(request.user, membership)
           NoContent
         } else {

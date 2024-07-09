@@ -1,17 +1,21 @@
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
+import db.EmailVerificationsDao
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
 import io.apibuilder.api.v0.models.json._
-import db.EmailVerificationsDao
-import javax.inject.{Inject, Singleton}
 import lib.Validation
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
+import services.EmailVerificationsService
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class EmailVerificationConfirmationForms @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  emailVerificationsDao: EmailVerificationsDao
+  emailVerificationsDao: EmailVerificationsDao,
+  service: EmailVerificationsService
 ) extends ApiBuilderController {
 
   def post(): Action[JsValue] = Anonymous(parse.json) { request =>
@@ -24,11 +28,13 @@ class EmailVerificationConfirmationForms @Inject() (
         emailVerificationsDao.findByToken(token) match {
           case None => Conflict(Json.toJson("Token not found or has already expired"))
           case Some(verification) => {
-            if (emailVerificationsDao.isExpired(verification)) {
-              Conflict(Json.toJson("Token is expired"))
-            } else {
-              emailVerificationsDao.confirm(request.user, verification)
-              NoContent
+            service.confirm(request.user, verification) match {
+              case Invalid(e) => {
+                Conflict(Json.toJson(e.toNonEmptyList.toList.mkString(", ")))
+              }
+              case Valid(_) => {
+                NoContent
+              }
             }
           }
         }

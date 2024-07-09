@@ -16,18 +16,9 @@ class ItemsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
-  // For authorization purposes, we assume the only thing we've
-  // indexed is the application and thus join applications and
-  // organizations. This is ONLY used to enforce the authorization
-  // filter in findAll
   private val BaseQuery = io.flow.postgresql.Query("""
-    select items.guid::text,
-           items.detail::text,
-           items.label,
-           items.description
+    select guid, items.detail::text, label, description
       from search.items
-      join organizations on organizations.guid = items.organization_guid and organizations.deleted_at is null
-      left join applications on items.application_guid = applications.guid and applications.deleted_at is null
   """)
 
   private val UpsertQuery = """
@@ -111,7 +102,7 @@ class ItemsDao @Inject() (
     }
 
     db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery, "application_guid").
         equals("items.guid", guid).
         and(
           keywords.map { _ =>

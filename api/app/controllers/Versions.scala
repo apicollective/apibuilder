@@ -8,14 +8,7 @@ import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
 import io.apibuilder.spec.v0.models.{Field, Service, UnionType}
 import lib._
-import builder.OriginalValidator
-import db._
-
-import javax.inject.{Inject, Singleton}
-import play.api.mvc._
-import play.api.libs.json._
-import _root_.util.ApiBuilderServiceImportResolver
-import cats.data.Validated.{Invalid, Valid}
+import models.VersionsModel
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -29,6 +22,7 @@ class Versions @Inject() (
   databaseServiceFetcher: DatabaseServiceFetcher,
   versionsDao: VersionsDao,
   versionValidator: VersionValidator,
+  model: VersionsModel,
 ) extends ApiBuilderController {
 
   private val DefaultVisibility = Visibility.Organization
@@ -42,11 +36,11 @@ class Versions @Inject() (
         offset = offset
       )
     }.getOrElse(Nil)
-    Ok(Json.toJson(versions))
+    Ok(Json.toJson(model.toModels(versions)))
   }
 
   def getByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String): Action[AnyContent] = Anonymous { request =>
-    versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
+    versionsDao.findVersion(request.authorization, orgKey, applicationKey, version).flatMap(model.toModel) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
     }
@@ -55,7 +49,7 @@ class Versions @Inject() (
   def getExampleByApplicationKeyAndVersionAndTypeName(
     orgKey: String, applicationKey: String, version: String, typeName: String, subTypeName: Option[String], optionalFields: Option[Boolean]
   ): Action[AnyContent] = Anonymous { request =>
-    versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
+    versionsDao.findVersion(request.authorization, orgKey, applicationKey, version).flatMap(model.toModel) match {
       case None => NotFound
       case Some(v: Version) => {
 
@@ -249,9 +243,11 @@ class Versions @Inject() (
       case Right(application) => {
         val version = versionsDao.findByApplicationAndVersion(Authorization.User(user.guid), application, versionName) match {
           case None => versionsDao.create(user, application, versionName, original, service)
-          case Some(existing: Version) => versionsDao.replace(user, existing, application, original, service)
+          case Some(existing) => versionsDao.replace(user, existing, application, original, service)
         }
-        Right(version)
+        Right(model.toModel(version).getOrElse {
+          sys.error("Failed to upsert version")
+        })
       }
     }
   }
