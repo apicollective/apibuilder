@@ -126,7 +126,13 @@ class WatchesDao @Inject() (
     val filters = List(
       new OptionalQueryFilter(organizationKey) {
         override def filter(q: Query, value: String): Query = {
-          q.in("organization_guid", Query("select guid from organizations").equals("key", value))
+          q.in("application_guid", Query(
+            """
+              |select a.guid
+              |  from applications a
+              |  join organizations o on o.guid = a.organization_guid
+              |""".stripMargin
+          ).equals("o.key", value))
         }
       },
       new OptionalQueryFilter(applicationKey) {
