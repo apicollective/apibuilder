@@ -24,7 +24,7 @@ class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite wi
 
       expectInvalid {
         service.confirm(None, v2)
-      } mustBe Seq(s"Token for verificationGuid[${v2.guid} is expired")
+      } mustBe Seq(s"Token for verificationGuid[${v2.guid}] is expired")
     }
 
     "not expired" in {
