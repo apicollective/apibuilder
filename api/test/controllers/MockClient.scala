@@ -126,7 +126,7 @@ trait MockClient extends db.Helpers
     form: Option[VersionForm] = None,
     version: String = "0.0.1"
   ): Version = {
-    val org = organizationsDao.findByGuid(Authorization.All, application.guid).get
+    val org = organizationsDao.findByGuid(Authorization.All, application.organizationGuid).get
     await(
       client.versions.putByApplicationKeyAndVersion(
         orgKey = org.key,
