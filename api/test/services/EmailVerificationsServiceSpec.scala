@@ -20,10 +20,11 @@ class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite wi
         Query("update email_verifications set expires_at = now() - interval '1 month'")
           .equals("guid", verification.guid)
       )
+      val v2 = emailVerificationsDao.findByGuid(verification.guid).get
 
       expectInvalid {
-        service.confirm(None, verification)
-      } mustBe Seq("TODO")
+        service.confirm(None, v2)
+      } mustBe Seq(s"Token for verificationGuid[${v2.guid} is expired")
     }
 
     "not expired" in {
