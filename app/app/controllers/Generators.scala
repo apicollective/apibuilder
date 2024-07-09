@@ -2,8 +2,9 @@ package controllers
 
 import io.apibuilder.api.v0.models.GeneratorServiceForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import play.api.data.Forms._
-import play.api.data._
+import play.api.data.Forms.*
+import play.api.data.*
+import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
@@ -15,11 +16,11 @@ class Generators @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect = Action { implicit request =>
+  def redirect: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.Generators.index())
   }
 
-  def index(page: Int = 0) = Anonymous.async { implicit request =>
+  def index(page: Int = 0): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       generators <- request.api.generatorWithServices.get(
         limit = Pagination.DefaultLimit+1,
@@ -33,7 +34,7 @@ class Generators @Inject() (
     }
   }
 
-  def show(key: String) = Anonymous.async { implicit request =>
+  def show(key: String): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       generator <- apiClientProvider.callWith404(request.api.generatorWithServices.getByKey(key))
     } yield {
@@ -49,7 +50,7 @@ class Generators @Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
+  def create(): Action[AnyContent] = Identified { implicit request =>
     val filledForm = Generators.generatorServiceCreateFormData.fill(
       Generators.GeneratorServiceCreateFormData(
         uri = ""
@@ -59,7 +60,7 @@ class Generators @Inject() (
     Ok(views.html.generators.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Identified.async { implicit request =>
+  def createPost: Action[AnyContent] = Identified.async { implicit request =>
     val form = Generators.generatorServiceCreateFormData.bindFromRequest()
     form.fold (
 

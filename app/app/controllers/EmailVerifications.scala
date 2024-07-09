@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
+import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.ExecutionContext
 
@@ -11,7 +12,7 @@ class EmailVerifications @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def get(token: String) = Anonymous.async { implicit request =>
+  def get(token: String): Action[AnyContent] = Anonymous.async { implicit request =>
     request.api.emailVerificationConfirmationForms.post(
       EmailVerificationConfirmationForm(token = token)
     ).map { _ =>

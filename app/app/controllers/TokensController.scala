@@ -4,8 +4,9 @@ import java.util.UUID
 import javax.inject.Inject
 import io.apibuilder.api.v0.models.TokenForm
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
-import play.api.data._
-import play.api.data.Forms._
+import play.api.data.*
+import play.api.data.Forms.*
+import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,11 +17,11 @@ class TokensController @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect = Action { implicit request =>
+  def redirect: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.TokensController.index())
   }
 
-  def index(page: Int = 0) = Identified.async { implicit request =>
+  def index(page: Int = 0): Action[AnyContent] = Identified.async { implicit request =>
     for {
       tokens <- request.api.tokens.getUsersByUserGuid(
         request.user.guid,
@@ -32,7 +33,7 @@ class TokensController @Inject() (
     }
   }
 
-  def show(guid: UUID) = Identified.async { implicit request =>
+  def show(guid: UUID): Action[AnyContent] = Identified.async { implicit request =>
     for {
       tokens <- request.api.tokens.getUsersByUserGuid(
         request.user.guid,
@@ -50,7 +51,7 @@ class TokensController @Inject() (
     }
   }
 
-  def cleartext(guid: UUID) = Identified.async { implicit request =>
+  def cleartext(guid: UUID): Action[AnyContent] = Identified.async { implicit request =>
     for {
       cleartextOption <- apiClientProvider.callWith404(request.api.tokens.getCleartextByGuid(guid))
     } yield {
@@ -65,11 +66,11 @@ class TokensController @Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
+  def create(): Action[AnyContent] = Identified { implicit request =>
     Ok(views.html.tokens.create(request.mainTemplate(Some("Create token")), TokensController.tokenForm))
   }
 
-  def postCreate = Identified.async { implicit request =>
+  def postCreate: Action[AnyContent] = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Create token"))
 
     val form = TokensController.tokenForm.bindFromRequest()
@@ -97,7 +98,7 @@ class TokensController @Inject() (
     )
   }
 
-  def postDelete(guid: UUID) = Identified.async { implicit request =>
+  def postDelete(guid: UUID): Action[AnyContent] = Identified.async { implicit request =>
     for {
       _ <- request.api.tokens.deleteByGuid(guid)
     } yield {

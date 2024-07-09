@@ -2,6 +2,7 @@ package controllers
 
 import lib.Labels
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
+import play.api.mvc.{Action, AnyContent}
 
 import javax.inject.Inject
 
@@ -26,7 +27,7 @@ class Subscriptions @Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def offerPublication(isAdmin: Boolean, publication: Publication): Boolean = {
+  private def offerPublication(isAdmin: Boolean, publication: Publication): Boolean = {
     publication match {
       case Publication.MembershipRequestsCreate => isAdmin
       case Publication.MembershipsCreate => isAdmin
@@ -39,7 +40,7 @@ class Subscriptions @Inject() (
 
   def index(
     org: String
-  ) = IdentifiedOrg.async { implicit request =>
+  ): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     for {
       subscriptions <- request.api.subscriptions.get(
         organizationKey = Some(request.org.key),
@@ -60,7 +61,7 @@ class Subscriptions @Inject() (
   def postToggle(
     org: String,
     publication: Publication
-  ) = IdentifiedOrg.async { implicit request =>
+  ): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.api.subscriptions.get(
       organizationKey = Some(request.org.key),
       userGuid = Some(request.user.guid),

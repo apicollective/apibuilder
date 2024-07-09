@@ -2,14 +2,16 @@ package controllers
 
 import java.io.File
 import javax.inject.Inject
-import io.apibuilder.api.v0.models._
-import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.api.v0.models.*
+import io.apibuilder.spec.v0.models.json.*
 import lib.{ApiClientProvider, FileUtils, Labels, VersionTag}
-import play.api.data.Forms._
-import play.api.data._
-import play.api.libs.json._
+import play.api.data.Forms.*
+import play.api.data.*
+import play.api.libs.Files
+import play.api.libs.json.*
+import play.api.mvc.{Action, AnyContent, MultipartFormData}
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class Versions @Inject() (
@@ -22,11 +24,11 @@ class Versions @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirectToLatest(orgKey: String, applicationKey: String) = Action {
+  def redirectToLatest(orgKey: String, applicationKey: String): Action[AnyContent] = Action {
     Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
   }
 
-  def show(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+  def show(orgKey: String, applicationKey: String, versionName: String): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     for {
       applicationResponse <- request.api.applications.get(orgKey = orgKey, key = Some(applicationKey))
       versionsResponse <- request.api.versions.getByApplicationKey(orgKey, applicationKey)
@@ -74,7 +76,7 @@ class Versions @Inject() (
     }
   }
 
-  def original(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+  def original(orgKey: String, applicationKey: String, versionName: String): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
     ).map {
@@ -112,7 +114,7 @@ class Versions @Inject() (
 
   def example(
     orgKey: String, applicationKey: String, versionName: String, typeName: String, subTypeName: Option[String], optionalFields: Option[Boolean]
-  ) = AnonymousOrg.async { implicit request =>
+  ): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     apiClientProvider.callWith404(
       request.api.versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey, applicationKey, versionName, typeName, subTypeName = subTypeName, optionalFields = optionalFields)
     ).map {
@@ -131,7 +133,7 @@ class Versions @Inject() (
     }
   }
 
-  def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+  def serviceJson(orgKey: String, applicationKey: String, versionName: String): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
     ).map {
@@ -149,7 +151,7 @@ class Versions @Inject() (
     }
   }
 
-  def postDelete(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+  def postDelete(orgKey: String, applicationKey: String, versionName: String): Action[AnyContent] = AnonymousOrg.async { implicit request =>
     for {
       result <- apiClientProvider.callWith404(
         request.api.versions.deleteByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
@@ -163,7 +165,7 @@ class Versions @Inject() (
   }
 
 
-  def postWatch(orgKey: String, applicationKey: String, versionName: String) = IdentifiedOrg.async { implicit request =>
+  def postWatch(orgKey: String, applicationKey: String, versionName: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     apiClientProvider.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(request.org.key, applicationKey, versionName)
     ).flatMap {
@@ -209,7 +211,7 @@ class Versions @Inject() (
   def create(
     orgKey: String,
     applicationKey: Option[String] = None
-  ) = IdentifiedOrg.async { implicit request =>
+  ): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withMember {
 
       applicationKey match {
@@ -261,7 +263,7 @@ class Versions @Inject() (
   def createPost(
     orgKey: String,
     applicationKey: Option[String] = None
-  ) = IdentifiedOrg.async(parse.multipartFormData) { implicit request =>
+  ): Action[MultipartFormData[Files.TemporaryFile]] = IdentifiedOrg.async(parse.multipartFormData) { implicit request =>
     request.withMember {
       val tpl = applicationKey match {
         case None => request.mainTemplate(Some(Labels.AddApplicationText))

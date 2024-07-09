@@ -1,12 +1,13 @@
 package lib
 
-import com.github.tototoshi.csv.CSVWriter
-import java.io.File
+import com.github.tototoshi.csv.{CSVFormat, CSVWriter}
+import com.github.tototoshi.csv.defaultCSVFormat
 
+import java.io.File
 import io.apibuilder.api.v0.models.Membership
 
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 case class MemberDownload(
   client: io.apibuilder.api.v0.Client,
@@ -16,7 +17,7 @@ case class MemberDownload(
   def csv()(implicit ec: ExecutionContext): Future[File] = Future {
     val file = File.createTempFile(s"member-download-$orgKey", "csv")
 
-    val writer = CSVWriter.open(file)
+    val writer = CSVWriter.open(file)(defaultCSVFormat)
     writer.writeRow(Seq("guid", "role", "user_guid", "user_email", "user_nickname", "user_name"))
 
     Pager.eachPage[Membership] { offset =>

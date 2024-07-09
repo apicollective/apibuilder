@@ -2,9 +2,10 @@ package controllers
 
 import io.apibuilder.api.v0.models.Domain
 import lib.ApiClientProvider
-import models._
-import play.api.data._
-import play.api.data.Forms._
+import models.*
+import play.api.data.*
+import play.api.data.Forms.*
+import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
@@ -16,21 +17,21 @@ class Domains @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(orgKey: String) = IdentifiedOrg { implicit request =>
+  def index(orgKey: String): Action[AnyContent] = IdentifiedOrg { implicit request =>
     request.withMember {
       val tpl = request.mainTemplate(title = Some("Domains"))
       Ok(views.html.domains.index(tpl.copy(settings = Some(SettingsMenu(section = Some(SettingSection.Domains))))))
     }
   }
 
-  def create(orgKey: String) = IdentifiedOrg { implicit request =>
+  def create(orgKey: String): Action[AnyContent] = IdentifiedOrg { implicit request =>
     request.withAdmin {
       val tpl = request.mainTemplate(title = Some("Add Domain"))
       Ok(views.html.domains.form(tpl, Domains.domainForm))
     }
   }
 
-  def postCreate(orgKey: String) = IdentifiedOrg.async { implicit request =>
+  def postCreate(orgKey: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       val tpl = request.mainTemplate(title = Some("Add Domain"))
       val boundForm = Domains.domainForm.bindFromRequest()
@@ -57,7 +58,7 @@ class Domains @Inject() (
     }
   }
 
-  def postRemove(orgKey: String, domain: String) = IdentifiedOrg.async { implicit request =>
+  def postRemove(orgKey: String, domain: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         _ <- request.api.Domains.deleteByName(orgKey, domain)

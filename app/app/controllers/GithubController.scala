@@ -17,18 +17,18 @@ class GithubController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect(returnUrl: Option[String]) = Action {
+  def redirect(returnUrl: Option[String]): Action[AnyContent] = Action {
     Redirect(routes.GithubController.index(returnUrl))
   }
 
-  def index(returnUrl: Option[String]) = Action {
+  def index(returnUrl: Option[String]): Action[AnyContent] = Action {
     Redirect(github.oauthUrl(returnUrl = returnUrl))
   }
 
   def callback(
     code: String,
     returnUrl: String
-  ) = Anonymous.async { request =>
+  ): Action[AnyContent] = Anonymous.async { request =>
     getAccessToken(code).flatMap {
       case Left(ex) => Future.successful {
         logger.error(s"Unable to process git hub login: ${ex.getMessage}", ex)

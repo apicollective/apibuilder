@@ -2,8 +2,9 @@ package controllers
 
 import io.apibuilder.api.v0.models.AttributeValueForm
 import models.{SettingSection, SettingsMenu}
-import play.api.data.Forms._
-import play.api.data._
+import play.api.data.Forms.*
+import play.api.data.*
+import play.api.mvc.{Action, AnyContent}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,11 +15,11 @@ class OrganizationAttributesController @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect = Action { implicit request =>
+  def redirect: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.AttributesController.index())
   }
 
-  def index(orgKey: String) = IdentifiedOrg.async { implicit request =>
+  def index(orgKey: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     // TODO: Paginate once we exceed limit
     for {
       attributes <- request.api.attributes.get(
@@ -44,7 +45,7 @@ class OrganizationAttributesController @Inject() (
     }
   }
 
-  def edit(orgKey: String, name: String) = IdentifiedOrg.async { implicit request =>
+  def edit(orgKey: String, name: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     for {
       attr <- request.api.attributes.getByName(name)
       values <- request.api.organizations.getAttributesByKey(
@@ -63,7 +64,7 @@ class OrganizationAttributesController @Inject() (
     }
   }
 
-  def editPost(orgKey: String, name: String) = IdentifiedOrg.async { implicit request =>
+  def editPost(orgKey: String, name: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.api.attributes.getByName(name).flatMap { attr =>
       val tpl = request.mainTemplate(Some("Edit Attribute"))
 
