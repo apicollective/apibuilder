@@ -1,16 +1,16 @@
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
 import db.WatchesDao
-import lib.Validation
 import io.apibuilder.api.v0.models.WatchForm
 import io.apibuilder.api.v0.models.json._
+import lib.Validation
 import models.WatchesModel
-
-import javax.inject.{Inject, Singleton}
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
 
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Watches @Inject() (
@@ -69,10 +69,9 @@ class Watches @Inject() (
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[WatchForm] => {
-        watchesDao.validate(request.authorization, s.get) match {
-          case Left(errors) => Conflict(Json.toJson(errors))
-          case Right(validatedForm) => {
-            val watch = watchesDao.upsert(request.user, validatedForm)
+        watchesDao.upsert(request.authorization, request.user, s.get) match {
+          case Invalid(errors) => Conflict(Json.toJson(errors.toNonEmptyList.toList))
+          case Valid(watch) => {
             Created(Json.toJson(
               model.toModel(watch).getOrElse {
                 sys.error("Failed to create watch")

@@ -1,6 +1,8 @@
 package db
 
+import cats.implicits._
 import anorm._
+import cats.data.ValidatedNec
 import io.apibuilder.api.v0.models.{Error, User, WatchForm}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
@@ -11,9 +13,8 @@ import util.OptionalQueryFilter
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-case class ValidatedWatchForm(
+case class ValidatedWatchForm(user: User,
   application: InternalApplication,
-  form: WatchForm
 )
 
 case class InternalWatch(
@@ -44,34 +45,14 @@ class WatchesDao @Inject() (
     ({guid}::uuid, {user_guid}::uuid, {application_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def validate(
+  private def validate(
     auth: Authorization,
     form: WatchForm
-  ): Either[Seq[Error], ValidatedWatchForm] = {
-    val userErrors = usersDao.findByGuid(form.userGuid) match {
-      case None => Seq("User not found")
-      case Some(_) => Nil
-    }
-
-    val application = applicationsDao.findByOrganizationKeyAndApplicationKey(auth, form.organizationKey, form.applicationKey)
-    val applicationKeyErrors = application match {
-      case None => Seq(s"Application[${form.applicationKey}] not found")
-      case Some(_) => Nil
-    }
-
-    (applicationKeyErrors ++ userErrors).toList match {
-      case Nil => {
-        Right(
-          ValidatedWatchForm(
-            application = application.get,
-            form = form
-          )
-        )
-      }
-      case errors => {
-        Left(Validation.errors(errors))
-      }
-    }
+  ): ValidatedNec[Error, ValidatedWatchForm] = {
+    (
+      usersDao.findByGuid(form.userGuid).toValidNec(Validation.singleError("User not found")),
+      applicationsDao.findByOrganizationKeyAndApplicationKey(auth, form.organizationKey, form.applicationKey).toValidNec(Validation.singleError(s"Application[${form.applicationKey}] not found"))
+    ).mapN(ValidatedWatchForm)
   }
 
   private def findByApplicationGuidAndUserGuid(applicationGuid: UUID, userGuid: UUID) = {
@@ -83,24 +64,26 @@ class WatchesDao @Inject() (
     ).headOption
   }
 
-  def upsert(createdBy: User, form: ValidatedWatchForm): InternalWatch = {
-    def find: Option[InternalWatch] = findByApplicationGuidAndUserGuid(
-      applicationGuid = form.application.guid,
-      userGuid = form.form.userGuid
-    )
-
-    find.getOrElse {
-      db.withConnection { implicit c =>
-        SQL(InsertQuery).on(
-          "guid" -> UUID.randomUUID(),
-          "user_guid" -> form.form.userGuid,
-          "application_guid" -> form.application.guid,
-          "created_by_guid" -> createdBy.guid
-        ).execute()
-      }
-      find.getOrElse(
-        sys.error("Failed to create watch")
+  def upsert(auth: Authorization, createdBy: User, form: WatchForm): ValidatedNec[Error, InternalWatch] = {
+    validate(auth, form).map { vForm =>
+      def find: Option[InternalWatch] = findByApplicationGuidAndUserGuid(
+        applicationGuid = vForm.application.guid,
+        userGuid = vForm.user.guid
       )
+
+      find.getOrElse {
+        db.withConnection { implicit c =>
+          SQL(InsertQuery).on(
+            "guid" -> UUID.randomUUID(),
+            "user_guid" -> vForm.user.guid,
+            "application_guid" -> vForm.application.guid,
+            "created_by_guid" -> createdBy.guid
+          ).execute()
+        }
+        find.getOrElse(
+          sys.error("Failed to create watch")
+        )
+      }
     }
   }
 
