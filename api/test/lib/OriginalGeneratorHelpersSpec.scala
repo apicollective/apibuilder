@@ -24,7 +24,7 @@ class OriginalGeneratorHelpersSpec extends PlaySpec with GuiceOneAppPerSuite wit
     }
 
     "serviceJson" in {
-      OriginalUtil.guessType(readFile("../core/src/test/resources/apibuilder-service.json")) must be(Some(OriginalType.ServiceJson))
+      OriginalUtil.guessType(readFile("../core/test/resources/apibuilder-service.json")) must be(Some(OriginalType.ServiceJson))
     }
 
     "swaggerJson" in {
