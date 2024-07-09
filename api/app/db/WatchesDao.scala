@@ -153,7 +153,6 @@ class WatchesDao @Inject() (
         and(isDeleted.map(Filters.isDeleted("watches", _))).
         orderBy("created_at").
         optionalLimit(limit).
-        withDebugging().
         offset(offset).
         as(parser.*)
     }
