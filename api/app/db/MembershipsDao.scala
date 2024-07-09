@@ -193,7 +193,7 @@ class MembershipsDao @Inject() (
     val filters = List(
       new OptionalQueryFilter(organizationKey) {
         override def filter(q: Query, value: String): Query = {
-          q.in("membership_requests.organization_guid", Query("select guid from organizations").isNull("deleted_at").equals("key", organizationKey))
+          q.in("memberships.organization_guid", Query("select guid from organizations").isNull("deleted_at").equals("key", organizationKey))
         }
       }
     )
