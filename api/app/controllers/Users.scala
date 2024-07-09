@@ -125,10 +125,8 @@ class Users @Inject() (
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[UserAuthenticationForm] => {
-        val form = s.get
+      case JsSuccess(form: UserAuthenticationForm, _) => {
         usersDao.findByEmail(form.email) match {
-
           case None => {
             Conflict(Json.toJson(Validation.userAuthorizationFailed()))
           }
@@ -150,9 +148,8 @@ class Users @Inject() (
       case e: JsError => Future.successful {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[GithubAuthenticationForm] => {
-        val token = s.get.token
-        val headers = "Authorization" -> s"Bearer $token"
+      case JsSuccess(form: GithubAuthenticationForm, _) => {
+        val headers = "Authorization" -> s"Bearer ${form.token}"
 
         for {
           userResponse <- wsClient.url("https://api.github.com/user").addHttpHeaders(headers).get()
