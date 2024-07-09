@@ -52,6 +52,8 @@ class GithubController @javax.inject.Inject() (
   }
 
   private def getAccessToken(code: String): Future[Either[Throwable, String]] = {
+    import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+
     val form = Json.obj(
       "client_id" -> github.clientId,
       "client_secret" -> github.clientSecret,
@@ -60,9 +62,7 @@ class GithubController @javax.inject.Inject() (
 
     ws.url("https://github.com/login/oauth/access_token").post(form).map { result =>
       val parsed = FormUrlEncodedParser.parse(result.body)
-      val accessToken = parsed.get("access_token").getOrElse {
-        sys.error(s"GitHub Oauth response did not contain an access_token: ${result.body}")
-      }.headOption.getOrElse {
+      val accessToken = parsed.getOrElse("access_token", sys.error(s"GitHub Oauth response did not contain an access_token: ${result.body}")).headOption.getOrElse {
         sys.error(s"GitHub Oauth response returned an empty list for access_token: ${result.body}")
       }
       Right(accessToken)

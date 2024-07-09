@@ -105,6 +105,11 @@ object AttributesController {
     name: String,
     description: String
   )
+  object AttributeFormData {
+    def unapply(d: AttributeFormData): Option[(String, String)] = Some(
+      (d.name, d.description)
+    )
+  }
 
   private[controllers] val attributesFormData = Form(
     mapping(

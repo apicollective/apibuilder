@@ -73,6 +73,10 @@ class Domains @Inject() (
 object Domains {
  
   case class DomainData(name: String)
+  object DomainData {
+    def unapply(d: DomainData): Option[String] = Some(d.name)
+  }
+
   private[controllers] val domainForm = Form(
     mapping(
       "name" -> nonEmptyText

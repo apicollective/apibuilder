@@ -92,6 +92,9 @@ object Generators {
   case class GeneratorServiceCreateFormData(
     uri: String
   )
+  object GeneratorServiceCreateFormData {
+    def unapply(d: GeneratorServiceCreateFormData): Option[String] = Some(d.uri)
+  }
 
   private[controllers] val generatorServiceCreateFormData = Form(
     mapping(
