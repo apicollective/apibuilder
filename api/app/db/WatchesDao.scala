@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Error, Organization, User, WatchForm}
+import io.apibuilder.api.v0.models.{Error, User, WatchForm}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.Validation
@@ -12,12 +12,9 @@ import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 case class ValidatedWatchForm(
-  org: Organization,
   application: InternalApplication,
   form: WatchForm
-) {
-  assert(org.guid == application.organizationGuid, "Invalid org")
-}
+)
 
 case class InternalWatch(
                                guid: UUID,
@@ -29,7 +26,6 @@ case class InternalWatch(
 class WatchesDao @Inject() (
   @NamedDatabase("default") db: Database,
   applicationsDao: ApplicationsDao,
-  organizationsDao: OrganizationsDao,
   usersDao: UsersDao
 ) {
 
@@ -57,22 +53,16 @@ class WatchesDao @Inject() (
       case Some(_) => Nil
     }
 
-    val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
-    val application: Option[InternalApplication] = org.flatMap { o =>
-      applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
-    }
-
+    val application = applicationsDao.findByOrganizationKeyAndApplicationKey(auth, form.organizationKey, form.applicationKey)
     val applicationKeyErrors = application match {
       case None => Seq(s"Application[${form.applicationKey}] not found")
       case Some(_) => Nil
     }
 
-
     (applicationKeyErrors ++ userErrors).toList match {
       case Nil => {
         Right(
           ValidatedWatchForm(
-            org = org.get,
             application = application.get,
             form = form
           )
