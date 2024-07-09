@@ -15,7 +15,9 @@ case class ValidatedWatchForm(
   org: Organization,
   application: InternalApplication,
   form: WatchForm
-)
+) {
+  assert(org.guid == application.organizationGuid, "Invalid org")
+}
 
 case class InternalWatch(
                                guid: UUID,
@@ -92,7 +94,7 @@ class WatchesDao @Inject() (
   }
 
   def upsert(createdBy: User, form: ValidatedWatchForm): InternalWatch = {
-    def find = findByApplicationGuidAndUserGuid(
+    def find: Option[InternalWatch] = findByApplicationGuidAndUserGuid(
       applicationGuid = form.application.guid,
       userGuid = form.form.userGuid
     )
