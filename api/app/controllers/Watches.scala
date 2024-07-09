@@ -33,7 +33,7 @@ class Watches @Inject() (
       userGuid = userGuid,
       organizationKey =  organizationKey,
       applicationKey = applicationKey,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
     Ok(Json.toJson(model.toModels(watches)))
@@ -56,7 +56,7 @@ class Watches @Inject() (
       userGuid = userGuid,
       organizationKey =  Some(organizationKey),
       applicationKey = Some(applicationKey),
-      limit = 1
+      limit = Some(1)
     ).headOption match {
       case None => Ok(Json.toJson(false))
       case Some(_) => Ok(Json.toJson(true))

@@ -128,7 +128,7 @@ class DiffVersionProcessor @Inject()(
             Authorization.All,
             applicationGuid = Some(application.guid),
             userGuid = Some(subscription.user.guid),
-            limit = 1
+            limit = Some(1)
           ).nonEmpty
         }
       }

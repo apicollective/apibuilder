@@ -82,21 +82,33 @@ class WatchesDao @Inject() (
     }
   }
 
-  def upsert(createdBy: User, fullForm: ValidatedWatchForm): InternalWatch = {
-    val application = fullForm.application
-    val guid = UUID.randomUUID
+  private def findByApplicationGuidAndUserGuid(applicationGuid: UUID, userGuid: UUID) = {
+    findAll(
+      Authorization.All,
+      userGuid = Some(userGuid),
+      applicationGuid = Some(applicationGuid),
+      limit = Some(1)
+    ).headOption
+  }
 
-    db.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        "guid" -> guid,
-        "user_guid" -> fullForm.form.userGuid,
-        "application_guid" -> application.guid,
-        "created_by_guid" -> createdBy.guid
-      ).execute()
-    }
+  def upsert(createdBy: User, form: ValidatedWatchForm): InternalWatch = {
+    def find = findByApplicationGuidAndUserGuid(
+      applicationGuid = form.application.guid,
+      userGuid = form.form.userGuid
+    )
 
-    findByGuid(Authorization.All, guid).getOrElse {
-      sys.error("Failed to create watch")
+    find.getOrElse {
+      db.withConnection { implicit c =>
+        SQL(InsertQuery).on(
+          "guid" -> UUID.randomUUID(),
+          "user_guid" -> form.form.userGuid,
+          "application_guid" -> form.application.guid,
+          "created_by_guid" -> createdBy.guid
+        ).execute()
+      }
+      find.getOrElse(
+        sys.error("Failed to create watch")
+      )
     }
   }
 
@@ -105,7 +117,7 @@ class WatchesDao @Inject() (
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[InternalWatch] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -116,7 +128,7 @@ class WatchesDao @Inject() (
     applicationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[InternalWatch] = {
     val filters = List(
@@ -142,7 +154,7 @@ class WatchesDao @Inject() (
         equals("user_guid", userGuid).
         and(isDeleted.map(Filters.isDeleted("watches", _))).
         orderBy("created_at").
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(parser.*)
     }
