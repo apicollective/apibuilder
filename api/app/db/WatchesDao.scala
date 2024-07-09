@@ -6,6 +6,7 @@ import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.Validation
 import play.api.db._
+import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -118,15 +119,29 @@ class WatchesDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[InternalWatch] = {
+    val filters = List(
+      new OptionalQueryFilter(organizationKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("organization_guid", Query("select guid from organizations").equals("key", value))
+        }
+      },
+      new OptionalQueryFilter(applicationKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("application_guid", Query("select guid from applications").equals("key", value))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery, "application_guid").
-        equals("watches.guid", guid).
-        equals("organizations.key", organizationKey).
-        equals("watches.application_guid", applicationGuid).
-        equals("applications.key", applicationKey).
-        equals("watches.user_guid", userGuid).
+      authorization.applicationFilter(
+          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
+          "application_guid"
+        ).
+        equals("guid", guid).
+        equals("application_guid", applicationGuid).
+        equals("user_guid", userGuid).
         and(isDeleted.map(Filters.isDeleted("watches", _))).
-        orderBy("applications.key, watches.created_at").
+        orderBy("created_at").
         limit(limit).
         offset(offset).
         as(parser.*)

@@ -1,6 +1,8 @@
-[error]     db.ChangesDaoSpec
-[error]     db.generators.ServicesDaoSpec
-[error]     db.generators.GeneratorsDaoSpec
+[error] 	controllers.WatchesSpec
+[error] 	controllers.VersionsSpec
+[error] 	controllers.SubscriptionsSpec
+[error] 	services.EmailVerificationsServiceSpec
+
 
 "org.webjars" % "bootstrap" % "3.4.1",
       webjars

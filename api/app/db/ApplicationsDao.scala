@@ -197,7 +197,7 @@ class ApplicationsDao @Inject() (
     form: MoveForm
   ): ValidatedNec[Error, InternalApplication] = {
     validateMove(Authorization.User(updatedBy.guid), app, form).map { newOrg =>
-      if (newOrg.key == form.orgKey) {
+      if (newOrg.guid == app.organizationGuid) {
         // No-op
         app
 

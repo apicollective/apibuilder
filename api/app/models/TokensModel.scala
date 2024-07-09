@@ -22,6 +22,7 @@ class TokensModel @Inject()(
         Token(
           guid = t.guid,
           maskedToken = t.maskedToken,
+          description = t.description,
           user = user,
           audit = t.audit
         )
