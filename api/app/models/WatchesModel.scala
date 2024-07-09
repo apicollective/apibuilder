@@ -24,7 +24,7 @@ class WatchesModel @Inject()(
     val applications = applicationsModel.toModels (
       applicationsDao.findAll(
         Authorization.All,
-        guids = Some(watches.map(_.applicationGuid)),
+        guids = Some(watches.map(_.applicationGuid).distinct),
         limit = None
       )
     ).map { o => o.guid -> o }.toMap

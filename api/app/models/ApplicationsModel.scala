@@ -26,7 +26,7 @@ class ApplicationsModel @Inject()(
           guid = app.guid,
           organization = Reference(guid = org.guid, key = org.key),
           name = app.name,
-          key = app.name,
+          key = app.key,
           visibility = app.visibility,
           description = app.description,
           lastUpdatedAt = app.lastUpdatedAt,
