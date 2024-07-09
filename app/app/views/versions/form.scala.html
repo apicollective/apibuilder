@@ -50,12 +50,14 @@
 
           @helper.select(
             form("original_type"),
-            Seq( ("", "-- auto detect --") ) ++ io.apibuilder.api.v0.models.OriginalType.all.map {
-                case t: io.apibuilder.api.v0.models.OriginalType.AvroIdl => (t.toString, "Avro IDL (experimental)")
-                case t: io.apibuilder.api.v0.models.OriginalType.ApiJson => (t.toString, "api.json")
-                case t: io.apibuilder.api.v0.models.OriginalType.ServiceJson => (t.toString, "service.json")
-                case t: io.apibuilder.api.v0.models.OriginalType.Swagger => (t.toString, "Swagger: JSON or YAML (2.0, experimental)")
-                case io.apibuilder.api.v0.models.OriginalType.UNDEFINED(name) => (name, name)
+            Seq( ("", "-- auto detect --") ) ++ io.apibuilder.api.v0.models.OriginalType.all.map { t =>
+                t match {
+                    case io.apibuilder.api.v0.models.OriginalType.AvroIdl => (t.toString, "Avro IDL (experimental)")
+                    case io.apibuilder.api.v0.models.OriginalType.ApiJson => (t.toString, "api.json")
+                    case io.apibuilder.api.v0.models.OriginalType.ServiceJson => (t.toString, "service.json")
+                    case io.apibuilder.api.v0.models.OriginalType.Swagger => (t.toString, "Swagger: JSON or YAML (2.0, experimental)")
+                    case io.apibuilder.api.v0.models.OriginalType.UNDEFINED(name) => (t.toString, name)
+                }
             },
             Symbol("_label") -> "Type"
           )
