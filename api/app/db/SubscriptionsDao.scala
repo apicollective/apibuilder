@@ -7,6 +7,7 @@ import io.flow.postgresql.Query
 import lib.Validation
 import play.api.db._
 import play.api.inject.Injector
+import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -39,7 +40,7 @@ class SubscriptionsDao @Inject() (
     select guid, user_guid,organization_guid, publication,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")}
       from subscriptions
-  """).withDebugging()
+  """)
 
   private val InsertQuery = """
     insert into subscriptions
@@ -145,11 +146,21 @@ class SubscriptionsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[InternalSubscription] = {
+    val filters = List(
+      new OptionalQueryFilter(organizationKey) {
+        override def filter(q: Query, value: String): Query = {
+          q.in("organization_guid", Query("select guid from organizations").equals("key", value))
+        }
+      }
+    )
+
     db.withConnection { implicit c =>
-      authorization.subscriptionFilter(BaseQuery, "subscriptions").
+      authorization.subscriptionFilter(
+          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
+          "subscriptions"
+        ).
         equals("guid", guid).
         equals("organization_guid", organizationGuid).
-        equals("organizations.key", organizationKey.map(_.toLowerCase.trim)).
         equals("user_guid", userGuid).
         equals("publication", publication.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
