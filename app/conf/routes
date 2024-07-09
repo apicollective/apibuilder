@@ -6,7 +6,7 @@ GET     /login                                                    controllers.Lo
 GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
 GET     /login/dev                                                controllers.LoginController.developmentLogin
 GET     /login/legacy                                             controllers.LoginController.legacy(return_url: Option[String] ?= None)
-POST    /login/legacy                                             controllers.LoginController.legacyPost
+POST    /login/legacy                                             controllers.LoginController.legacyPost()
 GET     /login/forgotPassword                                     controllers.LoginController.forgotPassword
 POST    /login/forgotPassword                                     controllers.LoginController.postForgotPassword
 GET     /login/resetPassword/:token                               controllers.LoginController.resetPassword(token: String)
@@ -64,13 +64,13 @@ GET     /tokens                                                   controllers.To
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)
 GET     /tokens/show/:guid                                        controllers.TokensController.show(guid: java.util.UUID)
 GET     /tokens/cleartext/:guid                                   controllers.TokensController.cleartext(guid: java.util.UUID)
-GET     /tokens/create                                            controllers.TokensController.create
+GET     /tokens/create                                            controllers.TokensController.create()
 POST    /tokens/postCreate                                        controllers.TokensController.postCreate
 POST    /tokens/postDelete/:guid                                  controllers.TokensController.postDelete(guid: java.util.UUID)
 
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
 
-GET     /org/create                                               controllers.Organizations.create
+GET     /org/create                                               controllers.Organizations.create()
 POST    /org/createPost                                           controllers.Organizations.createPost
 GET     /org/edit                                                 controllers.Organizations.edit(org_key: String)
 POST    /org/editPost                                             controllers.Organizations.editPost(org_key: String)

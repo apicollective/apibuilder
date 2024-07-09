@@ -193,6 +193,9 @@ class Members @Inject() (
 object Members {
 
   case class AddMemberData(role: String, email: String, nickname: String)
+  object AddMemberData {
+    def unapply(d: AddMemberData): Option[(String, String, String)] = Some((d.role, d.email, d.nickname))
+  }
   private[controllers] val addMemberForm = Form(
     mapping(
       "role" -> default(nonEmptyText, MembershipRole.Member.toString),
