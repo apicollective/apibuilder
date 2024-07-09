@@ -58,8 +58,7 @@ class MembershipRequests @Inject() (
       case e: JsError => {
         Conflict(Json.toJson(Validation.error(e.toString)))
       }
-      case s: JsSuccess[MembershipRequestForm] => {
-        val form = s.get
+      case JsSuccess(form: MembershipRequestForm, _) => {
         organizationsDao.findByGuid(request.authorization, form.org_guid) match {
           case None => {
             Conflict(Json.toJson(Validation.error("Organization not found or not authorized to make changes to this org")))

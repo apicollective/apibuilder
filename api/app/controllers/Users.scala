@@ -64,8 +64,7 @@ class Users @Inject() (
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[UserForm] => {
-        val form = s.get
+      case JsSuccess(form: UserForm, _) => {
         usersDao.validateNewUser(form) match {
           case Nil => {
             val user = usersDao.create(form)
