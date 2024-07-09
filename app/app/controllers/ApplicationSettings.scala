@@ -177,17 +177,23 @@ class ApplicationSettings @Inject() (
 object ApplicationSettings {
 
   case class Settings(visibility: String)
+  object Settings {
+    def unapply(s: Settings): Option[String] = Some(s.visibility)
+  }
   private[controllers] val settingsForm = Form(
     mapping(
       "visibility" -> text
-    )(Settings.apply)(Settings.unapply(_))
+    )(Settings.apply)(Settings.unapply)
   )
 
   case class MoveOrgData(orgKey: String)
+  object MoveOrgData {
+    def unapply(d: MoveOrgData): Option[String] = Some(d.orgKey)
+  }
   private[controllers] val moveOrgForm = Form(
     mapping(
       "org_key" -> text
-    )(MoveOrgData.apply)(MoveOrgData.unapply(_))
+    )(MoveOrgData.apply)(MoveOrgData.unapply)
   )
 
 }

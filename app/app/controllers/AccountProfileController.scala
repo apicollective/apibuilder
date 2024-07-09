@@ -76,6 +76,10 @@ object AccountProfileController {
     name: Option[String]
   )
 
+  object ProfileData {
+    def unapply(d: ProfileData): Option[(String, String, Option[String])] = Some((d.email, d.nickname, d.name))
+  }
+
   private[controllers] val profileForm = Form(
     mapping(
       "email" -> nonEmptyText,
