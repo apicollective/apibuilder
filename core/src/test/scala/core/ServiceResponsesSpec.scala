@@ -77,7 +77,7 @@ class ServiceResponsesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
 
   it("validates strings that are not 'default'") {
     val json = baseJson.format("DELETE", s""", "responses": { "def": { "type": "error" } } """)
-    TestHelper.expectSingleError(json) should be("Response code must be an integer or the keyword 'default' and not[def]")
+    TestHelper.expectSingleError(json) should be("Response code[def] must be either be an integer or the word 'default'")
   }
 
   it("validates response codes are >= 100") {
