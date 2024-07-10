@@ -904,15 +904,6 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def responseCodeString(responseCode: ResponseCode): String = {
-    responseCode match {
-      case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
-      case ResponseCodeOption.UNDEFINED(value) => value
-      case ResponseCodeInt(value) => value.toString
-      case ResponseCodeUndefinedType(value) => value
-    }
-  }
-
   private def validateResponses(): ValidatedNec[String, Unit] = {
     sequenceUnique(Seq(
       validateResponseCodes(),
@@ -929,15 +920,13 @@ case class ServiceSpecValidator(
       service.resources.flatMap { resource =>
         resource.operations.flatMap { op =>
           op.responses.map { r =>
-            r.code match {
-              case ResponseCodeOption.Default => ().validNec
-              case ResponseCodeOption.UNDEFINED(value) => s"Response code must be an integer or the keyword 'default' and not[$value]".invalidNec
-              case ResponseCodeUndefinedType(value) => s"Response code must be an integer or the keyword 'default' and not[$value]".invalidNec
-              case ResponseCodeInt(code) => {
-                if (code < 100) {
-                  s"Response code[$code] must be >= 100".invalidNec
-                } else {
-                  ().validNec
+            r.code.toLowerCase.trim match {
+              case "default" => ().validNec
+              case other => {
+                other.toIntOption match {
+                  case None => s"Response code[$other] must be either be an integer or the word 'default'".invalidNec
+                  case Some(code) if code < 100 => s"Response code[$code] must be >= 100".invalidNec
+                  case Some(_) => ().validNec
                 }
               }
             }

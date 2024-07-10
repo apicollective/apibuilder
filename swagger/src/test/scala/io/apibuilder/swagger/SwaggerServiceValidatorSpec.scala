@@ -226,7 +226,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
                       ),
                       responses = Seq(
                         Response(
-                          code = ResponseCodeInt(200),
+                          code = "200",
                           `type` = "[Pet]",
                           description = Some("find pet response"),
                           deprecation = None,
@@ -235,7 +235,7 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
                             value = JsObject(Seq(("bar", JsString("response"))))
                           )))),
                         Response(
-                          code = ResponseCodeOption.Default,
+                          code = "default",
                           `type` = "Error",
                           description = Some("unexpected error"),
                           deprecation = None)
@@ -270,12 +270,12 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
                       ),
                       responses = Seq(
                         Response(
-                          code = ResponseCodeInt(200),
+                          code = "200",
                           `type` = "[Pet]",
                           description = Some("find pet response"),
                           deprecation = None),
                         Response(
-                          code = ResponseCodeOption.Default,
+                          code = "default",
                           `type` = "Error",
                           description = Some("unexpected error"),
                           deprecation = None)
@@ -306,12 +306,12 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
                       ),
                       responses = Seq(
                         Response(
-                          code = ResponseCodeInt(204),
+                          code = "204",
                           `type` = "unit",
                           description = Some("pets deleted - no response body content"),
                           deprecation = None),
                         Response(
-                          code = ResponseCodeOption.Default,
+                          code = "default",
                           `type` = "Error",
                           description = Some("unexpected error"),
                           deprecation = None)
@@ -597,12 +597,12 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
                     ),
                     responses = Seq(
                       Response(
-                        code = ResponseCodeInt(200),
+                        code = "200",
                         `type` = "[Pet]",
                         description = Some("find pet response"),
                         deprecation = None),
                       Response(
-                        code = ResponseCodeOption.Default,
+                        code = "default",
                         `type` = "Error",
                         description = Some("unexpected error"),
                         deprecation = None)
@@ -633,12 +633,12 @@ class SwaggerServiceValidatorSpec extends AnyFunSpec with Matchers with Validate
                     ),
                     responses = Seq(
                       Response(
-                        code = ResponseCodeInt(200),
+                        code = "200",
                         `type` = "[Pet]",
                         description = Some("find pet response"),
                         deprecation = None),
                       Response(
-                        code = ResponseCodeOption.Default,
+                        code = "default",
                         `type` = "Error",
                         description = Some("unexpected error"),
                         deprecation = None)

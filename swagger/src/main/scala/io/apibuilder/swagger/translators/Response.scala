@@ -1,9 +1,11 @@
 package io.apibuilder.swagger.translators
 
 import lib.Primitives
-import io.apibuilder.spec.v0.{models => apidoc}
+
+import io.apibuilder.spec.v0.{models => apibuilder}
 import io.apibuilder.swagger.Util
 import io.swagger.{models => swagger}
+import lib.Primitives
 
 import scala.annotation.nowarn
 
@@ -14,18 +16,12 @@ object Response {
     resolver: Resolver,
     code: String,
     response: swagger.Response
-  ): apidoc.Response = {
-    val responseCode = if (code == "default") {
-      apidoc.ResponseCodeOption.Default
-    } else {
-      apidoc.ResponseCodeInt(code.toInt)
-    }
-
+  ): apibuilder.Response = {
     // getExamples
     // getHeaders
 
-    apidoc.Response(
-      code = responseCode,
+    apibuilder.Response(
+      code = code,
       `type` = Option(response.getSchema) match {
         case None => Primitives.Unit.toString
         case Some(schema) => resolver.schemaType(schema)
