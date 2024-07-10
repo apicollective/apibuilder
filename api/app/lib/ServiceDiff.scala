@@ -449,34 +449,22 @@ case class ServiceDiff(
     Helpers.diffOptionalStringNonBreaking(s"$thisPrefix example", a.example, b.example)
   }
 
-  /**
-    * Returns the response code as a string.
-    */
-  private def responseCode(r: Response): String = {
-    r.code match {
-      case ResponseCodeInt(code) => code.toString
-      case ResponseCodeUndefinedType(desc) => desc
-      case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
-      case ResponseCodeOption.UNDEFINED(value) => value
-    }
-  }
-
   private def diffResponses(prefix: String, a: Seq[Response], b: Seq[Response]): Seq[Diff] = {
     val added = b.map(_.code).filterNot(code => a.exists(_.code == code))
 
     a.flatMap { responseA =>
       b.find(_.code == responseA.code) match {
-        case None => Some(Material.breaking(Helpers.removed(s"$prefix response", responseCode(responseA))))
+        case None => Some(Material.breaking(Helpers.removed(s"$prefix response", responseA.code)))
         case Some(responseB) => diffResponse(prefix, responseA, responseB)
       }
     } ++ b.filter( r => added.contains(r.code) ).map { r =>
-      Material.nonBreaking(Helpers.added(s"$prefix response", responseCode(r)))
+      Material.nonBreaking(Helpers.added(s"$prefix response", r.code))
     }
   }
 
   private def diffResponse(prefix: String, a: Response, b: Response): Seq[Diff] = {
-    assert(responseCode(a) == responseCode(b), "Response codes must be the same")
-    val thisPrefix = s"$prefix response ${responseCode(a)}"
+    assert(a.code == b.code, "Response codes must be the same")
+    val thisPrefix = s"$prefix response ${a.code}"
     Helpers.diffStringBreaking(s"$thisPrefix type", a.`type`, b.`type`) ++
     Helpers.diffOptionalStringNonBreaking(s"$thisPrefix description", a.description, b.description) ++
     Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation) ++

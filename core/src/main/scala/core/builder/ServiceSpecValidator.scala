@@ -1,8 +1,8 @@
 package builder
 
-import cats.implicits._
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
+import cats.implicits._
 import core.{TypeValidator, TypesProvider, Util}
 import io.apibuilder.spec.v0.models._
 import lib._
@@ -954,7 +954,7 @@ case class ServiceSpecValidator(
       service.resources.flatMap { resource =>
         resource.operations.flatMap { op =>
           op.responses.map { r =>
-            validateConcreteType(opLabel(resource, op, s"response code[${responseCodeString(r.code)}]"), r.`type`)
+            validateConcreteType(opLabel(resource, op, s"response code[${r.code}]"), r.`type`)
           }
         }
       }
@@ -966,15 +966,9 @@ case class ServiceSpecValidator(
       service.resources.flatMap { resource =>
         resource.operations.map { op =>
           val types = op.responses.flatMap { r =>
-            r.code match {
-              case ResponseCodeInt(value) => {
-                if (value >= 200 && value < 300) {
-                  Some(r.`type`)
-                } else {
-                  None
-                }
-              }
-              case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => None
+            r.code.toIntOption match {
+              case Some(value) if value >= 200 && value < 300 => Some(r.`type`)
+              case _ => None
             }
           }.distinct
 
@@ -992,8 +986,8 @@ case class ServiceSpecValidator(
     val statusCodesRequiringUnit = Seq("204", "304")
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.responses.filter(r => statusCodesRequiringUnit.contains(responseCodeString(r.code)) && r.`type` != Primitives.Unit.toString).map { r =>
-          opLabel(resource, op, s"response code[${responseCodeString(r.code)}] must return unit and not[${r.`type`}]")
+        op.responses.filter(r => statusCodesRequiringUnit.contains(r.code) && r.`type` != Primitives.Unit.toString).map { r =>
+          opLabel(resource, op, s"response code[${r.code}] must return unit and not[${r.`type`}]")
         }
       }
     }.distinct.toList match {
@@ -1009,7 +1003,7 @@ case class ServiceSpecValidator(
         op <- resource.operations
         r <- op.responses
       } yield {
-        validateHeaders(r.headers.getOrElse(Nil), opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
+        validateHeaders(r.headers.getOrElse(Nil), opLabel(resource, op, s"response code[${r.code}] header"))
       }
     )
   }

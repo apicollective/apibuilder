@@ -55,11 +55,9 @@
                    <tbody>
                      @operation.responses.map { response =>
                        <tr>
-                         <th>HTTP @{response.code match {
-                           case io.apibuilder.spec.v0.models.ResponseCodeInt(value) => value
-                           case io.apibuilder.spec.v0.models.ResponseCodeOption.Default => "*"
-                           case io.apibuilder.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
-                           case io.apibuilder.spec.v0.models.ResponseCodeUndefinedType(value) => value
+                         <th>HTTP @{response.code.toLowerCase match {
+                           case "default" => "*"
+                           case other => other
                          }}</th>
                          <td>@datatype(org, application, version, service, response.`type`)</td>
                        </tr>

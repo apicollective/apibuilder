@@ -490,16 +490,13 @@ case class ServiceBuilder(
 
   object ResponseBuilder {
     val DefaultUnitResponse: Response = Response(
-      code = ResponseCodeInt(204),
+      code = "204",
       `type` = Primitives.Unit.toString
     )
 
     def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
       Response(
-        code = Try(internal.code.toInt) match {
-          case Success(code) => ResponseCodeInt(code)
-          case Failure(_) => ResponseCodeOption(internal.code)
-        },
+        code = internal.code,
         `type` = validOrError(internal.datatype).label,
         headers = internal.headers.map { HeaderBuilder(resolver, _) }.toList match {
           case Nil => None

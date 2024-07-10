@@ -1,11 +1,11 @@
 package core
 
 import helpers.ValidatedTestHelpers
-import io.apibuilder.spec.v0.models.{Method, Response, ResponseCodeInt, ResponseCodeOption, ResponseCodeUndefinedType}
+import io.apibuilder.spec.v0.models.Method
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class SvcApiDocJsonSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
+class SvcApiJsonSpec extends AnyFunSpec with Matchers with ValidatedTestHelpers {
 
   private val Path = "spec/apibuilder-api.json"
   private lazy val service = expectValid {
@@ -50,18 +50,9 @@ class SvcApiDocJsonSpec extends AnyFunSpec with Matchers with ValidatedTestHelpe
   it("all POST operations return either a 200, 201, 204, 401 or a 409") {
     val validCodes = Seq("200", "201", "204", "401", "409")
     service.resources.flatMap(_.operations.filter(_.method == Method.Post)).foreach { op =>
-      op.responses.find { r => !validCodes.contains(TestHelper.responseCode(r.code))}.foreach { code =>
-        fail(s"POST operation should return a ${validCodes.mkString(", ")} - Operation[${op.method} ${op.path}] has invalid response code[${toLabel(code)}]")
+      op.responses.find { r => !validCodes.contains(r.code)}.foreach { code =>
+        fail(s"POST operation should return a ${validCodes.mkString(", ")} - Operation[${op.method} ${op.path}] has invalid response code[$code]")
       }
-    }
-  }
-
-  private def toLabel(response: Response): String = {
-    response.code match {
-      case i: ResponseCodeInt => i.value.toString
-      case ResponseCodeOption.Default => "*"
-      case ResponseCodeOption.UNDEFINED(other) => other
-      case ResponseCodeUndefinedType(other) => other
     }
   }
 

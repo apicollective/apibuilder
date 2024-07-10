@@ -47,6 +47,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
     ) should be(
       "Model[user] Field[_!@#] name is invalid: Name can only contain a-z, A-Z, 0-9, - and _ characters"
     )
+
   }
 
   it("model with duplicate field names") {
@@ -102,7 +103,7 @@ class ServiceValidatorSpec extends AnyFunSpec with Matchers with helpers.ApiJson
           )
         ))
       )
-    ).resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").getOrElse {
+    ).resources.head.operations.head.responses.find(_.code == "204").getOrElse {
       sys.error("Missing 204 response")
     }
   }

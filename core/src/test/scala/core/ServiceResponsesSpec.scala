@@ -46,7 +46,7 @@ class ServiceResponsesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
 
   it("verifies that response defaults to type 204 Unit") {
     val json = baseJson.format("DELETE", "")
-    val response = setupValidApiJson(json).resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").get
+    val response = setupValidApiJson(json).resources.head.operations.head.responses.find(_.code == "204").get
     response.`type` should be("unit")
   }
 
@@ -104,7 +104,7 @@ class ServiceResponsesSpec extends AnyFunSpec with Matchers with ApiJsonHelpers 
            |    ]
            |  }
            |}""".stripMargin)
-      val response = setupValidApiJson(json).resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "422").get
+      val response = setupValidApiJson(json).resources.head.operations.head.responses.find(_.code == "422").get
       response.`type` should be("unit")
       response.attributes.get.head.name should be("user_errors")
       response.attributes.get.head.value shouldBe a [JsObject]

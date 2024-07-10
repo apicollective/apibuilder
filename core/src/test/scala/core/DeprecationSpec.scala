@@ -327,8 +327,8 @@ class DeprecationSpec extends AnyFunSpec with Matchers with ApiJsonHelpers {
 
     val resource = service.resources.find(_.`type` == "user").get
     val op = resource.operations.head
-    op.responses.find(r => TestHelper.responseCode(r.code) == "200").get.deprecation.flatMap(_.description) should be(None)
-    op.responses.find(r => TestHelper.responseCode(r.code) == "201").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    op.responses.find(r => r.code == "200").get.deprecation.flatMap(_.description) should be(None)
+    op.responses.find(r => r.code == "201").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
   it("body") {

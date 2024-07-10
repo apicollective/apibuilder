@@ -74,15 +74,6 @@ object TestHelper extends ValidatedHelpers with ValidatedTestHelpers {
     }
   }
 
-  def responseCode(responseCode: ResponseCode): String = {
-    responseCode match {
-      case ResponseCodeInt(value) => value.toString
-      case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
-      case ResponseCodeOption.UNDEFINED(value) => sys.error(s"invalid value[$value]")
-      case ResponseCodeUndefinedType(value) => sys.error(s"invalid response code type[$value]")
-    }
-  }
-
   def serviceValidator(
     apiJson: ApiJson,
     fetcher: ServiceFetcher = FileServiceFetcher(),

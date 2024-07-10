@@ -1310,7 +1310,7 @@ class ServiceDiffSpec  extends PlaySpec with GuiceOneAppPerSuite with db.Helpers
 
       "change operation responses" in {
         val success = Response(
-          code = ResponseCodeInt(200),
+          code = "200",
           `type` = "user",
           description = None,
           deprecation = None
