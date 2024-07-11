@@ -38,10 +38,10 @@ class EmailUtil @Inject()(
   // string.
   private val sendgrid = {
     localDeliveryDir match {
-      case None => new SendGrid(appConfig.sendgridApiKey.getOrElse {
-        sys.error(s"sendgridApiKey required when localDeliveryDir is not set")
-      })
-      case Some(_) => new SendGrid(appConfig.sendgridApiKey.getOrElse("development"))
+      case None => new SendGrid(appConfig.sendgridConfig.getOrElse {
+        sys.error(s"sendgridConfig required when localDeliveryDir is not set")
+      }.apiKey)
+      case Some(_) => new SendGrid(appConfig.sendgridConfig.map(_.apiKey).getOrElse("development"))
     }
   }
 

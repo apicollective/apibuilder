@@ -1,16 +1,15 @@
 package controllers
 
 import db.SubscriptionsDao
-import lib.Validation
-import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
+import lib.Validation
 import models.SubscriptionModel
-
-import javax.inject.{Inject, Singleton}
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
 
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Subscriptions @Inject() (

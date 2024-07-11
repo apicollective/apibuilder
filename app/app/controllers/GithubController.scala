@@ -17,18 +17,18 @@ class GithubController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect(returnUrl: Option[String]) = Action {
+  def redirect(returnUrl: Option[String]): Action[AnyContent] = Action {
     Redirect(routes.GithubController.index(returnUrl))
   }
 
-  def index(returnUrl: Option[String]) = Action {
+  def index(returnUrl: Option[String]): Action[AnyContent] = Action {
     Redirect(github.oauthUrl(returnUrl = returnUrl))
   }
 
   def callback(
     code: String,
     returnUrl: String
-  ) = Anonymous.async { request =>
+  ): Action[AnyContent] = Anonymous.async { request =>
     getAccessToken(code).flatMap {
       case Left(ex) => Future.successful {
         logger.error(s"Unable to process git hub login: ${ex.getMessage}", ex)
@@ -52,6 +52,8 @@ class GithubController @javax.inject.Inject() (
   }
 
   private def getAccessToken(code: String): Future[Either[Throwable, String]] = {
+    import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+
     val form = Json.obj(
       "client_id" -> github.clientId,
       "client_secret" -> github.clientSecret,
@@ -60,9 +62,7 @@ class GithubController @javax.inject.Inject() (
 
     ws.url("https://github.com/login/oauth/access_token").post(form).map { result =>
       val parsed = FormUrlEncodedParser.parse(result.body)
-      val accessToken = parsed.get("access_token").getOrElse {
-        sys.error(s"GitHub Oauth response did not contain an access_token: ${result.body}")
-      }.headOption.getOrElse {
+      val accessToken = parsed.getOrElse("access_token", sys.error(s"GitHub Oauth response did not contain an access_token: ${result.body}")).headOption.getOrElse {
         sys.error(s"GitHub Oauth response returned an empty list for access_token: ${result.body}")
       }
       Right(accessToken)

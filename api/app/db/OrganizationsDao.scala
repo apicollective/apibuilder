@@ -195,7 +195,7 @@ class OrganizationsDao @Inject() (
       name = form.name.trim,
       namespace = form.namespace.trim,
       visibility = form.visibility,
-      domains = form.domains.getOrElse(Nil).map(Domain),
+      domains = form.domains.getOrElse(Nil).map(Domain(_)),
       audit = Audit(
         createdAt = DateTime.now,
         createdBy = ReferenceGuid(user.guid),

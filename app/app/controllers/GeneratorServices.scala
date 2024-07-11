@@ -1,6 +1,7 @@
 package controllers
 
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+import play.api.mvc.{Action, AnyContent}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -13,7 +14,7 @@ class GeneratorServices @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(guid: UUID, page: Int = 0) = Anonymous.async { implicit request =>
+  def show(guid: UUID, page: Int = 0): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       serviceOption <- apiClientProvider.callWith404(request.api.generatorServices.getByGuid(guid))
       generators <- request.api.generatorWithServices.get(
@@ -37,7 +38,7 @@ class GeneratorServices @Inject() (
     }
   }
 
-  def deletePost(guid: UUID) = Anonymous.async { implicit request =>
+  def deletePost(guid: UUID): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       _ <- request.api.generatorServices.deleteByGuid(guid)
     } yield {

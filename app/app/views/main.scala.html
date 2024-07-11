@@ -70,8 +70,8 @@
             @if(!service.enums.isEmpty) {
               <b>Enums</b>
               <ul class="nav nav-sidebar">
-                @service.enums.map { enum =>
-                  <li><a href="#enum-@lib.UrlKey.generate(enum.name)">@enum.name</a></li>
+                @service.enums.map { e =>
+                  <li><a href="#enum-@lib.UrlKey.generate(e.name)">@e.name</a></li>
                 }
               </ul>
             }

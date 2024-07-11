@@ -1,95 +1,24 @@
 package db
 
+import anorm.*
+import com.mbryzek.cipher.{CipherLibraryMindrot, Ciphers, HashedValue}
 import io.apibuilder.api.v0.models.{Error, User}
+import io.flow.postgresql.Query
 import lib.Validation
-import anorm._
+import play.api.db.*
+
+import java.sql.Connection
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-import play.api.db._
-import java.util.UUID
-import java.sql.Connection
-
-import io.flow.postgresql.Query
-import org.mindrot.jbcrypt.BCrypt
-import org.apache.commons.codec.binary.Base64
-
-private[db] case class HashedPassword(hash: String)
-
-sealed trait PasswordAlgorithm {
-
-  /**
-   * Uniquely identifies this password algorithm
-   */
-  def key: String
-
-  /**
-   * Hashes the provided String, returning the hashed value
-   */
-  def hash(password: String): HashedPassword
-
-  /**
-   * Check if a cleartext password is valid
-   */
-  def check(candidate: String, hashed: String): Boolean
-
-}
-
-case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
-
-  private val LogRounds = 13
-
-  override def hash(password: String): HashedPassword = {
-    val salt = BCrypt.gensalt(LogRounds)
-    HashedPassword(BCrypt.hashpw(password, salt))
-  }
-
-  override def check(candidate: String, hashed: String): Boolean = {
-    BCrypt.checkpw(candidate, hashed)
-  }
-
-}
-
-/**
- * Used only when fetching unknown keys from DB but will fail if you try to hash
- */
-private[db] case class UnknownPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
-
-  override def hash(password: String): HashedPassword = {
-    sys.error("Unsupported operation for UnknownPasswordAlgorithm")
-  }
-
-  override def check(candidate: String, hashed: String) = false
-
-}
-
-object PasswordAlgorithm {
-
-  private[db] val All = Seq(
-    BcryptPasswordAlgorithm("bcrypt"),
-    UnknownPasswordAlgorithm("unknown")
-  )
-
-  val Latest: PasswordAlgorithm = fromString("bcrypt").getOrElse {
-    sys.error("Could not find latest algorithm")
-  }
-
-  private[db] val Unknown: PasswordAlgorithm = fromString("unknown").getOrElse {
-    sys.error("Could not find unknown algorithm")
-  }
-
-  def fromString(value: String): Option[PasswordAlgorithm] = {
-    All.find(_.key == value)
-  }
-
-}
-
-case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm, hash: String)
+case class UserPassword(guid: UUID, userGuid: UUID, algorithmKey: String, base64EncodedHash: String)
 
 @Singleton
 class UserPasswordsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
+  private val ciphers: Ciphers = Ciphers()
   private val MinLength = 5
 
   private val BaseQuery = Query(
@@ -141,14 +70,14 @@ class UserPasswordsDao @Inject() (
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
     val guid = UUID.randomUUID
-    val algorithm = PasswordAlgorithm.Latest
+    val algorithm = ciphers.latest
     val hashedPassword = algorithm.hash(cleartextPassword)
 
     SQL(InsertQuery).on(
       "guid" -> guid,
       "user_guid" -> userGuid,
       "algorithm_key" -> algorithm.key,
-      "hash" -> new String(Base64.encodeBase64(hashedPassword.hash.getBytes)),
+      "hash" -> hashedPassword.hash,
       "created_by_guid" -> creatingUserGuid,
       "updated_by_guid" -> creatingUserGuid
     ).execute()
@@ -161,7 +90,18 @@ class UserPasswordsDao @Inject() (
   def isValid(userGuid: UUID, cleartextPassword: String): Boolean = {
     findByUserGuid(userGuid) match {
       case None => false
-      case Some(up: UserPassword) => up.algorithm.check(cleartextPassword, up.hash)
+      case Some(up) => {
+        ciphers.libraries.find(_.key == up.algorithmKey) match {
+          case None => false
+          case Some(al) => {
+            al.isValid(
+              plaintext = cleartextPassword,
+              hash = up.base64EncodedHash,
+              salt = None
+            )
+          }
+        }
+      }
     }
   }
 
@@ -184,10 +124,8 @@ class UserPasswordsDao @Inject() (
         UserPassword(
           guid = guid,
           userGuid = userGuid,
-          algorithm = PasswordAlgorithm.fromString(algorithmKey).getOrElse {
-            sys.error(s"Invalid algorithmKey[$algorithmKey] for userGuid[$userGuid]")
-          },
-          hash = new String(Base64.decodeBase64(hash.getBytes))
+          algorithmKey = algorithmKey,
+          base64EncodedHash = hash
         )
       }
     }

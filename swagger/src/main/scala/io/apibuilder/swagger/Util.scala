@@ -112,7 +112,7 @@ object Util {
   def hasStringEnum(param: swaggerparams.Parameter): Boolean = {
     (param.isInstanceOf[swaggerparams.PathParameter] || param.isInstanceOf[swaggerparams.QueryParameter]) && {
       param match {
-        case enumerableParam: swaggerparams.AbstractSerializableParameter[_] =>
+        case enumerableParam: swaggerparams.AbstractSerializableParameter[?] =>
           enumerableParam.getType.equals(swaggerproperties.StringProperty.TYPE) &&
             enumerableParam.getEnum != null &&
             !enumerableParam.getEnum.isEmpty

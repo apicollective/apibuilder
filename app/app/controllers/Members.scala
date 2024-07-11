@@ -1,15 +1,16 @@
 package controllers
 
-import lib._
+import lib.*
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
-import models._
-import play.api.data._
-import play.api.data.Forms._
+import models.*
+import play.api.data.*
+import play.api.data.Forms.*
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import org.joda.time.DateTime
+import play.api.mvc.{Action, AnyContent}
 
 import java.util.UUID
 import javax.inject.Inject
@@ -21,7 +22,7 @@ class Members @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, page: Int = 0) = IdentifiedOrg.async { implicit request =>
+  def show(orgKey: String, page: Int = 0): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withMember {
       for {
         orgs <- request.api.Organizations.get(key = Some(orgKey))
@@ -47,7 +48,7 @@ class Members @Inject() (
     }
   }
 
-  def add(orgKey: String) = IdentifiedOrg { implicit request =>
+  def add(orgKey: String): Action[AnyContent] = IdentifiedOrg { implicit request =>
     request.withMember {
       val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = MembershipRole.Member.toString, email = "", nickname = ""))
 
@@ -56,7 +57,7 @@ class Members @Inject() (
     }
   }
 
-  def addPost(orgKey: String) = IdentifiedOrg { implicit request =>
+  def addPost(orgKey: String): Action[AnyContent] = IdentifiedOrg { implicit request =>
     request.withMember {
       val tpl = request.mainTemplate(Some("Add Member")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
 
@@ -93,7 +94,7 @@ class Members @Inject() (
     }
   }
 
-  def postRemove(orgKey: String, guid: UUID) = IdentifiedOrg.async { implicit request =>
+  def postRemove(orgKey: String, guid: UUID): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         _ <- request.api.Memberships.deleteByGuid(guid)
@@ -103,7 +104,7 @@ class Members @Inject() (
     }
   }
 
-  def postRevokeAdmin(orgKey: String, guid: UUID) = IdentifiedOrg.async { implicit request =>
+  def postRevokeAdmin(orgKey: String, guid: UUID): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
@@ -130,7 +131,7 @@ class Members @Inject() (
     }
   }
 
-  def postMakeAdmin(orgKey: String, guid: UUID) = IdentifiedOrg.async { implicit request =>
+  def postMakeAdmin(orgKey: String, guid: UUID): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         membership <- apiClientProvider.callWith404(request.api.Memberships.getByGuid(guid))
@@ -156,7 +157,7 @@ class Members @Inject() (
     }
   }
 
-  def downloadCsv(orgKey: String) = IdentifiedOrg.async { implicit request =>
+  def downloadCsv(orgKey: String): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         path <- MemberDownload(request.api, orgKey).csv()
@@ -192,6 +193,9 @@ class Members @Inject() (
 object Members {
 
   case class AddMemberData(role: String, email: String, nickname: String)
+  object AddMemberData {
+    def unapply(d: AddMemberData): Option[(String, String, String)] = Some((d.role, d.email, d.nickname))
+  }
   private[controllers] val addMemberForm = Form(
     mapping(
       "role" -> default(nonEmptyText, MembershipRole.Member.toString),

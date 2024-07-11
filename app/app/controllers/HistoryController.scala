@@ -1,6 +1,7 @@
 package controllers
 
 import lib.{PaginatedCollection, Pagination}
+import play.api.mvc.{Action, AnyContent}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -18,7 +19,7 @@ class HistoryController @Inject() (
     to: Option[String],
     `type`: Option[String],
     page: Int = 0
-  ) = Anonymous.async { implicit request =>
+  ): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       changes <- request.api.changes.get(
         orgKey = orgKey,

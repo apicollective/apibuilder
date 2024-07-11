@@ -52,7 +52,7 @@ class WatchesDao @Inject() (
     (
       usersDao.findByGuid(form.userGuid).toValidNec(Validation.singleError("User not found")),
       applicationsDao.findByOrganizationKeyAndApplicationKey(auth, form.organizationKey, form.applicationKey).toValidNec(Validation.singleError(s"Application[${form.applicationKey}] not found"))
-    ).mapN(ValidatedWatchForm)
+    ).mapN(ValidatedWatchForm(_, _))
   }
 
   private def findByApplicationGuidAndUserGuid(applicationGuid: UUID, userGuid: UUID) = {

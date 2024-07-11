@@ -252,6 +252,11 @@ object Organizations {
     key: Option[String],
     visibility: String
   )
+  object OrgData {
+    def unapply(d: OrgData): Option[(String, String, Option[String], String)] = {
+      Some((d.name, d.namespace, d.key, d.visibility))
+    }
+  }
 
   private[controllers] val orgForm = Form(
     mapping(

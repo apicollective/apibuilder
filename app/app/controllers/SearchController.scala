@@ -1,6 +1,7 @@
 package controllers
 
 import lib.{PaginatedCollection, Pagination, Util}
+import play.api.mvc.{Action, AnyContent}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -12,7 +13,7 @@ class SearchController @Inject() (
   
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(q: Option[String], org: Option[String], page: Int = 0) = Anonymous.async { implicit request =>
+  def index(q: Option[String], org: Option[String], page: Int = 0): Action[AnyContent] = Anonymous.async { implicit request =>
     val finalQuery = Seq(
       org.map { key => s"org:$key" },
       q

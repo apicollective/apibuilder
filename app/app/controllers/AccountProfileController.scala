@@ -3,8 +3,9 @@ package controllers
 import io.apibuilder.api.v0.models.UserUpdateForm
 
 import javax.inject.Inject
-import play.api.data._
-import play.api.data.Forms._
+import play.api.data.*
+import play.api.data.Forms.*
+import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -14,16 +15,16 @@ class AccountProfileController @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect = Action { implicit request =>
+  def redirect: Action[AnyContent] = Action { implicit request =>
     Redirect(routes.AccountProfileController.index())
   }
 
-  def index() = Identified { implicit request =>
+  def index(): Action[AnyContent] = Identified { implicit request =>
     val tpl = request.mainTemplate(Some("Profile"))
     Ok(views.html.account.profile.index(tpl, request.user))
   }
 
-  def edit() = Identified { implicit request =>
+  def edit(): Action[AnyContent] = Identified { implicit request =>
     val form = AccountProfileController.profileForm.fill(
       AccountProfileController.ProfileData(
         email = request.user.email,
@@ -36,7 +37,7 @@ class AccountProfileController @Inject() (
     Ok(views.html.account.profile.edit(tpl, request.user, form))
   }
 
-  def postEdit = Identified.async { implicit request =>
+  def postEdit: Action[AnyContent] = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Edit Profile"))
 
     val form = AccountProfileController.profileForm.bindFromRequest()
@@ -74,6 +75,10 @@ object AccountProfileController {
     nickname: String,
     name: Option[String]
   )
+
+  object ProfileData {
+    def unapply(d: ProfileData): Option[(String, String, Option[String])] = Some((d.email, d.nickname, d.name))
+  }
 
   private[controllers] val profileForm = Form(
     mapping(

@@ -99,7 +99,7 @@ class TokensDao @Inject() (
         equals("tokens.guid", guid).
         as(SqlParser.str("token").*).
         headOption.
-        map(CleartextToken)
+        map(CleartextToken(_))
     }
   }
 

@@ -2,6 +2,9 @@ package lib
 
 import javax.inject.{Inject, Singleton}
 
+case class RollbarConfig(enabled: Boolean, accessToken: String)
+case class SendgridConfig(apiKey: String)
+
 @Singleton
 class AppConfig @Inject() (
   config: Config
@@ -21,5 +24,18 @@ class AppConfig @Inject() (
   /**
     * optional as only used in production environment
     */
-  val sendgridApiKey: Option[String] = config.optionalString("sendgrid.apiKey")
+  val sendgridConfig: Option[SendgridConfig] = config.optionalString("sendgrid.apiKey").map { key =>
+    SendgridConfig(apiKey = key)
+  }
+
+  val rollbarConfig: RollbarConfig = {
+    val enabled = config.optionalBoolean("rollbar.enabled").getOrElse(false)
+    RollbarConfig(
+      enabled = enabled,
+      accessToken = config.optionalString("rollbar.access.token").getOrElse {
+        assert(!enabled, "rollbar.access.token is required when rollbar is enabled")
+        "development"
+      }
+    )
+  }
 }

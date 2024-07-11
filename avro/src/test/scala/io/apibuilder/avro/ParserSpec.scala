@@ -26,9 +26,9 @@ class ParserSpec extends AnyFunSpec with Matchers {
     println("namespace: " + service.namespace)
 
     println("Enums:")
-    service.enums.foreach { enum =>
-      println(s" - ${enum.name}")
-      enum.values.foreach { value =>
+    service.enums.foreach { e =>
+      println(s" - ${e.name}")
+      e.values.foreach { value =>
         println(s"   - ${value.name}")
       }
     }

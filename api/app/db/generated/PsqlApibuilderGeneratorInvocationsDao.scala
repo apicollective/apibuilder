@@ -1,8 +1,8 @@
 package db.generated
 
 import anorm._
+import com.mbryzek.util.IdGenerator
 import io.flow.postgresql.{OrderBy, Query}
-import io.flow.util.IdGenerator
 import java.sql.Connection
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -166,7 +166,7 @@ class GeneratorInvocationsDao @Inject() (
   override val db: Database
 ) extends BaseGeneratorInvocationsDao {
 
-  private val idGenerator = IdGenerator("gni")
+  private val idGenerator = com.mbryzek.util.IdGenerator("gni")
 
   def randomId(): String = idGenerator.randomId()
 
@@ -232,7 +232,7 @@ class GeneratorInvocationsDao @Inject() (
     if (forms.nonEmpty) {
       val ids = forms.map(_ => randomId())
       val params = ids.zip(forms).map { case (id, form) => toNamedParameter(updatedBy, id, form) }
-      BatchSql(InsertQuery.sql(), params.head, params.tail: _*).execute()(c)
+      BatchSql(InsertQuery.sql(), params.head, params.tail*).execute()(c)
       ids
     } else {
       Nil
@@ -278,7 +278,7 @@ class GeneratorInvocationsDao @Inject() (
   def updateBatchWithConnection(c: Connection, updatedBy: UUID, idsAndForms: Seq[(String, GeneratorInvocationForm)]): Unit = {
     if (idsAndForms.nonEmpty) {
       val params = idsAndForms.map { case (id, form) => toNamedParameter(updatedBy, id, form) }
-      BatchSql(UpdateQuery.sql(), params.head, params.tail: _*).execute()(c)
+      BatchSql(UpdateQuery.sql(), params.head, params.tail*).execute()(c)
       ()
     }
   }

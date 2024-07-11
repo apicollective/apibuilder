@@ -32,7 +32,7 @@
 
                 <div id="login" class="tab-pane @if(tab == controllers.LoginController.Tab.Login) { active in } else { fade }">
 
-                  @helper.form(action = routes.LoginController.legacyPost) {
+                  @helper.form(action = routes.LoginController.legacyPost()) {
                     <input type="hidden" name="return_url" value='@loginForm("return_url").value'/>
 
                     @loginForm.globalErrors.map(_.message).map { msg =>
@@ -56,7 +56,7 @@
 
                     <button class="btn btn-large btn-primary" type="submit">Login</button>
 
-                    <div class="forgot_password"><p><a href="@routes.LoginController.forgotPassword">Forgot password</a></p></div>
+                    <div class="forgot_password"><p><a href="@routes.LoginController.forgotPassword()">Forgot password</a></p></div>
 
                   }
 

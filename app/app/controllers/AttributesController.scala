@@ -5,8 +5,9 @@ import lib.{ApiClientProvider, PaginatedCollection, Pagination}
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
-import play.api.data.Forms._
-import play.api.data._
+import play.api.data.Forms.*
+import play.api.data.*
+import play.api.mvc.{Action, AnyContent}
 
 class AttributesController @Inject() (
                                        val apiBuilderControllerComponents: ApiBuilderControllerComponents,
@@ -15,7 +16,7 @@ class AttributesController @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(page: Int = 0) = Anonymous.async { implicit request =>
+  def index(page: Int = 0): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       attributes <- request.api.attributes.get(
         limit = Pagination.DefaultLimit+1,
@@ -29,7 +30,7 @@ class AttributesController @Inject() (
     }
   }
 
-  def show(name: String, page: Int) = Anonymous.async { implicit request =>
+  def show(name: String, page: Int): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       attribute <- apiClientProvider.callWith404(request.api.attributes.getByName(name))
       generators <- request.api.generatorWithServices.get(
@@ -51,7 +52,7 @@ class AttributesController @Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
+  def create(): Action[AnyContent] = Identified { implicit request =>
     val filledForm = AttributesController.attributesFormData.fill(
       AttributesController.AttributeFormData(
         name = "",
@@ -62,7 +63,7 @@ class AttributesController @Inject() (
     Ok(views.html.attributes.create(request.mainTemplate(), filledForm))
   }
 
-  def createPost = Identified.async { implicit request =>
+  def createPost: Action[AnyContent] = Identified.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Attribute"))
 
     val form = AttributesController.attributesFormData.bindFromRequest()
@@ -90,7 +91,7 @@ class AttributesController @Inject() (
     )
   }
 
-  def deletePost(name: String) = Identified.async { implicit request =>
+  def deletePost(name: String): Action[AnyContent] = Identified.async { implicit request =>
     apiClientProvider.callWith404(request.api.attributes.deleteByName(name)).map {
       case None => Redirect(routes.AttributesController.index()).flashing("warning" -> s"Attribute not found")
       case Some(_) => Redirect(routes.AttributesController.index()).flashing("success" -> s"Attribute deleted")
@@ -104,6 +105,11 @@ object AttributesController {
     name: String,
     description: String
   )
+  object AttributeFormData {
+    def unapply(d: AttributeFormData): Option[(String, String)] = Some(
+      (d.name, d.description)
+    )
+  }
 
   private[controllers] val attributesFormData = Form(
     mapping(

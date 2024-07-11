@@ -129,8 +129,8 @@ class AnonymousActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (AnonymousRequest[A]
-  ) => Future[Result]): Future[Result] = {
+    block: AnonymousRequest[A] => Future[Result]
+  ): Future[Result] = {
     block(
       AnonymousRequest(
         user = requestAuthenticationUtil.user(request.headers),
@@ -149,8 +149,8 @@ class IdentifiedActionBuilder @Inject()(
 
   def invokeBlock[A](
     request: Request[A],
-    block: (IdentifiedRequest[A]
-  ) => Future[Result]): Future[Result] = {
+    block: IdentifiedRequest[A] => Future[Result]
+  ): Future[Result] = {
     requestAuthenticationUtil.user(request.headers) match {
       case None => Future.successful(Results.Unauthorized)
       case Some(user) => block(IdentifiedRequest(user, request))

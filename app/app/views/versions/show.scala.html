@@ -78,16 +78,16 @@
     @if(service.enums.isEmpty) {
       <em>No enums</em>
     } else {
-      @service.enums.map { enum =>
-        <div id="enum-@lib.UrlKey.generate(enum.name)"></div>
-        <a name="enum-@lib.UrlKey.generate(enum.name)"></a>
+      @service.enums.map { e =>
+        <div id="enum-@lib.UrlKey.generate(e.name)"></div>
+        <a name="enum-@lib.UrlKey.generate(e.name)"></a>
         <div class="version_model">
-          <h3>@enum.name</h3>
-          @enum.deprecation.map(deprecation(_))
+          <h3>@e.name</h3>
+          @e.deprecation.map(deprecation(_))
 
-          @Html(lib.Markdown(enum.description))
+          @Html(lib.Markdown(e.description))
 
-          @values(tpl.org.get, application, tpl.version.get, enum)
+          @values(tpl.org.get, application, tpl.version.get, e)
         </div>
       }
     }

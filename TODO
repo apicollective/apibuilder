@@ -27,7 +27,7 @@ inserting duplicate records.
 API changes - generate history of field reordering
 
 [warn] /web/apidoc/api/app/db/generators/ServicesDao.scala:118: method apply in trait WithResult is deprecated: Use [[fold]], [[foldWhile]] or [[withResult]] instead, which manages resources and memory
-[warn]       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+[warn]       SQL(sql).on(bind*)().toList.map { fromRow(_) }.toSeq
 
 Consider supporting (from swagger):
   - parameter locations: header, cookie

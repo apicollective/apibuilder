@@ -1,6 +1,7 @@
 package controllers
 
 import models.MainTemplate
+import play.api.mvc.{Action, AnyContent}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -11,7 +12,7 @@ class Healthchecks @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index() = Anonymous.async { implicit request =>
+  def index(): Action[AnyContent] = Anonymous.async { implicit request =>
     for {
       orgs <- request.api.organizations.get(key = Some("apicollective"), limit = 1)
     } yield {

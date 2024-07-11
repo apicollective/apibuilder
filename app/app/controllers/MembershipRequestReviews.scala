@@ -1,5 +1,7 @@
 package controllers
 
+import play.api.mvc.{Action, AnyContent}
+
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -10,7 +12,7 @@ class MembershipRequestReviews @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def accept(orgKey: String, membershipRequestGuid: UUID) = IdentifiedOrg.async { implicit request =>
+  def accept(orgKey: String, membershipRequestGuid: UUID): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         _ <- request.api.MembershipRequests.postAcceptByGuid(membershipRequestGuid)
@@ -20,7 +22,7 @@ class MembershipRequestReviews @Inject() (
     }
   }
 
-  def decline(orgKey: String, membershipRequestGuid: UUID) = IdentifiedOrg.async { implicit request =>
+  def decline(orgKey: String, membershipRequestGuid: UUID): Action[AnyContent] = IdentifiedOrg.async { implicit request =>
     request.withAdmin {
       for {
         _ <- request.api.MembershipRequests.postDeclineByGuid(membershipRequestGuid)

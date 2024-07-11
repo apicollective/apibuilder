@@ -300,7 +300,7 @@ class VersionsDao @Inject() (
           guid = guid,
           applicationGuid = applicationGuid,
           version = version,
-          original = (originalType.map(OriginalType.apply), originalData).mapN(Original),
+          original = (originalType.map(OriginalType.apply), originalData).mapN(Original(_, _)),
           serviceJson = serviceJson,
           audit = Audit(
             createdAt = createdAt,

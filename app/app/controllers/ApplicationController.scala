@@ -1,6 +1,7 @@
 package controllers
 
 import lib.{ApiClientProvider, PaginatedCollection, Pagination}
+import play.api.mvc.{Action, AnyContent}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
@@ -12,15 +13,15 @@ class ApplicationController @Inject() (
 
   private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirect() = Action { request =>
+  def redirect(): Action[AnyContent] = Action { request =>
     Redirect(request.path + "/")
   }
 
-  def redirectOrg(org: String) = Action { request =>
+  def redirectOrg(org: String): Action[AnyContent] = Action { request =>
     Redirect(request.path + "/")
   }
 
-  def index(orgsPage: Int = 0, membershipRequestsPage: Int = 0, publicOrgsPage: Int = 0) = Anonymous.async { implicit request =>
+  def index(orgsPage: Int = 0, membershipRequestsPage: Int = 0, publicOrgsPage: Int = 0): Action[AnyContent] = Anonymous.async { implicit request =>
     request.user match {
       case None => {
         for {

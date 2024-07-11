@@ -103,57 +103,57 @@ class SessionsDao @Inject() (
       bind("hash_code", form.hashCode())
   }
 
-  def insert(updatedBy: UUID, form: SessionForm) {
+  def insert(updatedBy: UUID, form: SessionForm): Unit = {
     db.withConnection { implicit c =>
       insert(c, updatedBy, form)
     }
   }
 
-  def insert(implicit c: Connection, updatedBy: UUID, form: SessionForm) {
+  def insert(implicit c: Connection, updatedBy: UUID, form: SessionForm): Unit = {
     bindQuery(InsertQuery, form).
       bind("id", form.id).
-      anormSql.execute()
+      anormSql().execute()
   }
 
-  def updateIfChangedById(updatedBy: UUID, id: String, form: SessionForm) {
+  def updateIfChangedById(updatedBy: UUID, id: String, form: SessionForm): Unit ={
     if (!findById(id).map(_.form).contains(form)) {
       updateById(updatedBy, id, form)
     }
   }
 
-  def updateById(updatedBy: UUID, id: String, form: SessionForm) {
+  def updateById(updatedBy: UUID, id: String, form: SessionForm): Unit = {
     db.withConnection { implicit c =>
       updateById(c, updatedBy, id, form)
     }
   }
 
-  def updateById(implicit c: Connection, updatedBy: UUID, id: String, form: SessionForm) {
+  def updateById(implicit c: Connection, updatedBy: UUID, id: String, form: SessionForm): Unit = {
     bindQuery(UpdateQuery, form).
       bind("id", id).
-      anormSql.execute()
+      anormSql().execute()
   }
 
-  def update(updatedBy: UUID, existing: Session, form: SessionForm) {
+  def update(updatedBy: UUID, existing: Session, form: SessionForm): Unit = {
     db.withConnection { implicit c =>
       update(c, updatedBy, existing, form)
     }
   }
 
-  def update(implicit c: Connection, updatedBy: UUID, existing: Session, form: SessionForm) {
+  def update(implicit c: Connection, updatedBy: UUID, existing: Session, form: SessionForm): Unit = {
     updateById(c, updatedBy, existing.id, form)
   }
 
-  def delete(deletedBy: UUID, session: Session) {
+  def delete(deletedBy: UUID, session: Session): Unit = {
     dbHelpers.delete(deletedBy, session.id)
   }
 
-  def deleteById(deletedBy: UUID, id: String) {
+  def deleteById(deletedBy: UUID, id: String): Unit = {
     db.withConnection { implicit c =>
       deleteById(c, deletedBy, id)
     }
   }
 
-  def deleteById(c: java.sql.Connection, deletedBy: UUID, id: String) {
+  def deleteById(c: java.sql.Connection, deletedBy: UUID, id: String): Unit = {
     dbHelpers.delete(c, deletedBy, id)
   }
 

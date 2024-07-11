@@ -20,7 +20,7 @@ class Attributes @Inject() (
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Anonymous { _ =>
+  ): Action[AnyContent] = Anonymous { _ =>
     val attributes = attributesDao.findAll(
       guid = guid,
       name = name,
@@ -30,14 +30,14 @@ class Attributes @Inject() (
     Ok(Json.toJson(attributes))
   }
 
-  def getByName(name: String) = Action { _ =>
+  def getByName(name: String): Action[AnyContent] = Action { _ =>
     attributesDao.findByName(name) match {
       case None => NotFound
       case Some(attribute) => Ok(Json.toJson(attribute))
     }
   }
 
-  def post() = Identified(parse.json) { request =>
+  def post(): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[AttributeForm] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -57,7 +57,7 @@ class Attributes @Inject() (
     }
   }
 
-  def deleteByName(name: String) = Identified { request =>
+  def deleteByName(name: String): Action[AnyContent] = Identified { request =>
     attributesDao.findByName(name) match {
       case None => {
         NotFound

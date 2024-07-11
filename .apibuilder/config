@@ -3,30 +3,31 @@ code:
     apibuilder-api:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_x_routes: api/conf/routes
     apibuilder-api-json:
       version: latest
       generators:
-        play_2_x_json: core/src/main/scala/core/generated
+        play_2_x_scala_3_json: core/app/generated
     apibuilder-spec:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_x_standalone_json: lib/src/main/scala/generated
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
     apibuilder-common:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
     apibuilder-generator:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
     apibuilder-task:
       version: latest
       generators:
-        play_2_8_client: generated/app
+        play_2_9_scala_3_client: generated/app
         play_2_8_mock_client: generated/app
 
