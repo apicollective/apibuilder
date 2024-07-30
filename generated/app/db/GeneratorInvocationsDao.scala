@@ -230,37 +230,46 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
     io.flow.postgresql.Query("delete from public.generator_invocations")
   }
 
-  def insert(form: GeneratorInvocationForm): String = {
+  def insert(
+    user: java.util.UUID,
+    form: GeneratorInvocationForm
+  ): String = {
     db.withConnection { c =>
-      insert(c, form)
+      insert(c, user, form)
     }
   }
 
   def insert(
     c: java.sql.Connection,
+    user: java.util.UUID,
     form: GeneratorInvocationForm
   ): String = {
     val id = randomId
     bindQuery(InsertQuery, form)
       .bind("created_at", org.joda.time.DateTime.now)
+      .bind("updated_by_guid", user)
       .bind("id", id)
       .execute(c)
     id
   }
 
-  def insertBatch(forms: Seq[GeneratorInvocationForm]): Seq[String] = {
+  def insertBatch(
+    user: java.util.UUID,
+    forms: Seq[GeneratorInvocationForm]
+  ): Seq[String] = {
     db.withConnection { c =>
-      insertBatch(c, forms)
+      insertBatch(c, user, forms)
     }
   }
 
   def insertBatch(
     c: java.sql.Connection,
+    user: java.util.UUID,
     forms: Seq[GeneratorInvocationForm]
   ): Seq[String] = {
     forms.map { f =>
       val id = randomId
-      (id, Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(id, f))
+      (id, Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(user, id, f))
     }.toList match {
       case Nil => Nil
       case one :: rest => {
@@ -271,99 +280,122 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def update(
+    user: java.util.UUID,
     generatorInvocation: GeneratorInvocation,
     form: GeneratorInvocationForm
   ): Unit = {
     db.withConnection { c =>
-      update(c, generatorInvocation, form)
+      update(c, user, generatorInvocation, form)
     }
   }
 
   def update(
     c: java.sql.Connection,
+    user: java.util.UUID,
     generatorInvocation: GeneratorInvocation,
     form: GeneratorInvocationForm
   ): Unit = {
     updateById(
       c = c,
+      user = user,
       id = generatorInvocation.id,
       form = form
     )
   }
 
   def updateById(
+    user: java.util.UUID,
     id: String,
     form: GeneratorInvocationForm
   ): Unit = {
     db.withConnection { c =>
-      updateById(c, id, form)
+      updateById(c, user, id, form)
     }
   }
 
   def updateById(
     c: java.sql.Connection,
+    user: java.util.UUID,
     id: String,
     form: GeneratorInvocationForm
   ): Unit = {
     bindQuery(UpdateQuery, form)
       .bind("id", id)
+      .bind("updated_by_guid", user)
       .execute(c)
     ()
   }
 
-  def updateBatch(forms: Seq[(String, GeneratorInvocationForm)]): Unit = {
+  def updateBatch(
+    user: java.util.UUID,
+    forms: Seq[(String, GeneratorInvocationForm)]
+  ): Unit = {
     db.withConnection { c =>
-      updateBatch(c, forms)
+      updateBatch(c, user, forms)
     }
   }
 
   def updateBatch(
     c: java.sql.Connection,
+    user: java.util.UUID,
     forms: Seq[(String, GeneratorInvocationForm)]
   ): Unit = {
-    forms.map { case (id, f) => toNamedParameter(id, f) }.toList match {
+    forms.map { case (id, f) => toNamedParameter(user, id, f) }.toList match {
       case Nil => // no-op
       case first :: rest => anorm.BatchSql(UpdateQuery.sql(), first, rest*).execute()(c)
     }
   }
 
-  def delete(generatorInvocation: GeneratorInvocation): Unit = {
+  def delete(
+    user: java.util.UUID,
+    generatorInvocation: GeneratorInvocation
+  ): Unit = {
     db.withConnection { c =>
-      delete(c, generatorInvocation)
+      delete(c, user, generatorInvocation)
     }
   }
 
   def delete(
     c: java.sql.Connection,
+    user: java.util.UUID,
     generatorInvocation: GeneratorInvocation
   ): Unit = {
     deleteById(
       c = c,
+      user = user,
       id = generatorInvocation.id
     )
   }
 
-  def deleteById(id: String): Unit = {
+  def deleteById(
+    user: java.util.UUID,
+    id: String
+  ): Unit = {
     db.withConnection { c =>
-      deleteById(c, id)
+      deleteById(c, user, id)
     }
   }
 
   def deleteById(
     c: java.sql.Connection,
+    user: java.util.UUID,
     id: String
   ): Unit = {
     DeleteQuery.equals("id", id).execute(c)
   }
 
-  def deleteAllByIds(ids: Seq[String]): Unit = {
+  def deleteAllByIds(
+    user: java.util.UUID,
+    ids: Seq[String]
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByIds(c, ids)
+      deleteAllByIds(c, user, ids)
     }
   }
 
   def deleteAllByIds(
     c: java.sql.Connection,
+    user: java.util.UUID,
     ids: Seq[String]
   ): Unit = {
     DeleteQuery.in("id", ids).execute(c)
@@ -382,6 +414,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   private def toNamedParameter(
+    user: java.util.UUID,
     id: String,
     form: GeneratorInvocationForm
   ): Seq[anorm.NamedParameter] = {
@@ -391,6 +424,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
       anorm.NamedParameter("organization_key", form.organizationKey),
       anorm.NamedParameter("application_key", form.applicationKey),
       anorm.NamedParameter("updated_at", org.joda.time.DateTime.now),
+      anorm.NamedParameter("updated_by_guid", user),
       anorm.NamedParameter("hash_code", form.hashCode())
     )
   }

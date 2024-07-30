@@ -398,32 +398,41 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
     io.flow.postgresql.Query("delete from public.tasks")
   }
 
-  def upsertByTypeIdAndType(form: TaskForm): Unit = {
+  def upsertByTypeIdAndType(
+    user: java.util.UUID,
+    form: TaskForm
+  ): Unit = {
     db.withConnection { c =>
-      upsertByTypeIdAndType(c, form)
+      upsertByTypeIdAndType(c, user, form)
     }
   }
 
   def upsertByTypeIdAndType(
     c: java.sql.Connection,
+    user: java.util.UUID,
     form: TaskForm
   ): Unit = {
     bindQuery(UpsertQuery, form)
       .bind("created_at", org.joda.time.DateTime.now)
+      .bind("updated_by_guid", user)
       .execute(c)
   }
 
-  def upsertBatchByTypeIdAndType(forms: Seq[TaskForm]): Seq[Unit] = {
+  def upsertBatchByTypeIdAndType(
+    user: java.util.UUID,
+    forms: Seq[TaskForm]
+  ): Seq[Unit] = {
     db.withConnection { c =>
-      upsertBatchByTypeIdAndType(c, forms)
+      upsertBatchByTypeIdAndType(c, user, forms)
     }
   }
 
   def upsertBatchByTypeIdAndType(
     c: java.sql.Connection,
+    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Seq[Unit] = {
-    forms.map { f => Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(f) }.toList match {
+    forms.map { f => Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(user, f) }.toList match {
       case Nil => Nil
       case one :: rest => {
         anorm.BatchSql(UpsertQuery.sql(), one, rest*).execute()(c)
@@ -433,203 +442,258 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def update(
+    user: java.util.UUID,
     task: Task,
     form: TaskForm
   ): Unit = {
     db.withConnection { c =>
-      update(c, task, form)
+      update(c, user, task, form)
     }
   }
 
   def update(
     c: java.sql.Connection,
+    user: java.util.UUID,
     task: Task,
     form: TaskForm
   ): Unit = {
     updateById(
       c = c,
+      user = user,
       id = task.id,
       form = form
     )
   }
 
   def updateById(
+    user: java.util.UUID,
     id: String,
     form: TaskForm
   ): Unit = {
     db.withConnection { c =>
-      updateById(c, id, form)
+      updateById(c, user, id, form)
     }
   }
 
   def updateById(
     c: java.sql.Connection,
+    user: java.util.UUID,
     id: String,
     form: TaskForm
   ): Unit = {
     bindQuery(UpdateQuery, form)
       .bind("id", id)
+      .bind("updated_by_guid", user)
       .execute(c)
     ()
   }
 
-  def updateBatch(forms: Seq[TaskForm]): Unit = {
+  def updateBatch(
+    user: java.util.UUID,
+    forms: Seq[TaskForm]
+  ): Unit = {
     db.withConnection { c =>
-      updateBatch(c, forms)
+      updateBatch(c, user, forms)
     }
   }
 
   def updateBatch(
     c: java.sql.Connection,
+    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Unit = {
-    forms.map { f => toNamedParameter(f) }.toList match {
+    forms.map { f => toNamedParameter(user, f) }.toList match {
       case Nil => // no-op
       case first :: rest => anorm.BatchSql(UpdateQuery.sql(), first, rest*).execute()(c)
     }
   }
 
-  def delete(task: Task): Unit = {
+  def delete(
+    user: java.util.UUID,
+    task: Task
+  ): Unit = {
     db.withConnection { c =>
-      delete(c, task)
+      delete(c, user, task)
     }
   }
 
   def delete(
     c: java.sql.Connection,
+    user: java.util.UUID,
     task: Task
   ): Unit = {
     deleteById(
       c = c,
+      user = user,
       id = task.id
     )
   }
 
-  def deleteById(id: String): Unit = {
+  def deleteById(
+    user: java.util.UUID,
+    id: String
+  ): Unit = {
     db.withConnection { c =>
-      deleteById(c, id)
+      deleteById(c, user, id)
     }
   }
 
   def deleteById(
     c: java.sql.Connection,
+    user: java.util.UUID,
     id: String
   ): Unit = {
     DeleteQuery.equals("id", id).execute(c)
   }
 
-  def deleteAllByIds(ids: Seq[String]): Unit = {
+  def deleteAllByIds(
+    user: java.util.UUID,
+    ids: Seq[String]
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByIds(c, ids)
+      deleteAllByIds(c, user, ids)
     }
   }
 
   def deleteAllByIds(
     c: java.sql.Connection,
+    user: java.util.UUID,
     ids: Seq[String]
   ): Unit = {
     DeleteQuery.in("id", ids).execute(c)
   }
 
-  def deleteAllByTypeId(typeId: String): Unit = {
+  def deleteAllByTypeId(
+    user: java.util.UUID,
+    typeId: String
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByTypeId(c, typeId)
+      deleteAllByTypeId(c, user, typeId)
     }
   }
 
   def deleteAllByTypeId(
     c: java.sql.Connection,
+    user: java.util.UUID,
     typeId: String
   ): Unit = {
     DeleteQuery.equals("type_id", typeId).execute(c)
   }
 
-  def deleteAllByTypeIds(typeIds: Seq[String]): Unit = {
+  def deleteAllByTypeIds(
+    user: java.util.UUID,
+    typeIds: Seq[String]
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByTypeIds(c, typeIds)
+      deleteAllByTypeIds(c, user, typeIds)
     }
   }
 
   def deleteAllByTypeIds(
     c: java.sql.Connection,
+    user: java.util.UUID,
     typeIds: Seq[String]
   ): Unit = {
     DeleteQuery.in("type_id", typeIds).execute(c)
   }
 
-  def deleteByTypeIdAndType(typeIdAndType: (String, String)): Unit = {
+  def deleteByTypeIdAndType(
+    user: java.util.UUID,
+    typeIdAndType: (String, String)
+  ): Unit = {
     db.withConnection { c =>
-      deleteByTypeIdAndType(c, typeIdAndType)
+      deleteByTypeIdAndType(c, user, typeIdAndType)
     }
   }
 
   def deleteByTypeIdAndType(
     c: java.sql.Connection,
+    user: java.util.UUID,
     typeIdAndType: (String, String)
   ): Unit = {
     DeleteQuery.in2(("type_id", "type"), Seq(typeIdAndType)).execute(c)
   }
 
-  def deleteAllByTypeIdsAndTypes(typeIdsAndTypes: Seq[(String, String)]): Unit = {
+  def deleteAllByTypeIdsAndTypes(
+    user: java.util.UUID,
+    typeIdsAndTypes: Seq[(String, String)]
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByTypeIdsAndTypes(c, typeIdsAndTypes)
+      deleteAllByTypeIdsAndTypes(c, user, typeIdsAndTypes)
     }
   }
 
   def deleteAllByTypeIdsAndTypes(
     c: java.sql.Connection,
+    user: java.util.UUID,
     typeIdsAndTypes: Seq[(String, String)]
   ): Unit = {
     DeleteQuery.in2(("type_id", "type"), typeIdsAndTypes).execute(c)
   }
 
-  def deleteAllByNumAttempts(numAttempts: Int): Unit = {
+  def deleteAllByNumAttempts(
+    user: java.util.UUID,
+    numAttempts: Int
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttempts(c, numAttempts)
+      deleteAllByNumAttempts(c, user, numAttempts)
     }
   }
 
   def deleteAllByNumAttempts(
     c: java.sql.Connection,
+    user: java.util.UUID,
     numAttempts: Int
   ): Unit = {
     DeleteQuery.equals("num_attempts", numAttempts).execute(c)
   }
 
-  def deleteAllByNumAttemptses(numAttemptses: Seq[Int]): Unit = {
+  def deleteAllByNumAttemptses(
+    user: java.util.UUID,
+    numAttemptses: Seq[Int]
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttemptses(c, numAttemptses)
+      deleteAllByNumAttemptses(c, user, numAttemptses)
     }
   }
 
   def deleteAllByNumAttemptses(
     c: java.sql.Connection,
+    user: java.util.UUID,
     numAttemptses: Seq[Int]
   ): Unit = {
     DeleteQuery.in("num_attempts", numAttemptses).execute(c)
   }
 
-  def deleteAllByNumAttemptsAndNextAttemptAt(numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)): Unit = {
+  def deleteAllByNumAttemptsAndNextAttemptAt(
+    user: java.util.UUID,
+    numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttemptsAndNextAttemptAt(c, numAttemptsAndNextAttemptAt)
+      deleteAllByNumAttemptsAndNextAttemptAt(c, user, numAttemptsAndNextAttemptAt)
     }
   }
 
   def deleteAllByNumAttemptsAndNextAttemptAt(
     c: java.sql.Connection,
+    user: java.util.UUID,
     numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)
   ): Unit = {
     DeleteQuery.in2(("num_attempts", "next_attempt_at"), Seq(numAttemptsAndNextAttemptAt)).execute(c)
   }
 
-  def deleteAllByNumAttemptsesAndNextAttemptAts(numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]): Unit = {
+  def deleteAllByNumAttemptsesAndNextAttemptAts(
+    user: java.util.UUID,
+    numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]
+  ): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttemptsesAndNextAttemptAts(c, numAttemptsesAndNextAttemptAts)
+      deleteAllByNumAttemptsesAndNextAttemptAts(c, user, numAttemptsesAndNextAttemptAts)
     }
   }
 
   def deleteAllByNumAttemptsesAndNextAttemptAts(
     c: java.sql.Connection,
+    user: java.util.UUID,
     numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]
   ): Unit = {
     DeleteQuery.in2(("num_attempts", "next_attempt_at"), numAttemptsesAndNextAttemptAts).execute(c)
@@ -653,7 +717,10 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       .bind("hash_code", form.hashCode())
   }
 
-  private def toNamedParameter(form: TaskForm): Seq[anorm.NamedParameter] = {
+  private def toNamedParameter(
+    user: java.util.UUID,
+    form: TaskForm
+  ): Seq[anorm.NamedParameter] = {
     Seq(
       anorm.NamedParameter("id", form.id),
       anorm.NamedParameter("type", form.`type`),
@@ -665,6 +732,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       anorm.NamedParameter("stacktrace", form.stacktrace),
       anorm.NamedParameter("data", play.api.libs.json.Json.toJson(form.data).toString),
       anorm.NamedParameter("updated_at", org.joda.time.DateTime.now),
+      anorm.NamedParameter("updated_by_guid", user),
       anorm.NamedParameter("hash_code", form.hashCode())
     )
   }
