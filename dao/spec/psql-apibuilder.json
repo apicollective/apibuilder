@@ -6,7 +6,7 @@
       "value": {
         "version": "3.4",
         "package": "db.generated",
-        "dao_user_class": "java.util.UUID"
+        "user_class": "java.util.UUID"
       }
     },
     {
