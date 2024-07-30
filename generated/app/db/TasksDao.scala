@@ -323,7 +323,7 @@ trait BaseTasksDao {
     anorm.SqlParser.str("id") ~
       anorm.SqlParser.str("type") ~
       anorm.SqlParser.str("type_id") ~
-      anorm.SqlParser.scalar[java.util.UUID]("organization_guid").? ~
+      anorm.SqlParser.str("organization_guid").? ~
       anorm.SqlParser.int("num_attempts") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("next_attempt_at") ~
       anorm.SqlParser.str("errors").? ~
@@ -337,7 +337,7 @@ trait BaseTasksDao {
         id = id,
         `type` = type_,
         typeId = typeId,
-        organizationGuid = organizationGuid,
+        organizationGuid = organizationGuid.map { v => java.util.UUID.fromString(v) },
         numAttempts = numAttempts,
         nextAttemptAt = nextAttemptAt,
         errors = errors.map { v => play.api.libs.json.Json.parse(v).asInstanceOf[play.api.libs.json.JsArray].value.toSeq.map(_.asInstanceOf[play.api.libs.json.JsString].value) },
@@ -707,7 +707,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       .bind("id", form.id)
       .bind("type", form.`type`)
       .bind("type_id", form.typeId)
-      .bind("organization_guid", form.organizationGuid)
+      .bind("organization_guid", form.organizationGuid.map(_.toString))
       .bind("num_attempts", form.numAttempts)
       .bind("next_attempt_at", form.nextAttemptAt)
       .bind("errors", form.errors.map { v => play.api.libs.json.Json.toJson(v).toString })
@@ -725,7 +725,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       anorm.NamedParameter("id", form.id),
       anorm.NamedParameter("type", form.`type`),
       anorm.NamedParameter("type_id", form.typeId),
-      anorm.NamedParameter("organization_guid", form.organizationGuid),
+      anorm.NamedParameter("organization_guid", form.organizationGuid.map(_.toString)),
       anorm.NamedParameter("num_attempts", form.numAttempts),
       anorm.NamedParameter("next_attempt_at", form.nextAttemptAt),
       anorm.NamedParameter("errors", form.errors.map { v => play.api.libs.json.Json.toJson(v).toString }),
