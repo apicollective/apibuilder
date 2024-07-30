@@ -1,6 +1,7 @@
 package models
 
 import builder.api_json.upgrades.ServiceParser
+import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits._
 import db.{ApplicationsDao, Authorization, InternalVersion, OrganizationsDao}
@@ -20,6 +21,16 @@ class VersionsModel @Inject()(
   }
 
   def toModels(versions: Seq[InternalVersion]): Seq[Version] = {
+    validateModels(versions) match {
+      case Invalid(e) => {
+        println(s"Could not convert versions to models: ${e.toNonEmptyList.toList.mkString(", ")}")
+        Nil
+      }
+      case Valid(versions) => versions
+    }
+  }
+
+  private def validateModels(versions: Seq[InternalVersion]): ValidatedNec[String, Seq[Version]] = {
     val applications = applicationsDao.findAll(
       Authorization.All,
       guids = Some(versions.map(_.applicationGuid)),
@@ -32,25 +43,26 @@ class VersionsModel @Inject()(
       limit = None
     ).map { o => o.guid -> o }.toMap
 
-    versions.flatMap { v =>
+    versions.map { v =>
       (
-        applications.get(v.applicationGuid).flatMap { app =>
-          organizations.get(app.organizationGuid).flatMap { org =>
-            service(v).toOption.map { svc =>
-              Version(
-                guid = v.guid,
-                organization = Reference(guid = org.guid, key = org.key),
-                application = Reference(guid = app.guid, key = app.key),
-                version = v.version,
-                original = v.original,
-                service = svc,
-                audit = v.audit
-              )
-            }
+        applications.get(v.applicationGuid).toValidNec("Cannot find application").andThen { app =>
+          organizations.get(app.organizationGuid).toValidNec("Cannot find organization").map { org =>
+            (org, app)
           }
-        }
-      )
-    }
+        },
+        service(v)
+      ).mapN { case ((org, app), svc) =>
+        Version(
+          guid = v.guid,
+          organization = Reference(guid = org.guid, key = org.key),
+          application = Reference(guid = app.guid, key = app.key),
+          version = v.version,
+          original = v.original,
+          service = svc,
+          audit = v.audit
+        )
+      }
+    }.sequence
   }
 
   private def service(v: InternalVersion): ValidatedNec[String, Service] = {
