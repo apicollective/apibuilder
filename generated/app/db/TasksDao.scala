@@ -12,7 +12,7 @@ case class Task(
   data: play.api.libs.json.JsValue,
   createdAt: org.joda.time.DateTime,
   updatedAt: org.joda.time.DateTime,
-  updatedByUserId: String
+  updatedByGuid: String
 ) {
   def form: TaskForm = {
     TaskForm(
@@ -97,15 +97,15 @@ case object TasksTable {
       override val name: String = "updated_at"
     }
 
-    case object UpdatedByUserId extends Column {
-      override val name: String = "updated_by_user_id"
+    case object UpdatedByGuid extends Column {
+      override val name: String = "updated_by_guid"
     }
 
     case object HashCode extends Column {
       override val name: String = "hash_code"
     }
 
-    val all: List[Column] = List(Id, Type, TypeId, OrganizationGuid, NumAttempts, NextAttemptAt, Errors, Stacktrace, Data, CreatedAt, UpdatedAt, UpdatedByUserId, HashCode)
+    val all: List[Column] = List(Id, Type, TypeId, OrganizationGuid, NumAttempts, NextAttemptAt, Errors, Stacktrace, Data, CreatedAt, UpdatedAt, UpdatedByGuid, HashCode)
   }
 }
 
@@ -131,7 +131,7 @@ trait BaseTasksDao {
      |        data::text,
      |        created_at,
      |        updated_at,
-     |        updated_by_user_id,
+     |        updated_by_guid,
      |        hash_code
      |   from public.tasks
      |""".stripMargin.stripTrailing
@@ -331,8 +331,8 @@ trait BaseTasksDao {
       anorm.SqlParser.str("data") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("created_at") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("updated_at") ~
-      anorm.SqlParser.str("updated_by_user_id") ~
-      anorm.SqlParser.long("hash_code") map { case id ~ type_ ~ typeId ~ organizationGuid ~ numAttempts ~ nextAttemptAt ~ errors ~ stacktrace ~ data ~ createdAt ~ updatedAt ~ updatedByUserId ~ hashCode =>
+      anorm.SqlParser.str("updated_by_guid") ~
+      anorm.SqlParser.long("hash_code") map { case id ~ type_ ~ typeId ~ organizationGuid ~ numAttempts ~ nextAttemptAt ~ errors ~ stacktrace ~ data ~ createdAt ~ updatedAt ~ updatedByGuid ~ hashCode =>
       Task(
         id = id,
         `type` = type_,
@@ -345,7 +345,7 @@ trait BaseTasksDao {
         data = play.api.libs.json.Json.parse(data),
         createdAt = createdAt,
         updatedAt = updatedAt,
-        updatedByUserId = updatedByUserId
+        updatedByGuid = updatedByGuid
       )
     }
   }
@@ -359,9 +359,9 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   private val UpsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.tasks
-     | (id, type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, created_at, updated_at, updated_by_user_id, hash_code)
+     | (id, type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, created_at, updated_at, updated_by_guid, hash_code)
      | values
-     | ({id}, {type}, {type_id}, {organization_guid}::uuid, {num_attempts}::integer, {next_attempt_at}::timestamptz, {errors}::json, {stacktrace}, {data}::json, {created_at}::timestamptz, {updated_at}::timestamptz, {updated_by_user_id}, {hash_code}::bigint)
+     | ({id}, {type}, {type_id}, {organization_guid}::uuid, {num_attempts}::integer, {next_attempt_at}::timestamptz, {errors}::json, {stacktrace}, {data}::json, {created_at}::timestamptz, {updated_at}::timestamptz, {updated_by_guid}, {hash_code}::bigint)
      | on conflict(type_id, type) do update
      | set organization_guid = {organization_guid}::uuid,
      |     num_attempts = {num_attempts}::integer,
@@ -370,7 +370,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
      |     stacktrace = {stacktrace},
      |     data = {data}::json,
      |     updated_at = {updated_at}::timestamptz,
-     |     updated_by_user_id = {updated_by_user_id},
+     |     updated_by_guid = {updated_by_guid},
      |     hash_code = {hash_code}::bigint
      |  where tasks.hash_code != {hash_code}::bigint
     """.stripMargin)
@@ -388,7 +388,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
      |     stacktrace = {stacktrace},
      |     data = {data}::json,
      |     updated_at = {updated_at}::timestamptz,
-     |     updated_by_user_id = {updated_by_user_id},
+     |     updated_by_guid = {updated_by_guid},
      |     hash_code = {hash_code}::bigint
      | where id = {id} and tasks.hash_code != {hash_code}::bigint
     """.stripMargin)
@@ -398,41 +398,32 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
     io.flow.postgresql.Query("delete from public.tasks")
   }
 
-  def upsertByTypeIdAndType(
-    user: java.util.UUID,
-    form: TaskForm
-  ): Unit = {
+  def upsertByTypeIdAndType(form: TaskForm): Unit = {
     db.withConnection { c =>
-      upsertByTypeIdAndType(c, user, form)
+      upsertByTypeIdAndType(c, form)
     }
   }
 
   def upsertByTypeIdAndType(
     c: java.sql.Connection,
-    user: java.util.UUID,
     form: TaskForm
   ): Unit = {
     bindQuery(UpsertQuery, form)
       .bind("created_at", org.joda.time.DateTime.now)
-      .bind("updated_by_user_id", user)
       .execute(c)
   }
 
-  def upsertBatchByTypeIdAndType(
-    user: java.util.UUID,
-    forms: Seq[TaskForm]
-  ): Seq[Unit] = {
+  def upsertBatchByTypeIdAndType(forms: Seq[TaskForm]): Seq[Unit] = {
     db.withConnection { c =>
-      upsertBatchByTypeIdAndType(c, user, forms)
+      upsertBatchByTypeIdAndType(c, forms)
     }
   }
 
   def upsertBatchByTypeIdAndType(
     c: java.sql.Connection,
-    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Seq[Unit] = {
-    forms.map { f => Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(user, f) }.toList match {
+    forms.map { f => Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(f) }.toList match {
       case Nil => Nil
       case one :: rest => {
         anorm.BatchSql(UpsertQuery.sql(), one, rest*).execute()(c)
@@ -442,258 +433,203 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def update(
-    user: java.util.UUID,
     task: Task,
     form: TaskForm
   ): Unit = {
     db.withConnection { c =>
-      update(c, user, task, form)
+      update(c, task, form)
     }
   }
 
   def update(
     c: java.sql.Connection,
-    user: java.util.UUID,
     task: Task,
     form: TaskForm
   ): Unit = {
     updateById(
       c = c,
-      user = user,
       id = task.id,
       form = form
     )
   }
 
   def updateById(
-    user: java.util.UUID,
     id: String,
     form: TaskForm
   ): Unit = {
     db.withConnection { c =>
-      updateById(c, user, id, form)
+      updateById(c, id, form)
     }
   }
 
   def updateById(
     c: java.sql.Connection,
-    user: java.util.UUID,
     id: String,
     form: TaskForm
   ): Unit = {
     bindQuery(UpdateQuery, form)
       .bind("id", id)
-      .bind("updated_by_user_id", user)
       .execute(c)
     ()
   }
 
-  def updateBatch(
-    user: java.util.UUID,
-    forms: Seq[TaskForm]
-  ): Unit = {
+  def updateBatch(forms: Seq[TaskForm]): Unit = {
     db.withConnection { c =>
-      updateBatch(c, user, forms)
+      updateBatch(c, forms)
     }
   }
 
   def updateBatch(
     c: java.sql.Connection,
-    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Unit = {
-    forms.map { f => toNamedParameter(user, f) }.toList match {
+    forms.map { f => toNamedParameter(f) }.toList match {
       case Nil => // no-op
       case first :: rest => anorm.BatchSql(UpdateQuery.sql(), first, rest*).execute()(c)
     }
   }
 
-  def delete(
-    user: java.util.UUID,
-    task: Task
-  ): Unit = {
+  def delete(task: Task): Unit = {
     db.withConnection { c =>
-      delete(c, user, task)
+      delete(c, task)
     }
   }
 
   def delete(
     c: java.sql.Connection,
-    user: java.util.UUID,
     task: Task
   ): Unit = {
     deleteById(
       c = c,
-      user = user,
       id = task.id
     )
   }
 
-  def deleteById(
-    user: java.util.UUID,
-    id: String
-  ): Unit = {
+  def deleteById(id: String): Unit = {
     db.withConnection { c =>
-      deleteById(c, user, id)
+      deleteById(c, id)
     }
   }
 
   def deleteById(
     c: java.sql.Connection,
-    user: java.util.UUID,
     id: String
   ): Unit = {
     DeleteQuery.equals("id", id).execute(c)
   }
 
-  def deleteAllByIds(
-    user: java.util.UUID,
-    ids: Seq[String]
-  ): Unit = {
+  def deleteAllByIds(ids: Seq[String]): Unit = {
     db.withConnection { c =>
-      deleteAllByIds(c, user, ids)
+      deleteAllByIds(c, ids)
     }
   }
 
   def deleteAllByIds(
     c: java.sql.Connection,
-    user: java.util.UUID,
     ids: Seq[String]
   ): Unit = {
     DeleteQuery.in("id", ids).execute(c)
   }
 
-  def deleteAllByTypeId(
-    user: java.util.UUID,
-    typeId: String
-  ): Unit = {
+  def deleteAllByTypeId(typeId: String): Unit = {
     db.withConnection { c =>
-      deleteAllByTypeId(c, user, typeId)
+      deleteAllByTypeId(c, typeId)
     }
   }
 
   def deleteAllByTypeId(
     c: java.sql.Connection,
-    user: java.util.UUID,
     typeId: String
   ): Unit = {
     DeleteQuery.equals("type_id", typeId).execute(c)
   }
 
-  def deleteAllByTypeIds(
-    user: java.util.UUID,
-    typeIds: Seq[String]
-  ): Unit = {
+  def deleteAllByTypeIds(typeIds: Seq[String]): Unit = {
     db.withConnection { c =>
-      deleteAllByTypeIds(c, user, typeIds)
+      deleteAllByTypeIds(c, typeIds)
     }
   }
 
   def deleteAllByTypeIds(
     c: java.sql.Connection,
-    user: java.util.UUID,
     typeIds: Seq[String]
   ): Unit = {
     DeleteQuery.in("type_id", typeIds).execute(c)
   }
 
-  def deleteByTypeIdAndType(
-    user: java.util.UUID,
-    typeIdAndType: (String, String)
-  ): Unit = {
+  def deleteByTypeIdAndType(typeIdAndType: (String, String)): Unit = {
     db.withConnection { c =>
-      deleteByTypeIdAndType(c, user, typeIdAndType)
+      deleteByTypeIdAndType(c, typeIdAndType)
     }
   }
 
   def deleteByTypeIdAndType(
     c: java.sql.Connection,
-    user: java.util.UUID,
     typeIdAndType: (String, String)
   ): Unit = {
     DeleteQuery.in2(("type_id", "type"), Seq(typeIdAndType)).execute(c)
   }
 
-  def deleteAllByTypeIdsAndTypes(
-    user: java.util.UUID,
-    typeIdsAndTypes: Seq[(String, String)]
-  ): Unit = {
+  def deleteAllByTypeIdsAndTypes(typeIdsAndTypes: Seq[(String, String)]): Unit = {
     db.withConnection { c =>
-      deleteAllByTypeIdsAndTypes(c, user, typeIdsAndTypes)
+      deleteAllByTypeIdsAndTypes(c, typeIdsAndTypes)
     }
   }
 
   def deleteAllByTypeIdsAndTypes(
     c: java.sql.Connection,
-    user: java.util.UUID,
     typeIdsAndTypes: Seq[(String, String)]
   ): Unit = {
     DeleteQuery.in2(("type_id", "type"), typeIdsAndTypes).execute(c)
   }
 
-  def deleteAllByNumAttempts(
-    user: java.util.UUID,
-    numAttempts: Int
-  ): Unit = {
+  def deleteAllByNumAttempts(numAttempts: Int): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttempts(c, user, numAttempts)
+      deleteAllByNumAttempts(c, numAttempts)
     }
   }
 
   def deleteAllByNumAttempts(
     c: java.sql.Connection,
-    user: java.util.UUID,
     numAttempts: Int
   ): Unit = {
     DeleteQuery.equals("num_attempts", numAttempts).execute(c)
   }
 
-  def deleteAllByNumAttemptses(
-    user: java.util.UUID,
-    numAttemptses: Seq[Int]
-  ): Unit = {
+  def deleteAllByNumAttemptses(numAttemptses: Seq[Int]): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttemptses(c, user, numAttemptses)
+      deleteAllByNumAttemptses(c, numAttemptses)
     }
   }
 
   def deleteAllByNumAttemptses(
     c: java.sql.Connection,
-    user: java.util.UUID,
     numAttemptses: Seq[Int]
   ): Unit = {
     DeleteQuery.in("num_attempts", numAttemptses).execute(c)
   }
 
-  def deleteAllByNumAttemptsAndNextAttemptAt(
-    user: java.util.UUID,
-    numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)
-  ): Unit = {
+  def deleteAllByNumAttemptsAndNextAttemptAt(numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttemptsAndNextAttemptAt(c, user, numAttemptsAndNextAttemptAt)
+      deleteAllByNumAttemptsAndNextAttemptAt(c, numAttemptsAndNextAttemptAt)
     }
   }
 
   def deleteAllByNumAttemptsAndNextAttemptAt(
     c: java.sql.Connection,
-    user: java.util.UUID,
     numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)
   ): Unit = {
     DeleteQuery.in2(("num_attempts", "next_attempt_at"), Seq(numAttemptsAndNextAttemptAt)).execute(c)
   }
 
-  def deleteAllByNumAttemptsesAndNextAttemptAts(
-    user: java.util.UUID,
-    numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]
-  ): Unit = {
+  def deleteAllByNumAttemptsesAndNextAttemptAts(numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]): Unit = {
     db.withConnection { c =>
-      deleteAllByNumAttemptsesAndNextAttemptAts(c, user, numAttemptsesAndNextAttemptAts)
+      deleteAllByNumAttemptsesAndNextAttemptAts(c, numAttemptsesAndNextAttemptAts)
     }
   }
 
   def deleteAllByNumAttemptsesAndNextAttemptAts(
     c: java.sql.Connection,
-    user: java.util.UUID,
     numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]
   ): Unit = {
     DeleteQuery.in2(("num_attempts", "next_attempt_at"), numAttemptsesAndNextAttemptAts).execute(c)
@@ -717,10 +653,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       .bind("hash_code", form.hashCode())
   }
 
-  private def toNamedParameter(
-    user: java.util.UUID,
-    form: TaskForm
-  ): Seq[anorm.NamedParameter] = {
+  private def toNamedParameter(form: TaskForm): Seq[anorm.NamedParameter] = {
     Seq(
       anorm.NamedParameter("id", form.id),
       anorm.NamedParameter("type", form.`type`),
@@ -732,7 +665,6 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       anorm.NamedParameter("stacktrace", form.stacktrace),
       anorm.NamedParameter("data", play.api.libs.json.Json.toJson(form.data).toString),
       anorm.NamedParameter("updated_at", org.joda.time.DateTime.now),
-      anorm.NamedParameter("updated_by_user_id", user),
       anorm.NamedParameter("hash_code", form.hashCode())
     )
   }

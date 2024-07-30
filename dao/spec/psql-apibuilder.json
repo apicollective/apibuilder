@@ -17,7 +17,7 @@
         "audit": {
           "created_at": { "type": "date-time-iso8601" },
           "updated_at": { "type": "date-time-iso8601" },
-          "updated_by_user_id": { "type": "string" }
+          "updated_by": { "name": "updated_by_guid", "type": "string" }
         }
       }
     }
