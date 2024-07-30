@@ -457,6 +457,8 @@ package io.apibuilder.spec.v0.models {
 
 package io.apibuilder.spec.v0.models {
 
+  import play.api.libs.json.JsObject
+
   package object json {
     import play.api.libs.json.__
     import play.api.libs.json.JsString
@@ -1390,6 +1392,7 @@ package io.apibuilder.spec.v0.models {
     }
 
     implicit def jsonReadsApibuilderSpecResponseCode[T <: io.apibuilder.spec.v0.models.ResponseCode]: play.api.libs.json.Reads[T] = (json: play.api.libs.json.JsValue) => {
+      println(s"jsonReadsApibuilderSpecResponseCode: $json")
       Seq(
         jsonReadsApibuilderSpecResponseCodeInt.reads(json).map(_.asInstanceOf[T]),
         jsonReadsApibuilderSpecResponseCodeOption.reads(json).map(_.asInstanceOf[T])
@@ -1416,7 +1419,14 @@ package io.apibuilder.spec.v0.models {
       obj match {
         case x: io.apibuilder.spec.v0.models.ResponseCodeInt => play.api.libs.json.Json.obj("integer" -> play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsNumber(x.value)))
         case x: io.apibuilder.spec.v0.models.ResponseCodeOption => play.api.libs.json.Json.obj("response_code_option" -> play.api.libs.json.JsString(x.toString))
-        case x: io.apibuilder.spec.v0.models.ResponseCodeUndefinedType => sys.error(s"The type[io.apibuilder.spec.v0.models.ResponseCodeUndefinedType] should never be serialized")
+        case x: io.apibuilder.spec.v0.models.ResponseCodeUndefinedType => {
+          scala.util.Try {
+            play.api.libs.json.Json.parse(x.description).asInstanceOf[play.api.libs.json.JsObject]
+          } match {
+            case scala.util.Success(o) => o
+            case scala.util.Failure(_) => sys.error(s"The type[io.apibuilder.spec.v0.models.ResponseCodeUndefinedType] should never be serialized")
+          }
+        }
       }
     }
 
