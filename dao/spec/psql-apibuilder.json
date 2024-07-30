@@ -1,7 +1,26 @@
 {
   "name": "psql-apibuilder",
   "attributes": [
-    { "name": "scala", "value": { "version": "3.4" } }
+    {
+      "name": "scala",
+      "value": {
+        "version": "3.4",
+        "package": "db.generated",
+        "dao_user_class": "java.util.UUID"
+      }
+    },
+    {
+      "name": "psql",
+      "value": {
+        "pkey": "id",
+        "hash_code": {},
+        "audit": {
+          "created_at": { "type": "date-time-iso8601" },
+          "updated_at": { "type": "date-time-iso8601" },
+          "updated_by_user_id": { "type": "string" }
+        }
+      }
+    }
   ],
 
   "models": {
@@ -30,18 +49,10 @@
         {
           "name": "scala",
           "value": {
-            "package": "db.generated",
-            "dao_user_class": "java.util.UUID",
             "id_generator": {
               "class": "com.mbryzek.util.IdGenerator",
               "prefix": "gni"
             }
-          }
-        },
-        {
-          "name": "psql",
-          "value": {
-            "pkey": "id"
           }
         }
       ]
@@ -63,16 +74,12 @@
         {
           "name": "scala",
           "value": {
-            "package": "db.generated",
-            "dao_user_class": "java.util.UUID",
             "order_by": { "optional": true }
           }
         },
         {
           "name": "psql",
           "value": {
-            "pkey": "id",
-            "authorization": { "type": "disabled" },
             "on_conflict": {
               "fields": ["type_id", "type"]
             },
