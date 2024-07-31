@@ -261,7 +261,7 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
   }
 
   private val DeleteQuery: io.flow.postgresql.Query = {
-    io.flow.postgresql.Query("delete from public.sessions")
+    io.flow.postgresql.Query("update public.sessions set {deleted_at}::timestamptz, {deleted_by_guid}::uuid").withDebugging()
   }
 
   def insert(
