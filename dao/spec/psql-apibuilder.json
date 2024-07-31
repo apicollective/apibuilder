@@ -28,40 +28,6 @@
   ],
 
   "models": {
-    "generator_invocation": {
-      "fields": [
-        {
-          "name": "id",
-          "type": "string"
-        },
-        {
-          "name": "key",
-          "type": "string"
-        },
-        {
-          "name": "organization_key",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "application_key",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "scala",
-          "value": {
-            "id_generator": {
-              "class": "com.mbryzek.util.IdGenerator",
-              "prefix": "gni"
-            }
-          }
-        }
-      ]
-    },
-
     "task": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -114,6 +80,40 @@
               "deleted": {
                 "at": { "type": "date-time-iso8601", "required": false },
                 "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "generator_invocation": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "key", "type": "string" },
+        { "name": "organization_key", "type": "string", "required": false },
+        { "name": "application_key", "type": "string", "required": false }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "id_generator": {
+              "class": "com.mbryzek.util.IdGenerator",
+              "prefix": "gni"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "string" }
               }
             }
           }
