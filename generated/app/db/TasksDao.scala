@@ -412,7 +412,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
     user: java.util.UUID,
     form: TaskForm
   ): Unit = {
-    bindQuery(UpsertQuery,user,  form)
+    bindQuery(UpsertQuery, user, form)
       .bind("created_at", org.joda.time.DateTime.now)
       .execute(c)
   }
@@ -480,7 +480,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
     id: String,
     form: TaskForm
   ): Unit = {
-    bindQuery(UpdateQuery,user,  form)
+    bindQuery(UpdateQuery, user, form)
       .bind("id", id)
       .bind("updated_by_guid", user)
       .execute(c)
