@@ -15,9 +15,13 @@
         "pkey": "id",
         "hash_code": {},
         "audit": {
-          "created_at": { "type": "date-time-iso8601" },
-          "updated_at": { "type": "date-time-iso8601" },
-          "updated_by": { "name": "updated_by_guid", "type": "string" }
+          "created": {
+            "at": { "type": "date-time-iso8601" }
+          },
+          "updated": {
+            "at": { "type": "date-time-iso8601" },
+            "by": { "name": "updated_by_guid", "type": "string" }
+          }
         }
       }
     }

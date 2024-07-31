@@ -245,9 +245,8 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
     form: GeneratorInvocationForm
   ): String = {
     val id = randomId
-    bindQuery(InsertQuery, form)
+    bindQuery(InsertQuery,user,  form)
       .bind("created_at", org.joda.time.DateTime.now)
-      .bind("updated_by_guid", user)
       .bind("id", id)
       .execute(c)
     id
@@ -319,7 +318,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
     id: String,
     form: GeneratorInvocationForm
   ): Unit = {
-    bindQuery(UpdateQuery, form)
+    bindQuery(UpdateQuery,user,  form)
       .bind("id", id)
       .bind("updated_by_guid", user)
       .execute(c)
@@ -403,6 +402,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   private def bindQuery(
     query: io.flow.postgresql.Query,
+    user: java.util.UUID,
     form: GeneratorInvocationForm
   ): io.flow.postgresql.Query = {
     query
@@ -410,6 +410,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
       .bind("organization_key", form.organizationKey)
       .bind("application_key", form.applicationKey)
       .bind("updated_at", org.joda.time.DateTime.now)
+      .bind("updated_by_guid", user)
       .bind("hash_code", form.hashCode())
   }
 

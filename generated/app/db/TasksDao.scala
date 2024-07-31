@@ -412,9 +412,8 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
     user: java.util.UUID,
     form: TaskForm
   ): Unit = {
-    bindQuery(UpsertQuery, form)
+    bindQuery(UpsertQuery,user,  form)
       .bind("created_at", org.joda.time.DateTime.now)
-      .bind("updated_by_guid", user)
       .execute(c)
   }
 
@@ -481,7 +480,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
     id: String,
     form: TaskForm
   ): Unit = {
-    bindQuery(UpdateQuery, form)
+    bindQuery(UpdateQuery,user,  form)
       .bind("id", id)
       .bind("updated_by_guid", user)
       .execute(c)
@@ -701,6 +700,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   private def bindQuery(
     query: io.flow.postgresql.Query,
+    user: java.util.UUID,
     form: TaskForm
   ): io.flow.postgresql.Query = {
     query
@@ -714,6 +714,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
       .bind("stacktrace", form.stacktrace)
       .bind("data", play.api.libs.json.Json.toJson(form.data).toString)
       .bind("updated_at", org.joda.time.DateTime.now)
+      .bind("updated_by_guid", user)
       .bind("hash_code", form.hashCode())
   }
 
