@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Domain, Organization, User}
+import io.apibuilder.api.v0.models.{Domain, User}
 import io.flow.postgresql.Query
 import play.api.db._
 
@@ -26,7 +26,7 @@ class OrganizationDomainsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {domain}, {created_by_guid}::uuid)
   """  
 
-  def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
+  def create(createdBy: User, org: InternalOrganization, domainName: String): OrganizationDomain = {
     db.withConnection { implicit c =>
       create(c, createdBy, org.guid, domainName)
     }

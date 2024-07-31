@@ -1,17 +1,13 @@
 package db
 
-import anorm._
 import io.apibuilder.api.v0.models._
-import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
-import io.flow.postgresql.Query
+import io.apibuilder.common.v0.models.MembershipRole
 import lib.{Misc, UrlKey, Validation}
 import org.joda.time.DateTime
-import play.api.db._
 import play.api.inject.Injector
-import play.api.libs.json.Json
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 case class InternalOrganization(db: generated.Organization) {
   val guid: UUID = db.guid
@@ -158,8 +154,8 @@ class InternalOrganizationsDao @Inject()(
       visibility = form.visibility.toString,
     ))
 
-    form.domains.getOrElse(Nil).map(Domain(_)).foreach { domain =>
-      organizationDomainsDao.create(c, user, orgGuid, domain.name)
+    form.domains.getOrElse(Nil).foreach { domainName =>
+      organizationDomainsDao.create(c, user, orgGuid, domainName)
     }
 
     InternalOrganization(dao.findByGuidWithConnection(c, orgGuid).getOrElse {
