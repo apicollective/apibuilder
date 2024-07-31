@@ -196,12 +196,12 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   import anorm.postgresql.*
 
-  private val idGenerator: com.mbryzek.util.IdGenerator = {
+  private val pkeyGenerator: com.mbryzek.util.IdGenerator = {
     com.mbryzek.util.IdGenerator("gni")
   }
 
   def randomId: String = {
-    idGenerator.randomId()
+    pkeyGenerator.randomId()
   }
 
   private val InsertQuery: io.flow.postgresql.Query = {
