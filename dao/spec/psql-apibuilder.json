@@ -112,8 +112,8 @@
                 "by": { "name": "updated_by_guid", "type": "uuid" }
               },
               "deleted": {
-                "at": { "type": "date-time-iso8601" },
-                "by": { "name": "deleted_by_guid", "type": "uuid" }
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
               }
             }
           }
