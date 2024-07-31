@@ -56,6 +56,7 @@ class OrganizationDomainsDao @Inject() (
   def findAll(
     guid: Option[UUID] = None,
     organizationGuid: Option[UUID] = None,
+    organizationGuids: Option[Seq[UUID]] = None,
     domain: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false)
   ): Seq[OrganizationDomain] = {
@@ -63,6 +64,7 @@ class OrganizationDomainsDao @Inject() (
       BaseQuery.
         equals("guid", guid).
         equals("organization_guid", organizationGuid).
+        optionalIn("organization_guid", organizationGuids).
         and(
           domain.map { _ =>
             "domain = lower(trim({domain}))"

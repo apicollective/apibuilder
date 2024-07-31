@@ -10,7 +10,8 @@ class WatchesModel @Inject()(
                               organizationsDao: InternalOrganizationsDao,
                               applicationsDao: ApplicationsDao,
                               applicationsModel: ApplicationsModel,
-                              usersDao: UsersDao
+                              usersDao: UsersDao,
+                              organizationsModel: OrganizationsModel,
                                         ) {
   def toModel(watch: InternalWatch): Option[Watch] = {
     toModels(Seq(watch)).headOption
@@ -29,11 +30,11 @@ class WatchesModel @Inject()(
       )
     ).map { o => o.guid -> o }.toMap
 
-    val organizations = organizationsDao.findAll(
+    val organizations = organizationsModel.toModels(organizationsDao.findAll(
       Authorization.All,
       guids = Some(applications.values.map(_.organization.guid).toSeq.distinct),
       limit = None
-    ).map { o => o.guid -> o }.toMap
+    )).map { o => o.guid -> o }.toMap
 
     watches.flatMap { w =>
       (users.get(w.userGuid),

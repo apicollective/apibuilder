@@ -19,6 +19,7 @@ case class InternalOrganization(db: generated.Organization) {
   val guid: UUID = db.guid
   val key: String = db.key
   val name: String = db.name
+  val visibility: Visibility = Visibility(db.visibility)
   val reference: OrganizationReference = OrganizationReference(guid)
 }
 
