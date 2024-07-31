@@ -231,7 +231,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def insert(
-    user: java.util.UUID,
+    user: uuid,
     form: GeneratorInvocationForm
   ): String = {
     db.withConnection { c =>
@@ -241,7 +241,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def insert(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     form: GeneratorInvocationForm
   ): String = {
     val id = randomId
@@ -253,7 +253,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def insertBatch(
-    user: java.util.UUID,
+    user: uuid,
     forms: Seq[GeneratorInvocationForm]
   ): Seq[String] = {
     db.withConnection { c =>
@@ -263,7 +263,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def insertBatch(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     forms: Seq[GeneratorInvocationForm]
   ): Seq[String] = {
     forms.map { f =>
@@ -279,7 +279,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def update(
-    user: java.util.UUID,
+    user: uuid,
     generatorInvocation: GeneratorInvocation,
     form: GeneratorInvocationForm
   ): Unit = {
@@ -290,7 +290,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def update(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     generatorInvocation: GeneratorInvocation,
     form: GeneratorInvocationForm
   ): Unit = {
@@ -303,7 +303,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def updateById(
-    user: java.util.UUID,
+    user: uuid,
     id: String,
     form: GeneratorInvocationForm
   ): Unit = {
@@ -314,7 +314,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def updateById(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     id: String,
     form: GeneratorInvocationForm
   ): Unit = {
@@ -326,7 +326,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def updateBatch(
-    user: java.util.UUID,
+    user: uuid,
     forms: Seq[(String, GeneratorInvocationForm)]
   ): Unit = {
     db.withConnection { c =>
@@ -336,7 +336,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def updateBatch(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     forms: Seq[(String, GeneratorInvocationForm)]
   ): Unit = {
     forms.map { case (id, f) => toNamedParameter(user, id, f) }.toList match {
@@ -346,7 +346,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def delete(
-    user: java.util.UUID,
+    user: uuid,
     generatorInvocation: GeneratorInvocation
   ): Unit = {
     db.withConnection { c =>
@@ -356,7 +356,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def delete(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     generatorInvocation: GeneratorInvocation
   ): Unit = {
     deleteById(
@@ -367,7 +367,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def deleteById(
-    user: java.util.UUID,
+    user: uuid,
     id: String
   ): Unit = {
     db.withConnection { c =>
@@ -377,14 +377,14 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def deleteById(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     id: String
   ): Unit = {
     DeleteQuery.equals("id", id).execute(c)
   }
 
   def deleteAllByIds(
-    user: java.util.UUID,
+    user: uuid,
     ids: Seq[String]
   ): Unit = {
     db.withConnection { c =>
@@ -394,7 +394,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   def deleteAllByIds(
     c: java.sql.Connection,
-    user: java.util.UUID,
+    user: uuid,
     ids: Seq[String]
   ): Unit = {
     DeleteQuery.in("id", ids).execute(c)
@@ -402,7 +402,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
 
   private def bindQuery(
     query: io.flow.postgresql.Query,
-    user: java.util.UUID,
+    user: uuid,
     form: GeneratorInvocationForm
   ): io.flow.postgresql.Query = {
     query
@@ -415,7 +415,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   private def toNamedParameter(
-    user: java.util.UUID,
+    user: uuid,
     id: String,
     form: GeneratorInvocationForm
   ): Seq[anorm.NamedParameter] = {

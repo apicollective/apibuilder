@@ -6,7 +6,7 @@
       "value": {
         "version": "3.4",
         "package": "db.generated",
-        "user_class": "java.util.UUID"
+        "user_class": "uuid"
       }
     },
     {
@@ -76,12 +76,6 @@
       ],
       "attributes": [
         {
-          "name": "scala",
-          "value": {
-            "order_by": { "optional": true }
-          }
-        },
-        {
           "name": "psql",
           "value": {
             "on_conflict": {
@@ -90,6 +84,38 @@
             "indexes": [
               { "fields": ["num_attempts", "next_attempt_at"] }
             ]
+          }
+        }
+      ]
+    },
+
+    "session": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "expires_at", "type": "date-time-iso8601" }
+      ],
+      "attributes": [
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["user_guid"] }
+            ],
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "uuid" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "uuid" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "uuid" }
+              }
+            }
           }
         }
       ]
