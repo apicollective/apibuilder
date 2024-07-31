@@ -399,7 +399,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def upsertByTypeIdAndType(
-    user: uuid,
+    user: java.util.UUID,
     form: TaskForm
   ): Unit = {
     db.withConnection { c =>
@@ -409,7 +409,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def upsertByTypeIdAndType(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     form: TaskForm
   ): Unit = {
     bindQuery(UpsertQuery,user,  form)
@@ -418,7 +418,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def upsertBatchByTypeIdAndType(
-    user: uuid,
+    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Seq[Unit] = {
     db.withConnection { c =>
@@ -428,7 +428,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def upsertBatchByTypeIdAndType(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Seq[Unit] = {
     forms.map { f => Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(user, f) }.toList match {
@@ -441,7 +441,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def update(
-    user: uuid,
+    user: java.util.UUID,
     task: Task,
     form: TaskForm
   ): Unit = {
@@ -452,7 +452,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def update(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     task: Task,
     form: TaskForm
   ): Unit = {
@@ -465,7 +465,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def updateById(
-    user: uuid,
+    user: java.util.UUID,
     id: String,
     form: TaskForm
   ): Unit = {
@@ -476,7 +476,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def updateById(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     id: String,
     form: TaskForm
   ): Unit = {
@@ -488,7 +488,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def updateBatch(
-    user: uuid,
+    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Unit = {
     db.withConnection { c =>
@@ -498,7 +498,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def updateBatch(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     forms: Seq[TaskForm]
   ): Unit = {
     forms.map { f => toNamedParameter(user, f) }.toList match {
@@ -508,7 +508,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def delete(
-    user: uuid,
+    user: java.util.UUID,
     task: Task
   ): Unit = {
     db.withConnection { c =>
@@ -518,7 +518,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def delete(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     task: Task
   ): Unit = {
     deleteById(
@@ -529,7 +529,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   def deleteById(
-    user: uuid,
+    user: java.util.UUID,
     id: String
   ): Unit = {
     db.withConnection { c =>
@@ -539,14 +539,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteById(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     id: String
   ): Unit = {
     DeleteQuery.equals("id", id).execute(c)
   }
 
   def deleteAllByIds(
-    user: uuid,
+    user: java.util.UUID,
     ids: Seq[String]
   ): Unit = {
     db.withConnection { c =>
@@ -556,14 +556,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByIds(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     ids: Seq[String]
   ): Unit = {
     DeleteQuery.in("id", ids).execute(c)
   }
 
   def deleteAllByTypeId(
-    user: uuid,
+    user: java.util.UUID,
     typeId: String
   ): Unit = {
     db.withConnection { c =>
@@ -573,14 +573,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByTypeId(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     typeId: String
   ): Unit = {
     DeleteQuery.equals("type_id", typeId).execute(c)
   }
 
   def deleteAllByTypeIds(
-    user: uuid,
+    user: java.util.UUID,
     typeIds: Seq[String]
   ): Unit = {
     db.withConnection { c =>
@@ -590,14 +590,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByTypeIds(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     typeIds: Seq[String]
   ): Unit = {
     DeleteQuery.in("type_id", typeIds).execute(c)
   }
 
   def deleteByTypeIdAndType(
-    user: uuid,
+    user: java.util.UUID,
     typeIdAndType: (String, String)
   ): Unit = {
     db.withConnection { c =>
@@ -607,14 +607,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteByTypeIdAndType(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     typeIdAndType: (String, String)
   ): Unit = {
     DeleteQuery.in2(("type_id", "type"), Seq(typeIdAndType)).execute(c)
   }
 
   def deleteAllByTypeIdsAndTypes(
-    user: uuid,
+    user: java.util.UUID,
     typeIdsAndTypes: Seq[(String, String)]
   ): Unit = {
     db.withConnection { c =>
@@ -624,14 +624,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByTypeIdsAndTypes(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     typeIdsAndTypes: Seq[(String, String)]
   ): Unit = {
     DeleteQuery.in2(("type_id", "type"), typeIdsAndTypes).execute(c)
   }
 
   def deleteAllByNumAttempts(
-    user: uuid,
+    user: java.util.UUID,
     numAttempts: Int
   ): Unit = {
     db.withConnection { c =>
@@ -641,14 +641,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByNumAttempts(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     numAttempts: Int
   ): Unit = {
     DeleteQuery.equals("num_attempts", numAttempts).execute(c)
   }
 
   def deleteAllByNumAttemptses(
-    user: uuid,
+    user: java.util.UUID,
     numAttemptses: Seq[Int]
   ): Unit = {
     db.withConnection { c =>
@@ -658,14 +658,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByNumAttemptses(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     numAttemptses: Seq[Int]
   ): Unit = {
     DeleteQuery.in("num_attempts", numAttemptses).execute(c)
   }
 
   def deleteAllByNumAttemptsAndNextAttemptAt(
-    user: uuid,
+    user: java.util.UUID,
     numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)
   ): Unit = {
     db.withConnection { c =>
@@ -675,14 +675,14 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByNumAttemptsAndNextAttemptAt(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     numAttemptsAndNextAttemptAt: (Int, org.joda.time.DateTime)
   ): Unit = {
     DeleteQuery.in2(("num_attempts", "next_attempt_at"), Seq(numAttemptsAndNextAttemptAt)).execute(c)
   }
 
   def deleteAllByNumAttemptsesAndNextAttemptAts(
-    user: uuid,
+    user: java.util.UUID,
     numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]
   ): Unit = {
     db.withConnection { c =>
@@ -692,7 +692,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   def deleteAllByNumAttemptsesAndNextAttemptAts(
     c: java.sql.Connection,
-    user: uuid,
+    user: java.util.UUID,
     numAttemptsesAndNextAttemptAts: Seq[(Int, org.joda.time.DateTime)]
   ): Unit = {
     DeleteQuery.in2(("num_attempts", "next_attempt_at"), numAttemptsesAndNextAttemptAts).execute(c)
@@ -700,7 +700,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
 
   private def bindQuery(
     query: io.flow.postgresql.Query,
-    user: uuid,
+    user: java.util.UUID,
     form: TaskForm
   ): io.flow.postgresql.Query = {
     query
@@ -719,7 +719,7 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   }
 
   private def toNamedParameter(
-    user: uuid,
+    user: java.util.UUID,
     form: TaskForm
   ): Seq[anorm.NamedParameter] = {
     Seq(

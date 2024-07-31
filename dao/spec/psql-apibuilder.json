@@ -6,7 +6,7 @@
       "value": {
         "version": "3.4",
         "package": "db.generated",
-        "user_class": "uuid"
+        "user_class": "java.util.UUID"
       }
     },
     {
@@ -105,7 +105,7 @@
             "audit": {
               "created": {
                 "at": { "type": "date-time-iso8601" },
-                "by": { "name": "updated_by_guid", "type": "uuid" }
+                "by": { "name": "created_by_guid", "type": "uuid" }
               },
               "updated": {
                 "at": { "type": "date-time-iso8601" },
@@ -113,7 +113,7 @@
               },
               "deleted": {
                 "at": { "type": "date-time-iso8601" },
-                "by": { "name": "updated_by_guid", "type": "uuid" }
+                "by": { "name": "deleted_by_guid", "type": "uuid" }
               }
             }
           }
