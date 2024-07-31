@@ -230,12 +230,8 @@ class OrganizationsDao @javax.inject.Inject() (override val db: play.api.db.Data
 
   import anorm.postgresql.*
 
-  private val pkeyGenerator: java.util.UUID = {
+  def randomId: java.util.UUID = {
     java.util.UUID.randomUUID
-  }
-
-  def randomId: String = {
-    pkeyGenerator.randomId()
   }
 
   private val InsertQuery: io.flow.postgresql.Query = {
