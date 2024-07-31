@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Organization, User}
+import io.apibuilder.api.v0.models.User
 import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
@@ -103,7 +103,7 @@ class MembershipsDao @Inject() (
 
   def isUserAdmin(
     user: User,
-    organization: Organization
+    organization: InternalOrganization
   ): Boolean = {
     isUserAdmin(userGuid = user.guid, organizationGuid = organization.guid)
   }
@@ -120,7 +120,7 @@ class MembershipsDao @Inject() (
 
   def isUserMember(
     user: User,
-    organization: Organization
+    organization: InternalOrganization
   ): Boolean = {
     isUserMember(userGuid = user.guid, organizationGuid = organization.guid)
   }
@@ -166,7 +166,7 @@ class MembershipsDao @Inject() (
 
   def findByOrganizationAndUserAndRoles(
     authorization: Authorization,
-    organization: Organization,
+    organization: InternalOrganization,
     user: User,
     roles: Seq[MembershipRole]
   ): Seq[InternalMembership] = {

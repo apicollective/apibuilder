@@ -117,7 +117,7 @@ class InternalOrganizationsDao @Inject()(
     }
   }
 
-  def findAllByEmailDomain(email: String): Seq[Organization] = {
+  def findAllByEmailDomain(email: String): Seq[InternalOrganization] = {
     Misc.emailDomain(email) match {
       case None => Nil
       case Some(domain) => {
@@ -132,16 +132,12 @@ class InternalOrganizationsDao @Inject()(
     val errors = validate(form, Some(existing))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    db.withConnection { implicit c =>
-      SQL(UpdateQuery).on(
-        "guid" -> existing.guid,
-        "name" -> form.name.trim,
-        "key" -> form.key.getOrElse(UrlKey.generate(form.name)).trim,
-        "namespace" -> form.namespace.trim,
-        "visibility" -> form.visibility.toString,
-        "user_guid" -> user.guid
-      ).execute()
-    }
+    dao.update(user.guid, existing.db, existing.db.form.copy(
+      name = form.name.trim,
+      key = form.key.getOrElse(UrlKey.generate(form.name)).trim,
+      namespace = form.namespace.trim,
+      visibility = form.visibility.toString,
+    ))
 
     // TODO: Figure out how we want to handle domains. Best option
     // might be to remove domains from organization_form
@@ -172,14 +168,14 @@ class InternalOrganizationsDao @Inject()(
   }
 
   def softDelete(deletedBy: User, org: InternalOrganization): Unit = {
-    dbHelpers.delete(deletedBy, org.guid)
+    dao.delete(deletedBy.guid, org.db)
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Organization] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[InternalOrganization] = {
     findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
-  def findByKey(authorization: Authorization, orgKey: String): Option[Organization] = {
+  def findByKey(authorization: Authorization, orgKey: String): Option[InternalOrganization] = {
     findAll(authorization, key = Some(orgKey), limit = Some(1)).headOption
   }
 
@@ -196,72 +192,29 @@ class InternalOrganizationsDao @Inject()(
     deletedAtBefore: Option[DateTime] = None,
     limit: Option[Long],
     offset: Long = 0
-  ): Seq[Organization] = {
-    db.withConnection { implicit c =>
-      authorization.organizationFilter(BaseQuery, "organizations.guid").
-        equals("organizations.guid", guid).
-        optionalIn("organizations.guid", guids).
-        equals("key", key).
-        and(
-          userGuid.map { _ =>
-            "organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
-          }
-        ).bind("user_guid", userGuid).
-        and(
-          applicationGuid.map { _ =>
-            "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
-          }
-        ).bind("application_guid", applicationGuid).
-        and(
-          name.map { _ =>
-            "lower(trim(name)) = lower(trim({name}))"
-          }
-        ).bind("name", name).
-        and(
-          namespace.map { _ =>
-            "namespace = lower(trim({namespace}))"
-          }
-        ).bind("namespace", namespace).
-        and(deletedAtBefore.map { _ =>
-          "deleted_at < {deleted_at_before}::timestamptz"
-        }).bind("deleted_at_before", deletedAtBefore).
-        and(isDeleted.map(Filters.isDeleted("organizations", _))).
-        orderBy("lower(name), created_at").
-        optionalLimit(limit).
-        offset(offset).
-        as(parser.*)
-    }
-  }
-
-  private val parser: RowParser[Organization] = {
-    import org.joda.time.DateTime
-
-    SqlParser.get[UUID]("guid") ~
-      SqlParser.str("key") ~
-      SqlParser.str("name") ~
-      SqlParser.str("namespace") ~
-      SqlParser.str("visibility") ~
-      SqlParser.str("domains") ~
-      SqlParser.get[DateTime]("created_at") ~
-      SqlParser.get[UUID]("created_by_guid") ~
-      SqlParser.get[DateTime]("updated_at") ~
-      SqlParser.get[UUID]("updated_by_guid") map {
-      case guid ~ key ~ name ~ namespace ~ visibility ~ domains ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
-        Organization(
-          guid = guid,
-          key = key,
-          name = name,
-          namespace = namespace,
-          visibility = Visibility.apply(visibility),
-          domains = Json.parse(domains).as[Seq[String]].map { n => Domain(name = n) },
-          audit = Audit(
-            createdAt = createdAt,
-            createdBy = ReferenceGuid(createdByGuid),
-            updatedAt = updatedAt,
-            updatedBy = ReferenceGuid(updatedByGuid),
-          )
-        )
-      }
-    }
+  ): Seq[InternalOrganization] = {
+    dao.findAll(
+      guid = guid,
+      guids = guids,
+      limit = limit,
+      offset = offset,
+    ) { q =>
+      authorization.organizationFilter(q, "organizations.guid")
+      .and(
+        userGuid.map { _ =>
+          "organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
+        }
+      ).bind("user_guid", userGuid)
+      .and(
+        applicationGuid.map { _ =>
+          "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
+        }
+      ).bind("application_guid", applicationGuid)
+      .and(deletedAtBefore.map { _ =>
+        "deleted_at < {deleted_at_before}::timestamptz"
+      }).bind("deleted_at_before", deletedAtBefore)
+      .and(isDeleted.map(Filters.isDeleted("organizations", _)))
+      .orderBy("lower(name), created_at")
+    }.map(InternalOrganization(_))
   }
 }
