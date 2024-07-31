@@ -33,13 +33,13 @@ case class InternalVersion(
 )
 
 class VersionsDao @Inject() (
-  @NamedDatabase("default") db: Database,
-  applicationsDao: ApplicationsDao,
-  originalsDao: OriginalsDao,
-  tasksDao: InternalTasksDao,
-  usersDao: UsersDao,
-  organizationsDao: OrganizationsDao,
-  versionsModel: VersionsModel
+                              @NamedDatabase("default") db: Database,
+                              applicationsDao: ApplicationsDao,
+                              originalsDao: OriginalsDao,
+                              tasksDao: InternalTasksDao,
+                              usersDao: UsersDao,
+                              organizationsDao: InternalOrganizationsDao,
+                              versionsModel: VersionsModel
 ) extends ValidatedHelpers {
 
   private val logger: Logger = Logger(this.getClass)

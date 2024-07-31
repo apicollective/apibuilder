@@ -28,14 +28,14 @@ class OrganizationDomainsDao @Inject() (
 
   def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
     db.withConnection { implicit c =>
-      create(c, createdBy, org, domainName)
+      create(c, createdBy, org.guid, domainName)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, orgGuid: UUID, domainName: String): OrganizationDomain = {
     val domain = OrganizationDomain(
       guid = UUID.randomUUID,
-      organizationGuid = org.guid,
+      organizationGuid = orgGuid,
       domain = Domain(domainName.trim)
     )
 

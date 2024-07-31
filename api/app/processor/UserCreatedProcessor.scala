@@ -11,11 +11,11 @@ import javax.inject.Inject
 
 
 class UserCreatedProcessor @Inject()(
-  args: TaskProcessorArgs,
-  usersDao: UsersDao,
-  organizationsDao: OrganizationsDao,
-  membershipRequestsDao: MembershipRequestsDao,
-  emailVerificationsDao: EmailVerificationsDao,
+                                      args: TaskProcessorArgs,
+                                      usersDao: UsersDao,
+                                      organizationsDao: InternalOrganizationsDao,
+                                      membershipRequestsDao: MembershipRequestsDao,
+                                      emailVerificationsDao: EmailVerificationsDao,
 ) extends TaskProcessorWithGuid(args, TaskType.UserCreated) {
 
   override def processRecord(userGuid: UUID): ValidatedNec[String, Unit] = {

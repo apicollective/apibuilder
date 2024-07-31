@@ -29,10 +29,10 @@ case class InternalApplication(
 
 @Singleton
 class ApplicationsDao @Inject() (
-  @NamedDatabase("default") db: Database,
-  emailQueue: EmailProcessorQueue,
-  organizationsDao: OrganizationsDao,
-  tasksDao: InternalTasksDao,
+                                  @NamedDatabase("default") db: Database,
+                                  emailQueue: EmailProcessorQueue,
+                                  organizationsDao: InternalOrganizationsDao,
+                                  tasksDao: InternalTasksDao,
 ) {
 
   private val dbHelpers = DbHelpers(db, "applications")

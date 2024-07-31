@@ -32,7 +32,7 @@ class SubscriptionsDao @Inject() (
   private val dbHelpers = DbHelpers(db, "subscriptions")
 
   // TODO: resolve cicrular dependency
-  private def organizationsDao = injector.instanceOf[OrganizationsDao]
+  private def organizationsDao = injector.instanceOf[InternalOrganizationsDao]
   private def subscriptionsDao = injector.instanceOf[SubscriptionsDao]
   private def usersDao = injector.instanceOf[UsersDao]
 

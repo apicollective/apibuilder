@@ -46,17 +46,17 @@ class MembershipsDao @Inject() (
       join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
-    val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
+  def upsert(createdBy: UUID, org: InternalOrganization, user: User, role: MembershipRole): InternalMembership = {
+    val membership = findByOrganizationAndUserAndRole(Authorization.All, org, user, role) match {
       case Some(r) => r
-      case None => create(createdBy, organization, user, role)
+      case None => create(createdBy, org, user, role)
     }
 
     // If we made this user an admin, and s/he already exists as a
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
     if (role == MembershipRole.Admin) {
-      findByOrganizationAndUserAndRole(Authorization.All, organization, user, MembershipRole.Member).foreach { membership =>
+      findByOrganizationAndUserAndRole(Authorization.All, org, user, MembershipRole.Member).foreach { membership =>
         softDelete(user, membership)
       }
     }
@@ -64,18 +64,18 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
+  private[db] def create(createdBy: UUID, org: InternalOrganization, user: User, role: MembershipRole): InternalMembership = {
     db.withTransaction { implicit c =>
-      create(c, createdBy, organization, user, role)
+      create(c, createdBy, org, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: InternalOrganization, user: User, role: MembershipRole): InternalMembership = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       "guid" -> guid,
-      "organization_guid" -> organization.guid,
+      "organization_guid" -> org.guid,
       "user_guid" -> user.guid,
       "role" -> role.toString,
       "created_by_guid" -> createdBy
@@ -142,13 +142,13 @@ class MembershipsDao @Inject() (
 
   def findByOrganizationAndUserAndRole(
     authorization: Authorization,
-    organization: Organization,
+    org: InternalOrganization,
     user: User,
     role: MembershipRole
   ): Option[InternalMembership] = {
     findByOrganizationGuidAndUserGuidAndRole(
       authorization,
-      organizationGuid = organization.guid,
+      organizationGuid = org.guid,
       userGuid = user.guid,
       role = role
     )

@@ -2,7 +2,7 @@ package processor
 
 import cats.implicits._
 import cats.data.ValidatedNec
-import db.{ApplicationsDao, Authorization, InternalApplication, ItemsDao, OrganizationsDao}
+import db.{ApplicationsDao, Authorization, InternalApplication, ItemsDao, InternalOrganizationsDao}
 import io.apibuilder.api.v0.models.{Application, ApplicationSummary, Organization}
 import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.task.v0.models.TaskType
@@ -15,7 +15,7 @@ class IndexApplicationProcessor @Inject()(
   args: TaskProcessorArgs,
   applicationsDao: ApplicationsDao,
   itemsDao: ItemsDao,
-  organizationsDao: OrganizationsDao
+  organizationsDao: InternalOrganizationsDao
 ) extends TaskProcessorWithGuid(args, TaskType.IndexApplication) {
 
   override def processRecord(applicationGuid: UUID): ValidatedNec[String, Unit] = {

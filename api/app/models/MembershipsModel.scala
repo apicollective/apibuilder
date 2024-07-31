@@ -1,14 +1,14 @@
 package models
 
 import cats.implicits._
-import db.{Authorization, InternalMembership, OrganizationsDao, UsersDao}
+import db.{Authorization, InternalMembership, InternalOrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Membership
 
 import javax.inject.Inject
 
 class MembershipsModel @Inject()(
-                                        organizationsDao: OrganizationsDao,
-                                        usersDao: UsersDao
+                                  organizationsDao: InternalOrganizationsDao,
+                                  usersDao: UsersDao
                                         ) {
   def toModel(mr: InternalMembership): Option[Membership] = {
     toModels(Seq(mr)).headOption

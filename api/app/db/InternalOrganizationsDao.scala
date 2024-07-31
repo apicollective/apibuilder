@@ -13,66 +13,32 @@ import play.api.libs.json.Json
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-@Singleton
-class OrganizationsDao @Inject() (
-  @NamedDatabase("default") db: Database,
+case class InternalOrganization(db: generated.Organization) {
+  val guid: UUID = db.guid
+}
+
+class InternalOrganizationsDao @Inject()(
+  dao: generated.OrganizationsDao,
   injector: Injector,
   organizationDomainsDao: OrganizationDomainsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
-
-  private val dbHelpers = DbHelpers(db, "organizations")
 
   // TODO: resolve circular dependency
   private def membershipsDao = injector.instanceOf[MembershipsDao]
 
   private val MinNameLength = 3
 
-  private[db] val BaseQuery = Query(s"""
-    select guid,
-           name,
-           key,
-           visibility,
-           namespace,
-           ${AuditsDao.query("organizations")},
-           coalesce(
-             (select to_json(array_agg(domain))
-                from organization_domains
-               where deleted_at is null
-                 and organization_guid = organizations.guid),
-             '[]'::json
-           )::text as domains
-      from organizations
-  """)
-
-  private val InsertQuery = """
-    insert into organizations
-    (guid, name, key, namespace, visibility, created_by_guid, updated_by_guid)
-    values
-    ({guid}::uuid, {name}, {key}, {namespace}, {visibility}, {user_guid}::uuid, {user_guid}::uuid)
-  """
-
-  private val UpdateQuery = """
-    update organizations
-       set name = {name},
-           key = {key},
-           namespace = {namespace},
-           visibility = {visibility},
-           updated_by_guid = {user_guid}::uuid
-     where guid = {guid}::uuid
-  """
-
   def validate(
     form: OrganizationForm,
-    existing: Option[Organization] = None
+    existing: Option[InternalOrganization] = None
   ): Seq[io.apibuilder.api.v0.models.Error] = {
-
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
       findAll(Authorization.All, name = Some(form.name), limit = Some(1)).headOption match {
         case None => Nil
-        case Some(org: Organization) => {
+        case Some(org) => {
           if (existing.map(_.guid).contains(org.guid)) {
             Nil
           } else {
@@ -142,8 +108,8 @@ class OrganizationsDao @Inject() (
   /**
    * Creates the org and assigns the user as its administrator.
    */
-  def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
-    db.withTransaction { implicit c =>
+  def createWithAdministrator(user: User, form: OrganizationForm): InternalOrganization = {
+    dao.db.withTransaction { implicit c =>
       val org = create(c, user, form)
       membershipsDao.create(c, user.guid, org, user, MembershipRole.Admin)
       organizationLogsDao.create(c, user.guid, org, s"Created organization and joined as ${MembershipRole.Admin}")
@@ -162,7 +128,7 @@ class OrganizationsDao @Inject() (
     }
   }
 
-  def update(user: User, existing: Organization, form: OrganizationForm): Organization = {
+  def update(user: User, existing: InternalOrganization, form: OrganizationForm): InternalOrganization = {
     val errors = validate(form, Some(existing))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -185,42 +151,27 @@ class OrganizationsDao @Inject() (
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): Organization = {
+  private def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): InternalOrganization = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val org = Organization(
-      guid = UUID.randomUUID,
+    val orgGuid = dao.insert(user.guid, db.generated.OrganizationForm(
       key = form.key.getOrElse(UrlKey.generate(form.name)).trim,
       name = form.name.trim,
       namespace = form.namespace.trim,
-      visibility = form.visibility,
-      domains = form.domains.getOrElse(Nil).map(Domain(_)),
-      audit = Audit(
-        createdAt = DateTime.now,
-        createdBy = ReferenceGuid(user.guid),
-        updatedAt = DateTime.now,
-        updatedBy = ReferenceGuid(user.guid)
-      )
-    )
+      visibility = form.visibility.toString,
+    ))
 
-    SQL(InsertQuery).on(
-      "guid" -> org.guid,
-      "name" -> org.name,
-      "namespace" -> org.namespace,
-      "visibility" -> org.visibility.toString,
-      "key" -> org.key,
-      "user_guid" -> user.guid
-    ).execute()
-
-    org.domains.foreach { domain =>
-      organizationDomainsDao.create(c, user, org, domain.name)
+    form.domains.getOrElse(Nil).map(Domain(_)).foreach { domain =>
+      organizationDomainsDao.create(c, user, orgGuid, domain.name)
     }
 
-    org
+    InternalOrganization(dao.findByGuidWithConnection(c, orgGuid).getOrElse {
+      sys.error("Failed to create organization")
+    })
   }
 
-  def softDelete(deletedBy: User, org: Organization): Unit = {
+  def softDelete(deletedBy: User, org: InternalOrganization): Unit = {
     dbHelpers.delete(deletedBy, org.guid)
   }
 

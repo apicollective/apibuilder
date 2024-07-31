@@ -1,6 +1,6 @@
 package controllers
 
-import db.{MembershipRequestsDao, OrganizationsDao, UsersDao}
+import db.{MembershipRequestsDao, InternalOrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
@@ -14,11 +14,11 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipRequests @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  membershipRequestsDao: MembershipRequestsDao,
-  organizationsDao: OrganizationsDao,
-  usersDao: UsersDao,
-  model: MembershipRequestsModel
+                                     val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                     membershipRequestsDao: MembershipRequestsDao,
+                                     organizationsDao: InternalOrganizationsDao,
+                                     usersDao: UsersDao,
+                                     model: MembershipRequestsModel
 ) extends ApiBuilderController {
 
   case class MembershipRequestForm(

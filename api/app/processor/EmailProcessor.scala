@@ -2,7 +2,7 @@ package processor
 
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.{Authorization, InternalTasksDao, OrganizationsDao, UsersDao}
+import db.{Authorization, InternalTasksDao, InternalOrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Publication
 import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models._
@@ -25,19 +25,19 @@ class EmailProcessorQueue @Inject() (
 }
 
 class EmailProcessor @Inject()(
-  args: TaskProcessorArgs,
-  appConfig: AppConfig,
-  applicationsDao: db.ApplicationsDao,
-  email: EmailUtil,
-  emails: Emails,
-  emailVerificationsDao: db.EmailVerificationsDao,
-  membershipsDao: db.MembershipsDao,
-  membershipsModel: MembershipsModel,
-  membershipRequestsDao: db.MembershipRequestsDao,
-  membershipRequestsModel: MembershipRequestsModel,
-  organizationsDao: OrganizationsDao,
-  passwordResetRequestsDao: db.PasswordResetRequestsDao,
-  usersDao: UsersDao,
+                                args: TaskProcessorArgs,
+                                appConfig: AppConfig,
+                                applicationsDao: db.ApplicationsDao,
+                                email: EmailUtil,
+                                emails: Emails,
+                                emailVerificationsDao: db.EmailVerificationsDao,
+                                membershipsDao: db.MembershipsDao,
+                                membershipsModel: MembershipsModel,
+                                membershipRequestsDao: db.MembershipRequestsDao,
+                                membershipRequestsModel: MembershipRequestsModel,
+                                organizationsDao: InternalOrganizationsDao,
+                                passwordResetRequestsDao: db.PasswordResetRequestsDao,
+                                usersDao: UsersDao,
 ) extends TaskProcessorWithData[EmailData](args, TaskType.Email) {
 
   override def processRecord(id: String, data: EmailData): ValidatedNec[String, Unit] = {

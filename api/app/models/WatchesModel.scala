@@ -1,16 +1,16 @@
 package models
 
 import cats.implicits._
-import db.{ApplicationsDao, Authorization, InternalWatch, OrganizationsDao, UsersDao}
+import db.{ApplicationsDao, Authorization, InternalWatch, InternalOrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Watch
 
 import javax.inject.Inject
 
 class WatchesModel @Inject()(
-                                        organizationsDao: OrganizationsDao,
-                                        applicationsDao: ApplicationsDao,
-                                        applicationsModel: ApplicationsModel,
-                                        usersDao: UsersDao
+                              organizationsDao: InternalOrganizationsDao,
+                              applicationsDao: ApplicationsDao,
+                              applicationsModel: ApplicationsModel,
+                              usersDao: UsersDao
                                         ) {
   def toModel(watch: InternalWatch): Option[Watch] = {
     toModels(Seq(watch)).headOption

@@ -2,7 +2,7 @@ package controllers
 
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.Domain
-import db.{MembershipsDao, OrganizationDomainsDao, OrganizationsDao}
+import db.{MembershipsDao, OrganizationDomainsDao, InternalOrganizationsDao}
 import javax.inject.{Inject, Singleton}
 
 import lib.Validation

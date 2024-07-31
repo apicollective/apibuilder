@@ -1,6 +1,6 @@
 package controllers
 
-import db.{Authorization, OrganizationsDao, VersionsDao}
+import db.{Authorization, InternalOrganizationsDao, VersionsDao}
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -8,8 +8,8 @@ import javax.inject.{Inject, Named, Singleton}
 
 @Singleton
 class Healthchecks @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  organizationsDao: OrganizationsDao,
+                               val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                               organizationsDao: InternalOrganizationsDao,
 ) extends ApiBuilderController {
 
   private val Result = Json.toJson(Map("status" -> "healthy"))

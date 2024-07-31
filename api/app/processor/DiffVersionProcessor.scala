@@ -14,16 +14,16 @@ import java.util.UUID
 import javax.inject.Inject
 
 class DiffVersionProcessor @Inject()(
-                              args: TaskProcessorArgs,
-                              appConfig: AppConfig,
-                              usersDao: UsersDao,
-                              applicationsDao: ApplicationsDao,
-                              organizationsDao: OrganizationsDao,
-                              emails: Emails,
-                              changesDao: ChangesDao,
-                              versionsDao: VersionsDao,
-                              versionsModel: VersionsModel,
-                              watchesDao: WatchesDao,
+                                      args: TaskProcessorArgs,
+                                      appConfig: AppConfig,
+                                      usersDao: UsersDao,
+                                      applicationsDao: ApplicationsDao,
+                                      organizationsDao: InternalOrganizationsDao,
+                                      emails: Emails,
+                                      changesDao: ChangesDao,
+                                      versionsDao: VersionsDao,
+                                      versionsModel: VersionsModel,
+                                      watchesDao: WatchesDao,
 ) extends TaskProcessorWithData[DiffVersionData](args, TaskType.DiffVersion) {
 
   override def processRecord(id: String, data: DiffVersionData): ValidatedNec[String, Unit] = {

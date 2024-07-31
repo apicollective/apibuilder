@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 import com.google.inject.ImplementedBy
-import db.{Authorization, MembershipsDao, OrganizationsDao}
+import db.{Authorization, MembershipsDao, InternalOrganizationsDao}
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
@@ -28,7 +28,7 @@ trait ApiBuilderController extends BaseController {
   def controllerComponents: ControllerComponents = apiBuilderControllerComponents.controllerComponents
 
   def membershipsDao: MembershipsDao = apiBuilderControllerComponents.membershipsDao
-  def organizationsDao: OrganizationsDao = apiBuilderControllerComponents.organizationsDao
+  def organizationsDao: InternalOrganizationsDao = apiBuilderControllerComponents.organizationsDao
 
   def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result): Result = {
     organizationsDao.findByKey(auth, orgKey) match {
@@ -92,7 +92,7 @@ trait ApiBuilderControllerComponents {
   def identifiedActionBuilder: IdentifiedActionBuilder
   def controllerComponents: ControllerComponents
   def membershipsDao: MembershipsDao
-  def organizationsDao: OrganizationsDao
+  def organizationsDao: InternalOrganizationsDao
 }
 
 class ApiBuilderDefaultControllerComponents @Inject() (
@@ -100,7 +100,7 @@ class ApiBuilderDefaultControllerComponents @Inject() (
   val anonymousActionBuilder: AnonymousActionBuilder,
   val identifiedActionBuilder: IdentifiedActionBuilder,
   val membershipsDao: MembershipsDao,
-  val organizationsDao: OrganizationsDao
+  val organizationsDao: InternalOrganizationsDao
 ) extends ApiBuilderControllerComponents
 
 case class AnonymousRequest[A](
