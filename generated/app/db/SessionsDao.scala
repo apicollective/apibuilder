@@ -242,9 +242,9 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
   private val InsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.sessions
-     | (id, user_guid, expires_at, created_at, created_by_guid, updated_at, updated_by_guid, deleted_at, deleted_by_guid, hash_code)
+     | (user_guid, expires_at, created_at, created_by_guid, updated_at, updated_by_guid, hash_code)
      | values
-     | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid, {deleted_at}::timestamptz, {deleted_by_guid}::uuid, {hash_code}::bigint)
+     | ({user_guid}::uuid, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid, {hash_code}::bigint)
     """.stripMargin)
   }
 

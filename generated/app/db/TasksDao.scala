@@ -359,9 +359,9 @@ class TasksDao @javax.inject.Inject() (override val db: play.api.db.Database) ex
   private val UpsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.tasks
-     | (id, type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, created_at, updated_at, updated_by_guid, hash_code)
+     | (type, type_id, organization_guid, num_attempts, next_attempt_at, errors, stacktrace, data, created_at, updated_at, updated_by_guid, hash_code)
      | values
-     | ({id}, {type}, {type_id}, {organization_guid}::uuid, {num_attempts}::integer, {next_attempt_at}::timestamptz, {errors}::json, {stacktrace}, {data}::json, {created_at}::timestamptz, {updated_at}::timestamptz, {updated_by_guid}, {hash_code}::bigint)
+     | ({type}, {type_id}, {organization_guid}::uuid, {num_attempts}::integer, {next_attempt_at}::timestamptz, {errors}::json, {stacktrace}, {data}::json, {created_at}::timestamptz, {updated_at}::timestamptz, {updated_by_guid}, {hash_code}::bigint)
      | on conflict(type_id, type) do update
      | set organization_guid = {organization_guid}::uuid,
      |     num_attempts = {num_attempts}::integer,
