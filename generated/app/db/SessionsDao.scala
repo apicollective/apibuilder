@@ -94,14 +94,14 @@ trait BaseSessionsDao {
   private val BaseQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | select id,
-     |        user_guid,
+     |        user_guid::text,
      |        expires_at,
      |        created_at,
-     |        created_by_guid,
+     |        created_by_guid::text,
      |        updated_at,
-     |        updated_by_guid,
+     |        updated_by_guid::text,
      |        deleted_at,
-     |        deleted_by_guid,
+     |        deleted_by_guid::text,
      |        hash_code
      |   from public.sessions
      |""".stripMargin.stripTrailing

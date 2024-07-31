@@ -123,7 +123,7 @@ trait BaseTasksDao {
      | select id,
      |        type,
      |        type_id,
-     |        organization_guid,
+     |        organization_guid::text,
      |        num_attempts,
      |        next_attempt_at,
      |        errors::text,
