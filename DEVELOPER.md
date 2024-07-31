@@ -43,7 +43,8 @@ In development:
 Updating apibuilder.me
 ==================
 
-    script/upload
+    script/update
+    script/update_daos
 
 SBT
 ==========

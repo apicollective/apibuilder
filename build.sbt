@@ -80,10 +80,14 @@ lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
   .settings(commonSettings*)
+  .settings(resolversSettings)
   .settings(
     scalacOptions ++= Seq("-deprecation:false"),
     libraryDependencies ++= Seq(
       ws,
+      jdbc,
+      "com.github.mbryzek" % "lib-query" % "0.0.5",
+      "com.github.mbryzek" % "lib-util" % "0.0.7",
       "joda-time" % "joda-time" % "2.12.7",
       "org.playframework.anorm" %% "anorm-postgres" % "2.7.0",
       "org.postgresql" % "postgresql" % "42.7.3",

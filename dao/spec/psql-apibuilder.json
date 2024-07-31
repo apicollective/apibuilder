@@ -1,52 +1,33 @@
 {
   "name": "psql-apibuilder",
   "attributes": [
-    { "name": "scala", "value": { "version": "3.4" } }
+    {
+      "name": "scala",
+      "value": {
+        "version": "3.4",
+        "package": "db.generated",
+        "user_class": "java.util.UUID"
+      }
+    },
+    {
+      "name": "psql",
+      "value": {
+        "pkey": "id",
+        "hash_code": {},
+        "audit": {
+          "created": {
+            "at": { "type": "date-time-iso8601" }
+          },
+          "updated": {
+            "at": { "type": "date-time-iso8601" },
+            "by": { "name": "updated_by_guid", "type": "string" }
+          }
+        }
+      }
+    }
   ],
 
   "models": {
-    "generator_invocation": {
-      "fields": [
-        {
-          "name": "id",
-          "type": "string"
-        },
-        {
-          "name": "key",
-          "type": "string"
-        },
-        {
-          "name": "organization_key",
-          "type": "string",
-          "required": false
-        },
-        {
-          "name": "application_key",
-          "type": "string",
-          "required": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "scala",
-          "value": {
-            "package": "db.generated",
-            "dao_user_class": "java.util.UUID",
-            "id_generator": {
-              "class": "com.mbryzek.util.IdGenerator",
-              "prefix": "gni"
-            }
-          }
-        },
-        {
-          "name": "psql",
-          "value": {
-            "pkey": "id"
-          }
-        }
-      ]
-    },
-
     "task": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -61,24 +42,80 @@
       ],
       "attributes": [
         {
-          "name": "scala",
-          "value": {
-            "package": "db.generated",
-            "dao_user_class": "java.util.UUID",
-            "order_by": { "optional": true }
-          }
-        },
-        {
           "name": "psql",
           "value": {
-            "pkey": "id",
-            "authorization": { "type": "disabled" },
             "on_conflict": {
               "fields": ["type_id", "type"]
             },
             "indexes": [
               { "fields": ["num_attempts", "next_attempt_at"] }
             ]
+          }
+        }
+      ]
+    },
+
+    "session": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "expires_at", "type": "date-time-iso8601" }
+      ],
+      "attributes": [
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["user_guid"] }
+            ],
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "created_by_guid", "type": "uuid" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "uuid" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "generator_invocation": {
+      "fields": [
+        { "name": "id", "type": "string" },
+        { "name": "key", "type": "string" },
+        { "name": "organization_key", "type": "string", "required": false },
+        { "name": "application_key", "type": "string", "required": false }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "id_generator": {
+              "class": "com.mbryzek.util.IdGenerator",
+              "prefix": "gni"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "string" }
+              }
+            }
           }
         }
       ]

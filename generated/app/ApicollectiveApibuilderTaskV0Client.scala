@@ -5,7 +5,37 @@
  */
 package io.apibuilder.task.v0.models {
 
-  sealed trait EmailData extends _root_.scala.Product with _root_.scala.Serializable
+  sealed trait EmailData extends _root_.scala.Product with _root_.scala.Serializable {
+    def emailDataDiscriminator: EmailDataDiscriminator
+
+  }
+
+  /**
+   * Defines the valid discriminator values for the type EmailData
+   */
+  sealed trait EmailDataDiscriminator extends _root_.scala.Product with _root_.scala.Serializable
+
+  object EmailDataDiscriminator {
+
+    case object EmailDataApplicationCreated extends EmailDataDiscriminator { override def toString = "email_data_application_created" }
+    case object EmailDataEmailVerificationCreated extends EmailDataDiscriminator { override def toString = "email_data_email_verification_created" }
+    case object EmailDataMembershipCreated extends EmailDataDiscriminator { override def toString = "email_data_membership_created" }
+    case object EmailDataMembershipRequestCreated extends EmailDataDiscriminator { override def toString = "email_data_membership_request_created" }
+    case object EmailDataMembershipRequestAccepted extends EmailDataDiscriminator { override def toString = "email_data_membership_request_accepted" }
+    case object EmailDataMembershipRequestDeclined extends EmailDataDiscriminator { override def toString = "email_data_membership_request_declined" }
+    case object EmailDataPasswordResetRequestCreated extends EmailDataDiscriminator { override def toString = "email_data_password_reset_request_created" }
+
+    final case class UNDEFINED(override val toString: String) extends EmailDataDiscriminator
+
+    val all: scala.List[EmailDataDiscriminator] = scala.List(EmailDataApplicationCreated, EmailDataEmailVerificationCreated, EmailDataMembershipCreated, EmailDataMembershipRequestCreated, EmailDataMembershipRequestAccepted, EmailDataMembershipRequestDeclined, EmailDataPasswordResetRequestCreated)
+
+    private val byName: Map[String, EmailDataDiscriminator] = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): EmailDataDiscriminator = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[EmailDataDiscriminator] = byName.get(value.toLowerCase)
+
+  }
   final case class DiffVersionData(
     oldVersionGuid: _root_.java.util.UUID,
     newVersionGuid: _root_.java.util.UUID
@@ -13,34 +43,48 @@ package io.apibuilder.task.v0.models {
 
   final case class EmailDataApplicationCreated(
     applicationGuid: _root_.java.util.UUID
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataApplicationCreated
+  }
 
   final case class EmailDataEmailVerificationCreated(
     guid: _root_.java.util.UUID
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataEmailVerificationCreated
+  }
 
   final case class EmailDataMembershipCreated(
     guid: _root_.java.util.UUID
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataMembershipCreated
+  }
 
   final case class EmailDataMembershipRequestAccepted(
     organizationGuid: _root_.java.util.UUID,
     userGuid: _root_.java.util.UUID,
     role: io.apibuilder.common.v0.models.MembershipRole
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataMembershipRequestAccepted
+  }
 
   final case class EmailDataMembershipRequestCreated(
     guid: _root_.java.util.UUID
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataMembershipRequestCreated
+  }
 
   final case class EmailDataMembershipRequestDeclined(
     organizationGuid: _root_.java.util.UUID,
     userGuid: _root_.java.util.UUID
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataMembershipRequestDeclined
+  }
 
   final case class EmailDataPasswordResetRequestCreated(
     guid: _root_.java.util.UUID
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.EmailDataPasswordResetRequestCreated
+  }
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
@@ -53,7 +97,9 @@ package io.apibuilder.task.v0.models {
 
   final case class EmailDataUndefinedType(
     description: String
-  ) extends EmailData
+  ) extends EmailData {
+    override val emailDataDiscriminator: EmailDataDiscriminator = EmailDataDiscriminator.UNDEFINED(description)
+  }
   sealed trait TaskType extends _root_.scala.Product with _root_.scala.Serializable
 
   object TaskType {
@@ -190,7 +236,7 @@ package io.apibuilder.task.v0.models {
     def jsObjectEmailDataApplicationCreated(obj: io.apibuilder.task.v0.models.EmailDataApplicationCreated): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "application_guid" -> play.api.libs.json.JsString(obj.applicationGuid.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_application_created")
     }
 
     def jsonWritesApibuilderTaskEmailDataApplicationCreated: play.api.libs.json.Writes[EmailDataApplicationCreated] = {
@@ -206,7 +252,7 @@ package io.apibuilder.task.v0.models {
     def jsObjectEmailDataEmailVerificationCreated(obj: io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "guid" -> play.api.libs.json.JsString(obj.guid.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_email_verification_created")
     }
 
     def jsonWritesApibuilderTaskEmailDataEmailVerificationCreated: play.api.libs.json.Writes[EmailDataEmailVerificationCreated] = {
@@ -222,7 +268,7 @@ package io.apibuilder.task.v0.models {
     def jsObjectEmailDataMembershipCreated(obj: io.apibuilder.task.v0.models.EmailDataMembershipCreated): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "guid" -> play.api.libs.json.JsString(obj.guid.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_membership_created")
     }
 
     def jsonWritesApibuilderTaskEmailDataMembershipCreated: play.api.libs.json.Writes[EmailDataMembershipCreated] = {
@@ -244,7 +290,7 @@ package io.apibuilder.task.v0.models {
         "organization_guid" -> play.api.libs.json.JsString(obj.organizationGuid.toString),
         "user_guid" -> play.api.libs.json.JsString(obj.userGuid.toString),
         "role" -> play.api.libs.json.JsString(obj.role.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_membership_request_accepted")
     }
 
     def jsonWritesApibuilderTaskEmailDataMembershipRequestAccepted: play.api.libs.json.Writes[EmailDataMembershipRequestAccepted] = {
@@ -260,7 +306,7 @@ package io.apibuilder.task.v0.models {
     def jsObjectEmailDataMembershipRequestCreated(obj: io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "guid" -> play.api.libs.json.JsString(obj.guid.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_membership_request_created")
     }
 
     def jsonWritesApibuilderTaskEmailDataMembershipRequestCreated: play.api.libs.json.Writes[EmailDataMembershipRequestCreated] = {
@@ -280,7 +326,7 @@ package io.apibuilder.task.v0.models {
       play.api.libs.json.Json.obj(
         "organization_guid" -> play.api.libs.json.JsString(obj.organizationGuid.toString),
         "user_guid" -> play.api.libs.json.JsString(obj.userGuid.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_membership_request_declined")
     }
 
     def jsonWritesApibuilderTaskEmailDataMembershipRequestDeclined: play.api.libs.json.Writes[EmailDataMembershipRequestDeclined] = {
@@ -296,7 +342,7 @@ package io.apibuilder.task.v0.models {
     def jsObjectEmailDataPasswordResetRequestCreated(obj: io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "guid" -> play.api.libs.json.JsString(obj.guid.toString)
-      )
+      ) ++ play.api.libs.json.Json.obj("discriminator" -> "email_data_password_reset_request_created")
     }
 
     def jsonWritesApibuilderTaskEmailDataPasswordResetRequestCreated: play.api.libs.json.Writes[EmailDataPasswordResetRequestCreated] = {
@@ -305,20 +351,24 @@ package io.apibuilder.task.v0.models {
       }
     }
 
-    implicit def jsonReadsApibuilderTaskEmailData[T <: io.apibuilder.task.v0.models.EmailData]: play.api.libs.json.Reads[T] = (json: play.api.libs.json.JsValue) => {
-      Seq(
-        jsonReadsApibuilderTaskEmailDataApplicationCreated.reads(json).map(_.asInstanceOf[T]),
-        jsonReadsApibuilderTaskEmailDataEmailVerificationCreated.reads(json).map(_.asInstanceOf[T]),
-        jsonReadsApibuilderTaskEmailDataMembershipCreated.reads(json).map(_.asInstanceOf[T]),
-        jsonReadsApibuilderTaskEmailDataMembershipRequestCreated.reads(json).map(_.asInstanceOf[T]),
-        jsonReadsApibuilderTaskEmailDataMembershipRequestAccepted.reads(json).map(_.asInstanceOf[T]),
-        jsonReadsApibuilderTaskEmailDataMembershipRequestDeclined.reads(json).map(_.asInstanceOf[T]),
-        jsonReadsApibuilderTaskEmailDataPasswordResetRequestCreated.reads(json).map(_.asInstanceOf[T])
-      ).view.find(_.isSuccess).getOrElse {
-        play.api.libs.json.JsSuccess(EmailDataUndefinedType(json.toString).asInstanceOf[T])
+    implicit def jsonReadsApibuilderTaskEmailData[T <: io.apibuilder.task.v0.models.EmailData]: play.api.libs.json.Reads[T] = (js: play.api.libs.json.JsValue) => {
+      def readDiscriminator(discriminator: String) = {
+        discriminator match {
+          case "email_data_application_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataApplicationCreated.reads(js)
+          case "email_data_email_verification_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataEmailVerificationCreated.reads(js)
+          case "email_data_membership_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipCreated.reads(js)
+          case "email_data_membership_request_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipRequestCreated.reads(js)
+          case "email_data_membership_request_accepted" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipRequestAccepted.reads(js)
+          case "email_data_membership_request_declined" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataMembershipRequestDeclined.reads(js)
+          case "email_data_password_reset_request_created" => io.apibuilder.task.v0.models.json.jsonReadsApibuilderTaskEmailDataPasswordResetRequestCreated.reads(js)
+          case other => play.api.libs.json.JsSuccess(io.apibuilder.task.v0.models.EmailDataUndefinedType(other))
+        }
+      }
+      (js \ "discriminator").validate[String] match {
+        case e: play.api.libs.json.JsError => e
+        case s: play.api.libs.json.JsSuccess[String] => readDiscriminator(s.value).map(_.asInstanceOf[T])
       }
     }
-
 
 
     implicit def jsonReadsApibuilderTaskEmailDataSeq[T <: io.apibuilder.task.v0.models.EmailData]: play.api.libs.json.Reads[Seq[T]] = {
@@ -335,24 +385,15 @@ package io.apibuilder.task.v0.models {
 
     def jsObjectEmailData(obj: io.apibuilder.task.v0.models.EmailData): play.api.libs.json.JsObject = {
       obj match {
-        case x: io.apibuilder.task.v0.models.EmailDataApplicationCreated => play.api.libs.json.Json.obj("email_data_application_created" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataApplicationCreated(x))
-        case x: io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated => play.api.libs.json.Json.obj("email_data_email_verification_created" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataEmailVerificationCreated(x))
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipCreated => play.api.libs.json.Json.obj("email_data_membership_created" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipCreated(x))
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated => play.api.libs.json.Json.obj("email_data_membership_request_created" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestCreated(x))
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted => play.api.libs.json.Json.obj("email_data_membership_request_accepted" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestAccepted(x))
-        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined => play.api.libs.json.Json.obj("email_data_membership_request_declined" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestDeclined(x))
-        case x: io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated => play.api.libs.json.Json.obj("email_data_password_reset_request_created" -> io.apibuilder.task.v0.models.json.jsObjectEmailDataPasswordResetRequestCreated(x))
-
-        case x: io.apibuilder.task.v0.models.EmailDataUndefinedType => {
-          scala.util.Try {
-            // If we received a JSON object - echo it back. This is a workaround for a bug in
-            // serialization for unions w/out discriminators where they sometimes have the
-            // type wrapper and sometimes do not
-            play.api.libs.json.Json.parse(x.description).asInstanceOf[play.api.libs.json.JsObject]
-          } match {
-            case scala.util.Success(o) => o
-            case scala.util.Failure(_) => sys.error("The type[io.apibuilder.task.v0.models.EmailDataUndefinedType] should never be serialized")
-          }
+        case x: io.apibuilder.task.v0.models.EmailDataApplicationCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataApplicationCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataEmailVerificationCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestCreated(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestAccepted => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestAccepted(x)
+        case x: io.apibuilder.task.v0.models.EmailDataMembershipRequestDeclined => io.apibuilder.task.v0.models.json.jsObjectEmailDataMembershipRequestDeclined(x)
+        case x: io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated => io.apibuilder.task.v0.models.json.jsObjectEmailDataPasswordResetRequestCreated(x)
+        case other => {
+          sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
         }
       }
     }

@@ -1403,7 +1403,6 @@ package io.apibuilder.spec.v0.models {
       obj match {
         case x: io.apibuilder.spec.v0.models.ResponseCodeInt => play.api.libs.json.Json.obj("integer" -> play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsNumber(x.value)))
         case x: io.apibuilder.spec.v0.models.ResponseCodeOption => play.api.libs.json.Json.obj("response_code_option" -> play.api.libs.json.JsString(x.toString))
-
         case x: io.apibuilder.spec.v0.models.ResponseCodeUndefinedType => {
           scala.util.Try {
             // If we received a JSON object - echo it back. This is a workaround for a bug in

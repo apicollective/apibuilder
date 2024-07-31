@@ -21,13 +21,7 @@ class SessionHelper @Inject() (
       _root_.db.generated.SessionForm(
         id = id,
         userGuid = u.guid,
-        expiresAt = ts.plusHours(DefaultSessionExpirationHours),
-        createdAt = ts,
-        createdByGuid = u.guid,
-        updatedAt = ts,
-        updatedByGuid = u.guid,
-        deletedAt = None,
-        deletedByGuid = None
+        expiresAt = ts.plusHours(DefaultSessionExpirationHours)
       )
     )
 
