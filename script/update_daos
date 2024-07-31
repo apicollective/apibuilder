@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+
+load File.join(File.dirname(__FILE__), "lib/common.rb")
+
+args = args_from_stdin(:arrays => [:app], :flags => [:no_download])
+
+ORGANIZATION = "apicollective"
+
+def path_from_root(path)
+  Pathname.new(File.join(File.dirname(__FILE__), "../#{path}")).cleanpath.to_s
+end
+
+UPDATE_SCRIPT = path_from_root("script/update")
+DAO_SPEC_DIR = path_from_root("dao/spec")
+
+def upload(args, apps)
+  cmd = "#{UPDATE_SCRIPT} --dir #{DAO_SPEC_DIR} --no_download"
+  if profile = args[:profile]
+    cmd << " --profile #{profile}"
+  end
+  apps.each do |app|
+    cmd << " --app #{app}"
+  end
+
+  run cmd
+end
+
+def download(apps, profile=nil)
+  apps.each do |app|
+    cmd = "apibuilder code #{ORGANIZATION} #{app} latest psql_scala ./generated/app/db"
+    if profile
+      cmd = "PROFILE=#{profile} #{cmd}"
+    end
+    puts cmd
+    run cmd
+  end
+end
+
+apps = Dir.glob("#{DAO_SPEC_DIR}/*.json").map do |path|
+  File.basename(path).sub(/\.json$/, '')
+end
+
+if apps.empty?
+  err("Did not find any .json files in #{DAO_SPEC_DIR}")
+end
+
+filtered = if args[:app]
+             args[:app].each do |name|
+               a = apps.find { |a| a == name }
+               if a.nil?
+                 err("Application '#{name}' not found in #{DAO_SPEC_DIR}")
+               end
+             end
+             args[:app].uniq
+           else
+             apps
+           end
+
+upload(args, filtered)
+
+if !args[:no_download]
+  download(filtered, args[:profile])
+end

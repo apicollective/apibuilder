@@ -12,7 +12,7 @@
 #
 #  Upload specific specifications
 #
-#    upload --spec organization --spec user
+#    upload --app organization --app user
 #
 #  Upload a specific tag
 #
@@ -30,31 +30,22 @@
 #
 #    upload --dir examples
 #
+#  Skip apibuilder update
+#
+#    upload --no_download
+#
+
+load File.join(File.dirname(__FILE__), "lib/common.rb")
 
 require 'pathname'
 require 'json'
 
 ORGANIZATION = "apicollective"
 
-args = {}
-ARGV.each_slice(2) { |pair|
-  key = pair[0].to_s.sub(/^\-\-/, '').to_sym
-  value = pair[1].to_s.strip
-  if args[key]
-    args[key] << value
-  elsif key == :spec
-    args[key] = [value]
-  else
-    args[key] = value
-  end
-}
+args = args_from_stdin(:arrays => [:app], :flags => [:no_download])
 
-def assert_installed(cmd, url)
-  if !system("which %s > /dev/null" % cmd)
-    puts "** ERROR: Please install %s: %s" % [cmd, url]
-    exit(1)
-  end
-end
+assert_installed("apibuilder", "https://github.com/apicollective/apibuilder-cli")
+assert_installed("sem-info", "https://github.com/mbryzek/schema-evolution-manager")
 
 def calculate_next_tag
   assert_installed("sem-info", "https://github.com/mbryzek/schema-evolution-manager")
@@ -66,16 +57,10 @@ end
 #
 # @param remaining List of Spec instances
 def resolve_dependencies(remaining, ordered=[])
-  if remaining.empty?
-    ordered
-  elsif next_spec = remaining.find { |spec| resolved?(ordered, spec) }
+  if next_spec = remaining.find { |spec| resolved?(ordered, spec) }
     resolve_dependencies(remaining - [next_spec], ordered + [next_spec])
   else
-    puts "** ERROR: Could not resolve dependencies. Remaining specifications are:"
-    remaining.each do |spec|
-      puts " - %s/%s" % [spec.organization, spec.application]
-    end
-    exit(1)
+    ordered + remaining
   end
 end
 
@@ -92,11 +77,8 @@ def resolved?(specs, spec)
   }
 end
 
-assert_installed("apibuilder", "https://github.com/apicollective/apibuilder-cli")
-
 tag = args[:tag] || calculate_next_tag
-dir = args[:dir] || 'spec'
-spec_dir = Pathname.new(File.join(File.dirname(__FILE__), "/../#{dir}")).cleanpath
+spec_dir = args[:dir] || Pathname.new(File.join(File.dirname(__FILE__), "/../spec")).cleanpath
 
 class Dependency
   
@@ -112,7 +94,7 @@ class Dependency
     elsif md = uri.match(/^https?:\/\/www.apibuilder.io\/([^\/]+)\/([^\/]+)/)
       Dependency.new(md[1], md[2])
     else
-      raise "Could not parse import uri[%s]" % uri
+      err("Could not parse import uri[%s]" % uri)
     end
   end
 
@@ -141,7 +123,7 @@ class Spec
     (json['imports'] || []).map { |imp| Dependency.from_uri(imp['uri']) }
   end
   
-  def command(tag, profile=nil)
+  def upload_command(tag, profile=nil)
     cmds = []
     if profile
       cmds << "PROFILE=%s" % profile
@@ -149,7 +131,16 @@ class Spec
     cmds << "apibuilder upload %s %s %s --version %s" % [ORGANIZATION, @application, @path, tag]
     cmds.join(" ")
   end
-  
+
+  def download_command(profile=nil)
+    cmds = []
+    if profile
+      cmds << "PROFILE=%s" % profile
+    end
+    cmds << "apibuilder update --app %s" % @application
+    cmds.join(" ")
+  end
+
 end
 
 specs = Dir.glob("#{spec_dir}/*.json").map do |path|
@@ -158,31 +149,27 @@ specs = Dir.glob("#{spec_dir}/*.json").map do |path|
 end
 
 ordered = resolve_dependencies(specs.sort_by { |s| [s.organization, s.application] })
+filtered = args[:app].nil? ? ordered : ordered.select { |spec| args[:app].include?(spec.application) }
 
-filtered = args[:spec].nil? ? ordered : ordered.select { |spec| args[:spec].include?(spec.application) }
-
-if args[:spec] && filtered.size != args[:spec].size
-  missing = args[:spec].select { |n| !filtered.map(&:application).include?(n) }
+if args[:app] && filtered.size != args[:app].size
+  missing = args[:app].select { |n| !filtered.map(&:application).include?(n) }
 
   if missing.size == 1
-    puts "** ERROR: Did not find spec: %s" % missing.join(", ")
+    msg = "** ERROR: Did not find spec: %s\n" % missing.join(", ")
   else
-    puts "** ERROR: Did not find specs: %s" % missing.join(", ")
+    msg = "** ERROR: Did not find specs: %s\n" % missing.join(", ")
   end
-  puts "  Available specs: "
-  puts "    " + specs.map(&:application).join("\n    ")
-  puts ""
-  exit(1)
+  msg << "  Available specs:\n"
+  msg << "    " + specs.map(&:application).join("\n    ")
+  err(msg)
 end
 
 filtered.each do |spec|
-  command = spec.command(tag, args[:profile])
-  puts command
-  if !system(command)
-    puts ""
-    puts "** ERROR: Exiting as last command failed"
-    exit(1)
-  end
-  puts ""
+  run(spec.upload_command(tag, args[:profile]))
 end
 
+if !args[:no_download]
+  filtered.each do |spec|
+    run(spec.download_command(args[:profile]))
+  end
+end

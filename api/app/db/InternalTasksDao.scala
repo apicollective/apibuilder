@@ -37,7 +37,7 @@ class InternalTasksDao @Inject() (
     organizationGuid: Option[UUID] = None,
     data: JsValue = Json.obj()
   ): Unit = {
-    if (dao.findByTypeIdAndTypeWithConnection(c, id, typ.toString).isEmpty) {
+    if (dao.findByTypeIdAndTypeWithConnection(c, (id, typ.toString)).isEmpty) {
       dao.upsertByTypeIdAndType(
         c,
         Constants.DefaultUserGuid,

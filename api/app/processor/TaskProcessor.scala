@@ -89,11 +89,12 @@ abstract class BaseTaskProcessor(
     args.lockUtil.lock(s"tasks:$typ") { _ =>
       args.dao
         .findAll(
-          `type` = Some(typ.toString),
-          nextAttemptAtLessThanOrEquals = Some(DateTime.now),
           limit = Some(Limit),
           orderBy = Some(OrderBy("num_attempts, next_attempt_at"))
-        )
+        ) { q =>
+          q.equals("type", typ.toString)
+            .and("next_attempt_at <= now()")
+        }
         .foreach(processRecordSafe)
     }
   }
@@ -155,7 +156,7 @@ abstract class BaseTaskProcessor(
   }
 
   final protected def insertIfNew(c: Connection, form: TaskForm): Unit = {
-    if (args.dao.findByTypeIdAndTypeWithConnection(c, form.typeId, form.`type`).isEmpty) {
+    if (args.dao.findByTypeIdAndTypeWithConnection(c, (form.typeId, form.`type`)).isEmpty) {
       args.dao.upsertByTypeIdAndType(c, Constants.DefaultUserGuid, form)
     }
   }
