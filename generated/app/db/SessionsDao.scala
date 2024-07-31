@@ -261,12 +261,7 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
   }
 
   private val DeleteQuery: io.flow.postgresql.Query = {
-    io.flow.postgresql.Query("""
-     | delete from public.sessions
-     |
-      .bind("deleted_by_guid", org.joda.time.DateTime.now)
-      .bind("deleted_by_guid", user)
-    """.stripMargin)
+    io.flow.postgresql.Query("delete from public.sessions")
   }
 
   def insert(
@@ -414,7 +409,10 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
     user: java.util.UUID,
     id: String
   ): Unit = {
-    DeleteQuery.equals("id", id).execute(c)
+    DeleteQuery.equals("id", id)
+      .bind("deleted_at", org.joda.time.DateTime.now)
+      .bind("deleted_by_guid", user)
+      .execute(c)
   }
 
   def deleteAllByIds(
@@ -431,7 +429,10 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
     user: java.util.UUID,
     ids: Seq[String]
   ): Unit = {
-    DeleteQuery.in("id", ids).execute(c)
+    DeleteQuery.in("id", ids)
+      .bind("deleted_at", org.joda.time.DateTime.now)
+      .bind("deleted_by_guid", user)
+      .execute(c)
   }
 
   def deleteAllByUserGuid(
@@ -448,7 +449,10 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
     user: java.util.UUID,
     userGuid: java.util.UUID
   ): Unit = {
-    DeleteQuery.equals("user_guid", userGuid).execute(c)
+    DeleteQuery.equals("user_guid", userGuid)
+      .bind("deleted_at", org.joda.time.DateTime.now)
+      .bind("deleted_by_guid", user)
+      .execute(c)
   }
 
   def deleteAllByUserGuids(
@@ -465,7 +469,10 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
     user: java.util.UUID,
     userGuids: Seq[java.util.UUID]
   ): Unit = {
-    DeleteQuery.in("user_guid", userGuids).execute(c)
+    DeleteQuery.in("user_guid", userGuids)
+      .bind("deleted_at", org.joda.time.DateTime.now)
+      .bind("deleted_by_guid", user)
+      .execute(c)
   }
 
   private def bindQuery(
