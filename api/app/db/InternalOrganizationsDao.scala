@@ -9,8 +9,16 @@ import play.api.inject.Injector
 import java.util.UUID
 import javax.inject.Inject
 
+case class OrganizationReference(guid: UUID)
+object OrganizationReference {
+  def apply(org: InternalOrganization): OrganizationReference = OrganizationReference(org.guid)
+  def apply(org: Organization): OrganizationReference = OrganizationReference(org.guid)
+}
+
 case class InternalOrganization(db: generated.Organization) {
   val guid: UUID = db.guid
+  val key: String = db.key
+  val name: String = db.name
 }
 
 class InternalOrganizationsDao @Inject()(

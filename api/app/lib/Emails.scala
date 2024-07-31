@@ -1,6 +1,6 @@
 package lib
 
-import db.{ApplicationsDao, Authorization, InternalApplication, MembershipsDao, SubscriptionsDao}
+import db.{ApplicationsDao, Authorization, InternalApplication, InternalOrganization, MembershipsDao, SubscriptionsDao}
 import io.apibuilder.api.v0.models._
 import models.SubscriptionModel
 import play.api.Logging
@@ -40,7 +40,7 @@ class Emails @Inject() (
 
   def deliver(
     context: Emails.Context,
-    org: Organization,
+    org: InternalOrganization,
     publication: Publication,
     subject: String,
     body: String
@@ -59,7 +59,7 @@ class Emails @Inject() (
 
   private def eachSubscription(
     context: Emails.Context,
-    organization: Organization,
+    organization: InternalOrganization,
     publication: Publication,
     f: Subscription => Unit
   ): Unit = {
@@ -85,7 +85,7 @@ class Emails @Inject() (
 
   private[lib] def isAuthorized(
     context: Emails.Context,
-    organization: Organization,
+    organization: InternalOrganization,
     user: User
   ): Boolean = {
     isAuthorized(
