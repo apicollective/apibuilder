@@ -207,9 +207,9 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   private val InsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.generator_invocations
-     | (key, organization_key, application_key, created_at, updated_at, updated_by_guid, hash_code)
+     | (id, key, organization_key, application_key, created_at, updated_at, updated_by_guid, hash_code)
      | values
-     | ({key}, {organization_key}, {application_key}, {created_at}::timestamptz, {updated_at}::timestamptz, {updated_by_guid}, {hash_code}::bigint)
+     | ({id}, {key}, {organization_key}, {application_key}, {created_at}::timestamptz, {updated_at}::timestamptz, {updated_by_guid}, {hash_code}::bigint)
     """.stripMargin)
   }
 
