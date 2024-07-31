@@ -1,9 +1,9 @@
 package processor
 
-import cats.implicits._
 import cats.data.ValidatedNec
-import db.{ApplicationsDao, Authorization, InternalApplication, ItemsDao, InternalOrganizationsDao}
-import io.apibuilder.api.v0.models.{Application, ApplicationSummary, Organization}
+import cats.implicits._
+import db._
+import io.apibuilder.api.v0.models.ApplicationSummary
 import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.task.v0.models.TaskType
 
@@ -41,7 +41,7 @@ class IndexApplicationProcessor @Inject()(
     ().validNec
   }
 
-  private def getInfo(applicationGuid: UUID): Option[(Organization, InternalApplication)] = {
+  private def getInfo(applicationGuid: UUID): Option[(InternalOrganization, InternalApplication)] = {
     applicationsDao.findByGuid(Authorization.All, applicationGuid).flatMap { application =>
       organizationsDao.findAll(Authorization.All, applicationGuid = Some(application.guid), limit = Some(1)).headOption.map { org =>
         (org, application)

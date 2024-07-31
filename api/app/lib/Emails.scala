@@ -1,6 +1,6 @@
 package lib
 
-import db.{ApplicationsDao, Authorization, InternalApplication, InternalOrganization, MembershipsDao, SubscriptionsDao}
+import db._
 import io.apibuilder.api.v0.models._
 import models.SubscriptionModel
 import play.api.Logging
@@ -40,14 +40,14 @@ class Emails @Inject() (
 
   def deliver(
     context: Emails.Context,
-    org: InternalOrganization,
+    org: Organization,
     publication: Publication,
     subject: String,
     body: String
   ) (
     implicit filter: Subscription => Boolean = { _ => true }
   ): Unit = {
-    eachSubscription(context, org, publication, { subscription =>
+    eachSubscription(context, OrganizationReference(org), publication, { subscription =>
       val result = filter(subscription) // TODO: Should we use filter?
       email.sendHtml(
         to = Person(subscription.user),
@@ -58,10 +58,10 @@ class Emails @Inject() (
   }
 
   private def eachSubscription(
-    context: Emails.Context,
-    organization: InternalOrganization,
-    publication: Publication,
-    f: Subscription => Unit
+                                context: Emails.Context,
+                                organization: OrganizationReference,
+                                publication: Publication,
+                                f: Subscription => Unit
   ): Unit = {
     Pager.eachPage[Subscription] { offset =>
       subscriptionModel.toModels(
@@ -85,7 +85,7 @@ class Emails @Inject() (
 
   private[lib] def isAuthorized(
     context: Emails.Context,
-    organization: InternalOrganization,
+    organization: OrganizationReference,
     user: User
   ): Boolean = {
     isAuthorized(

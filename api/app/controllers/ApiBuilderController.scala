@@ -60,7 +60,7 @@ trait ApiBuilderController extends BaseController {
 
   private def withRole(org: InternalOrganization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
     val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
-      Authorization.All, org, user, roles
+      Authorization.All, org.reference, user, roles
     ).map(_.role)
 
     if (actualRoles.isEmpty) {
