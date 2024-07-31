@@ -201,7 +201,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
   }
 
   def randomPkey: String = {
-    pkeyGenerator.randomPkey()
+    pkeyGenerator.randomId()
   }
 
   private val InsertQuery: io.flow.postgresql.Query = {
