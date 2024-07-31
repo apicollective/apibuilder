@@ -200,8 +200,8 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
     com.mbryzek.util.IdGenerator("gni")
   }
 
-  def randomId: String = {
-    pkeyGenerator.randomId()
+  def randomPkey: String = {
+    pkeyGenerator.randomPkey()
   }
 
   private val InsertQuery: io.flow.postgresql.Query = {
@@ -244,7 +244,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
     user: java.util.UUID,
     form: GeneratorInvocationForm
   ): String = {
-    val id = randomId
+    val id = randomPkey
     bindQuery(InsertQuery, user, form)
       .bind("created_at", org.joda.time.DateTime.now)
       .bind("id", id)
@@ -267,7 +267,7 @@ class GeneratorInvocationsDao @javax.inject.Inject() (override val db: play.api.
     forms: Seq[GeneratorInvocationForm]
   ): Seq[String] = {
     forms.map { f =>
-      val id = randomId
+      val id = randomPkey
       (id, Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(user, id, f))
     }.toList match {
       case Nil => Nil

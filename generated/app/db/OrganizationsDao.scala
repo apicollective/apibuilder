@@ -230,7 +230,7 @@ class OrganizationsDao @javax.inject.Inject() (override val db: play.api.db.Data
 
   import anorm.postgresql.*
 
-  def randomId: java.util.UUID = {
+  def randomPkey: java.util.UUID = {
     java.util.UUID.randomUUID
   }
 
@@ -275,7 +275,7 @@ class OrganizationsDao @javax.inject.Inject() (override val db: play.api.db.Data
     user: java.util.UUID,
     form: OrganizationForm
   ): java.util.UUID = {
-    val id = randomId
+    val id = randomPkey
     bindQuery(InsertQuery, user, form)
       .bind("created_at", org.joda.time.DateTime.now)
       .bind("created_by_guid", user)
@@ -299,7 +299,7 @@ class OrganizationsDao @javax.inject.Inject() (override val db: play.api.db.Data
     forms: Seq[OrganizationForm]
   ): Seq[java.util.UUID] = {
     forms.map { f =>
-      val guid = randomId
+      val guid = randomPkey
       (guid, Seq(anorm.NamedParameter("created_at", org.joda.time.DateTime.now)) ++ toNamedParameter(user, guid, f))
     }.toList match {
       case Nil => Nil
