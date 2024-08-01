@@ -89,7 +89,7 @@ class MembershipRequestsDao @Inject() (
 
   private def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
     db.withTransaction { implicit c =>
-      organizationLogsDao.create(createdBy, request.organization, message)
+      organizationLogsDao.create(createdBy, OrganizationReference(request.organization), message)
       dbHelpers.delete(c, createdBy, request.guid)
       membershipsDao.upsert(createdBy, OrganizationReference(request.organization), request.user, request.role)
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, request.role))
@@ -105,7 +105,7 @@ class MembershipRequestsDao @Inject() (
 
     val message = s"Declined membership request for ${request.user.email} to join as ${request.role}"
     db.withTransaction { implicit c =>
-      organizationLogsDao.create(createdBy.guid, request.organization, message)
+      organizationLogsDao.create(createdBy.guid, OrganizationReference(request.organization), message)
       softDelete(createdBy, request)
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid))
     }
@@ -113,7 +113,7 @@ class MembershipRequestsDao @Inject() (
 
   private def assertUserCanReview(user: User, request: MembershipRequest): Unit = {
     require(
-      membershipsDao.isUserAdmin(user, request.organization),
+      membershipsDao.isUserAdmin(user, OrganizationReference(request.organization)),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"
     )
   }
