@@ -163,6 +163,53 @@
       ]
     },
 
+    "change": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "application_guid", "type": "uuid" },
+        { "name": "from_version_guid", "type": "uuid" },
+        { "name": "to_version_guid", "type": "uuid" },
+        { "name": "type", "type": "string" },
+        { "name": "description", "type": "string" },
+        { "name": "changed_at", "type": "date-time-iso8601" },
+        { "name": "changed_by_guid", "type": "uuid" },
+        { "name": "is_material", "type": "boolean" }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "created_by_guid", "type": "uuid" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            },
+            "indexes": [
+              { "fields": ["application_guid"] },
+              { "fields": ["to_version_guid"] }
+            ]
+          }
+        }
+      ]
+    },
+
     "task": {
       "fields": [
         { "name": "id", "type": "string" },
