@@ -2,7 +2,7 @@ package models
 
 import db.{Authorization, InternalApplication, InternalOrganizationsDao}
 import io.apibuilder.api.v0.models.Application
-import io.apibuilder.common.v0.models.Reference
+import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
 
 import javax.inject.Inject
 
@@ -28,9 +28,14 @@ class ApplicationsModel @Inject()(
           name = app.name,
           key = app.key,
           visibility = app.visibility,
-          description = app.description,
-          lastUpdatedAt = app.lastUpdatedAt,
-          audit = app.audit
+          description = app.db.description,
+          lastUpdatedAt = app.db.updatedAt,
+          audit = Audit(
+            createdAt = org.db.createdAt,
+            createdBy = ReferenceGuid(org.db.createdByGuid),
+            updatedAt = org.db.updatedAt,
+            updatedBy = ReferenceGuid(org.db.updatedByGuid),
+          )
         )
       }
     }
