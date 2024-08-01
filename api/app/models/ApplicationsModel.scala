@@ -3,12 +3,17 @@ package models
 import db.{Authorization, InternalApplication, InternalOrganizationsDao}
 import io.apibuilder.api.v0.models.Application
 import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
+import io.flow.postgresql.Query
+import org.joda.time.DateTime
+import play.api.db.Database
 
+import java.util.UUID
 import javax.inject.Inject
 
 class ApplicationsModel @Inject()(
-                                   organizationsDao: InternalOrganizationsDao,
-                                        ) {
+  db: Database,
+  organizationsDao: InternalOrganizationsDao,
+) {
   def toModel(application: InternalApplication): Option[Application] = {
     toModels(Seq(application)).headOption
   }
@@ -16,9 +21,12 @@ class ApplicationsModel @Inject()(
   def toModels(applications: Seq[InternalApplication]): Seq[Application] = {
     val organizations = organizationsDao.findAll(
       Authorization.All,
-      guids = Some(applications.map(_.organizationGuid).toSeq.distinct),
+      guids = Some(applications.map(_.organizationGuid).distinct),
       limit = None
     ).map { o => o.guid -> o }.toMap
+    val lastUpdated = lookupLastVersionCreatedAt(applications.map(_.guid)).map { d =>
+      d.applicationGuid -> d.versionCreatedAt
+    }.toMap
 
     applications.flatMap { app =>
       organizations.get(app.organizationGuid).map { org =>
@@ -28,8 +36,8 @@ class ApplicationsModel @Inject()(
           name = app.name,
           key = app.key,
           visibility = app.visibility,
-          description = app.db.description,
-          lastUpdatedAt = app.db.updatedAt,
+          description = app.description,
+          lastUpdatedAt = lastUpdated.getOrElse(app.guid, app.db.updatedAt),
           audit = Audit(
             createdAt = org.db.createdAt,
             createdBy = ReferenceGuid(org.db.createdByGuid),
@@ -39,4 +47,26 @@ class ApplicationsModel @Inject()(
         )
       }
     }
-  }               }
+  }
+
+  private case class LastVersionCreated(applicationGuid: UUID, versionCreatedAt: DateTime)
+  private val LastVersionCreatedQuery = Query("select application_guid::text, max(created_at) from version")
+  private def lookupLastVersionCreatedAt(guids: Seq[UUID]): Seq[LastVersionCreated] = {
+    db.withConnection { c =>
+      LastVersionCreatedQuery.in("application_guid", guids)
+        .as(parser.*)(c)
+    }
+  }
+
+  private val parser: anorm.RowParser[LastVersionCreated] = {
+    import anorm.*
+
+    SqlParser.str("application_guid") ~
+      SqlParser.get[org.joda.time.DateTime]("created_at") map { case applicationGuid ~ versionCreatedAt =>
+      LastVersionCreated(
+        applicationGuid = java.util.UUID.fromString(applicationGuid),
+        versionCreatedAt = versionCreatedAt
+      )
+    }
+  }
+}

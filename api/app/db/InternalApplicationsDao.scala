@@ -23,6 +23,7 @@ case class InternalApplication(db: generated.Application) {
   val organizationGuid: UUID = db.organizationGuid
   val name: String = db.name
   val key: String = db.key
+  val description: String = db.description
   val visibility: Visibility = Visibility(db.visibility)
 }
 

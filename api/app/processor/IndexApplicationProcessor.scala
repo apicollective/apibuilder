@@ -21,7 +21,7 @@ class IndexApplicationProcessor @Inject()(
   override def processRecord(applicationGuid: UUID): ValidatedNec[String, Unit] = {
     getInfo(applicationGuid) match {
       case Some((org, app)) => {
-        val content = s"""${app.name} ${app.key} ${app.db.description.getOrElse("")}""".trim.toLowerCase
+        val content = s"""${app.name} ${app.key} ${app.description.getOrElse("")}""".trim.toLowerCase
         itemsDao.upsert(
           guid = app.guid,
           detail = ApplicationSummary(
@@ -30,7 +30,7 @@ class IndexApplicationProcessor @Inject()(
             key = app.key
           ),
           label = s"${org.key}/${app.key}",
-          description = app.db.description,
+          description = app.description,
           content = content
         )
       }
