@@ -56,7 +56,8 @@ class ApplicationsModel @Inject()(
       |       max(coalesce(deleted_at, created_at)) as timestamp
       |  from versions
       |""".stripMargin
-  ).withDebugging
+  )
+
   private def lookupLastVersionCreatedAt(guids: Seq[UUID]): Seq[LastVersionCreated] = {
     if (guids.isEmpty) {
       Nil
