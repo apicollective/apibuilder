@@ -1,16 +1,26 @@
 package models
 
-import db.{InternalOrganization, OrganizationDomainsDao}
+import db.{Authorization, InternalOrganization, InternalOrganizationsDao, OrganizationDomainsDao}
 import io.apibuilder.api.v0.models.Organization
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
+import java.util.UUID
 import javax.inject.Inject
 
 class OrganizationsModel @Inject()(
-                               domainsDao: OrganizationDomainsDao,
-                                        ) {
-  def toModel(v: InternalOrganization): Option[Organization] = {
-    toModels(Seq(v)).headOption
+  orgDao: InternalOrganizationsDao,
+  domainsDao: OrganizationDomainsDao,
+) {
+  def toModelByGuids(auth: Authorization, guids: Seq[UUID]): Seq[Organization] = {
+    toModels(orgDao.findAll(
+      auth,
+      guids = Some(guids),
+      limit = None
+    ))
+  }
+
+  def toModel(v: InternalOrganization): Organization = {
+    toModels(Seq(v)).head
   }
 
   def toModels(orgs: Seq[InternalOrganization]): Seq[Organization] = {

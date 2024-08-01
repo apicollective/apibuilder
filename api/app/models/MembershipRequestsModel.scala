@@ -7,9 +7,10 @@ import io.apibuilder.api.v0.models.MembershipRequest
 import javax.inject.Inject
 
 class MembershipRequestsModel @Inject() (
-                                          organizationsDao: InternalOrganizationsDao,
-                                          usersDao: UsersDao
-                                        ) {
+  usersDao: UsersDao,
+  orgModel: OrganizationsModel
+) {
+
   def toModel(mr: InternalMembershipRequest): Option[MembershipRequest] = {
     toModels(Seq(mr)).headOption
   }
@@ -19,11 +20,8 @@ class MembershipRequestsModel @Inject() (
       guids = Some(requests.map(_.userGuid))
     ).map { u => u.guid -> u }.toMap
 
-    val orgs = organizationsDao.findAll(
-      Authorization.All,
-      guids = Some(requests.map(_.organizationGuid)),
-      limit = None
-    ).map { o => o.guid -> o }.toMap
+    val orgs = orgModel.toModelByGuids(Authorization.All, requests.map(_.organizationGuid))
+      .map { o => o.guid -> o }.toMap
 
     requests.flatMap { r =>
       (users.get(r.userGuid), orgs.get(r.organizationGuid)).mapN { case (user, org) =>

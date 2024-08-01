@@ -39,14 +39,15 @@ class Emails @Inject() (
 ) extends Logging {
 
   def deliver(
-    context: Emails.Context,
-    org: Organization,
-    publication: Publication,
-    subject: String,
-    body: String
-  ) (
-    implicit filter: Subscription => Boolean = { _ => true }
-  ): Unit = {
+               context: Emails.Context,
+               org: Organization,
+               publication: Publication,
+               subject: String,
+               body: String
+             ) (
+               implicit filter: Subscription => Boolean = { _ => true }
+             ): Unit = {
+
     eachSubscription(context, OrganizationReference(org), publication, { subscription =>
       val result = filter(subscription) // TODO: Should we use filter?
       email.sendHtml(

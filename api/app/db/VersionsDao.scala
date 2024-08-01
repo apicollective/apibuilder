@@ -317,7 +317,7 @@ class VersionsDao @Inject() (
     applicationsDao.findByGuid(Authorization.All, guid).toValidNec(s"Cannot find application where guid = '$guid'")
   }
 
-  private def validateOrg(guid: UUID): ValidatedNec[String, Organization] = {
+  private def validateOrg(guid: UUID): ValidatedNec[String, InternalOrganization] = {
     organizationsDao.findByGuid(Authorization.All, guid).toValidNec(s"Cannot find organization where guid = '$guid'")
   }
 
@@ -348,7 +348,7 @@ class VersionsDao @Inject() (
         ).mapN { case ((org, app), original) =>
           val serviceConfig = ServiceConfiguration(
             orgKey = org.key,
-            orgNamespace = org.namespace,
+            orgNamespace = org.db.namespace,
             version = versionName
           )
           logger.info(s"Migrating ${org.key}/${app.key}/$versionName versionGuid[$versionGuid] to latest API Builder spec version[${MigrateVersion.ServiceVersionNumber}] (with serviceConfig=$serviceConfig)")

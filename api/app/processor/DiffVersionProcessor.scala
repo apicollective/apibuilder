@@ -7,7 +7,7 @@ import io.apibuilder.api.v0.models._
 import io.apibuilder.task.v0.models.json._
 import io.apibuilder.task.v0.models.{DiffVersionData, TaskType}
 import lib.{AppConfig, Emails, ServiceDiff}
-import models.VersionsModel
+import models.{OrganizationsModel, VersionsModel}
 import play.twirl.api.Html
 
 import java.util.UUID
@@ -24,6 +24,7 @@ class DiffVersionProcessor @Inject()(
                                       versionsDao: VersionsDao,
                                       versionsModel: VersionsModel,
                                       watchesDao: WatchesDao,
+                                      orgModel: OrganizationsModel
 ) extends TaskProcessorWithData[DiffVersionData](args, TaskType.DiffVersion) {
 
   override def processRecord(id: String, data: DiffVersionData): ValidatedNec[String, Unit] = {
@@ -69,7 +70,7 @@ class DiffVersionProcessor @Inject()(
       ) { (org, application, breakingDiffs, nonBreakingDiffs) =>
         views.html.emails.versionUpserted(
           appConfig,
-          org,
+          orgModel.toModel(org),
           application,
           version,
           breakingDiffs = breakingDiffs,
@@ -92,7 +93,7 @@ class DiffVersionProcessor @Inject()(
       ) { (org, application, breakingDiffs, nonBreakingDiffs) =>
         views.html.emails.versionUpserted(
           appConfig,
-          org,
+          orgModel.toModel(org),
           application,
           version,
           breakingDiffs = breakingDiffs,
@@ -107,7 +108,7 @@ class DiffVersionProcessor @Inject()(
                                               version: Version,
                                               diffs: Seq[Diff],
                                             )(
-                                              generateBody: (Organization, InternalApplication, Seq[Diff], Seq[Diff]) => Html,
+                                              generateBody: (InternalOrganization, InternalApplication, Seq[Diff], Seq[Diff]) => Html,
                                             ): Unit = {
     val (breakingDiffs, nonBreakingDiffs) = diffs.partition {
       case _: DiffBreaking => true
@@ -119,7 +120,7 @@ class DiffVersionProcessor @Inject()(
       organizationsDao.findAll(Authorization.All, applicationGuid = Some(application.guid), limit = Some(1)).foreach { org =>
         emails.deliver(
           context = Emails.Context.Application(application),
-          org = org,
+          org = orgModel.toModel(org),
           publication = publication,
           subject = s"${org.name}/${application.name}:${version.version} Updated",
           body = generateBody(org, application, breakingDiffs, nonBreakingDiffs).toString

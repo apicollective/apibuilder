@@ -1,15 +1,16 @@
 package models
 
 import cats.implicits._
-import db.{Authorization, InternalSubscription, InternalOrganizationsDao, UsersDao}
+import db.{Authorization, InternalSubscription, UsersDao}
 import io.apibuilder.api.v0.models.Subscription
 
 import javax.inject.Inject
 
 class SubscriptionModel @Inject()(
-                                   organizationsDao: InternalOrganizationsDao,
-                                   usersDao: UsersDao
-                                        ) {
+  usersDao: UsersDao,
+  orgModel: OrganizationsModel,
+) {
+
   def toModel(mr: InternalSubscription): Option[Subscription] = {
     toModels(Seq(mr)).headOption
   }
@@ -19,11 +20,8 @@ class SubscriptionModel @Inject()(
       guids = Some(subscriptions.map(_.userGuid))
     ).map { u => u.guid -> u }.toMap
 
-    val orgs = organizationsDao.findAll(
-      Authorization.All,
-      guids = Some(subscriptions.map(_.organizationGuid)),
-      limit = None
-    ).map { o => o.guid -> o }.toMap
+    val orgs = orgModel.toModelByGuids(Authorization.All, subscriptions.map(_.organizationGuid))
+      .map { o => o.guid -> o }.toMap
 
     subscriptions.flatMap { s =>
       (users.get(s.userGuid), orgs.get(s.organizationGuid)).mapN { case (user, org) =>

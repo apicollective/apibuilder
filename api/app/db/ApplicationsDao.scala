@@ -3,7 +3,7 @@ package db
 import anorm._
 import cats.data.ValidatedNec
 import cats.implicits._
-import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, Organization, SortOrder, User, Version, Visibility}
+import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, SortOrder, User, Version, Visibility}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.Query
@@ -96,7 +96,7 @@ class ApplicationsDao @Inject() (
      where guid = {guid}::uuid
   """
 
-  private def validateOrganizationByKey(auth: Authorization, key: String): ValidatedNec[Error, Organization] = {
+  private def validateOrganizationByKey(auth: Authorization, key: String): ValidatedNec[Error, InternalOrganization] = {
     organizationsDao.findByKey(auth, key).toValidNec(Validation.singleError(s"Organization[$key] not found"))
   }
 
@@ -105,7 +105,7 @@ class ApplicationsDao @Inject() (
     authorization: Authorization,
     app: InternalApplication,
     form: MoveForm
-  ): ValidatedNec[Error, Organization] = {
+  ): ValidatedNec[Error, InternalOrganization] = {
     validateOrganizationByKey(authorization, form.orgKey).andThen { org =>
       findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, app.key) match {
         case None => org.validNec
@@ -121,7 +121,7 @@ class ApplicationsDao @Inject() (
   }
 
   def validate(
-    org: Organization,
+    org: InternalOrganization,
     form: ApplicationForm,
     existing: Option[InternalApplication] = None
   ): Seq[Error] = {
@@ -250,7 +250,7 @@ class ApplicationsDao @Inject() (
 
   def create(
     createdBy: User,
-    org: Organization,
+    org: InternalOrganization,
     form: ApplicationForm
   ): InternalApplication = {
     val errors = validate(org, form)
@@ -288,7 +288,7 @@ class ApplicationsDao @Inject() (
     findAll(Authorization.User(user.guid), key = Some(app.key), limit = Some(1)).nonEmpty
   }
 
-  private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[InternalApplication] = {
+  private[db] def findByOrganizationAndName(authorization: Authorization, org: InternalOrganization, name: String): Option[InternalApplication] = {
     findAll(authorization, orgKey = Some(org.key), name = Some(name), limit = Some(1)).headOption
   }
 
