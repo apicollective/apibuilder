@@ -1,6 +1,6 @@
 package controllers
 
-import db.AttributesDao
+import db.InternalAttributesDao
 import lib.Validation
 import io.apibuilder.api.v0.models.AttributeForm
 import io.apibuilder.api.v0.models.json._
@@ -12,7 +12,7 @@ import java.util.UUID
 @Singleton
 class Attributes @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  attributesDao: AttributesDao
+  attributesDao: InternalAttributesDao
 ) extends ApiBuilderController {
 
   def get(

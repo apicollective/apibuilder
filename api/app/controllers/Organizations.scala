@@ -14,10 +14,10 @@ import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  attributesDao: AttributesDao,
-  organizationAttributeValuesDao: OrganizationAttributeValuesDao,
-  model: OrganizationsModel
+                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                attributesDao: InternalAttributesDao,
+                                organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+                                model: OrganizationsModel
 ) extends ApiBuilderController {
 
   def get(

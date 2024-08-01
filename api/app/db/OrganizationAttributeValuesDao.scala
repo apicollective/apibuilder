@@ -13,7 +13,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class OrganizationAttributeValuesDao @Inject() (
   @NamedDatabase("default") db: Database,
-  attributesDao: AttributesDao
+  attributesDao: InternalAttributesDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "organization_attribute_values")

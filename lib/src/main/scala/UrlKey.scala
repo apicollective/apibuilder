@@ -1,5 +1,9 @@
 package lib
 
+import cats.implicits._
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
+
 object UrlKey {
 
   private val MinKeyLength = 3
@@ -42,14 +46,21 @@ object UrlKey {
     )
   }
 
-  def validate(key: String, label: String = "Key"): Seq[String] = {
+  def validateNec(key: String, label: String = "Key"): ValidatedNec[String, Unit] = {
     val generated = UrlKey.format(key)
     if (key.length < MinKeyLength) {
-      Seq(s"$label must be at least $MinKeyLength characters")
+      s"$label must be at least $MinKeyLength characters".invalidNec
     } else if (key != generated) {
-      Seq(s"$label must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid ${label.toLowerCase} would be: $generated")
+      s"$label must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid ${label.toLowerCase} would be: $generated".invalidNec
     } else {
-      Nil
+      ().validNec
+    }
+  }
+
+  def validate(key: String, label: String = "Key"): Seq[String] = {
+    validateNec(key, label) match {
+      case Invalid(e) => e.toNonEmptyList.toList
+      case Valid(_) => Nil
     }
   }
 
