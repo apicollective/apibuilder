@@ -74,7 +74,7 @@ class ApplicationsModel @Inject()(
     import anorm.*
 
     SqlParser.str("application_guid") ~
-      SqlParser.get[org.joda.time.DateTime]("updated_at") map { case applicationGuid ~ timestamp =>
+      SqlParser.get[org.joda.time.DateTime]("timestamp") map { case applicationGuid ~ timestamp =>
       LastVersionCreated(
         applicationGuid = java.util.UUID.fromString(applicationGuid),
         timestamp = timestamp
