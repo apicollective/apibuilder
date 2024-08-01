@@ -8,7 +8,6 @@ case class ApplicationMove(
   createdAt: org.joda.time.DateTime,
   createdByGuid: java.util.UUID,
   updatedAt: org.joda.time.DateTime,
-  updatedByGuid: java.util.UUID,
   deletedAt: Option[org.joda.time.DateTime],
   deletedByGuid: Option[java.util.UUID]
 ) {
@@ -67,10 +66,6 @@ case object ApplicationMovesTable {
       override val name: String = "updated_at"
     }
 
-    case object UpdatedByGuid extends Column {
-      override val name: String = "updated_by_guid"
-    }
-
     case object DeletedAt extends Column {
       override val name: String = "deleted_at"
     }
@@ -79,7 +74,7 @@ case object ApplicationMovesTable {
       override val name: String = "deleted_by_guid"
     }
 
-    val all: List[Column] = List(Guid, ApplicationGuid, FromOrganizationGuid, ToOrganizationGuid, CreatedAt, CreatedByGuid, UpdatedAt, UpdatedByGuid, DeletedAt, DeletedByGuid)
+    val all: List[Column] = List(Guid, ApplicationGuid, FromOrganizationGuid, ToOrganizationGuid, CreatedAt, CreatedByGuid, UpdatedAt, DeletedAt, DeletedByGuid)
   }
 }
 
@@ -101,7 +96,6 @@ trait BaseApplicationMovesDao {
      |        created_at,
      |        created_by_guid::text,
      |        updated_at,
-     |        updated_by_guid::text,
      |        deleted_at,
      |        deleted_by_guid::text
      |   from public.application_moves
@@ -271,9 +265,8 @@ trait BaseApplicationMovesDao {
       anorm.SqlParser.get[org.joda.time.DateTime]("created_at") ~
       anorm.SqlParser.str("created_by_guid") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("updated_at") ~
-      anorm.SqlParser.str("updated_by_guid") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("deleted_at").? ~
-      anorm.SqlParser.str("deleted_by_guid").? map { case guid ~ applicationGuid ~ fromOrganizationGuid ~ toOrganizationGuid ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ deletedAt ~ deletedByGuid =>
+      anorm.SqlParser.str("deleted_by_guid").? map { case guid ~ applicationGuid ~ fromOrganizationGuid ~ toOrganizationGuid ~ createdAt ~ createdByGuid ~ updatedAt ~ deletedAt ~ deletedByGuid =>
       ApplicationMove(
         guid = java.util.UUID.fromString(guid),
         applicationGuid = java.util.UUID.fromString(applicationGuid),
@@ -282,7 +275,6 @@ trait BaseApplicationMovesDao {
         createdAt = createdAt,
         createdByGuid = java.util.UUID.fromString(createdByGuid),
         updatedAt = updatedAt,
-        updatedByGuid = java.util.UUID.fromString(updatedByGuid),
         deletedAt = deletedAt,
         deletedByGuid = deletedByGuid.map { v => java.util.UUID.fromString(v) }
       )
@@ -302,9 +294,9 @@ class ApplicationMovesDao @javax.inject.Inject() (override val db: play.api.db.D
   private val InsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.application_moves
-     | (guid, application_guid, from_organization_guid, to_organization_guid, created_at, created_by_guid, updated_at, updated_by_guid)
+     | (guid, application_guid, from_organization_guid, to_organization_guid, created_at, created_by_guid, updated_at)
      | values
-     | ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid)
+     | ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz)
     """.stripMargin)
   }
 
@@ -314,8 +306,7 @@ class ApplicationMovesDao @javax.inject.Inject() (override val db: play.api.db.D
      | set application_guid = {application_guid}::uuid,
      |     from_organization_guid = {from_organization_guid}::uuid,
      |     to_organization_guid = {to_organization_guid}::uuid,
-     |     updated_at = {updated_at}::timestamptz,
-     |     updated_by_guid = {updated_by_guid}::uuid
+     |     updated_at = {updated_at}::timestamptz
      | where guid = {guid}::uuid
     """.stripMargin)
   }
@@ -415,7 +406,6 @@ class ApplicationMovesDao @javax.inject.Inject() (override val db: play.api.db.D
   ): Unit = {
     bindQuery(UpdateQuery, user, form)
       .bind("guid", guid)
-      .bind("updated_by_guid", user)
       .execute(c)
     ()
   }
@@ -631,7 +621,6 @@ class ApplicationMovesDao @javax.inject.Inject() (override val db: play.api.db.D
       .bind("from_organization_guid", form.fromOrganizationGuid.toString)
       .bind("to_organization_guid", form.toOrganizationGuid.toString)
       .bind("updated_at", org.joda.time.DateTime.now)
-      .bind("updated_by_guid", user)
   }
 
   private def toNamedParameter(
@@ -644,8 +633,7 @@ class ApplicationMovesDao @javax.inject.Inject() (override val db: play.api.db.D
       anorm.NamedParameter("application_guid", form.applicationGuid.toString),
       anorm.NamedParameter("from_organization_guid", form.fromOrganizationGuid.toString),
       anorm.NamedParameter("to_organization_guid", form.toOrganizationGuid.toString),
-      anorm.NamedParameter("updated_at", org.joda.time.DateTime.now),
-      anorm.NamedParameter("updated_by_guid", user.toString)
+      anorm.NamedParameter("updated_at", org.joda.time.DateTime.now)
     )
   }
 }
