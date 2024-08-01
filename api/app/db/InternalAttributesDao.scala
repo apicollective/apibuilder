@@ -1,19 +1,14 @@
 package db
 
-import cats.implicits._
-import cats.data.ValidatedNec
 import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
+import cats.implicits.*
 import db.generated.AttributesDao
-import io.apibuilder.api.v0.models.{Attribute, AttributeForm, User}
-import io.flow.postgresql.Query
+import io.apibuilder.api.v0.models.{AttributeForm, User}
 import lib.{UrlKey, Validation}
-import anorm._
-import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
-
-import javax.inject.{Inject, Singleton}
-import play.api.db._
 
 import java.util.UUID
+import javax.inject.Inject
 
 case class InternalAttribute(db: generated.Attribute) {
   val guid: UUID = db.guid
@@ -45,7 +40,9 @@ class InternalAttributesDao @Inject()(
       Validation.singleError("Attribute name is required").invalidNec
     } else {
       UrlKey.validateNec(trimmed, "Name") match {
-        case Invalid(e) => Validation.singleError(e.toNonEmptyList.toList.mkString(", "))
+        case Invalid(e) => {
+          Validation.singleError(e.toNonEmptyList.toList.mkString(", ")).invalidNec
+        }
         case Valid(_) => {
           findByName(trimmed) match {
             case None => trimmed.validNec
