@@ -179,7 +179,7 @@ class Organizations @Inject() (
   private def withAttribute(
     name: String
   ) (
-    f: Attribute => Result
+    f: InternalAttribute => Result
   ) = {
     attributesDao.findByName(name) match {
       case None => {
