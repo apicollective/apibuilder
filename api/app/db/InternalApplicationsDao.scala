@@ -16,16 +16,12 @@ import util.OptionalQueryFilter
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-case class InternalApplication(
-                              guid: UUID,
-                              name: String,
-                              key: String,
-                              description: Option[String],
-                              visibility: Visibility,
-                              organizationGuid: UUID,
-                              lastUpdatedAt: DateTime,
-                              audit: Audit
-                              )
+case class InternalApplication(db: generated.Application) {
+  val guid: UUID = db.guid
+  val name: String = db.name
+  val key: String = db.key
+  val visibility: Visibility = Visibility(db.visibility)
+)
 
 class InternalApplicationsDao @Inject()(
   @NamedDatabase("default") db: Database,
@@ -34,65 +30,12 @@ class InternalApplicationsDao @Inject()(
   tasksDao: InternalTasksDao,
 ) {
 
-  private val dbHelpers = DbHelpers(db, "applications")
-
-  private val BaseQuery = Query(
-    s"""
-    select guid, name, key, description, visibility, organization_guid,
-           ${AuditsDao.query("applications")},
-           coalesce(
-             (select versions.created_at
-               from versions
-               where versions.application_guid = applications.guid
-               and versions.deleted_at is null
-               order by versions.version_sort_key desc, versions.created_at desc
-               limit 1),
-             applications.updated_at
-           ) as last_updated_at
-      from applications
-    """
-  )
-
-  private val InsertQuery =
-    """
-    insert into applications
-    (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
-    values
-    ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
-  """
-
-  private val UpdateQuery =
-    """
-    update applications
-       set name = {name},
-           visibility = {visibility},
-           description = {description},
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
-  """
-
   private val InsertMoveQuery =
     """
     insert into application_moves
     (guid, application_guid, from_organization_guid, to_organization_guid, created_by_guid)
     values
     ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_by_guid}::uuid)
-  """
-
-  private val UpdateOrganizationQuery =
-    """
-    update applications
-       set organization_guid = {org_guid}::uuid,
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
-  """
-
-  private val UpdateVisibilityQuery =
-    """
-    update applications
-       set visibility = {visibility},
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
   """
 
   private def validateOrganizationByKey(auth: Authorization, key: String): ValidatedNec[Error, InternalOrganization] = {
