@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 
 case class InternalApplication(db: generated.Application) {
   val guid: UUID = db.guid
+  val organizationGuid: UUID = db.organizationGuid
   val name: String = db.name
   val key: String = db.key
   val visibility: Visibility = Visibility(db.visibility)
@@ -106,8 +107,8 @@ class InternalApplicationsDao @Inject()(
     app: InternalApplication,
     form: ApplicationForm
   ): InternalApplication = {
-    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.db.organizationGuid).getOrElse {
-      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.db.organizationGuid}]")
+    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organizationGuid).getOrElse {
+      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.organizationGuid}]")
     }
     val errors = validate(org, form, Some(app))
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
@@ -131,7 +132,7 @@ class InternalApplicationsDao @Inject()(
     form: MoveForm
   ): ValidatedNec[Error, InternalApplication] = {
     validateMove(Authorization.User(updatedBy.guid), app, form).map { newOrg =>
-      if (newOrg.guid == app.db.organizationGuid) {
+      if (newOrg.guid == app.organizationGuid) {
         // No-op
         app
 
@@ -139,7 +140,7 @@ class InternalApplicationsDao @Inject()(
         withTasks(app.guid, { implicit c =>
           movesDao.insert(c, updatedBy.guid, ApplicationMoveForm(
             applicationGuid = app.guid,
-            fromOrganizationGuid = app.db.organizationGuid,
+            fromOrganizationGuid = app.organizationGuid,
             toOrganizationGuid = newOrg.guid
           ))
 
