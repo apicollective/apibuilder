@@ -54,7 +54,7 @@ class OrganizationLogsDao @Inject() (
 
   def findAll(
     authorization: Authorization,
-    organization: Option[Organization],
+    organization: Option[OrganizationReference],
     limit: Long = 25,
     offset: Long = 0
   ): Seq[OrganizationLog] = {
