@@ -1,7 +1,7 @@
 package processor
 
 import anorm.SqlParser
-import db.{Helpers, InternalApplication}
+import db.{Helpers, InternalApplication, InternalOrganization}
 import io.apibuilder.api.v0.models.Organization
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
@@ -39,7 +39,7 @@ class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with H
   "organization" in {
     def isAppDeleted(app: InternalApplication): Boolean = isDeleted("applications", app.guid)
 
-    def setup(): (Organization, InternalApplication) = {
+    def setup(): (InternalOrganization, InternalApplication) = {
       val org = createOrganization()
       val app = createApplication(org)
       softDelete("applications", app.guid, DateTime.now.minusYears(1))

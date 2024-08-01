@@ -1,8 +1,9 @@
 package controllers
 
+import db.InternalOrganization
 import io.apibuilder.api.v0.models.{Application, MoveForm, Organization}
-import java.util.UUID
 
+import java.util.UUID
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 
@@ -10,7 +11,7 @@ class ApplicationsSpec extends PlaySpec with MockClient with GuiceOneServerPerSu
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private def getByKey(org: Organization, key: String): Option[Application] = {
+  private def getByKey(org: InternalOrganization, key: String): Option[Application] = {
     await(client.applications.get(org.key, key = Some(key), limit = 1)).headOption
   }
 

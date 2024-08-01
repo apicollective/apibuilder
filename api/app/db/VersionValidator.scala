@@ -1,16 +1,17 @@
 package db
 
+import io.apibuilder.api.v0.models.User
+
 import javax.inject.Inject
-import io.apibuilder.api.v0.models.{Organization, User}
 
 class VersionValidator @Inject() (
-  applicationsDao: ApplicationsDao,
-  membershipsDao: MembershipsDao
+                                   applicationsDao: InternalApplicationsDao,
+                                   membershipsDao: MembershipsDao
 ) {
 
   def validate(
     user: User,
-    org: Organization,
+    org: InternalOrganization,
     newApplicationKey: String,
     existingApplicationKey: Option[String] = None
   ): Seq[String] = {
@@ -19,8 +20,8 @@ class VersionValidator @Inject() (
     authErrors ++ keyErrors
   }
 
-  private def validateAuthorization(user: User, org: Organization): Seq[String] = {
-    if (membershipsDao.isUserMember(user, org)) {
+  private def validateAuthorization(user: User, org: InternalOrganization): Seq[String] = {
+    if (membershipsDao.isUserMember(user, OrganizationReference(org))) {
       Nil
     } else {
       Seq("You must be a member of this organization to update applications")
@@ -28,7 +29,7 @@ class VersionValidator @Inject() (
   }
 
   private def validateKey(
-    org: Organization,
+    org: InternalOrganization,
     newApplicationKey: String,
     existingApplicationKey: Option[String]
   ): Seq[String] = {

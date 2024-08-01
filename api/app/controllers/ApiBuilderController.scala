@@ -1,15 +1,15 @@
 package controllers
 
-import javax.inject.Inject
 import com.google.inject.ImplementedBy
-import db.{Authorization, MembershipsDao, OrganizationsDao}
-import io.apibuilder.api.v0.models.{Organization, User}
+import db.{Authorization, InternalOrganization, InternalOrganizationsDao, MembershipsDao}
+import io.apibuilder.api.v0.models.User
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
 import lib.{RequestAuthenticationUtil, Validation}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -28,9 +28,9 @@ trait ApiBuilderController extends BaseController {
   def controllerComponents: ControllerComponents = apiBuilderControllerComponents.controllerComponents
 
   def membershipsDao: MembershipsDao = apiBuilderControllerComponents.membershipsDao
-  def organizationsDao: OrganizationsDao = apiBuilderControllerComponents.organizationsDao
+  def organizationsDao: InternalOrganizationsDao = apiBuilderControllerComponents.organizationsDao
 
-  def withOrg(auth: Authorization, orgKey: String)(f: Organization => Result): Result = {
+  def withOrg(auth: Authorization, orgKey: String)(f: InternalOrganization => Result): Result = {
     organizationsDao.findByKey(auth, orgKey) match {
       case None => Results.NotFound(
         jsonError(s"Organization[$orgKey] does not exist or you are not authorized to access it")
@@ -42,7 +42,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  def withOrgMember(user: User, orgKey: String)(f: Organization => Result): Result = {
+  def withOrgMember(user: User, orgKey: String)(f: InternalOrganization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
       withRole(org, user, MembershipRole.all) {
         f(org)
@@ -50,7 +50,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  def withOrgAdmin(user: User, orgKey: String)(f: Organization => Result): Result = {
+  def withOrgAdmin(user: User, orgKey: String)(f: InternalOrganization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
       withRole(org, user, Seq(MembershipRole.Admin)) {
         f(org)
@@ -58,9 +58,9 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  private def withRole(org: Organization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
+  private def withRole(org: InternalOrganization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
     val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
-      Authorization.All, org, user, roles
+      Authorization.All, org.reference, user, roles
     ).map(_.role)
 
     if (actualRoles.isEmpty) {
@@ -92,7 +92,7 @@ trait ApiBuilderControllerComponents {
   def identifiedActionBuilder: IdentifiedActionBuilder
   def controllerComponents: ControllerComponents
   def membershipsDao: MembershipsDao
-  def organizationsDao: OrganizationsDao
+  def organizationsDao: InternalOrganizationsDao
 }
 
 class ApiBuilderDefaultControllerComponents @Inject() (
@@ -100,7 +100,7 @@ class ApiBuilderDefaultControllerComponents @Inject() (
   val anonymousActionBuilder: AnonymousActionBuilder,
   val identifiedActionBuilder: IdentifiedActionBuilder,
   val membershipsDao: MembershipsDao,
-  val organizationsDao: OrganizationsDao
+  val organizationsDao: InternalOrganizationsDao
 ) extends ApiBuilderControllerComponents
 
 case class AnonymousRequest[A](

@@ -17,7 +17,7 @@ class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private def createChange(
     description: String = "Breaking difference - " + UUID.randomUUID.toString,
-    org: Organization = createOrganization()
+    org: InternalOrganization = createOrganization()
   ): Change = {
     val app = createApplication(org = org)
     val fromVersion = createVersion(application = app, version = "1.0.0")

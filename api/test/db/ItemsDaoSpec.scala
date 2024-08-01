@@ -10,7 +10,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 class ItemsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private def upsertItem(
-    org: Organization = createOrganization(),
+    org: InternalOrganization = createOrganization(),
     guid: UUID = UUID.randomUUID,
     label: String = "Test",
     description: Option[String] = None,
@@ -73,7 +73,7 @@ class ItemsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
       "orgKey" in {
         val org = createOrganization()
-        val item = upsertItem(org = org)
+        val item = upsertItem(org)
         val guids = itemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}")).map(_.guid)
         guids.contains(item.guid) must be(true)
         itemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}2")) must be(Nil)

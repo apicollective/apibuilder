@@ -16,13 +16,13 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Versions @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
-  applicationsDao: ApplicationsDao,
-  databaseServiceFetcher: DatabaseServiceFetcher,
-  versionsDao: VersionsDao,
-  versionValidator: VersionValidator,
-  model: VersionsModel,
+                           val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                           apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
+                           applicationsDao: InternalApplicationsDao,
+                           databaseServiceFetcher: DatabaseServiceFetcher,
+                           versionsDao: VersionsDao,
+                           versionValidator: VersionValidator,
+                           model: VersionsModel,
 ) extends ApiBuilderController {
 
   private val DefaultVisibility = Visibility.Organization
@@ -205,7 +205,7 @@ class Versions @Inject() (
 
   private def upsertVersion(
     user: User,
-    org: Organization,
+    org: InternalOrganization,
     versionName: String,
     form: VersionForm,
     original: Original,
@@ -253,11 +253,11 @@ class Versions @Inject() (
   }
 
   private def toServiceConfiguration(
-    org: Organization,
+    org: InternalOrganization,
     version: String
   ) = ServiceConfiguration(
     orgKey = org.key,
-    orgNamespace = org.namespace,
+    orgNamespace = org.db.namespace,
     version = version
   )
 

@@ -15,7 +15,7 @@ class EmailVerificationsService @Inject()(
   emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
   membershipRequestsDao: MembershipRequestsDao,
   membershipRequestsModel: MembershipRequestsModel,
-  organizationsDao: OrganizationsDao
+  organizationsDao: InternalOrganizationsDao
 ) {
 
   def confirm(user: Option[User], verification: EmailVerification): ValidatedNec[String, Unit] = {

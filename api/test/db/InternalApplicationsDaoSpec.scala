@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 
 import java.util.UUID
 
-class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class InternalApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
@@ -19,7 +19,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
   private def upsertApplication(
     nameOption: Option[String] = None,
-    org: Organization = testOrg,
+    org: InternalOrganization = testOrg,
     visibility: Visibility = Visibility.Organization
   ): InternalApplication = {
     val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
@@ -33,7 +33,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
     }
   }
 
-  private def findByKey(org: Organization, key: String): Option[InternalApplication] = {
+  private def findByKey(org: InternalOrganization, key: String): Option[InternalApplication] = {
     applicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = Some(1)).headOption
   }
 

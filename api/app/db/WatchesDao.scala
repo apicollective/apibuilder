@@ -25,9 +25,9 @@ case class InternalWatch(
                              )
 @Singleton
 class WatchesDao @Inject() (
-  @NamedDatabase("default") db: Database,
-  applicationsDao: ApplicationsDao,
-  usersDao: UsersDao
+                             @NamedDatabase("default") db: Database,
+                             applicationsDao: InternalApplicationsDao,
+                             usersDao: UsersDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "watches")

@@ -1,11 +1,12 @@
 package db
 
-import java.util.UUID
+import helpers.OrganizationHelpers
 
+import java.util.UUID
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class OrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class OrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with OrganizationHelpers {
 
   "create" in {
     val domainName = UUID.randomUUID.toString + ".org"
@@ -27,8 +28,12 @@ class OrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with 
     val org2 = createOrganization()
     organizationDomainsDao.create(testUser, org2, domainName)
 
-    organizationsDao.findByGuid(Authorization.All, org1.guid).get.domains.map(_.name) must be(Seq(domainName))
-    organizationsDao.findByGuid(Authorization.All, org2.guid).get.domains.map(_.name) must be(Seq(domainName))
+    def getDomains(orgGuid: UUID) = toModel(
+        organizationsDao.findByGuid(Authorization.All, orgGuid).get
+      ).domains.map(_.name)
+
+    getDomains(org1.guid) must be(Seq(domainName))
+    getDomains(org2.guid) must be(Seq(domainName))
   }
 
   "findAll" in {

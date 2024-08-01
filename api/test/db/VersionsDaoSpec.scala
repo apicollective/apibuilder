@@ -68,7 +68,7 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
 
     val serviceConfig = ServiceConfiguration(
       orgKey = testOrg.key,
-      orgNamespace = testOrg.namespace,
+      orgNamespace = testOrg.db.namespace,
       version = "0.0.2"
     )
 

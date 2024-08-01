@@ -1,16 +1,17 @@
 package models
 
 import cats.implicits._
-import db.{ApplicationsDao, Authorization, InternalWatch, OrganizationsDao, UsersDao}
+import db.{InternalApplicationsDao, Authorization, InternalWatch, InternalOrganizationsDao, UsersDao}
 import io.apibuilder.api.v0.models.Watch
 
 import javax.inject.Inject
 
 class WatchesModel @Inject()(
-                                        organizationsDao: OrganizationsDao,
-                                        applicationsDao: ApplicationsDao,
-                                        applicationsModel: ApplicationsModel,
-                                        usersDao: UsersDao
+                              organizationsDao: InternalOrganizationsDao,
+                              applicationsDao: InternalApplicationsDao,
+                              applicationsModel: ApplicationsModel,
+                              usersDao: UsersDao,
+                              organizationsModel: OrganizationsModel,
                                         ) {
   def toModel(watch: InternalWatch): Option[Watch] = {
     toModels(Seq(watch)).headOption
@@ -29,11 +30,11 @@ class WatchesModel @Inject()(
       )
     ).map { o => o.guid -> o }.toMap
 
-    val organizations = organizationsDao.findAll(
+    val organizations = organizationsModel.toModels(organizationsDao.findAll(
       Authorization.All,
       guids = Some(applications.values.map(_.organization.guid).toSeq.distinct),
       limit = None
-    ).map { o => o.guid -> o }.toMap
+    )).map { o => o.guid -> o }.toMap
 
     watches.flatMap { w =>
       (users.get(w.userGuid),

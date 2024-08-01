@@ -1,12 +1,13 @@
 package db
 
-import java.util.UUID
-
+import helpers.OrganizationHelpers
 import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+import java.util.UUID
+
+class InternalOrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with OrganizationHelpers {
 
   "create" in {
     gilt.name must be("Gilt Test Org")
@@ -28,7 +29,7 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
       name = org.name,
       key = Some(org.key),
       visibility = org.visibility,
-      namespace = org.namespace
+      namespace = org.db.namespace
     )
 
     "name" in {
@@ -42,8 +43,8 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
     }
 
     "namespace" in {
-      val updated = organizationsDao.update(testUser, org, form.copy(namespace = org.namespace + "2"))
-      updated.namespace must be(org.namespace + "2")
+      val updated = organizationsDao.update(testUser, org, form.copy(namespace = org.db.namespace + "2"))
+      updated.db.namespace must be(org.db.namespace + "2")
     }
   
     "visibility" in {
@@ -62,7 +63,7 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
     val org = organizationsDao.createWithAdministrator(user, createOrganizationForm(name = name))
     org.name must be(name)
 
-    membershipsDao.isUserAdmin(user, org) must be(true)
+    membershipsDao.isUserAdmin(user, org.reference) must be(true)
   }
 
   "domain" must {
@@ -85,9 +86,9 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
     "creates with domains" in {
       initialize()
 
-      org.domains.map(_.name).mkString(" ") must be(domains.mkString(" "))
+      toModel(org).domains.map(_.name).mkString(" ") must be(domains.mkString(" "))
       val fetched = organizationsDao.findByGuid(Authorization.All, org.guid).get
-      fetched.domains.map(_.name).sorted.mkString(" ") must be(domains.sorted.mkString(" "))
+      toModel(fetched).domains.map(_.name).sorted.mkString(" ") must be(domains.sorted.mkString(" "))
     }
 
     "defaults visibility to organization" in {
@@ -134,10 +135,10 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
     "by namespace" in {
       initialize()
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace), limit = None).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toUpperCase), limit = None).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toLowerCase), limit = None).map(_.guid) must be(Seq(org1.guid))
-      organizationsDao.findAll(Authorization.All, namespace = Some(org2.namespace), limit = None).map(_.guid) must be(Seq(org2.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.db.namespace), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.db.namespace.toUpperCase), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org1.db.namespace.toLowerCase), limit = None).map(_.guid) must be(Seq(org1.guid))
+      organizationsDao.findAll(Authorization.All, namespace = Some(org2.db.namespace), limit = None).map(_.guid) must be(Seq(org2.guid))
       organizationsDao.findAll(Authorization.All, namespace = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
     }
 
@@ -161,14 +162,14 @@ class OrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
     "validates name" in {
       organizationsDao.validate(createOrganizationForm(name = "this is a long name")) must be(Nil)
       organizationsDao.validate(createOrganizationForm(name = "a")).head.message must be("name must be at least 3 characters")
-      organizationsDao.validate(createOrganizationForm(name = gilt.name)).head.message must be("Org with this name already exists")
+      organizationsDao.validate(createOrganizationForm(name = gilt.name)).head.message must be("Org with the name 'Gilt Test Org' already exists")
 
       organizationsDao.validate(createOrganizationForm(name = gilt.name), Some(gilt)) must be(Nil)
     }
 
     "validates key" in {
       organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message must be("Key must be at least 3 characters")
-      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(gilt.key))).head.message must be("Org with this key already exists")
+      organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(gilt.key))).head.message must be("Org with the key 'gilt-test-org' already exists")
       organizationsDao.validate(createOrganizationForm(name = UUID.randomUUID.toString, key = Some(gilt.key)), Some(gilt)) must be(Nil)
     }
 

@@ -1,7 +1,7 @@
 package controllers
 
 import java.util.UUID
-import db.{Authorization, InternalApplication}
+import db.{Authorization, InternalApplication, InternalOrganization}
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
@@ -106,7 +106,7 @@ trait MockClient extends db.Helpers
   }
 
   def createSubscriptionForm(
-    org: Organization = createOrganization(),
+    org: InternalOrganization = createOrganization(),
     user: User = createUser()
   ) = SubscriptionForm(
     organizationKey = org.key,

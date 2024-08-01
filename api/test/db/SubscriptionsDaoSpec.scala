@@ -7,7 +7,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
-  private lazy val org: Organization = createOrganization()
+  private lazy val org: InternalOrganization = createOrganization()
 
   "when a user loses admin role, we remove subscriptions that require admin" in {
     val user = createRandomUser()

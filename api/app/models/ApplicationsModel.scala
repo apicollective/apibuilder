@@ -1,13 +1,13 @@
 package models
 
-import db.{Authorization, InternalApplication, OrganizationsDao}
+import db.{Authorization, InternalApplication, InternalOrganizationsDao}
 import io.apibuilder.api.v0.models.Application
 import io.apibuilder.common.v0.models.Reference
 
 import javax.inject.Inject
 
 class ApplicationsModel @Inject()(
-                                        organizationsDao: OrganizationsDao,
+                                   organizationsDao: InternalOrganizationsDao,
                                         ) {
   def toModel(application: InternalApplication): Option[Application] = {
     toModels(Seq(application)).headOption

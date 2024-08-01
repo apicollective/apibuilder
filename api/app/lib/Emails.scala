@@ -1,6 +1,6 @@
 package lib
 
-import db.{ApplicationsDao, Authorization, InternalApplication, MembershipsDao, SubscriptionsDao}
+import db._
 import io.apibuilder.api.v0.models._
 import models.SubscriptionModel
 import play.api.Logging
@@ -32,22 +32,23 @@ object Emails {
 @Singleton
 class Emails @Inject() (
                          email: EmailUtil,
-                         applicationsDao: ApplicationsDao,
+                         applicationsDao: InternalApplicationsDao,
                          membershipsDao: MembershipsDao,
                          subscriptionsDao: SubscriptionsDao,
                          subscriptionModel: SubscriptionModel,
 ) extends Logging {
 
   def deliver(
-    context: Emails.Context,
-    org: Organization,
-    publication: Publication,
-    subject: String,
-    body: String
-  ) (
-    implicit filter: Subscription => Boolean = { _ => true }
-  ): Unit = {
-    eachSubscription(context, org, publication, { subscription =>
+               context: Emails.Context,
+               org: Organization,
+               publication: Publication,
+               subject: String,
+               body: String
+             ) (
+               implicit filter: Subscription => Boolean = { _ => true }
+             ): Unit = {
+
+    eachSubscription(context, OrganizationReference(org), publication, { subscription =>
       val result = filter(subscription) // TODO: Should we use filter?
       email.sendHtml(
         to = Person(subscription.user),
@@ -58,10 +59,10 @@ class Emails @Inject() (
   }
 
   private def eachSubscription(
-    context: Emails.Context,
-    organization: Organization,
-    publication: Publication,
-    f: Subscription => Unit
+                                context: Emails.Context,
+                                organization: OrganizationReference,
+                                publication: Publication,
+                                f: Subscription => Unit
   ): Unit = {
     Pager.eachPage[Subscription] { offset =>
       subscriptionModel.toModels(
@@ -85,7 +86,7 @@ class Emails @Inject() (
 
   private[lib] def isAuthorized(
     context: Emails.Context,
-    organization: Organization,
+    organization: OrganizationReference,
     user: User
   ): Boolean = {
     isAuthorized(

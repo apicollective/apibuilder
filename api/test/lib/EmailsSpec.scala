@@ -33,9 +33,9 @@ class EmailsSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
     "Context.Application for private app" in {
       val app = createApplication(org = org)
-      emails.isAuthorized(Emails.Context.Application(app), org, randomUser) must be(false)
-      emails.isAuthorized(Emails.Context.Application(app), org, orgMember) must be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org, formerMember) must be(false)
+      emails.isAuthorized(Emails.Context.Application(app), org.reference, randomUser) must be(false)
+      emails.isAuthorized(Emails.Context.Application(app), org.reference, orgMember) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org.reference, formerMember) must be(false)
     }
 
     "Context.Application for public app" in {
@@ -44,23 +44,23 @@ class EmailsSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         createApplicationForm(visibility = Visibility.Public)
       )
 
-      emails.isAuthorized(Emails.Context.Application(app), org, randomUser) must be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org, orgMember) must be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org, formerMember) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org.reference, randomUser) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org.reference, orgMember) must be(true)
+      emails.isAuthorized(Emails.Context.Application(app), org.reference, formerMember) must be(true)
     }
 
     "Context.OrganizationAdmin" in {
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, randomUser) must be(false)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, orgMember) must be(false)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, orgAdmin) must be(true)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org, formerMember) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, randomUser) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, orgMember) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, orgAdmin) must be(true)
+      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, formerMember) must be(false)
     }
 
     "Context.OrganizationMember" in {
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, randomUser) must be(false)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, orgMember) must be(true)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, orgAdmin) must be(true)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org, formerMember) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, randomUser) must be(false)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, orgMember) must be(true)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, orgAdmin) must be(true)
+      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, formerMember) must be(false)
     }
 
   }

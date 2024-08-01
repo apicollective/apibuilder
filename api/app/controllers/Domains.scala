@@ -1,13 +1,13 @@
 package controllers
 
-import io.apibuilder.api.v0.models.json._
+import db.OrganizationDomainsDao
 import io.apibuilder.api.v0.models.Domain
-import db.{MembershipsDao, OrganizationDomainsDao, OrganizationsDao}
-import javax.inject.{Inject, Singleton}
-
+import io.apibuilder.api.v0.models.json._
 import lib.Validation
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Domains @Inject() (
@@ -42,10 +42,11 @@ class Domains @Inject() (
 
   def deleteByName(orgKey: String, name: String): Action[AnyContent] = Identified { request =>
     withOrgAdmin(request.user, orgKey) { org =>
-      org.domains.find(_.name == name).foreach { domain =>
-        organizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).foreach { orgDomain =>
-          organizationDomainsDao.softDelete(request.user, orgDomain)
-        }
+      organizationDomainsDao.findAll(
+        organizationGuid = Some(org.guid),
+        domain = Some(name)
+      ).foreach { domain =>
+        organizationDomainsDao.softDelete(request.user, domain)
       }
       NoContent
     }

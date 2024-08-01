@@ -1,7 +1,7 @@
 package services
 
 import cats.data.ValidatedNec
-import db.{ApplicationsDao, Authorization, VersionsDao}
+import db.{InternalApplicationsDao, Authorization, VersionsDao}
 import cats.implicits._
 import io.apibuilder.api.v0.models.{BatchDownloadApplicationForm, BatchDownloadApplications, BatchDownloadApplicationsForm, Version}
 import models.VersionsModel
@@ -9,9 +9,9 @@ import models.VersionsModel
 import javax.inject.Inject
 
 class BatchDownloadApplicationsService @Inject() (
-  applicationsDao: ApplicationsDao,
-  versionsDao: VersionsDao,
-  versionsModel: VersionsModel,
+                                                   applicationsDao: InternalApplicationsDao,
+                                                   versionsDao: VersionsDao,
+                                                   versionsModel: VersionsModel,
 ) {
 
   def process(

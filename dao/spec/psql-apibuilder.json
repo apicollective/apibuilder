@@ -12,15 +12,19 @@
     {
       "name": "psql",
       "value": {
-        "pkey": "id",
-        "hash_code": {},
+        "pkey": "guid",
         "audit": {
           "created": {
-            "at": { "type": "date-time-iso8601" }
+            "at": { "type": "date-time-iso8601" },
+            "by": { "name": "created_by_guid", "type": "uuid" }
           },
           "updated": {
             "at": { "type": "date-time-iso8601" },
-            "by": { "name": "updated_by_guid", "type": "string" }
+            "by": { "name": "updated_by_guid", "type": "uuid" }
+          },
+          "deleted": {
+            "at": { "type": "date-time-iso8601", "required": false },
+            "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
           }
         }
       }
@@ -28,6 +32,36 @@
   ],
 
   "models": {
+    "organization": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "name", "type": "string" },
+        { "name": "key", "type": "string" },
+        { "name": "namespace", "type": "string" },
+        { "name": "visibility", "type": "string" }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["guid"], "where": "deleted_at is null" },
+              { "fields": ["key"], "where": "deleted_at is null" }
+            ]
+          }
+        }
+      ]
+    },
+
     "task": {
       "fields": [
         { "name": "id", "type": "string" },
@@ -44,12 +78,23 @@
         {
           "name": "psql",
           "value": {
+            "pkey": "id",
+            "hash_code": {},
             "on_conflict": {
               "fields": ["type_id", "type"]
             },
             "indexes": [
               { "fields": ["num_attempts", "next_attempt_at"] }
-            ]
+            ],
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "updated_by_guid", "type": "string" }
+              }
+            }
           }
         }
       ]
@@ -65,23 +110,11 @@
         {
           "name": "psql",
           "value": {
+            "pkey": "id",
+            "hash_code": {},
             "indexes": [
               { "fields": ["user_guid"] }
-            ],
-            "audit": {
-              "created": {
-                "at": { "type": "date-time-iso8601" },
-                "by": { "name": "created_by_guid", "type": "uuid" }
-              },
-              "updated": {
-                "at": { "type": "date-time-iso8601" },
-                "by": { "name": "updated_by_guid", "type": "uuid" }
-              },
-              "deleted": {
-                "at": { "type": "date-time-iso8601", "required": false },
-                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
-              }
-            }
+            ]
           }
         }
       ]
@@ -98,7 +131,7 @@
         {
           "name": "scala",
           "value": {
-            "id_generator": {
+            "pkey_generator": {
               "class": "com.mbryzek.util.IdGenerator",
               "prefix": "gni"
             }
@@ -107,6 +140,8 @@
         {
           "name": "psql",
           "value": {
+            "pkey": "id",
+            "hash_code": {},
             "audit": {
               "created": {
                 "at": { "type": "date-time-iso8601" }

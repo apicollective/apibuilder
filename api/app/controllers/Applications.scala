@@ -15,10 +15,10 @@ import java.util.UUID
 
 @Singleton
 class Applications @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  applicationsDao: ApplicationsDao,
-  versionsDao: VersionsDao,
-  model: ApplicationsModel
+                               val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                               applicationsDao: InternalApplicationsDao,
+                               versionsDao: VersionsDao,
+                               model: ApplicationsModel
 ) extends ApiBuilderController {
 
   def get(

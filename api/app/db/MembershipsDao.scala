@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Organization, User}
+import io.apibuilder.api.v0.models.User
 import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
@@ -46,17 +46,17 @@ class MembershipsDao @Inject() (
       join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
-    val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
+  def upsert(createdBy: UUID, org: OrganizationReference, user: User, role: MembershipRole): InternalMembership = {
+    val membership = findByOrganizationAndUserAndRole(Authorization.All, org, user, role) match {
       case Some(r) => r
-      case None => create(createdBy, organization, user, role)
+      case None => create(createdBy, org, user, role)
     }
 
     // If we made this user an admin, and s/he already exists as a
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
     if (role == MembershipRole.Admin) {
-      findByOrganizationAndUserAndRole(Authorization.All, organization, user, MembershipRole.Member).foreach { membership =>
+      findByOrganizationAndUserAndRole(Authorization.All, org, user, MembershipRole.Member).foreach { membership =>
         softDelete(user, membership)
       }
     }
@@ -64,18 +64,18 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
+  private[db] def create(createdBy: UUID, org: OrganizationReference, user: User, role: MembershipRole): InternalMembership = {
     db.withTransaction { implicit c =>
-      create(c, createdBy, organization, user, role)
+      create(c, createdBy, org, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: MembershipRole): InternalMembership = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: User, role: MembershipRole): InternalMembership = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       "guid" -> guid,
-      "organization_guid" -> organization.guid,
+      "organization_guid" -> org.guid,
       "user_guid" -> user.guid,
       "role" -> role.toString,
       "created_by_guid" -> createdBy
@@ -103,7 +103,7 @@ class MembershipsDao @Inject() (
 
   def isUserAdmin(
     user: User,
-    organization: Organization
+    organization: OrganizationReference
   ): Boolean = {
     isUserAdmin(userGuid = user.guid, organizationGuid = organization.guid)
   }
@@ -120,7 +120,7 @@ class MembershipsDao @Inject() (
 
   def isUserMember(
     user: User,
-    organization: Organization
+    organization: OrganizationReference
   ): Boolean = {
     isUserMember(userGuid = user.guid, organizationGuid = organization.guid)
   }
@@ -142,19 +142,19 @@ class MembershipsDao @Inject() (
 
   def findByOrganizationAndUserAndRole(
     authorization: Authorization,
-    organization: Organization,
+    org: OrganizationReference,
     user: User,
     role: MembershipRole
   ): Option[InternalMembership] = {
     findByOrganizationGuidAndUserGuidAndRole(
       authorization,
-      organizationGuid = organization.guid,
+      organizationGuid = org.guid,
       userGuid = user.guid,
       role = role
     )
   }
 
-  def findByOrganizationGuidAndUserGuidAndRole(
+  private def findByOrganizationGuidAndUserGuidAndRole(
                                         authorization: Authorization,
                                         organizationGuid: UUID,
                                         userGuid: UUID,
@@ -166,7 +166,7 @@ class MembershipsDao @Inject() (
 
   def findByOrganizationAndUserAndRoles(
     authorization: Authorization,
-    organization: Organization,
+    organization: OrganizationReference,
     user: User,
     roles: Seq[MembershipRole]
   ): Seq[InternalMembership] = {

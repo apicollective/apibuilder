@@ -29,13 +29,13 @@ trait Helpers extends util.Daos with RandomHelpers {
     }
   }
 
-  def upsertOrganization(name: String): Organization = {
+  def upsertOrganization(name: String): InternalOrganization = {
     organizationsDao.findAll(Authorization.All, name = Some(name), limit = Some(1)).headOption.getOrElse {
       createOrganization(name = Some(name))
     }
   }
 
-  def upsertOrganizationByKey(key: String): Organization = {
+  def upsertOrganizationByKey(key: String): InternalOrganization = {
     organizationsDao.findByKey(Authorization.All, key).getOrElse {
       createOrganization(key = Some(key))
     }
@@ -47,7 +47,7 @@ trait Helpers extends util.Daos with RandomHelpers {
     key: Option[String] = None,
     namespace: Option[String] = None,
     visibility: Visibility = Visibility.Organization
-  ): Organization = {
+  ): InternalOrganization = {
     createOrganization(
       form = createOrganizationForm(
         name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
@@ -62,7 +62,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   def createOrganization(
     form: OrganizationForm,
     createdBy: User
-  ): Organization = {
+  ): InternalOrganization = {
     organizationsDao.createWithAdministrator(createdBy, form)
   }
 
@@ -81,7 +81,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   )
 
   def createApplication(
-    org: Organization = createOrganization(),
+    org: InternalOrganization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
   ): InternalApplication = {
     applicationsDao.create(testUser, org, form)
@@ -108,7 +108,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   )
 
   def upsertApplicationByOrganizationAndKey(
-    org: Organization,
+    org: InternalOrganization,
     key: String,
   ): InternalApplication = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(
@@ -129,7 +129,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createApplicationByKey(
-    org: Organization = testOrg,
+    org: InternalOrganization = testOrg,
     key: String = "test-" + UUID.randomUUID.toString,
   ): InternalApplication = {
     createApplication(
@@ -156,7 +156,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createMembership(
-    org: Organization,
+    org: InternalOrganization,
     user: User = createRandomUser(),
     role: MembershipRole = MembershipRole.Admin
   ): InternalMembership = {
@@ -165,13 +165,13 @@ trait Helpers extends util.Daos with RandomHelpers {
     ).get
     membershipRequestsDao.accept(testUser, request)
 
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org.reference, user, role).getOrElse {
       sys.error("membership could not be created")
     }
   }
 
   def createSubscription(
-    org: Organization,
+    org: InternalOrganization,
     user: User = createRandomUser(),
     publication: Publication = Publication.all.head
   ): InternalSubscription = {
@@ -233,9 +233,9 @@ trait Helpers extends util.Daos with RandomHelpers {
     name = None
   )
 
-  lazy val gilt: Organization = upsertOrganization("Gilt Test Org")
+  lazy val gilt: InternalOrganization = upsertOrganization("Gilt Test Org")
 
-  lazy val testOrg: Organization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
+  lazy val testOrg: InternalOrganization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
   lazy val testUser: User = createUser()
 

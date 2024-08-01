@@ -1,6 +1,6 @@
 package controllers
 
-import db.MembershipsDao
+import db.{MembershipsDao, OrganizationReference}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
 import models.MembershipsModel
@@ -46,7 +46,7 @@ class Memberships @Inject() (
     membershipsDao.findByGuid(request.authorization, guid).flatMap(model.toModel) match {
       case None => NotFound
       case Some(membership) => {
-        if (membershipsDao.isUserAdmin(user = request.user, organization = membership.organization)) {
+        if (membershipsDao.isUserAdmin(user = request.user, organization = OrganizationReference(membership.organization))) {
           Ok(Json.toJson(membership))
         } else {
           Unauthorized

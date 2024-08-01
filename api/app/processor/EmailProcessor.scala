@@ -2,13 +2,13 @@ package processor
 
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.{Authorization, InternalTasksDao, OrganizationsDao, UsersDao}
+import db.{Authorization, InternalOrganizationsDao, InternalTasksDao, UsersDao}
 import io.apibuilder.api.v0.models.Publication
 import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models._
 import io.apibuilder.task.v0.models.json._
 import lib.{AppConfig, EmailUtil, Emails, Person}
-import models.{MembershipRequestsModel, MembershipsModel}
+import models.{MembershipRequestsModel, MembershipsModel, OrganizationsModel}
 import play.api.libs.json.Json
 
 import java.sql.Connection
@@ -16,8 +16,8 @@ import java.util.UUID
 import javax.inject.Inject
 
 class EmailProcessorQueue @Inject() (
-  internalTasksDao: InternalTasksDao
-                                    ) {
+  internalTasksDao: InternalTasksDao,
+) {
   def queueWithConnection(c: Connection, data: EmailData): Unit = {
     val dataJson = Json.toJson(data)
     internalTasksDao.queueWithConnection(c, TaskType.Email, id = Json.asciiStringify(dataJson), data = dataJson)
@@ -25,19 +25,20 @@ class EmailProcessorQueue @Inject() (
 }
 
 class EmailProcessor @Inject()(
-  args: TaskProcessorArgs,
-  appConfig: AppConfig,
-  applicationsDao: db.ApplicationsDao,
-  email: EmailUtil,
-  emails: Emails,
-  emailVerificationsDao: db.EmailVerificationsDao,
-  membershipsDao: db.MembershipsDao,
-  membershipsModel: MembershipsModel,
-  membershipRequestsDao: db.MembershipRequestsDao,
-  membershipRequestsModel: MembershipRequestsModel,
-  organizationsDao: OrganizationsDao,
-  passwordResetRequestsDao: db.PasswordResetRequestsDao,
-  usersDao: UsersDao,
+                                args: TaskProcessorArgs,
+                                appConfig: AppConfig,
+                                applicationsDao: db.InternalApplicationsDao,
+                                email: EmailUtil,
+                                emails: Emails,
+                                emailVerificationsDao: db.EmailVerificationsDao,
+                                membershipsDao: db.MembershipsDao,
+                                membershipsModel: MembershipsModel,
+                                membershipRequestsDao: db.MembershipRequestsDao,
+                                membershipRequestsModel: MembershipRequestsModel,
+                                organizationsDao: InternalOrganizationsDao,
+                                passwordResetRequestsDao: db.PasswordResetRequestsDao,
+                                usersDao: UsersDao,
+                                orgModel: OrganizationsModel,
 ) extends TaskProcessorWithData[EmailData](args, TaskType.Email) {
 
   override def processRecord(id: String, data: EmailData): ValidatedNec[String, Unit] = {
@@ -58,7 +59,7 @@ class EmailProcessor @Inject()(
       organizationsDao.findByGuid(Authorization.All, application.guid).foreach { org =>
         emails.deliver(
           context = Emails.Context.OrganizationMember,
-          org = org,
+          org = orgModel.toModel(org),
           publication = Publication.ApplicationsCreate,
           subject = s"${org.name}: New Application Created - ${application.name}",
           body = views.html.emails.applicationCreated(appConfig, org, application).toString

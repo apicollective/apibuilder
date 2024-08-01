@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import io.apibuilder.api.v0.models.{Domain, Organization, User}
+import io.apibuilder.api.v0.models.{Domain, User}
 import io.flow.postgresql.Query
 import play.api.db._
 
@@ -26,16 +26,16 @@ class OrganizationDomainsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {domain}, {created_by_guid}::uuid)
   """  
 
-  def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
+  def create(createdBy: User, org: InternalOrganization, domainName: String): OrganizationDomain = {
     db.withConnection { implicit c =>
-      create(c, createdBy, org, domainName)
+      create(c, createdBy, org.guid, domainName)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, orgGuid: UUID, domainName: String): OrganizationDomain = {
     val domain = OrganizationDomain(
       guid = UUID.randomUUID,
-      organizationGuid = org.guid,
+      organizationGuid = orgGuid,
       domain = Domain(domainName.trim)
     )
 
@@ -56,6 +56,7 @@ class OrganizationDomainsDao @Inject() (
   def findAll(
     guid: Option[UUID] = None,
     organizationGuid: Option[UUID] = None,
+    organizationGuids: Option[Seq[UUID]] = None,
     domain: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false)
   ): Seq[OrganizationDomain] = {
@@ -63,6 +64,7 @@ class OrganizationDomainsDao @Inject() (
       BaseQuery.
         equals("guid", guid).
         equals("organization_guid", organizationGuid).
+        optionalIn("organization_guid", organizationGuids).
         and(
           domain.map { _ =>
             "domain = lower(trim({domain}))"
