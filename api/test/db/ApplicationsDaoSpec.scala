@@ -19,7 +19,7 @@ class ApplicationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Help
 
   private def upsertApplication(
     nameOption: Option[String] = None,
-    org: Organization = testOrg,
+    org: InternalOrganization = testOrg,
     visibility: Visibility = Visibility.Organization
   ): InternalApplication = {
     val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
