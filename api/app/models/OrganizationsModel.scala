@@ -1,8 +1,8 @@
 package models
 
-import db.{Authorization, InternalOrganization, OrganizationDomainsDao}
+import db.{InternalOrganization, OrganizationDomainsDao}
 import io.apibuilder.api.v0.models.Organization
-import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
 import javax.inject.Inject
 
@@ -25,7 +25,7 @@ class OrganizationsModel @Inject()(
         key = org.key,
         namespace = org.db.namespace,
         visibility = org.visibility,
-        domains = domains.getOrElse(org.guid, Nil)ø,
+        domains = domains.getOrElse(org.guid, Nil).map(_.domain),
         audit = Audit(
           createdAt = org.db.createdAt,
           createdBy = ReferenceGuid(org.db.createdByGuid),

@@ -4,17 +4,20 @@ import io.apibuilder.api.v0.models._
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import db._
-import javax.inject.{Inject, Singleton}
+import models.OrganizationsModel
 
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
+
 import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   attributesDao: AttributesDao,
-  organizationAttributeValuesDao: OrganizationAttributeValuesDao
+  organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+  model: OrganizationsModel
 ) extends ApiBuilderController {
 
   def get(
@@ -28,15 +31,17 @@ class Organizations @Inject() (
   ): Action[AnyContent] = Anonymous { request =>
     Ok(
       Json.toJson(
-        organizationsDao.findAll(
-          request.authorization,
-          userGuid = userGuid,
-          guid = guid,
-          key = key,
-          name = name,
-          namespace = namespace,
-          limit = Some(limit),
-          offset = offset
+        model.toModels(
+          organizationsDao.findAll(
+            request.authorization,
+            userGuid = userGuid,
+            guid = guid,
+            key = key,
+            name = name,
+            namespace = namespace,
+            limit = Some(limit),
+            offset = offset
+          )
         )
       )
     )
@@ -44,7 +49,7 @@ class Organizations @Inject() (
 
   def getByKey(key: String): Action[AnyContent] = Anonymous { request =>
     withOrg(request.authorization, key) { org =>
-      Ok(Json.toJson(org))
+      Ok(Json.toJson(model.toModel(org)))
     }
   }
 
@@ -58,7 +63,7 @@ class Organizations @Inject() (
         val errors = organizationsDao.validate(form)
         if (errors.isEmpty) {
           val org = organizationsDao.createWithAdministrator(request.user, form)
-          Ok(Json.toJson(org))
+          Ok(Json.toJson(model.toModel(org)))
         } else {
           Conflict(Json.toJson(errors))
         }
@@ -79,7 +84,7 @@ class Organizations @Inject() (
             val errors = organizationsDao.validate(form, Some(existing))
             if (errors.isEmpty) {
               val org = organizationsDao.update(request.user, existing, form)
-              Ok(Json.toJson(org))
+              Ok(Json.toJson(model.toModel(org)))
             } else {
               Conflict(Json.toJson(errors))
             }
