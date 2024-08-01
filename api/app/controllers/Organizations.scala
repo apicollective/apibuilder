@@ -14,10 +14,10 @@ import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  attributesDao: AttributesDao,
-  organizationAttributeValuesDao: OrganizationAttributeValuesDao,
-  model: OrganizationsModel
+                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                attributesDao: InternalAttributesDao,
+                                organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+                                model: OrganizationsModel
 ) extends ApiBuilderController {
 
   def get(
@@ -179,7 +179,7 @@ class Organizations @Inject() (
   private def withAttribute(
     name: String
   ) (
-    f: Attribute => Result
+    f: InternalAttribute => Result
   ) = {
     attributesDao.findByName(name) match {
       case None => {

@@ -1,18 +1,22 @@
 package controllers
 
-import db.AttributesDao
+import cats.data.Validated.{Invalid, Valid}
+import db.InternalAttributesDao
 import lib.Validation
 import io.apibuilder.api.v0.models.AttributeForm
-import io.apibuilder.api.v0.models.json._
-import play.api.mvc._
-import play.api.libs.json._
+import io.apibuilder.api.v0.models.json.*
+import models.AttributesModel
+import play.api.mvc.*
+import play.api.libs.json.*
+
 import javax.inject.{Inject, Singleton}
 import java.util.UUID
 
 @Singleton
 class Attributes @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  attributesDao: AttributesDao
+  attributesDao: InternalAttributesDao,
+  model: AttributesModel
 ) extends ApiBuilderController {
 
   def get(
@@ -24,16 +28,16 @@ class Attributes @Inject() (
     val attributes = attributesDao.findAll(
       guid = guid,
       name = name,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
-    Ok(Json.toJson(attributes))
+    Ok(Json.toJson(model.toModels(attributes)))
   }
 
   def getByName(name: String): Action[AnyContent] = Action { _ =>
     attributesDao.findByName(name) match {
       case None => NotFound
-      case Some(attribute) => Ok(Json.toJson(attribute))
+      case Some(attribute) => Ok(Json.toJson(model.toModel(attribute)))
     }
   }
 
@@ -42,16 +46,10 @@ class Attributes @Inject() (
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[AttributeForm] => {
-        val form = s.get
-        attributesDao.validate(form) match {
-          case Nil => {
-            val attribute = attributesDao.create(request.user, form)
-            Created(Json.toJson(attribute))
-          }
-          case errors => {
-            Conflict(Json.toJson(errors))
-          }
+      case JsSuccess(form: AttributeForm, _)=> {
+        attributesDao.create(request.user, form) match {
+          case Valid(attribute) => Created(Json.toJson(model.toModel(attribute)))
+          case Invalid(errors) => Conflict(Json.toJson(errors.toNonEmptyList.toList))
         }
       }
     }
@@ -63,7 +61,7 @@ class Attributes @Inject() (
         NotFound
       }
       case Some(attribute) => {
-        if (attribute.audit.createdBy.guid == request.user.guid) {
+        if (attribute.db.createdByGuid == request.user.guid) {
           attributesDao.softDelete(request.user, attribute)
           NoContent
         } else {

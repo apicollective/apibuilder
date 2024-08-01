@@ -13,7 +13,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class OrganizationAttributeValuesDao @Inject() (
   @NamedDatabase("default") db: Database,
-  attributesDao: AttributesDao
+  attributesDao: InternalAttributesDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "organization_attribute_values")
@@ -72,14 +72,14 @@ class OrganizationAttributeValuesDao @Inject() (
     Validation.errors(attributeErrors ++ valueErrors)
   }
 
-  def upsert(user: User, organization: InternalOrganization, attribute: Attribute, form: AttributeValueForm): AttributeValue = {
+  def upsert(user: User, organization: InternalOrganization, attribute: InternalAttribute, form: AttributeValueForm): AttributeValue = {
     findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
       case None => create(user, organization, attribute, form)
       case Some(existing) => update(user, organization, existing, form)
     }
   }
 
-  def create(user: User, organization: InternalOrganization, attribute: Attribute, form: AttributeValueForm): AttributeValue = {
+  def create(user: User, organization: InternalOrganization, attribute: InternalAttribute, form: AttributeValueForm): AttributeValue = {
     val errors = validate(organization, AttributeSummary(attribute.guid, attribute.name), form, None)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 

@@ -13,7 +13,7 @@ trait Daos {
   def injector: Injector = app.injector
 
   def applicationsDao: InternalApplicationsDao = injector.instanceOf[db.InternalApplicationsDao]
-  def attributesDao: AttributesDao = injector.instanceOf[db.AttributesDao]
+  def attributesDao: InternalAttributesDao = injector.instanceOf[db.InternalAttributesDao]
   def changesDao: ChangesDao = injector.instanceOf[db.ChangesDao]
   def databaseServiceFetcher: DatabaseServiceFetcher = injector.instanceOf[DatabaseServiceFetcher]
   def emailVerificationsDao: EmailVerificationsDao = injector.instanceOf[db.EmailVerificationsDao]
