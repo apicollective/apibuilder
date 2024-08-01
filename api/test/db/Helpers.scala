@@ -235,7 +235,7 @@ trait Helpers extends util.Daos with RandomHelpers {
 
   lazy val gilt: InternalOrganization = upsertOrganization("Gilt Test Org")
 
-  lazy val testorg: InternalOrganization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
+  lazy val testOrg: InternalOrganization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
   lazy val testUser: User = createUser()
 
