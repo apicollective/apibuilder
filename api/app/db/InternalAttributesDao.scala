@@ -2,6 +2,7 @@ package db
 
 import cats.implicits._
 import cats.data.ValidatedNec
+import cats.data.Validated.{Invalid, Valid}
 import db.generated.AttributesDao
 import io.apibuilder.api.v0.models.{Attribute, AttributeForm, User}
 import io.flow.postgresql.Query
@@ -31,32 +32,35 @@ class InternalAttributesDao @Inject()(
 
   private def validate(
     form: AttributeForm
-  ): ValidatedNec[String, ValidatedAttributeForm] = {
+  ): ValidatedNec[io.apibuilder.api.v0.models.Error, ValidatedAttributeForm] = {
     (
       validateName(form.name),
       validateDescription(form.description),
     ).mapN { case (n,d) => ValidatedAttributeForm(n, d) }
   }
 
-  private def validateName(name: String): ValidatedNec[String, String] = {
+  private def validateName(name: String): ValidatedNec[io.apibuilder.api.v0.models.Error, String] = {
     val trimmed = name.trim
     if (trimmed.isEmpty) {
-      "Attribute name is required".invalidNec
+      Validation.singleError("Attribute name is required").invalidNec
     } else {
-      UrlKey.validateNec(trimmed, "Name").andThen { _ =>
-        findByName(trimmed) match {
-          case None => trimmed.validNec
-          case Some(_) => "Attribute with this name already exists".invalidNec
+      UrlKey.validateNec(trimmed, "Name") match {
+        case Invalid(e) => Validation.singleError(e.toNonEmptyList.toList.mkString(", "))
+        case Valid(_) => {
+          findByName(trimmed) match {
+            case None => trimmed.validNec
+            case Some(_) => Validation.singleError("Attribute with this name already exists").invalidNec
+          }
         }
       }
     }
   }
 
-  private def validateDescription(desc: Option[String]): ValidatedNec[String, Option[String]] = {
+  private def validateDescription(desc: Option[String]): ValidatedNec[io.apibuilder.api.v0.models.Error, Option[String]] = {
     desc.map(_.trim).filterNot(_.isEmpty).validNec
   }
 
-  def create(user: User, form: AttributeForm): ValidatedNec[String, InternalAttribute] = {
+  def create(user: User, form: AttributeForm): ValidatedNec[io.apibuilder.api.v0.models.Error, InternalAttribute] = {
     validate(form).map { vForm =>
       val guid = dao.insert(user.guid, db.generated.AttributeForm(
         name = vForm.name,
