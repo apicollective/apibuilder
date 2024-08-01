@@ -104,16 +104,16 @@ class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with H
     userCreatedProcessor.processRecord(user.guid)
     userCreatedProcessor.processRecord(nonMatchingUser.guid)
 
-    membershipsDao.isUserMember(user, org) must be(false)
-    membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
+    membershipsDao.isUserMember(user, org.reference) must be(false)
+    membershipsDao.isUserMember(nonMatchingUser, org.reference) must be(false)
 
     val verification = emailVerificationsDao.upsert(testUser, user, user.email)
     expectValid {
       service.confirm(Some(testUser), verification)
     }
 
-    membershipsDao.isUserMember(user, org) must be(true)
-    membershipsDao.isUserMember(nonMatchingUser, org) must be(false)
+    membershipsDao.isUserMember(user, org.reference) must be(true)
+    membershipsDao.isUserMember(nonMatchingUser, org.reference) must be(false)
   }
 
 }
