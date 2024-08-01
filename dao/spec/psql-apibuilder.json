@@ -32,6 +32,37 @@
   ],
 
   "models": {
+    "application": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "organization_guid", "type": "uuid" },
+        { "name": "name", "type": "string" },
+        { "name": "key", "type": "string" },
+        { "name": "visibility", "type": "string" },
+        { "name": "description", "type": "string", "required": false }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["organization_guid"] },
+              { "fields": ["organization_guid", "key"], "where": "deleted_at is null" }
+            ]
+          }
+        }
+      ]
+    },
+
     "organization": {
       "fields": [
         { "name": "guid", "type": "uuid" },
