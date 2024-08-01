@@ -25,7 +25,7 @@ class ApplicationsModel @Inject()(
       limit = None
     ).map { o => o.guid -> o }.toMap
     val lastUpdated = lookupLastVersionCreatedAt(applications.map(_.guid)).map { d =>
-      d.applicationGuid -> d.versionCreatedAt
+      d.applicationGuid -> d.timestamp
     }.toMap
 
     applications.flatMap { app =>
@@ -49,11 +49,13 @@ class ApplicationsModel @Inject()(
     }
   }
 
-  private case class LastVersionCreated(applicationGuid: UUID, versionCreatedAt: DateTime)
-  private val LastVersionCreatedQuery = Query("select application_guid::text, max(created_at) from version")
+  private case class LastVersionCreated(applicationGuid: UUID, timestamp: DateTime)
+  private val LastVersionCreatedQuery = Query("select application_guid::text, max(updated_at) as updated_at from versions").withDebugging
   private def lookupLastVersionCreatedAt(guids: Seq[UUID]): Seq[LastVersionCreated] = {
     db.withConnection { c =>
-      LastVersionCreatedQuery.in("application_guid", guids)
+      LastVersionCreatedQuery
+        .in("application_guid", guids)
+        .groupBy("1")
         .as(parser.*)(c)
     }
   }
@@ -62,10 +64,10 @@ class ApplicationsModel @Inject()(
     import anorm.*
 
     SqlParser.str("application_guid") ~
-      SqlParser.get[org.joda.time.DateTime]("created_at") map { case applicationGuid ~ versionCreatedAt =>
+      SqlParser.get[org.joda.time.DateTime]("updated_at") map { case applicationGuid ~ timestamp =>
       LastVersionCreated(
         applicationGuid = java.util.UUID.fromString(applicationGuid),
-        versionCreatedAt = versionCreatedAt
+        timestamp = timestamp
       )
     }
   }
