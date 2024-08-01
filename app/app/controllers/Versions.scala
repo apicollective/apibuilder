@@ -15,8 +15,8 @@ import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class Versions @Inject() (
-                           val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                           apiClientProvider: ApiClientProvider
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+  apiClientProvider: ApiClientProvider
 ) extends ApiBuilderController {
 
   private val DefaultVersion = "0.0.1-dev"

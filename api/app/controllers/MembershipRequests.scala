@@ -64,7 +64,7 @@ class MembershipRequests @Inject() (
             Conflict(Json.toJson(Validation.error("Organization not found or not authorized to make changes to this org")))
           }
 
-          case Some(org: Organization) => {
+          case Some(org) => {
             usersDao.findByGuid(form.user_guid) match {
 
               case None => {

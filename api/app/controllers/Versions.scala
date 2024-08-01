@@ -205,7 +205,7 @@ class Versions @Inject() (
 
   private def upsertVersion(
     user: User,
-    org: Organization,
+    org: InternalOrganization,
     versionName: String,
     form: VersionForm,
     original: Original,
@@ -253,11 +253,11 @@ class Versions @Inject() (
   }
 
   private def toServiceConfiguration(
-    org: Organization,
+    org: InternalOrganization,
     version: String
   ) = ServiceConfiguration(
     orgKey = org.key,
-    orgNamespace = org.namespace,
+    orgNamespace = org.db.namespace,
     version = version
   )
 
