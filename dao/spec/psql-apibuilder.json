@@ -136,6 +136,33 @@
       ]
     },
 
+    "attribute": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string", "required": false }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["name"], "where": "deleted_at is null" }
+            ]
+          }
+        }
+      ]
+    },
+
     "task": {
       "fields": [
         { "name": "id", "type": "string" },
