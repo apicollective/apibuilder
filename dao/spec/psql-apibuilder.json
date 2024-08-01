@@ -87,7 +87,20 @@
               { "fields": ["application_guid"] },
               { "fields": ["from_organization_guid"] },
               { "fields": ["to_organization_guid"] }
-            ]
+            ],
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "created_by_guid", "type": "uuid" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            }
           }
         }
       ]

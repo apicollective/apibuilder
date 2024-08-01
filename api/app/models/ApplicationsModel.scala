@@ -50,13 +50,23 @@ class ApplicationsModel @Inject()(
   }
 
   private case class LastVersionCreated(applicationGuid: UUID, timestamp: DateTime)
-  private val LastVersionCreatedQuery = Query("select application_guid::text, max(updated_at) as updated_at from versions").withDebugging
+  private val LastVersionCreatedQuery = Query(
+    """
+      |select application_guid::text,
+      |       max(coalesce(deleted_at, created_at)) as timestamp
+      |  from versions
+      |""".stripMargin
+  ).withDebugging
   private def lookupLastVersionCreatedAt(guids: Seq[UUID]): Seq[LastVersionCreated] = {
-    db.withConnection { c =>
-      LastVersionCreatedQuery
-        .in("application_guid", guids)
-        .groupBy("1")
-        .as(parser.*)(c)
+    if (guids.isEmpty) {
+      Nil
+    } else {
+      db.withConnection { c =>
+        LastVersionCreatedQuery
+          .in("application_guid", guids)
+          .groupBy("1")
+          .as(parser.*)(c)
+      }
     }
   }
 
