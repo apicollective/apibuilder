@@ -1,18 +1,20 @@
 package db
 
-import anorm._
+import anorm.*
 import cats.data.ValidatedNec
-import cats.implicits._
+import cats.implicits.*
+import db.generated.{ApplicationMoveForm, ApplicationMovesDao, ApplicationsDao}
 import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, SortOrder, User, Version, Visibility}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
-import io.flow.postgresql.Query
+import io.flow.postgresql.{OrderBy, Query}
 import lib.{UrlKey, Validation}
 import org.joda.time.DateTime
-import play.api.db._
+import play.api.db.*
 import processor.EmailProcessorQueue
 import util.OptionalQueryFilter
 
+import java.sql.Connection
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
@@ -21,27 +23,19 @@ case class InternalApplication(db: generated.Application) {
   val name: String = db.name
   val key: String = db.key
   val visibility: Visibility = Visibility(db.visibility)
-)
+}
 
 class InternalApplicationsDao @Inject()(
-  @NamedDatabase("default") db: Database,
+  dao: ApplicationsDao,
   emailQueue: EmailProcessorQueue,
   organizationsDao: InternalOrganizationsDao,
   tasksDao: InternalTasksDao,
+  movesDao: ApplicationMovesDao,
 ) {
-
-  private val InsertMoveQuery =
-    """
-    insert into application_moves
-    (guid, application_guid, from_organization_guid, to_organization_guid, created_by_guid)
-    values
-    ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_by_guid}::uuid)
-  """
 
   private def validateOrganizationByKey(auth: Authorization, key: String): ValidatedNec[Error, InternalOrganization] = {
     organizationsDao.findByKey(auth, key).toValidNec(Validation.singleError(s"Organization[$key] not found"))
   }
-
 
   private def validateMove(
     authorization: Authorization,
@@ -112,20 +106,18 @@ class InternalApplicationsDao @Inject()(
     app: InternalApplication,
     form: ApplicationForm
   ): InternalApplication = {
-    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organizationGuid).getOrElse {
-      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.organizationGuid}]")
+    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.db.organizationGuid).getOrElse {
+      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.db.organizationGuid}]")
     }
     val errors = validate(org, form, Some(app))
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
     withTasks(app.guid, { implicit c =>
-      SQL(UpdateQuery).on(
-        "guid" -> app.guid,
-        "name" -> form.name.trim,
-        "visibility" -> form.visibility.toString,
-        "description" -> form.description.map(_.trim),
-        "updated_by_guid" -> updatedBy.guid
-      ).execute()
+      dao.update(c, updatedBy.guid, app.db, app.db.form.copy(
+        name = form.name.trim,
+        visibility = form.visibility.toString,
+        description = form.description.map(_.trim).filterNot(_.isEmpty)
+      ))
     })
 
     findByGuid(Authorization.All, app.guid).getOrElse {
@@ -139,25 +131,21 @@ class InternalApplicationsDao @Inject()(
     form: MoveForm
   ): ValidatedNec[Error, InternalApplication] = {
     validateMove(Authorization.User(updatedBy.guid), app, form).map { newOrg =>
-      if (newOrg.guid == app.organizationGuid) {
+      if (newOrg.guid == app.db.organizationGuid) {
         // No-op
         app
 
       } else {
         withTasks(app.guid, { implicit c =>
-          SQL(InsertMoveQuery).on(
-            "guid" -> UUID.randomUUID,
-            "application_guid" -> app.guid,
-            "from_organization_guid" -> app.organizationGuid,
-            "to_organization_guid" -> newOrg.guid,
-            "created_by_guid" -> updatedBy.guid
-          ).execute()
+          movesDao.insert(c, updatedBy.guid, ApplicationMoveForm(
+            applicationGuid = app.guid,
+            fromOrganizationGuid = app.db.organizationGuid,
+            toOrganizationGuid = newOrg.guid
+          ))
 
-          SQL(UpdateOrganizationQuery).on(
-            "guid" -> app.guid,
-            "org_guid" -> newOrg.guid,
-            "updated_by_guid" -> updatedBy.guid
-          ).execute()
+          dao.update(updatedBy.guid, app.db, app.db.form.copy(
+            organizationGuid = newOrg.guid
+          ))
         })
 
         findByGuid(Authorization.All, app.guid).getOrElse {
@@ -174,15 +162,13 @@ class InternalApplicationsDao @Inject()(
   ): InternalApplication = {
     assert(
       canUserUpdate(updatedBy, app),
-      "User[${user.guid}] not authorized to update app[${app.key}]"
+      s"User[${updatedBy.guid}] not authorized to update app[${app.key}]"
     )
 
     withTasks(app.guid, { implicit c =>
-      SQL(UpdateVisibilityQuery).on(
-        "guid" -> app.guid,
-        "visibility" -> visibility.toString,
-        "updated_by_guid" -> updatedBy.guid
-      ).execute()
+      dao.update(c, updatedBy.guid, app.db, app.db.form.copy(
+        visibility = visibility.toString
+      ))
     })
 
     findByGuid(Authorization.All, app.guid).getOrElse {
@@ -198,31 +184,29 @@ class InternalApplicationsDao @Inject()(
     val errors = validate(org, form)
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
-    val guid = UUID.randomUUID
     val key = form.key.getOrElse(UrlKey.generate(form.name))
 
-    withTasks(guid, { implicit c =>
-      SQL(InsertQuery).on(
-        "guid" -> guid,
-        "organization_guid" -> org.guid,
-        "name" -> form.name.trim,
-        "description" -> form.description.map(_.trim),
-        "key" -> key,
-        "visibility" -> form.visibility.toString,
-        "created_by_guid" -> createdBy.guid,
-        "updated_by_guid" -> createdBy.guid
-      ).execute()
+    val guid = dao.db.withTransaction { c =>
+      val guid = dao.insert(c, createdBy.guid, db.generated.ApplicationForm(
+        organizationGuid = org.guid,
+        name = form.name.trim,
+        key = key,
+        visibility = form.visibility.toString,
+        description = form.description.map(_.trim).filterNot(_.isEmpty)
+      ))
       emailQueue.queueWithConnection(c, EmailDataApplicationCreated(guid))
-    })
+      queueTasks(c, guid)
+      guid
+    }
 
-    findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = Some(1)).headOption.getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create application")
     }
   }
 
-  def softDelete(deletedBy: User, application: InternalApplication): Unit = {
-    withTasks(application.guid, { c =>
-      dbHelpers.delete(c, deletedBy.guid, application.guid)
+  def softDelete(deletedBy: User, app: InternalApplication): Unit = {
+    withTasks(app.guid, { c =>
+      dao.delete(c, deletedBy.guid, app.db)
     })
   }
 
@@ -262,98 +246,85 @@ class InternalApplicationsDao @Inject()(
         override def filter(q: Query, value: String): Query = {
           q.in("organization_guid", Query("select guid from organizations").equals("key", orgKey))
         }
+      },
+      new OptionalQueryFilter(isDeleted) {
+        override def filter(q: Query, value: Boolean): Query = {
+          if (value) {
+            q.isNotNull("deleted_at")
+          } else {
+            q.isNull("deleted_at")
+          }
+        }
+      },
+      new OptionalQueryFilter(version) {
+        override def filter(q: Query, v: Version): Query = {
+          q.in(
+            "guid",
+            Query("select application_guid from versions")
+              .isNull("deleted_at")
+              .equals("guid", v.guid)
+          )
+        }
+      },
+      new OptionalQueryFilter(hasVersion) {
+        override def filter(q: Query, value: Boolean): Query = {
+          val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
+          if (value) {
+            q.and(s"exists ($clause)")
+          } else {
+            q.and(s"not exists ($clause)")
+          }
+        }
       }
     )
 
-    db.withConnection { implicit c =>
-      val appQuery = authorization.applicationFilter(
-          filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) },
-          "guid"
-        ).
-        equals("guid", guid).
-        optionalIn("guid", guids).
-        and(
-          name.map { _ =>
-            "lower(trim(name)) = lower(trim({name}))"
-          }
-        ).bind("name", name).
-        and(
-          key.map { _ =>
-            "key = lower(trim({application_key}))"
-          }
-        ).bind("application_key", key).
-        and(
-          version.map { _ =>
-            "guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
-          }
-        ).bind("version_guid", version.map(_.guid.toString)).
-        and(
-          hasVersion.map { v =>
-            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
-            if (v) {
-              s"exists ($clause)"
-            } else {
-              s"not exists ($clause)"
-            }
-          }
-        ).
-        and(isDeleted.map(Filters.isDeleted("applications", _))).
-        optionalLimit(limit).
-        offset(offset)
-      sorting.fold(appQuery) { sorting =>
-        val sort = sorting match {
-          case AppSortBy.Visibility => "visibility"
-          case AppSortBy.CreatedAt => "created_at"
-          case AppSortBy.UpdatedAt => "last_updated_at"
-          case _ => "name"
-        }
-        val ord = ordering.getOrElse(SortOrder.Asc).toString
-        appQuery.orderBy(s"$sort $ord")
-      }.as(parser.*)
-    }
+    dao.findAll(
+      guid = guid,
+      guids = guids,
+      limit = limit,
+      offset = offset,
+      orderBy = Some(toOrderBy(sorting, ordering)),
+    ) { q =>
+      authorization.applicationFilter(
+        filters.foldLeft(q) { case (q, f) => f.filter(q) },
+        "guid"
+      )
+      .equals("lower(name)", name.map(_.toLowerCase().trim))
+      .equals("lower(key)", key.map(_.toLowerCase().trim))
+    }.map(InternalApplication(_))
   }
 
-  private val parser: RowParser[InternalApplication] = {
-    import org.joda.time.DateTime
-
-    SqlParser.get[UUID]("guid") ~
-      SqlParser.get[UUID]("organization_guid") ~
-      SqlParser.str("name") ~
-      SqlParser.str("key") ~
-      SqlParser.str("visibility") ~
-      SqlParser.str("description").? ~
-      SqlParser.get[DateTime]("last_updated_at") ~
-      SqlParser.get[DateTime]("created_at") ~
-      SqlParser.get[UUID]("created_by_guid") ~
-      SqlParser.get[DateTime]("updated_at") ~
-      SqlParser.get[UUID]("updated_by_guid") map { case guid ~ organizationGuid ~ name ~ key ~ visibility ~ description ~ lastUpdatedAt ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
-        InternalApplication(
-          guid = guid,
-          organizationGuid = organizationGuid,
-          name = name,
-          key = key,
-          visibility = Visibility(visibility),
-          description = description,
-          lastUpdatedAt = lastUpdatedAt,
-          audit = Audit(
-            createdAt = createdAt,
-            createdBy = ReferenceGuid(createdByGuid),
-            updatedAt = updatedAt,
-            updatedBy = ReferenceGuid(updatedByGuid),
-          )
-        )
-      }
+  private def toOrderBy(
+    sorting: Option[AppSortBy] = None,
+    ordering: Option[SortOrder] = None
+  ): OrderBy = {
+    val sort = sorting.getOrElse(AppSortBy.Name) match {
+      case AppSortBy.Visibility => "visibility"
+      case AppSortBy.CreatedAt => "created_at"
+      case AppSortBy.UpdatedAt => "updated_at"
+      case AppSortBy.Name | AppSortBy.UNDEFINED(_) => "name"
     }
+
+    val ord = ordering.getOrElse(SortOrder.Asc) match {
+      case SortOrder.Desc => "-"
+      case SortOrder.Asc | SortOrder.UNDEFINED(_) => ""
+    }
+
+    OrderBy(s"$ord$sort")
   }
 
   private def withTasks(
     guid: UUID,
     f: java.sql.Connection => Unit
   ): Unit = {
-    db.withTransaction { implicit c =>
+    dao.db.withTransaction { implicit c =>
       f(c)
-      tasksDao.queueWithConnection(c, TaskType.IndexApplication, guid.toString)
+      queueTasks(c, guid)
     }
+  }
+
+  private def queueTasks(c: Connection, guid: UUID): Unit = {
+    tasksDao.queueWithConnection(c, TaskType.IndexApplication, guid.toString)
   }
 
 }
