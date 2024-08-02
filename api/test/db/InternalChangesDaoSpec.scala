@@ -7,7 +7,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import java.util.UUID
 
-class ChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private def getApplication(version: Version): InternalApplication = {
     applicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
