@@ -4,11 +4,9 @@ import anorm.JodaParameterMetaData.*
 import anorm.*
 import db.generated.{ChangeForm, ChangesDao}
 import io.apibuilder.api.v0.models.*
-import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
 import io.flow.postgresql.{OrderBy, Query}
 import lib.VersionTag
 import org.postgresql.util.PSQLException
-import play.api.db.*
 import util.OptionalQueryFilter
 
 import java.util.UUID
@@ -70,7 +68,8 @@ class InternalChangesDao @Inject()(
           } match {
             case Success(_) => // no-op
             case Failure(e) => e match {
-              case e: PSQLException if !exists(form) => sys.error("Failed to create change: " + e)
+              case e: PSQLException if exists(form) => // no-op as already exists
+              case t: Throwable => throw t
             }
           }
         }
@@ -161,14 +160,14 @@ class InternalChangesDao @Inject()(
     ) { q =>
       authorization.applicationFilter(
           filters.foldLeft(q) { case (q, f) => f.filter(q) },
-          "applications.guid"
+          "application_guid"
         )
         .equals("from_version_guid", fromVersionGuid)
         .equals("type", `type`)
         .and(isDeleted.map(Filters.isDeleted("changes", _)))
         .and(
           description.map { _ =>
-            "lower(changes.description) = lower(trim({description}))"
+            "lower(description) = lower(trim({description}))"
           }
         ).bind("description", description)
     }.map(InternalChange(_))
