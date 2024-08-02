@@ -1,55 +1,34 @@
 package db
 
-import anorm._
+import anorm.*
+import db.generated.MembershipsDao
 import io.apibuilder.api.v0.models.User
 import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.EmailDataMembershipCreated
 import io.flow.postgresql.Query
-import play.api.db._
+import play.api.db.*
 import processor.EmailProcessorQueue
 import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-case class InternalMembership(
-                             guid: UUID,
-                             role: MembershipRole,
-                             audit: Audit,
-                             organizationGuid: UUID,
-                             userGuid: UUID
-                             )
+case class InternalMembership(db: generated.Membership) {
+  val guid: UUID = db.guid
+  val role: MembershipRole = MembershipRole(db.role)
+  val organizationGuid: UUID = db.organizationGuid
+  val userGuid: UUID = db.userGuid
+}
 
-@Singleton
-class MembershipsDao @Inject() (
-  @NamedDatabase("default") db: Database,
+class InternalMembershipsDao @Inject()(
+  dao: MembershipsDao,
   emailQueue: EmailProcessorQueue,
   subscriptionsDao: InternalSubscriptionsDao
 ) {
 
-  private val dbHelpers = DbHelpers(db, "memberships")
-
-  private val InsertQuery = """
-    insert into memberships
-    (guid, organization_guid, user_guid, role, created_by_guid)
-    values
-    ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
-  """
-
-  private val BaseQuery = Query(s"""
-    select memberships.guid,
-           memberships.role,
-           memberships.organization_guid,
-           memberships.user_guid,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")}
-      from memberships
-      join users on users.guid = memberships.user_guid
-  """)
-
   def upsert(createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
-    val membership = findByOrganizationAndUserAndRole(Authorization.All, org, user, role) match {
-      case Some(r) => r
-      case None => create(createdBy, org, user, role)
+    val membership = findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
+      create(createdBy, org, user, role)
     }
 
     // If we made this user an admin, and s/he already exists as a
@@ -65,31 +44,26 @@ class MembershipsDao @Inject() (
   }
 
   private[db] def create(createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
-    db.withTransaction { implicit c =>
+    dao.db.withTransaction { implicit c =>
       create(c, createdBy, org, user, role)
     }
   }
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
-    val guid = UUID.randomUUID
-
-    SQL(InsertQuery).on(
-      "guid" -> guid,
-      "organization_guid" -> org.guid,
-      "user_guid" -> user.guid,
-      "role" -> role.toString,
-      "created_by_guid" -> createdBy
-    ).execute()
+    val guid = dao.insert(c, createdBy, generated.MembershipForm(
+      userGuid = user.guid,
+      organizationGuid = org.guid,
+      role = role.toString,
+    ))
 
     emailQueue.queueWithConnection(c, EmailDataMembershipCreated(guid))
 
-    BaseQuery.equals("memberships.guid", guid)
-      .as(parser.*)
-      .headOption
-      .getOrElse {
+    InternalMembership(
+      dao.findByGuidWithConnection(c, guid).getOrElse {
         sys.error("Failed to create membership")
       }
-    }
+    )
+  }
 
   /**
     * Deletes a membership record. Also removes the user from any
@@ -97,8 +71,9 @@ class MembershipsDao @Inject() (
     * for this org.
     */
   def softDelete(user: UserReference, membership: InternalMembership): Unit = {
+    // TODO: Wrap in transaction
     subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organizationGuid, membership.userGuid)
-    dbHelpers.delete(user.guid, membership.guid)
+    dao.delete(user.guid, membership.db)
   }
 
   def isUserAdmin(
@@ -198,46 +173,17 @@ class MembershipsDao @Inject() (
       }
     )
 
-    db.withConnection { implicit c =>
-      filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) }.
-        equals("memberships.guid", guid).
-        equals("memberships.organization_guid", organizationGuid).
-        equals("memberships.user_guid", userGuid).
-        equals("memberships.role", role.map(_.toString)).
-        optionalIn("memberships.role", roles.map(_.map(_.toString))).
-        and(isDeleted.map(Filters.isDeleted("memberships", _))).
-        orderBy("lower(users.name), lower(users.email)").
-        optionalLimit(limit).
-        offset(offset).
-        as(parser.*)
-    }
-  }
-
-  private val parser: RowParser[InternalMembership] = {
-    import org.joda.time.DateTime
-
-    SqlParser.get[UUID]("guid") ~
-      SqlParser.str("role") ~
-      SqlParser.get[DateTime]("created_at") ~
-      SqlParser.get[UUID]("created_by_guid") ~
-      SqlParser.get[DateTime]("updated_at") ~
-      SqlParser.get[UUID]("updated_by_guid") ~
-      SqlParser.get[UUID]("organization_guid") ~
-      SqlParser.get[UUID]("user_guid") map {
-      case guid ~ role ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ userGuid => {
-        InternalMembership(
-          guid = guid,
-          role = MembershipRole.apply(role),
-          organizationGuid = organizationGuid,
-          userGuid = userGuid,
-          audit = Audit(
-            createdAt = createdAt,
-            createdBy = ReferenceGuid(createdByGuid),
-            updatedAt = updatedAt,
-            updatedBy = ReferenceGuid(updatedByGuid),
-          )
-        )
-      }
-    }
+    dao.findAll(
+      guid = guid,
+      organizationGuid = organizationGuid,
+      userGuid = userGuid,
+      limit = limit,
+      offset = offset,
+    ) { q =>
+      filters.foldLeft(q) { case (q, f) => f.filter(q) }
+        .equals("memberships.role", role.map(_.toString))
+        .optionalIn("memberships.role", roles.map(_.map(_.toString)))
+        .and(isDeleted.map(Filters.isDeleted("memberships", _)))
+    }.map(InternalMembership(_))
   }
 }

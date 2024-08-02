@@ -1,6 +1,5 @@
 package db
 
-import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
 import models.MembershipRequestsModel
 import org.scalatestplus.play.PlaySpec
@@ -76,18 +75,20 @@ class InternalMembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuit
   }
   
   "findAllForUser" in {
-    val newUser = upsertUser(UUID.randomUUID().toString + "@test.apibuilder.io")
+    val newUser = upsertUser()
     val newOrg = createOrganization()
-  
-    val request1 = membershipRequestsDao.upsert(testUser, newOrg, newUser, MembershipRole.Admin)
-    Seq(request1) must equal(
+
+    def findAll() = {
       membershipRequestsDao.findAll(Authorization.All, userGuid = Some(newUser.guid), limit = None)
-    )
+        .map(_.guid)
+        .sorted
+    }
+
+    val request1 = membershipRequestsDao.upsert(testUser, newOrg, newUser, MembershipRole.Admin)
+    findAll() must equal(Seq(request1.guid).sorted)
   
     val request2 = membershipRequestsDao.upsert(testUser, newOrg, newUser, MembershipRole.Member)
-    Seq(request2, request1) must equal(
-      membershipRequestsDao.findAll(Authorization.All, userGuid = Some(newUser.guid), limit = None)
-    )
+    findAll() must equal(Seq(request2, request1).map(_.guid).sorted)
   }
   
   "softDelete" in {

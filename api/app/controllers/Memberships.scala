@@ -1,6 +1,6 @@
 package controllers
 
-import db.{MembershipsDao, OrganizationReference}
+import db.{InternalMembershipsDao, OrganizationReference}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
 import models.MembershipsModel
@@ -12,9 +12,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Memberships @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  membershipsDao: MembershipsDao,
-  model: MembershipsModel,
+                              val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                              membershipsDao: InternalMembershipsDao,
+                              model: MembershipsModel,
 ) extends ApiBuilderController {
 
   def get(

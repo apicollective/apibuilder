@@ -2,7 +2,7 @@ package db
 
 import db.generated.OrganizationDomainsDao
 import io.apibuilder.api.v0.models.Domain
-import io.flow.postgresql.Query
+import io.flow.postgresql.{OrderBy, Query}
 import play.api.db.*
 
 import java.util.UUID
@@ -48,6 +48,7 @@ class InternalOrganizationDomainsDao @Inject()(
     domain: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Option[Long],
+    orderBy: Option[OrderBy] = None
   ): Seq[InternalOrganizationDomain] = {
     dao.findAll(
       guid = guid,
@@ -55,6 +56,7 @@ class InternalOrganizationDomainsDao @Inject()(
       organizationGuids = organizationGuids,
       domain = domain.map(_.trim.toLowerCase()),
       limit = limit,
+      orderBy = orderBy,
     ) { q =>
       q.and(isDeleted.map(Filters.isDeleted("organization_domains", _)))
     }.map(InternalOrganizationDomain(_))

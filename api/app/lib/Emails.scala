@@ -33,7 +33,7 @@ object Emails {
 class Emails @Inject() (
                          email: EmailUtil,
                          applicationsDao: InternalApplicationsDao,
-                         membershipsDao: MembershipsDao,
+                         membershipsDao: InternalMembershipsDao,
                          subscriptionsDao: InternalSubscriptionsDao,
                          subscriptionModel: SubscriptionModel,
 ) extends Logging {

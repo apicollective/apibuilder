@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 class VersionValidator @Inject() (
                                    applicationsDao: InternalApplicationsDao,
-                                   membershipsDao: MembershipsDao
+                                   membershipsDao: InternalMembershipsDao
 ) {
 
   def validate(

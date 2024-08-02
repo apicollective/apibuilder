@@ -1,8 +1,9 @@
 package models
 
-import db.{Authorization, InternalOrganization, InternalOrganizationsDao, InternalOrganizationDomainsDao}
+import db.{Authorization, InternalOrganization, InternalOrganizationDomainsDao, InternalOrganizationsDao}
 import io.apibuilder.api.v0.models.Organization
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.flow.postgresql.OrderBy
 
 import java.util.UUID
 import javax.inject.Inject
@@ -27,7 +28,8 @@ class OrganizationsModel @Inject()(
   def toModels(orgs: Seq[InternalOrganization]): Seq[Organization] = {
     val domains = domainsDao.findAll(
       organizationGuids = Some(orgs.map(_.guid)),
-      limit = None
+      limit = None,
+      orderBy = Some(OrderBy("domain")),
     ).groupBy(_.organizationGuid)
 
     orgs.map { org =>

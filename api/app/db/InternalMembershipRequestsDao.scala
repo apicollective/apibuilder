@@ -23,10 +23,10 @@ case class InternalMembershipRequest(db: generated.MembershipRequest) {
 }
 
 class InternalMembershipRequestsDao @Inject()(
-  dao: MembershipRequestsDao,
-  emailQueue: EmailProcessorQueue,
-  membershipsDao: MembershipsDao,
-  organizationLogsDao: OrganizationLogsDao
+                                               dao: MembershipRequestsDao,
+                                               emailQueue: EmailProcessorQueue,
+                                               membershipsDao: InternalMembershipsDao,
+                                               organizationLogsDao: OrganizationLogsDao
 ) {
 
   def upsert(createdBy: InternalUser, organization: InternalOrganization, user: InternalUser, role: MembershipRole): InternalMembershipRequest = {

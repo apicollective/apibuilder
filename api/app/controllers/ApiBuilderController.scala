@@ -1,7 +1,7 @@
 package controllers
 
 import com.google.inject.ImplementedBy
-import db.{Authorization, InternalOrganization, InternalOrganizationsDao, MembershipsDao, InternalUser}
+import db.{Authorization, InternalOrganization, InternalOrganizationsDao, InternalMembershipsDao, InternalUser}
 import io.apibuilder.api.v0.models.User
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
@@ -27,7 +27,7 @@ trait ApiBuilderController extends BaseController {
 
   def controllerComponents: ControllerComponents = apiBuilderControllerComponents.controllerComponents
 
-  def membershipsDao: MembershipsDao = apiBuilderControllerComponents.membershipsDao
+  def membershipsDao: InternalMembershipsDao = apiBuilderControllerComponents.membershipsDao
   def organizationsDao: InternalOrganizationsDao = apiBuilderControllerComponents.organizationsDao
 
   def withOrg(auth: Authorization, orgKey: String)(f: InternalOrganization => Result): Result = {
@@ -91,16 +91,16 @@ trait ApiBuilderControllerComponents {
   def anonymousActionBuilder: AnonymousActionBuilder
   def identifiedActionBuilder: IdentifiedActionBuilder
   def controllerComponents: ControllerComponents
-  def membershipsDao: MembershipsDao
+  def membershipsDao: InternalMembershipsDao
   def organizationsDao: InternalOrganizationsDao
 }
 
 class ApiBuilderDefaultControllerComponents @Inject() (
-  val controllerComponents: ControllerComponents,
-  val anonymousActionBuilder: AnonymousActionBuilder,
-  val identifiedActionBuilder: IdentifiedActionBuilder,
-  val membershipsDao: MembershipsDao,
-  val organizationsDao: InternalOrganizationsDao
+                                                        val controllerComponents: ControllerComponents,
+                                                        val anonymousActionBuilder: AnonymousActionBuilder,
+                                                        val identifiedActionBuilder: IdentifiedActionBuilder,
+                                                        val membershipsDao: InternalMembershipsDao,
+                                                        val organizationsDao: InternalOrganizationsDao
 ) extends ApiBuilderControllerComponents
 
 case class AnonymousRequest[A](

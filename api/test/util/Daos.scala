@@ -19,7 +19,7 @@ trait Daos {
   def emailVerificationsDao: InternalEmailVerificationsDao = injector.instanceOf[db.InternalEmailVerificationsDao]
   def itemsDao: ItemsDao = injector.instanceOf[db.ItemsDao]
   def membershipRequestsDao: InternalMembershipRequestsDao = injector.instanceOf[db.InternalMembershipRequestsDao]
-  def membershipsDao: MembershipsDao = injector.instanceOf[db.MembershipsDao]
+  def membershipsDao: InternalMembershipsDao = injector.instanceOf[db.InternalMembershipsDao]
   def usersDao: InternalUsersDao = injector.instanceOf[db.InternalUsersDao]
 
   def organizationAttributeValuesDao: InternalOrganizationAttributeValuesDao = injector.instanceOf[db.InternalOrganizationAttributeValuesDao]

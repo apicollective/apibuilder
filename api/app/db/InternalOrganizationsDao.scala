@@ -31,7 +31,7 @@ class InternalOrganizationsDao @Inject()(
 ) {
 
   // TODO: resolve circular dependency
-  private def membershipsDao = injector.instanceOf[MembershipsDao]
+  private def membershipsDao = injector.instanceOf[InternalMembershipsDao]
 
   private val MinNameLength = 3
 
