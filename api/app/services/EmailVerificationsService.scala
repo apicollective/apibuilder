@@ -11,10 +11,10 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class EmailVerificationsService @Inject()(
-  emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
-  membershipRequestsDao: MembershipRequestsDao,
-  membershipRequestsModel: MembershipRequestsModel,
-  organizationsDao: InternalOrganizationsDao
+                                           emailVerificationConfirmationsDao: InternalEmailVerificationConfirmationsDao,
+                                           membershipRequestsDao: MembershipRequestsDao,
+                                           membershipRequestsModel: MembershipRequestsModel,
+                                           organizationsDao: InternalOrganizationsDao
 ) {
 
   def confirm(user: Option[InternalUser], verification: InternalEmailVerification): ValidatedNec[String, Unit] = {

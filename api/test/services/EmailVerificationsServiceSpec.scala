@@ -1,6 +1,6 @@
 package services
 
-import db.{DbUtils, EmailVerificationConfirmationsDao, Helpers}
+import db.{DbUtils, InternalEmailVerificationConfirmationsDao, Helpers}
 import helpers.ValidatedTestHelpers
 import io.flow.postgresql.Query
 import org.scalatestplus.play.PlaySpec
@@ -8,7 +8,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite with Helpers with ValidatedTestHelpers with DbUtils {
 
-  private def emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao = injector.instanceOf[EmailVerificationConfirmationsDao]
+  private def emailVerificationConfirmationsDao: InternalEmailVerificationConfirmationsDao = injector.instanceOf[InternalEmailVerificationConfirmationsDao]
   private def service: EmailVerificationsService = injector.instanceOf[EmailVerificationsService]
 
   "isExpired" must {
@@ -39,10 +39,10 @@ class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite wi
   "confirm" in {
     val user = createRandomUser()
     val verification = emailVerificationsDao.upsert(testUser, user, user.email)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) must be(Nil)
+    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid), limit = None) must be(Nil)
 
     service.confirm(None, verification)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) must be(Seq(verification.guid))
+    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid), limit = None).map(_.emailVerificationGuid) must be(Seq(verification.guid))
   }
 
 }
