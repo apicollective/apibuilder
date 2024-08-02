@@ -24,7 +24,7 @@ case class InternalMembership(
 class MembershipsDao @Inject() (
   @NamedDatabase("default") db: Database,
   emailQueue: EmailProcessorQueue,
-  subscriptionsDao: SubscriptionsDao
+  subscriptionsDao: InternalSubscriptionsDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "memberships")

@@ -1,6 +1,7 @@
 package controllers
 
-import db.SubscriptionsDao
+import cats.data.Validated.{Invalid, Valid}
+import db.InternalSubscriptionsDao
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 import lib.Validation
@@ -13,9 +14,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Subscriptions @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  subscriptionsDao: SubscriptionsDao,
-  model: SubscriptionModel,
+                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                subscriptionsDao: InternalSubscriptionsDao,
+                                model: SubscriptionModel,
 ) extends ApiBuilderController {
 
   def get(
@@ -32,7 +33,7 @@ class Subscriptions @Inject() (
       organizationKey = organizationKey,
       userGuid = userGuid,
       publication = publication,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
     Ok(Json.toJson(model.toModels(subscriptions)))
@@ -52,17 +53,16 @@ class Subscriptions @Inject() (
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
-        subscriptionsDao.validate(request.user, form) match {
-          case Nil => {
-            val subscription = subscriptionsDao.create(request.user, form)
+        subscriptionsDao.create(request.user, form) match {
+          case Valid(subscription) => {
             Created(Json.toJson(
               model.toModel(subscription).getOrElse {
                 sys.error("Failed to create subscription")
               }
             ))
           }
-          case errors => {
-            Conflict(Json.toJson(errors))
+          case Invalid(errors) => {
+            Conflict(Json.toJson(errors.toNonEmptyList.toList))
           }
         }
       }

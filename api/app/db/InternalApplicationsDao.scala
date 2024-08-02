@@ -1,6 +1,5 @@
 package db
 
-import anorm.*
 import cats.data.ValidatedNec
 import cats.implicits.*
 import db.generated.{ApplicationMoveForm, ApplicationMovesDao, ApplicationsDao}

@@ -1,8 +1,9 @@
 package models
 
-import cats.implicits._
+import cats.implicits.*
 import db.{Authorization, InternalSubscription, InternalUsersDao}
 import io.apibuilder.api.v0.models.Subscription
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
 import javax.inject.Inject
 
@@ -28,7 +29,12 @@ class SubscriptionModel @Inject()(
           user = user,
           organization = org,
           publication = s.publication,
-          audit = s.audit
+          audit = Audit(
+            createdAt = s.db.createdAt,
+            createdBy = ReferenceGuid(s.db.createdByGuid),
+            updatedAt = s.db.updatedAt,
+            updatedBy = ReferenceGuid(s.db.createdByGuid),
+          )
         )
       }
     }

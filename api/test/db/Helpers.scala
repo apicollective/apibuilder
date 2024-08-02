@@ -191,7 +191,9 @@ trait Helpers extends util.Daos with RandomHelpers with ValidatedTestHelpers {
   def createSubscription(
     form: SubscriptionForm
   ): InternalSubscription = {
-    subscriptionsDao.create(testUser, form)
+    expectValid {
+      subscriptionsDao.create(testUser, form)
+    }
   }
 
   def createService(app: InternalApplication): spec.Service = {

@@ -5,7 +5,7 @@ import io.apibuilder.common.v0.models.MembershipRole
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class InternalSubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private lazy val org: InternalOrganization = createOrganization()
 
@@ -20,11 +20,12 @@ class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
     val subscriptions = subscriptionsDao.findAll(
       Authorization.All,
       organizationGuid = Some(org.guid),
-      userGuid = Some(user.guid)
+      userGuid = Some(user.guid),
+      limit = None
     ).map(_.publication)
 
     Publication.all.foreach { publication =>
-      if (SubscriptionsDao.PublicationsRequiredAdmin.contains(publication)) {
+      if (InternalSubscriptionsDao.PublicationsRequiredAdmin.contains(publication)) {
         subscriptions.contains(publication) must be(false)
       } else {
         subscriptions.contains(publication) must be(true)

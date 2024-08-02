@@ -34,7 +34,7 @@ class Emails @Inject() (
                          email: EmailUtil,
                          applicationsDao: InternalApplicationsDao,
                          membershipsDao: MembershipsDao,
-                         subscriptionsDao: SubscriptionsDao,
+                         subscriptionsDao: InternalSubscriptionsDao,
                          subscriptionModel: SubscriptionModel,
 ) extends Logging {
 
@@ -70,7 +70,7 @@ class Emails @Inject() (
           Authorization.All,
           organizationGuid = Some(organization.guid),
           publication = Some(publication),
-          limit = 100,
+          limit = Some(100),
           offset = offset
         )
       )
