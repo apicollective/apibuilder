@@ -1,18 +1,19 @@
 package models
 
-import cats.implicits._
-import db.{InternalApplicationsDao, Authorization, InternalWatch, InternalOrganizationsDao, InternalUsersDao}
+import cats.implicits.*
+import db.{Authorization, InternalApplicationsDao, InternalOrganizationsDao, InternalUsersDao, InternalWatch}
 import io.apibuilder.api.v0.models.Watch
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
 import javax.inject.Inject
 
 class WatchesModel @Inject()(
-                              organizationsDao: InternalOrganizationsDao,
-                              applicationsDao: InternalApplicationsDao,
-                              applicationsModel: ApplicationsModel,
-                              usersModel: UsersModel,
-                              organizationsModel: OrganizationsModel,
-                                        ) {
+  organizationsDao: InternalOrganizationsDao,
+  applicationsDao: InternalApplicationsDao,
+  applicationsModel: ApplicationsModel,
+  usersModel: UsersModel,
+  organizationsModel: OrganizationsModel,
+) {
   def toModel(watch: InternalWatch): Option[Watch] = {
     toModels(Seq(watch)).headOption
   }
@@ -28,11 +29,10 @@ class WatchesModel @Inject()(
       )
     ).map { o => o.guid -> o }.toMap
 
-    val organizations = organizationsModel.toModels(organizationsDao.findAll(
+    val organizations = organizationsModel.toModelByGuids(
       Authorization.All,
-      guids = Some(applications.values.map(_.organization.guid).toSeq.distinct),
-      limit = None
-    )).map { o => o.guid -> o }.toMap
+      applications.values.map(_.organization.guid).toSeq
+    ).map { o => o.guid -> o }.toMap
 
     watches.flatMap { w =>
       for {
@@ -45,7 +45,12 @@ class WatchesModel @Inject()(
           user = user,
           organization = org,
           application = app,
-          audit = w.audit
+          audit = Audit(
+            createdAt = w.db.createdAt,
+            createdBy = ReferenceGuid(w.db.createdByGuid),
+            updatedAt = w.db.updatedAt,
+            updatedBy = ReferenceGuid(w.db.createdByGuid),
+          )
         )
       }
     }

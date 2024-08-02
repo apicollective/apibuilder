@@ -23,7 +23,7 @@ class DiffVersionProcessor @Inject()(
                                       changesDao: InternalChangesDao,
                                       versionsDao: VersionsDao,
                                       versionsModel: VersionsModel,
-                                      watchesDao: WatchesDao,
+                                      watchesDao: InternalWatchesDao,
                                       orgModel: OrganizationsModel
 ) extends TaskProcessorWithData[DiffVersionData](args, TaskType.DiffVersion) {
 

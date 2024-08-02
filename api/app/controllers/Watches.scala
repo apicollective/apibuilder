@@ -1,7 +1,7 @@
 package controllers
 
 import cats.data.Validated.{Invalid, Valid}
-import db.WatchesDao
+import db.InternalWatchesDao
 import io.apibuilder.api.v0.models.WatchForm
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
@@ -14,9 +14,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Watches @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  watchesDao: WatchesDao,
-  model: WatchesModel,
+                          val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                          watchesDao: InternalWatchesDao,
+                          model: WatchesModel,
 ) extends ApiBuilderController {
 
   def get(
