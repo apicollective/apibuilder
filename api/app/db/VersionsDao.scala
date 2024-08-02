@@ -108,7 +108,7 @@ class VersionsDao @Inject() (
     val latestVersion: Option[InternalVersion] = findAll(
       Authorization.User(user.guid),
       applicationGuid = Some(application.guid),
-      limit = 1
+      limit = Some(1)
     ).headOption
 
     val guid = db.withTransaction { implicit c =>
@@ -197,13 +197,13 @@ class VersionsDao @Inject() (
   ): Option[InternalVersion] = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
-        findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
+        findAll(authorization, applicationGuid = Some(application.guid), limit = Some(1)).headOption
       } else if (version.startsWith(LatestVersionFilter)) {
         /*
          ~ specifies a minimum version, but allows the last digit specified to go up
          */
         val versionFilter = version.replace(LatestVersionFilter, "")
-        findAll(authorization, applicationGuid = Some(application.guid), limit = 1
+        findAll(authorization, applicationGuid = Some(application.guid), limit = Some(1)
           , versionConstraint = Some(versionFilter.split("\\.").dropRight(1).mkString(".")) //allows the last digit specified to go up
         )
           .headOption
@@ -219,7 +219,7 @@ class VersionsDao @Inject() (
       authorization,
       applicationGuid = Some(application.guid),
       version = Some(version),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 
@@ -228,29 +228,35 @@ class VersionsDao @Inject() (
     guid: UUID,
     isDeleted: Option[Boolean] = Some(false)
   ): Option[InternalVersion] = {
-    findAll(authorization, guid = Some(guid), isDeleted = isDeleted, limit = 1).headOption
+    findAll(authorization, guid = Some(guid), isDeleted = isDeleted, limit = Some(1)).headOption
+  }
+
+  def findAllByGuids(authorization: Authorization, guids: Seq[UUID]): Seq[InternalVersion] = {
+    findAll(authorization, guids = Some(guids), limit = None)
   }
 
   def findAll(
     authorization: Authorization,
     applicationGuid: Option[UUID] = None,
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     version: Option[String] = None,
     versionConstraint: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[InternalVersion] = {
     db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery, "application_guid").
         and(HasServiceJsonClause).
         equals("versions.guid", guid).
+        optionalIn("versions.guid", guids).
         equals("versions.application_guid", applicationGuid).
         equals("versions.version", version).
         and(versionConstraint.map(vc => s"versions.version like '${vc}%'")).
         and(isDeleted.map(Filters.isDeleted("versions", _))).
         orderBy("versions.version_sort_key desc, versions.created_at desc").
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(parser.*)
     }

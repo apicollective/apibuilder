@@ -237,14 +237,19 @@ class UsersDao @Inject() (
     findAll(guid = Some(guid)).headOption
   }
 
+  def findAllByGuids(guids: Seq[UUID]): Seq[User] = {
+    findAll(guids = Some(guids), limit = None)
+  }
+
   def findAll(
-               guid: Option[UUID] = None,
-               guids: Option[Seq[UUID]] = None,
+    guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     email: Option[String] = None,
     nickname: Option[String] = None,
     sessionId: Option[String] = None,
     token: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false)
+    isDeleted: Option[Boolean] = Some(false),
+    limit: Option[Long] = None,
   ): Seq[User] = {
     require(
       guid.isDefined || guids.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
@@ -268,7 +273,7 @@ class UsersDao @Inject() (
           token.map { _ => "guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
         ).bind("token", token).
         and(isDeleted.map(Filters.isDeleted("users", _))).
-        limit(1).
+        optionalLimit(limit).
         as(parser.*)
     }
   }
