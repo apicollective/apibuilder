@@ -18,8 +18,8 @@ import scala.util.{Failure, Success, Try}
 case class InternalChange(db: generated.Change) {
   val guid: UUID = db.guid
   val diff: Diff = db.`type` match {
-    case DiffType.Breaking => DiffBreaking(description = db.description, isMaterial = db.isMaterial)
-    case DiffType.NonBreaking => DiffNonBreaking(description = db.description, isMaterial = db.isMaterial)
+    case "breaking" => DiffBreaking(description = db.description, isMaterial = db.isMaterial)
+    case "non_breaking" => DiffNonBreaking(description = db.description, isMaterial = db.isMaterial)
     case other => sys.error(s"Invalid diff type '$other'")
   }
 }

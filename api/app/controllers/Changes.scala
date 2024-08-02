@@ -1,10 +1,12 @@
 package controllers
 
-import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.json.*
 import db.InternalChangesDao
+import models.ChangesModel
+
 import javax.inject.{Inject, Singleton}
-import play.api.mvc._
-import play.api.libs.json._
+import play.api.mvc.*
+import play.api.libs.json.*
 
 @Singleton
 class Changes @Inject() (
@@ -32,7 +34,7 @@ class Changes @Inject() (
       limit = Some(limit),
       offset = offset
     )
-    Ok(Json.toJson(changes))
+    Ok(Json.toJson(model.toModels(changes)))
   }
 
 }
