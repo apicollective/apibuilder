@@ -55,7 +55,7 @@ class ChangesModel @Inject()(
           toVersion = ChangeVersion(guid = toVersion.guid, version = toVersion.version),
           diff = change.diff,
           changedAt = change.db.changedAt,
-          changedBy = UserSummary(guid = changedBy, nickname = changedBy.nickname),
+          changedBy = UserSummary(guid = changedBy.guid, nickname = changedBy.nickname),
           audit = Audit(
             createdAt = change.db.createdAt,
             createdBy = ReferenceGuid(change.db.createdByGuid),
