@@ -34,7 +34,7 @@ class EmailVerificationConfirmationsDao @Inject() (
     ({guid}::uuid, {email_verification_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: UUID, conf: EmailVerification): EmailVerificationConfirmation = {
+  def upsert(createdBy: UUID, conf: InternalEmailVerification): EmailVerificationConfirmation = {
     findAll(emailVerificationGuid = Some(conf.guid), limit = 1).headOption.getOrElse {
       val guid = UUID.randomUUID
       db.withConnection { implicit c =>

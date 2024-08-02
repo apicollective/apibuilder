@@ -9,7 +9,6 @@ import models.MembershipRequestsModel
 
 import javax.inject.{Inject, Singleton}
 
-
 @Singleton
 class EmailVerificationsService @Inject()(
   emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
@@ -18,7 +17,7 @@ class EmailVerificationsService @Inject()(
   organizationsDao: InternalOrganizationsDao
 ) {
 
-  def confirm(user: Option[InternalUser], verification: EmailVerification): ValidatedNec[String, Unit] = {
+  def confirm(user: Option[InternalUser], verification: InternalEmailVerification): ValidatedNec[String, Unit] = {
     validateExpiration(verification).map { _ =>
       val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
 
@@ -33,7 +32,7 @@ class EmailVerificationsService @Inject()(
     }
   }
 
-  private def validateExpiration(verification: EmailVerification): ValidatedNec[String, Unit] = {
+  private def validateExpiration(verification: InternalEmailVerification): ValidatedNec[String, Unit] = {
     if (verification.expiresAt.isBeforeNow) {
       s"Token for verificationGuid[${verification.guid}] is expired".invalidNec
     } else {

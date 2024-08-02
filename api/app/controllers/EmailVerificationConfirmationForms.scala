@@ -1,7 +1,7 @@
 package controllers
 
 import cats.data.Validated.{Invalid, Valid}
-import db.EmailVerificationsDao
+import db.InternalEmailVerificationsDao
 import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
@@ -13,9 +13,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class EmailVerificationConfirmationForms @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  emailVerificationsDao: EmailVerificationsDao,
-  service: EmailVerificationsService
+                                                     val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                                     emailVerificationsDao: InternalEmailVerificationsDao,
+                                                     service: EmailVerificationsService
 ) extends ApiBuilderController {
 
   def post(): Action[JsValue] = Anonymous(parse.json) { request =>

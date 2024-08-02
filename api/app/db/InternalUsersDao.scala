@@ -41,7 +41,7 @@ case class ValidatedUserForm(
 
 class InternalUsersDao @Inject()(
                                   dao: UsersDao,
-                                  emailVerificationsDao: EmailVerificationsDao,
+                                  emailVerificationsDao: InternalEmailVerificationsDao,
                                   userPasswordsDao: InternalUserPasswordsDao,
                                   internalTasksDao: InternalTasksDao,
 ) {

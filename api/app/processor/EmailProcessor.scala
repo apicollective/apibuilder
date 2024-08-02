@@ -30,7 +30,7 @@ class EmailProcessor @Inject()(
                                 applicationsDao: db.InternalApplicationsDao,
                                 email: EmailUtil,
                                 emails: Emails,
-                                emailVerificationsDao: db.EmailVerificationsDao,
+                                emailVerificationsDao: db.InternalEmailVerificationsDao,
                                 membershipsDao: db.MembershipsDao,
                                 membershipsModel: MembershipsModel,
                                 membershipRequestsDao: db.MembershipRequestsDao,

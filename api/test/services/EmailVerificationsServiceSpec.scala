@@ -15,7 +15,7 @@ class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite wi
     val user = createRandomUser()
 
     "expired" in {
-      val verification = emailVerificationsDao.create(testUser, user, user.email)
+      val verification = emailVerificationsDao.upsert(testUser, user, user.email)
       execute(
         Query("update email_verifications set expires_at = now() - interval '1 month'")
           .equals("guid", verification.guid)
@@ -28,7 +28,7 @@ class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite wi
     }
 
     "not expired" in {
-      val verification = emailVerificationsDao.create(testUser, user, user.email)
+      val verification = emailVerificationsDao.upsert(testUser, user, user.email)
 
       expectValid {
         service.confirm(None, verification)
@@ -38,7 +38,7 @@ class EmailVerificationsServiceSpec extends PlaySpec with GuiceOneAppPerSuite wi
 
   "confirm" in {
     val user = createRandomUser()
-    val verification = emailVerificationsDao.create(testUser, user, user.email)
+    val verification = emailVerificationsDao.upsert(testUser, user, user.email)
     emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) must be(Nil)
 
     service.confirm(None, verification)
