@@ -1,5 +1,9 @@
 package core
 
+import cats.data.ValidatedNec
+import cats.implicits.*
+import cats.data.Validated.{Invalid, Valid}
+import io.apibuilder.api.v0.models.Error
 import io.apibuilder.spec.v0.models.Enum
 import java.net.{MalformedURLException, URL}
 import scala.util.{Failure, Success, Try}
@@ -44,19 +48,26 @@ object Util {
     formatted.startsWith("http://") || formatted.startsWith("https://") || formatted.startsWith("file://")
   }
 
-  def validateUri(value: String): Seq[String] = {
+  def validateUriNec(value: String): ValidatedNec[String, String] = {
     val formatted = value.trim.toLowerCase
     if (!formatted.startsWith("http://") && !formatted.startsWith("https://") && !formatted.startsWith("file://")) {
-      Seq(s"URI[$value] must start with http://, https://, or file://")
+      s"URI[$formatted] must start with http://, https://, or file://".invalidNec
     } else if (formatted.endsWith("/")) {
-      Seq(s"URI[$value] cannot end with a '/'")
+      s"URI[$formatted] cannot end with a '/'".invalidNec
     } else {
-      Try(new URL(value)) match {
-        case Success(_) => Nil
+      Try(new URL(formatted)) match {
+        case Success(_) => formatted.validNec
         case Failure(e) => e match {
-          case e: MalformedURLException => Seq(s"URL is not valid: ${e.getMessage}")
+          case e: MalformedURLException => s"URL is not valid: ${e.getMessage}".invalidNec
         }
       }
+    }
+  }
+
+  def validateUri(value: String): Seq[String] = {
+    validateUriNec(value) match {
+      case Invalid(e) => e.toNonEmptyList.toList
+      case Valid(_) => Nil
     }
   }
 

@@ -1,0 +1,58 @@
+{
+  "name": "psql-apibuilder-generators",
+  "attributes": [
+    {
+      "name": "scala",
+      "value": {
+        "version": "3.4",
+        "package": "db.generated.generators",
+        "user_class": "java.util.UUID",
+        "pkey_generator": {
+          "method": "java.util.UUID.randomUUID",
+          "returns": "uuid"
+        }
+      }
+    },
+    {
+      "name": "psql",
+      "value": {
+        "schema": "generators",
+        "pkey": "guid",
+        "audit": {
+          "created": {
+            "at": { "type": "date-time-iso8601" },
+            "by": { "name": "created_by_guid", "type": "uuid" }
+          },
+          "updated": {
+            "at": { "type": "date-time-iso8601" }
+          },
+          "deleted": {
+            "at": { "type": "date-time-iso8601", "required": false },
+            "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+          }
+        }
+      }
+    }
+  ],
+
+  "models": {
+    "service": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "uri", "type": "string" }
+      ]
+    },
+
+    "generator": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "service_guid", "type": "uuid" },
+        { "name": "key", "type": "string" },
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "language", "type": "string", "required": false },
+        { "name":  "attributes", "type": "json" }
+      ]
+    }
+  }
+}

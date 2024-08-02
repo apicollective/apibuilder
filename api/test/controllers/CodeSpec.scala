@@ -54,7 +54,7 @@ class CodeSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with
     "post payload containing imported services to generator" in {
 
       val randomPort = RandomPortFinder.getRandomPort
-      val generator = createGenerator(createGeneratorService(createGeneratorServiceForm(s"http://localhost:$randomPort")))
+      val generator = createGenerator(createGeneratorService(makeGeneratorServiceForm(s"http://localhost:$randomPort")))
 
       val generatorKey = generator.key
 

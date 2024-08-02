@@ -1,7 +1,7 @@
 package util
 
 import cats.data.Validated.{Invalid, Valid}
-import db.generators.{GeneratorsDao, ServicesDao}
+import db.generators.{GeneratorsDao, InternalGeneratorService, InternalGeneratorServicesDao}
 import db.{Authorization, InternalUsersDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.interfaces.Client
@@ -18,7 +18,7 @@ import scala.concurrent.duration.{FiniteDuration, SECONDS}
 import scala.util.{Failure, Success, Try}
 
 class GeneratorServiceUtil @Inject() (
-                                       servicesDao: ServicesDao,
+                                       servicesDao: InternalGeneratorServicesDao,
                                        generatorsDao: GeneratorsDao,
                                        usersDao: InternalUsersDao,
                                        generatorClientFactory: GeneratorClientFactory
@@ -27,13 +27,12 @@ class GeneratorServiceUtil @Inject() (
   private val log: Logger = Logger(this.getClass)
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
-    servicesDao.findByGuid(Authorization.All, serviceGuid).foreach { sync(_) }
+    servicesDao.findByGuid(serviceGuid).foreach { sync(_) }
   }
 
   def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     Pager.eachPage { offset =>
       servicesDao.findAll(
-        Authorization.All,
         limit = Some(pageSize),
         offset = offset
       )
@@ -54,7 +53,7 @@ class GeneratorServiceUtil @Inject() (
   }
 
   def sync(
-    service: GeneratorService,
+    service: InternalGeneratorService,
     pageSize: Long = 200
   ) (
     implicit ec: scala.concurrent.ExecutionContext
@@ -71,7 +70,7 @@ class GeneratorServiceUtil @Inject() (
   @tailrec
   private def doSync(
     client: Client,
-    service: GeneratorService,
+    service: InternalGeneratorService,
     pageSize: Long,
     offset: Int,
     resolved: List[Generator]
@@ -89,7 +88,7 @@ class GeneratorServiceUtil @Inject() (
     }
   }
 
-  private def storeGenerators(service: GeneratorService, generators: Seq[Generator]): Unit = {
+  private def storeGenerators(service: InternalGeneratorService, generators: Seq[Generator]): Unit = {
     sequenceUnique {
       generators.map { gen =>
         generatorsDao.upsert(

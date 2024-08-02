@@ -2,7 +2,7 @@ package processor
 
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.generators.ServicesDao
+import db.generators.InternalGeneratorServicesDao
 import db.{Authorization, InternalTasksDao}
 import io.apibuilder.task.v0.models.TaskType
 import lib.ValidatedHelpers
@@ -12,9 +12,9 @@ import scala.annotation.tailrec
 
 
 class ScheduleSyncGeneratorServicesProcessor @Inject()(
-  args: TaskProcessorArgs,
-  servicesDao: ServicesDao,
-  internalTasksDao: InternalTasksDao
+                                                        args: TaskProcessorArgs,
+                                                        servicesDao: InternalGeneratorServicesDao,
+                                                        internalTasksDao: InternalTasksDao
 ) extends TaskProcessor(args, TaskType.ScheduleSyncGeneratorServices) with ValidatedHelpers {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
@@ -24,7 +24,6 @@ class ScheduleSyncGeneratorServicesProcessor @Inject()(
   @tailrec
   private def doSyncAll(pageSize: Long, offset: Long): Unit = {
     val all = servicesDao.findAll(
-      Authorization.All,
       limit = Some(pageSize),
       offset = offset
     ).map(_.guid.toString)

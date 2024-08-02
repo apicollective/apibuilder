@@ -3,8 +3,8 @@ package processor
 import akka.actor.ActorSystem
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
-import cats.implicits._
-import db.generators.{GeneratorsDao, ServicesDao}
+import cats.implicits.*
+import db.generators.{GeneratorsDao, InternalGeneratorService, InternalGeneratorServicesDao}
 import db.{Authorization, InternalUsersDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.interfaces.Client
@@ -25,7 +25,7 @@ import scala.util.{Failure, Success, Try}
 class SyncGeneratorServiceProcessor @Inject()(
                                                args: TaskProcessorArgs,
                                                system: ActorSystem,
-                                               servicesDao: ServicesDao,
+                                               servicesDao: InternalGeneratorServicesDao,
                                                generatorsDao: GeneratorsDao,
                                                usersDao: InternalUsersDao,
                                                generatorClientFactory: GeneratorClientFactory
@@ -41,7 +41,6 @@ class SyncGeneratorServiceProcessor @Inject()(
   private def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {
     Pager.eachPage { offset =>
       servicesDao.findAll(
-        Authorization.All,
         limit = Some(pageSize),
         offset = offset
       )
@@ -53,20 +52,18 @@ class SyncGeneratorServiceProcessor @Inject()(
           log.info(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] synced")
         }
         case Failure(ex) => {
-          ex match {
-            case _ => log.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
-          }
+          log.error(s"[GeneratorServiceActor] Service[${service.guid}] at uri[${service.uri}] failed to sync: ${ex.getMessage}", ex)
         }
       }
     }
   }
 
   private def sync(
-            service: GeneratorService,
-            pageSize: Long = 200
-          ) (
-            implicit ec: scala.concurrent.ExecutionContext
-          ): Unit = {
+    service: InternalGeneratorService,
+    pageSize: Long = 200
+  ) (
+    implicit ec: scala.concurrent.ExecutionContext
+  ): Unit = {
     doSync(
       client = generatorClientFactory.instance(service.uri),
       service = service,
@@ -78,14 +75,14 @@ class SyncGeneratorServiceProcessor @Inject()(
 
   @tailrec
   private def doSync(
-                            client: Client,
-                            service: GeneratorService,
-                            pageSize: Long,
-                            offset: Int,
-                            resolved: List[Generator]
-                          )(
-                            implicit ec: scala.concurrent.ExecutionContext
-                          ): Unit = {
+    client: Client,
+    service: InternalGeneratorService,
+    pageSize: Long,
+    offset: Int,
+    resolved: List[Generator]
+  )(
+    implicit ec: scala.concurrent.ExecutionContext
+  ): Unit = {
     val newGenerators = Await.result(
       client.generators.get(limit = pageSize.toInt, offset = offset),
       FiniteDuration(30, SECONDS)
@@ -97,7 +94,7 @@ class SyncGeneratorServiceProcessor @Inject()(
     }
   }
 
-  private def storeGenerators(service: GeneratorService, generators: Seq[Generator]): Unit = {
+  private def storeGenerators(service: InternalGeneratorService, generators: Seq[Generator]): Unit = {
     sequenceUnique {
       generators.map { gen =>
         generatorsDao.upsert(

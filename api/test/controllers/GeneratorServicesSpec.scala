@@ -1,12 +1,14 @@
 package controllers
 
+import db.generators.InternalGeneratorService
+import helpers.ValidatedTestHelpers
 import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+
 import java.util.UUID
 
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import org.scalatestplus.play.PlaySpec
-
-class GeneratorServicesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
+class GeneratorServicesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite with ValidatedTestHelpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,11 +17,13 @@ class GeneratorServicesSpec extends PlaySpec with MockClient with GuiceOneServer
 
   def createGeneratorService(
     form: GeneratorServiceForm = createGeneratorServiceForm()
-  ): GeneratorService = {
+  ): InternalGeneratorService = {
     // TODO: Switch to REST API. But first need to resolve dependency
     // on fetching the list of generators from the service.
     // await(client.generatorServices.post(form))
-    servicesDao.create(testUser, form)
+    expectValid {
+      servicesDao.create(testUser, form)
+    }
   }
 
   def createGeneratorServiceForm(
@@ -38,7 +42,7 @@ class GeneratorServicesSpec extends PlaySpec with MockClient with GuiceOneServer
 
   "GET /generator_services/:guid" in {
     val service = createGeneratorService()
-    await(client.generatorServices.getByGuid(service.guid)) must equal(service)
+    await(client.generatorServices.getByGuid(service.guid)).guid must equal(service.guid)
 
     expectNotFound {
       client.generatorServices.getByGuid(UUID.randomUUID)

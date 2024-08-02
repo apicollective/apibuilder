@@ -10,13 +10,15 @@ import java.util.UUID
 trait GeneratorHelpers extends db.Helpers {
 
   def createGeneratorService(
-    form: GeneratorServiceForm = createGeneratorServiceForm()
-  ): GeneratorService = {
-    servicesDao.create(testUser, form)
+    form: GeneratorServiceForm = makeGeneratorServiceForm()
+  ): InternalGeneratorService = {
+    expectValid {
+      servicesDao.create(testUser, form)
+    }
   }
 
-  def createGeneratorServiceForm(
-    uri: String = s"http://test.generator.${UUID.randomUUID}"
+  def makeGeneratorServiceForm(
+    uri: String = s"https://test.generator.${UUID.randomUUID}"
   ): GeneratorServiceForm = {
     GeneratorServiceForm(
       uri = uri
@@ -24,7 +26,7 @@ trait GeneratorHelpers extends db.Helpers {
   }
 
   def createGenerator(
-    service: GeneratorService = createGeneratorService()
+    service: InternalGeneratorService = createGeneratorService()
   ): InternalGenerator = {
     val form = createGeneratorForm(service = service)
 
@@ -40,7 +42,7 @@ trait GeneratorHelpers extends db.Helpers {
   }
 
   def createGeneratorForm(
-    service: GeneratorService = createGeneratorService(),
+    service: InternalGeneratorService = createGeneratorService(),
     generator: Generator = makeGenerator()
   ): GeneratorForm = {
     GeneratorForm(

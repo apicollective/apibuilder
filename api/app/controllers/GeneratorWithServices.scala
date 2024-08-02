@@ -14,7 +14,7 @@ class GeneratorWithServices @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   generatorsDao: GeneratorsDao,
   model: GeneratorWithServiceModel
-                                      ) extends ApiBuilderController {
+) extends ApiBuilderController {
 
   def get(
     guid: Option[UUID],

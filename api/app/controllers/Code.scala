@@ -3,16 +3,16 @@ package controllers
 import _root_.util.{ApiBuilderServiceImportResolver, UserAgent}
 import db.InternalVersionsDao
 import db.generated.{GeneratorInvocationForm, GeneratorInvocationsDao}
-import db.generators.{GeneratorsDao, ServicesDao}
-import io.apibuilder.api.v0.models.json._
+import db.generators.{GeneratorsDao, InternalGeneratorServicesDao}
+import io.apibuilder.api.v0.models.json.*
 import io.apibuilder.api.v0.models.{CodeForm, Version}
 import io.apibuilder.generator.v0.Client
 import io.apibuilder.generator.v0.models.InvocationForm
-import io.apibuilder.generator.v0.models.json._
+import io.apibuilder.generator.v0.models.json.*
 import io.apibuilder.spec.v0.models.Service
 import lib.{Constants, Validation}
-import models.{GeneratorWithServiceModel, VersionsModel}
-import play.api.libs.json._
+import models.{GeneratorServicesModel, GeneratorWithServiceModel, VersionsModel}
+import play.api.libs.json.*
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, AnyContent, Result}
 
@@ -27,7 +27,7 @@ class Code @Inject() (
                        apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
                        generatorInvocationsDao: GeneratorInvocationsDao,
                        generatorsDao: GeneratorsDao,
-                       servicesDao: ServicesDao,
+                       servicesDao: InternalGeneratorServicesDao,
                        versionsDao: InternalVersionsDao,
                        versionsModel: VersionsModel,
                        userAgentGenerator: UserAgent,
@@ -137,7 +137,7 @@ class Code @Inject() (
     data: InvocationFormData,
     generatorKey: String
   ): Future[Result] = {
-    servicesDao.findAll(request.authorization, generatorKey = Some(generatorKey), limit = Some(1)).headOption match {
+    servicesDao.findAll(generatorKey = Some(generatorKey), limit = Some(1)).headOption match {
       case None => {
         Future.successful(conflict(s"Service with generator key[$generatorKey] not found"))
       }
