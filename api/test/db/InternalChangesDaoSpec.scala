@@ -172,7 +172,7 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
       changesDao.findAll(Authorization.User(user.guid), guid = Some(change.guid), limit = None).map(_.guid) must be(Nil)
       changesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid), limit = None).map(_.guid) must be(Nil)
 
-      val app = applicationsDao.findByGuid(Authorization.All, change.application.guid).get
+      val app = applicationsDao.findByGuid(Authorization.All, change.db.applicationGuid).get
 
       createMembership(
         organizationsDao.findByGuid(
