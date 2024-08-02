@@ -18,7 +18,7 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
   private def createChange(
     description: String = "Breaking difference - " + UUID.randomUUID.toString,
     org: InternalOrganization = createOrganization()
-  ): Change = {
+  ): InternalChange = {
     val app = createApplication(org = org)
     val fromVersion = createVersion(application = app, version = "1.0.0")
     val toVersion = createVersion(application = app, version = "1.0.1")
@@ -158,7 +158,7 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
 
     "limit and offset" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = Some(1).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = Some(1)).map(_.guid) must be(Seq(change.guid))
       changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = Some(1), offset = 1).map(_.guid) must be(Nil)
     }
 
