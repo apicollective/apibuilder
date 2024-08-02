@@ -13,8 +13,8 @@ class ChangesModel @Inject()(
   versionsDao: VersionsDao,
   usersDao: UsersDao,
 ) {
-  def toModel(v: InternalChange): Change = {
-    toModels(Seq(v)).head
+  def toModel(v: InternalChange): Option[Change] = {
+    toModels(Seq(v)).headOption
   }
 
   def toModels(changes: Seq[InternalChange]): Seq[Change] = {
