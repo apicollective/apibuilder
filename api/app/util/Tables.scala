@@ -1,5 +1,7 @@
 package util
 
+import db.generated.{ApplicationsTable, OrganizationsTable, UserPasswordsTable}
+
 sealed trait PrimaryKey {
   def name: String
 }
@@ -26,7 +28,8 @@ object Table {
 }
 
 object Tables {
-  val organizations: Table = Table.public("organizations", PrimaryKey.PkeyUUID)
-  val applications: Table = Table.public("applications", PrimaryKey.PkeyUUID)
+  val organizations: Table = Table.public(OrganizationsTable.TableName, PrimaryKey.PkeyUUID)
+  val applications: Table = Table.public(ApplicationsTable.TableName, PrimaryKey.PkeyUUID)
   val versions: Table = Table.public("versions", PrimaryKey.PkeyUUID)
+  val userPasswords: Table = Table.public(UserPasswordsTable.TableName, PrimaryKey.PkeyUUID)
 }

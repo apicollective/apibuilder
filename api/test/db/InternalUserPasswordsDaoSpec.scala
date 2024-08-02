@@ -4,7 +4,7 @@ import com.mbryzek.cipher.Ciphers
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class UserPasswordsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class InternalUserPasswordsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private lazy val user = upsertUser("michael@mailinator.com")
 

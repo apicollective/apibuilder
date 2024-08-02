@@ -32,7 +32,7 @@ trait Daos {
 
   def subscriptionsDao: SubscriptionsDao = injector.instanceOf[db.SubscriptionsDao]
   def tokensDao: TokensDao = injector.instanceOf[db.TokensDao]
-  def userPasswordsDao: UserPasswordsDao = injector.instanceOf[db.UserPasswordsDao]
+  def userPasswordsDao: InternalUserPasswordsDao = injector.instanceOf[db.InternalUserPasswordsDao]
   def versionsDao: VersionsDao = injector.instanceOf[db.VersionsDao]
 
   def servicesDao: ServicesDao = injector.instanceOf[db.generators.ServicesDao]

@@ -5,7 +5,7 @@ import io.apibuilder.api.v0.models.{User, UserForm, UserUpdateForm}
 import io.apibuilder.api.v0.models.json.*
 import lib.{Constants, Validation}
 import util.SessionHelper
-import db.{InternalUser, InternalUsersDao, UserPasswordsDao}
+import db.{InternalUser, InternalUsersDao, InternalUserPasswordsDao}
 import models.UsersModel
 
 import javax.inject.Inject
@@ -22,7 +22,7 @@ class Users @Inject() (
                         wsClient: WSClient,
                         sessionHelper: SessionHelper,
                         usersDao: InternalUsersDao,
-                        userPasswordsDao: UserPasswordsDao,
+                        userPasswordsDao: InternalUserPasswordsDao,
                         model: UsersModel
 ) extends ApiBuilderController {
 

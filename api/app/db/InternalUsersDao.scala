@@ -36,14 +36,14 @@ case class ValidatedUserForm(
   name: Option[String],
   avatarUrl: Option[String],
   gravatarId: Option[String],
-  password: Option[String],
+  password: Option[ValidatedPassword],
 )
 
 class InternalUsersDao @Inject()(
-  dao: UsersDao,
-  emailVerificationsDao: EmailVerificationsDao,
-  userPasswordsDao: UserPasswordsDao,
-  internalTasksDao: InternalTasksDao,
+                                  dao: UsersDao,
+                                  emailVerificationsDao: EmailVerificationsDao,
+                                  userPasswordsDao: InternalUserPasswordsDao,
+                                  internalTasksDao: InternalTasksDao,
 ) {
 
   lazy val AdminUser: InternalUser = Constants.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
@@ -85,10 +85,10 @@ class InternalUsersDao @Inject()(
     }
   }
 
-  private def validatePassword(password: Option[String]): ValidatedNec[Error, Option[String]] = {
+  private def validatePassword(password: Option[String]): ValidatedNec[Error, Option[ValidatedPassword]] = {
     password match {
       case None => None.validNec
-      case Some(pwd) => userPasswordsDao.validate(pwd).map { _ => password }
+      case Some(pwd) => userPasswordsDao.validate(pwd).map(Some(_))
     }
   }
 
@@ -174,7 +174,7 @@ class InternalUsersDao @Inject()(
       ))
 
       form.password.foreach { pwd =>
-        userPasswordsDao.doCreate(c, createdBy, userGuid, pwd)
+        userPasswordsDao.doCreate(createdBy, userGuid, pwd)(c)
       }
 
       internalTasksDao.queueWithConnection(c, TaskType.UserCreated, userGuid.toString)

@@ -23,6 +23,8 @@ class PurgeDeletedProcessor @Inject()(
 ) extends TaskProcessor(args, TaskType.PurgeDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
+    deleteAll(Tables.userPasswords) { _ => () }
+
     softDelete(Tables.applications)(_.in("organization_guid", Query("select guid from organizations where deleted_at is not null")))
     softDelete(Tables.versions)(_.in("application_guid", Query("select guid from applications where deleted_at is not null")))
 

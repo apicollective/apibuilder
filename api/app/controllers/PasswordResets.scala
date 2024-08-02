@@ -1,24 +1,23 @@
 package controllers
 
 import cats.data.Validated.{Invalid, Valid}
+import db.{InternalUserPasswordsDao, InternalUsersDao, PasswordResetRequestsDao}
 import io.apibuilder.api.v0.models.PasswordReset
 import io.apibuilder.api.v0.models.json.*
 import lib.Validation
-import db.{InternalUsersDao, PasswordResetRequestsDao, UserPasswordsDao}
-import models.UsersModel
+import play.api.mvc.*
 import util.SessionHelper
+import play.api.libs.json.*
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.*
-import play.api.libs.json.*
 
 @Singleton
 class PasswordResets @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  passwordResetRequestsDao: PasswordResetRequestsDao,
-  sessionHelper: SessionHelper,
-  usersDao: InternalUsersDao,
-  userPasswordsDao: UserPasswordsDao,
+                                 val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                 passwordResetRequestsDao: PasswordResetRequestsDao,
+                                 sessionHelper: SessionHelper,
+                                 usersDao: InternalUsersDao,
+                                 userPasswordsDao: InternalUserPasswordsDao,
 ) extends ApiBuilderController {
 
   def post(): Action[JsValue] = Anonymous(parse.json) { request =>
@@ -34,26 +33,9 @@ class PasswordResets @Inject() (
           }
 
           case Some(pr) => {
-            if (passwordResetRequestsDao.isExpired(pr)) {
-              Conflict(Json.toJson(Validation.error("Token is expired")))
-            } else {
-              usersDao.findByGuid(pr.userGuid) match {
-                case None => {
-                  Conflict(Json.toJson(Validation.error("User not found")))
-                }
-
-                case Some(user) => {
-                  userPasswordsDao.validate(form.password) match {
-                    case Valid(_) => {
-                      passwordResetRequestsDao.resetPassword(request.user, pr, form.password)
-                      Ok(Json.toJson(sessionHelper.createAuthentication(user)))
-                    }
-                    case Invalid(errors) => {
-                      Conflict(Json.toJson(errors.toNonEmptyList.toList))
-                    }
-                  }
-                }
-              }
+            passwordResetRequestsDao.resetPassword(request.user, pr, form.password) match {
+              case Valid(user) => Ok(Json.toJson(sessionHelper.createAuthentication(user)))
+              case Invalid(errors) => Conflict(Json.toJson(errors.toNonEmptyList.toList))
             }
           }
         }

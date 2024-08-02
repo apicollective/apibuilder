@@ -11,7 +11,7 @@ class UsersSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "POST /users" in {
-    val form = createUserForm()
+    val form = makeUserForm()
     val user = await {
       client.users.post(form)
     }
@@ -19,7 +19,7 @@ class UsersSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
   }
 
   "POST /users/authenticate" in {
-    val form = createUserForm()
+    val form = makeUserForm()
     createUser(form)
 
     val auth = await(

@@ -1,13 +1,15 @@
 package db
 
-import anorm.JodaParameterMetaData._
-import anorm._
-import io.apibuilder.api.v0.models.User
+import anorm.JodaParameterMetaData.*
+import anorm.*
+import cats.implicits._
+import cats.data.ValidatedNec
+import io.apibuilder.api.v0.models.{Error, User}
 import io.apibuilder.task.v0.models.EmailDataPasswordResetRequestCreated
 import io.flow.postgresql.Query
-import lib.TokenGenerator
+import lib.{TokenGenerator, Validation}
 import org.joda.time.DateTime
-import play.api.db._
+import play.api.db.*
 import processor.EmailProcessorQueue
 
 import java.util.UUID
@@ -22,10 +24,10 @@ case class PasswordReset(
 
 @Singleton
 class PasswordResetRequestsDao @Inject() (
-  @NamedDatabase("default") db: Database,
-  emailQueue: EmailProcessorQueue,
-  userPasswordsDao: UserPasswordsDao,
-  usersDao: InternalUsersDao
+                                           @NamedDatabase("default") db: Database,
+                                           emailQueue: EmailProcessorQueue,
+                                           userPasswordsDao: InternalUserPasswordsDao,
+                                           usersDao: InternalUsersDao
 ) {
 
   private val TokenLength = 80
@@ -70,20 +72,18 @@ class PasswordResetRequestsDao @Inject() (
     pr.expiresAt.isBeforeNow
   }
 
-  def resetPassword(user: Option[InternalUser], pr: PasswordReset, newPassword: String): Unit = {
-    assert(
-      !isExpired(pr),
-      s"Password reset[${pr.guid}] is expired"
-    )
-
-    val prUser = usersDao.findByGuid(pr.userGuid).getOrElse {
-      sys.error(s"User guid[${pr.userGuid}] does not exist for pr[${pr.guid}]")
+  def resetPassword(user: Option[InternalUser], pr: PasswordReset, newPassword: String): ValidatedNec[Error, InternalUser] = {
+    if (isExpired(pr)) {
+      Validation.singleError("Password reset is expired").invalidNec
+    } else {
+      usersDao.findByGuid(pr.userGuid).toValidNec(Validation.singleError("User not found")).andThen { prUser =>
+        val updatingUser = user.getOrElse(prUser)
+        userPasswordsDao.create(updatingUser, prUser.guid, newPassword).map { _ =>
+          softDelete(updatingUser, pr)
+          prUser
+        }
+      }
     }
-
-    val updatingUser = user.getOrElse(prUser)
-
-    userPasswordsDao.create(updatingUser, prUser.guid, newPassword)
-    softDelete(updatingUser, pr)
   }
 
   def softDelete(deletedBy: InternalUser, pr: PasswordReset): Unit =  {

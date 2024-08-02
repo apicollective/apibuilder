@@ -1,7 +1,7 @@
 package processor
 
 import anorm.SqlParser
-import db.{Helpers, InternalApplication, InternalOrganization}
+import db.{Helpers, InternalApplication, InternalOrganization, InternalUserPassword}
 import io.apibuilder.api.v0.models.Organization
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
@@ -56,6 +56,39 @@ class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with H
     processor.processRecord(randomString())
     isAppDeleted(app) mustBe true
     isAppDeleted(appDeleted) mustBe true
+  }
+
+  "user passwords" in {
+    val user = createUser()
+    expectValid {
+      userPasswordsDao.create(user, user.guid, "testing")
+    }
+    userPasswordsDao.findAll(
+      userGuid = Some(user.guid),
+      isDeleted = None,
+      limit = None,
+    ).sortBy(_.db.createdAt).toList match {
+      case a :: b :: Nil => {
+        a.db.deletedAt.isDefined mustBe true
+        b.db.deletedAt.isDefined mustBe false
+
+        def exists(pwd: InternalUserPassword): Boolean = userPasswordsDao.findAll(
+          guid = Some(pwd.guid),
+          userGuid = Some(user.guid),
+          isDeleted = None,
+          limit = Some(1)
+        ).nonEmpty
+
+        exists(a) mustBe true
+        exists(b) mustBe true
+
+        processor.processRecord(randomString())
+        exists(a) mustBe false
+        exists(b) mustBe true
+      }
+      case other => sys.error(s"Expected 2 passwords for user_guid[${user.guid}] but found: ${other.length}")
+    }
+
   }
 
 }

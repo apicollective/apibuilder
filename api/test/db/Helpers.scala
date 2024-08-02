@@ -226,14 +226,14 @@ trait Helpers extends util.Daos with RandomHelpers with ValidatedTestHelpers {
   }
 
   def createUser(
-    form: UserForm = createUserForm()
+    form: UserForm = makeUserForm()
   ): InternalUser = {
     expectValid {
       usersDao.create(form)
     }
   }
 
-  def createUserForm(): UserForm = UserForm(
+  def makeUserForm(): UserForm = UserForm(
     email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     password = UUID.randomUUID.toString,
     name = None
