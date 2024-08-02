@@ -21,7 +21,7 @@ class PasswordResetsSpec extends PlaySpec with MockClient with GuiceOneServerPer
   "POST /password_resets" in {
     val user = createUser()
     createPasswordRequest(user.email)
-    val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
+    val pr = passwordResetsDao.findAll(userGuid = Some(user.guid), limit = None).head
 
     val pwd = "some password"
     userPasswordsDao.isValid(user.guid, pwd) must equal(false)
@@ -41,7 +41,7 @@ class PasswordResetsSpec extends PlaySpec with MockClient with GuiceOneServerPer
   "POST /password_resets validates password" in {
     val user = createUser()
     createPasswordRequest(user.email)
-    val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
+    val pr = passwordResetsDao.findAll(userGuid = Some(user.guid), limit = None).head
 
     expectErrors {
       resetPassword(pr.token, "foo")

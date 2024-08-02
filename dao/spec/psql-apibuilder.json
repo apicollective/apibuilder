@@ -96,8 +96,8 @@
       "fields": [
         { "name": "guid", "type": "uuid" },
         { "name": "user_guid", "type": "uuid" },
-        { "name": "algorithm_key", "type": "string" },
-        { "name": "hash", "type": "string" }
+        { "name": "token", "type": "string" },
+        { "name": "expires_at", "type": "date-time-iso8601" }
       ],
       "attributes": [
         {
@@ -112,8 +112,21 @@
         {
           "name": "psql",
           "value": {
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "created_by_guid", "type": "uuid" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            },
             "indexes": [
-              { "fields": ["user_guid"], "where": "deleted_at is null", "unique": true },
+              { "fields": ["token"], "unique": true },
               { "fields": ["user_guid"] }
             ]
           }

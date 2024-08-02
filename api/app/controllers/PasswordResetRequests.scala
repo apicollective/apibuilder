@@ -1,6 +1,6 @@
 package controllers
 
-import db.{InternalUsersDao, PasswordResetRequestsDao}
+import db.{InternalUsersDao, InternalPasswordResetsDao}
 import io.apibuilder.api.v0.models.PasswordResetRequest
 import io.apibuilder.api.v0.models.json.*
 import lib.Validation
@@ -12,9 +12,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class PasswordResetRequests @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  passwordResetRequestsDao: PasswordResetRequestsDao,
-  usersDao: InternalUsersDao,
+                                        val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                        passwordResetRequestsDao: InternalPasswordResetsDao,
+                                        usersDao: InternalUsersDao,
 ) extends ApiBuilderController {
 
   def post(): Action[JsValue] = Anonymous(parse.json) { request =>

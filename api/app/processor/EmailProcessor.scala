@@ -36,7 +36,7 @@ class EmailProcessor @Inject()(
                                 membershipRequestsDao: db.InternalMembershipRequestsDao,
                                 membershipRequestsModel: MembershipRequestsModel,
                                 organizationsDao: InternalOrganizationsDao,
-                                passwordResetRequestsDao: db.PasswordResetRequestsDao,
+                                passwordResetRequestsDao: db.InternalPasswordResetsDao,
                                 usersDao: InternalUsersDao,
                                 orgModel: OrganizationsModel,
 ) extends TaskProcessorWithData[EmailData](args, TaskType.Email) {

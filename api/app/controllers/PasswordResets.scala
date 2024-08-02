@@ -1,7 +1,7 @@
 package controllers
 
 import cats.data.Validated.{Invalid, Valid}
-import db.{InternalUserPasswordsDao, InternalUsersDao, PasswordResetRequestsDao}
+import db.{InternalUserPasswordsDao, InternalUsersDao, InternalPasswordResetsDao}
 import io.apibuilder.api.v0.models.PasswordReset
 import io.apibuilder.api.v0.models.json.*
 import lib.Validation
@@ -14,7 +14,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class PasswordResets @Inject() (
                                  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                 passwordResetRequestsDao: PasswordResetRequestsDao,
+                                 passwordResetRequestsDao: InternalPasswordResetsDao,
                                  sessionHelper: SessionHelper,
                                  usersDao: InternalUsersDao,
                                  userPasswordsDao: InternalUserPasswordsDao,

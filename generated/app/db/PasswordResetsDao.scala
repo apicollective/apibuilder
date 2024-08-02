@@ -3,28 +3,27 @@ package db.generated
 case class PasswordReset(
   guid: java.util.UUID,
   userGuid: java.util.UUID,
-  algorithmKey: String,
-  hash: String,
+  token: String,
+  expiresAt: org.joda.time.DateTime,
   createdAt: org.joda.time.DateTime,
   createdByGuid: java.util.UUID,
   updatedAt: org.joda.time.DateTime,
-  updatedByGuid: java.util.UUID,
   deletedAt: Option[org.joda.time.DateTime],
   deletedByGuid: Option[java.util.UUID]
 ) {
   def form: PasswordResetForm = {
     PasswordResetForm(
       userGuid = userGuid,
-      algorithmKey = algorithmKey,
-      hash = hash,
+      token = token,
+      expiresAt = expiresAt,
     )
   }
 }
 
 case class PasswordResetForm(
   userGuid: java.util.UUID,
-  algorithmKey: String,
-  hash: String
+  token: String,
+  expiresAt: org.joda.time.DateTime
 )
 
 case object PasswordResetsTable {
@@ -47,12 +46,12 @@ case object PasswordResetsTable {
       override val name: String = "user_guid"
     }
 
-    case object AlgorithmKey extends Column {
-      override val name: String = "algorithm_key"
+    case object Token extends Column {
+      override val name: String = "token"
     }
 
-    case object Hash extends Column {
-      override val name: String = "hash"
+    case object ExpiresAt extends Column {
+      override val name: String = "expires_at"
     }
 
     case object CreatedAt extends Column {
@@ -67,10 +66,6 @@ case object PasswordResetsTable {
       override val name: String = "updated_at"
     }
 
-    case object UpdatedByGuid extends Column {
-      override val name: String = "updated_by_guid"
-    }
-
     case object DeletedAt extends Column {
       override val name: String = "deleted_at"
     }
@@ -79,7 +74,7 @@ case object PasswordResetsTable {
       override val name: String = "deleted_by_guid"
     }
 
-    val all: List[Column] = List(Guid, UserGuid, AlgorithmKey, Hash, CreatedAt, CreatedByGuid, UpdatedAt, UpdatedByGuid, DeletedAt, DeletedByGuid)
+    val all: List[Column] = List(Guid, UserGuid, Token, ExpiresAt, CreatedAt, CreatedByGuid, UpdatedAt, DeletedAt, DeletedByGuid)
   }
 }
 
@@ -96,12 +91,11 @@ trait BasePasswordResetsDao {
     io.flow.postgresql.Query("""
      | select guid::text,
      |        user_guid::text,
-     |        algorithm_key,
-     |        hash,
+     |        token,
+     |        expires_at,
      |        created_at,
      |        created_by_guid::text,
      |        updated_at,
-     |        updated_by_guid::text,
      |        deleted_at,
      |        deleted_by_guid::text
      |   from public.password_resets
@@ -112,6 +106,8 @@ trait BasePasswordResetsDao {
   def findAll(
     guid: Option[java.util.UUID] = None,
     guids: Option[Seq[java.util.UUID]] = None,
+    token: Option[String] = None,
+    tokens: Option[Seq[String]] = None,
     userGuid: Option[java.util.UUID] = None,
     userGuids: Option[Seq[java.util.UUID]] = None,
     limit: Option[Long],
@@ -119,7 +115,7 @@ trait BasePasswordResetsDao {
     orderBy: Option[io.flow.postgresql.OrderBy] = None
   )(implicit customQueryModifier: io.flow.postgresql.Query => io.flow.postgresql.Query = identity): Seq[PasswordReset] = {
     db.withConnection { c =>
-      findAllWithConnection(c, guid, guids, userGuid, userGuids, limit, offset, orderBy)
+      findAllWithConnection(c, guid, guids, token, tokens, userGuid, userGuids, limit, offset, orderBy)
     }
   }
 
@@ -127,6 +123,8 @@ trait BasePasswordResetsDao {
     c: java.sql.Connection,
     guid: Option[java.util.UUID] = None,
     guids: Option[Seq[java.util.UUID]] = None,
+    token: Option[String] = None,
+    tokens: Option[Seq[String]] = None,
     userGuid: Option[java.util.UUID] = None,
     userGuids: Option[Seq[java.util.UUID]] = None,
     limit: Option[Long],
@@ -136,6 +134,8 @@ trait BasePasswordResetsDao {
     customQueryModifier(BaseQuery)
       .equals("password_resets.guid", guid)
       .optionalIn("password_resets.guid", guids)
+      .equals("password_resets.token", token)
+      .optionalIn("password_resets.token", tokens)
       .equals("password_resets.user_guid", userGuid)
       .optionalIn("password_resets.user_guid", userGuids)
       .optionalLimit(limit)
@@ -147,6 +147,8 @@ trait BasePasswordResetsDao {
   def iterateAll(
     guid: Option[java.util.UUID] = None,
     guids: Option[Seq[java.util.UUID]] = None,
+    token: Option[String] = None,
+    tokens: Option[Seq[String]] = None,
     userGuid: Option[java.util.UUID] = None,
     userGuids: Option[Seq[java.util.UUID]] = None,
     pageSize: Long = 1000
@@ -158,6 +160,8 @@ trait BasePasswordResetsDao {
         customQueryModifier(BaseQuery)
           .equals("password_resets.guid", guid)
           .optionalIn("password_resets.guid", guids)
+          .equals("password_resets.token", token)
+          .optionalIn("password_resets.token", tokens)
           .equals("password_resets.user_guid", userGuid)
           .optionalIn("password_resets.user_guid", userGuids)
           .greaterThan("password_resets.guid", lastValue.map(_.guid))
@@ -192,6 +196,23 @@ trait BasePasswordResetsDao {
     ).headOption
   }
 
+  def findByToken(token: String): Option[PasswordReset] = {
+    db.withConnection { c =>
+      findByTokenWithConnection(c, token)
+    }
+  }
+
+  def findByTokenWithConnection(
+    c: java.sql.Connection,
+    token: String
+  ): Option[PasswordReset] = {
+    findAllWithConnection(
+      c = c,
+      token = Some(token),
+      limit = Some(1)
+    ).headOption
+  }
+
   def findAllByUserGuid(userGuid: java.util.UUID): Seq[PasswordReset] = {
     db.withConnection { c =>
       findAllByUserGuidWithConnection(c, userGuid)
@@ -212,23 +233,21 @@ trait BasePasswordResetsDao {
   private val parser: anorm.RowParser[PasswordReset] = {
     anorm.SqlParser.str("guid") ~
       anorm.SqlParser.str("user_guid") ~
-      anorm.SqlParser.str("algorithm_key") ~
-      anorm.SqlParser.str("hash") ~
+      anorm.SqlParser.str("token") ~
+      anorm.SqlParser.get[org.joda.time.DateTime]("expires_at") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("created_at") ~
       anorm.SqlParser.str("created_by_guid") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("updated_at") ~
-      anorm.SqlParser.str("updated_by_guid") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("deleted_at").? ~
-      anorm.SqlParser.str("deleted_by_guid").? map { case guid ~ userGuid ~ algorithmKey ~ hash ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ deletedAt ~ deletedByGuid =>
+      anorm.SqlParser.str("deleted_by_guid").? map { case guid ~ userGuid ~ token ~ expiresAt ~ createdAt ~ createdByGuid ~ updatedAt ~ deletedAt ~ deletedByGuid =>
       PasswordReset(
         guid = java.util.UUID.fromString(guid),
         userGuid = java.util.UUID.fromString(userGuid),
-        algorithmKey = algorithmKey,
-        hash = hash,
+        token = token,
+        expiresAt = expiresAt,
         createdAt = createdAt,
         createdByGuid = java.util.UUID.fromString(createdByGuid),
         updatedAt = updatedAt,
-        updatedByGuid = java.util.UUID.fromString(updatedByGuid),
         deletedAt = deletedAt,
         deletedByGuid = deletedByGuid.map { v => java.util.UUID.fromString(v) }
       )
@@ -248,9 +267,9 @@ class PasswordResetsDao @javax.inject.Inject() (override val db: play.api.db.Dat
   private val InsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.password_resets
-     | (guid, user_guid, algorithm_key, hash, created_at, created_by_guid, updated_at, updated_by_guid)
+     | (guid, user_guid, token, expires_at, created_at, created_by_guid, updated_at)
      | values
-     | ({guid}::uuid, {user_guid}::uuid, {algorithm_key}, {hash}, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid)
+     | ({guid}::uuid, {user_guid}::uuid, {token}, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz)
     """.stripMargin)
   }
 
@@ -258,10 +277,9 @@ class PasswordResetsDao @javax.inject.Inject() (override val db: play.api.db.Dat
     io.flow.postgresql.Query("""
      | update public.password_resets
      | set user_guid = {user_guid}::uuid,
-     |     algorithm_key = {algorithm_key},
-     |     hash = {hash},
-     |     updated_at = {updated_at}::timestamptz,
-     |     updated_by_guid = {updated_by_guid}::uuid
+     |     token = {token},
+     |     expires_at = {expires_at}::timestamptz,
+     |     updated_at = {updated_at}::timestamptz
      | where guid = {guid}::uuid
     """.stripMargin)
   }
@@ -361,7 +379,6 @@ class PasswordResetsDao @javax.inject.Inject() (override val db: play.api.db.Dat
   ): Unit = {
     bindQuery(UpdateQuery, user, form)
       .bind("guid", guid)
-      .bind("updated_by_guid", user)
       .execute(c)
     ()
   }
@@ -447,6 +464,46 @@ class PasswordResetsDao @javax.inject.Inject() (override val db: play.api.db.Dat
       .execute(c)
   }
 
+  def deleteByToken(
+    user: java.util.UUID,
+    token: String
+  ): Unit = {
+    db.withConnection { c =>
+      deleteByToken(c, user, token)
+    }
+  }
+
+  def deleteByToken(
+    c: java.sql.Connection,
+    user: java.util.UUID,
+    token: String
+  ): Unit = {
+    DeleteQuery.equals("token", token)
+      .bind("deleted_at", org.joda.time.DateTime.now)
+      .bind("deleted_by_guid", user)
+      .execute(c)
+  }
+
+  def deleteAllByTokens(
+    user: java.util.UUID,
+    tokens: Seq[String]
+  ): Unit = {
+    db.withConnection { c =>
+      deleteAllByTokens(c, user, tokens)
+    }
+  }
+
+  def deleteAllByTokens(
+    c: java.sql.Connection,
+    user: java.util.UUID,
+    tokens: Seq[String]
+  ): Unit = {
+    DeleteQuery.in("token", tokens)
+      .bind("deleted_at", org.joda.time.DateTime.now)
+      .bind("deleted_by_guid", user)
+      .execute(c)
+  }
+
   def deleteAllByUserGuid(
     user: java.util.UUID,
     userGuid: java.util.UUID
@@ -494,10 +551,9 @@ class PasswordResetsDao @javax.inject.Inject() (override val db: play.api.db.Dat
   ): io.flow.postgresql.Query = {
     query
       .bind("user_guid", form.userGuid.toString)
-      .bind("algorithm_key", form.algorithmKey)
-      .bind("hash", form.hash)
+      .bind("token", form.token)
+      .bind("expires_at", form.expiresAt)
       .bind("updated_at", org.joda.time.DateTime.now)
-      .bind("updated_by_guid", user)
   }
 
   private def toNamedParameter(
@@ -508,10 +564,9 @@ class PasswordResetsDao @javax.inject.Inject() (override val db: play.api.db.Dat
     Seq(
       anorm.NamedParameter("guid", guid.toString),
       anorm.NamedParameter("user_guid", form.userGuid.toString),
-      anorm.NamedParameter("algorithm_key", form.algorithmKey),
-      anorm.NamedParameter("hash", form.hash),
-      anorm.NamedParameter("updated_at", org.joda.time.DateTime.now),
-      anorm.NamedParameter("updated_by_guid", user.toString)
+      anorm.NamedParameter("token", form.token),
+      anorm.NamedParameter("expires_at", form.expiresAt),
+      anorm.NamedParameter("updated_at", org.joda.time.DateTime.now)
     )
   }
 }
