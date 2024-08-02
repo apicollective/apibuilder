@@ -228,6 +228,10 @@ class InternalApplicationsDao @Inject()(
     findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
+  def findAllByGuids(authorization: Authorization, guids: Seq[UUID]): Seq[InternalApplication] = {
+    findAll(authorization, guids = Some(guids), limit = None)
+  }
+  
   def findAll(
     authorization: Authorization,
     orgKey: Option[String] = None,

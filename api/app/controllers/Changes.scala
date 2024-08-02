@@ -9,7 +9,8 @@ import play.api.libs.json._
 @Singleton
 class Changes @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  changesDao: InternalChangesDao
+  changesDao: InternalChangesDao,
+  model: ChangesModel
 ) extends ApiBuilderController {
 
   def get(
@@ -28,7 +29,7 @@ class Changes @Inject() (
       fromVersion = from,
       toVersion = to,
       `type` = `type`,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
     Ok(Json.toJson(changes))

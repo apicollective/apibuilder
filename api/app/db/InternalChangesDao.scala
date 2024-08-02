@@ -17,6 +17,11 @@ import scala.util.{Failure, Success, Try}
 
 case class InternalChange(db: generated.Change) {
   val guid: UUID = db.guid
+  val diff: Diff = db.`type` match {
+    case DiffType.Breaking => DiffBreaking(description = db.description, isMaterial = db.isMaterial)
+    case DiffType.NonBreaking => DiffNonBreaking(description = db.description, isMaterial = db.isMaterial)
+    case other => sys.error(s"Invalid diff type '$other'")
+  }
 }
 
 class InternalChangesDao @Inject()(
@@ -118,7 +123,7 @@ class InternalChangesDao @Inject()(
               |  from applications app
               |  join organizations org on org.guid = app.organization_guid
               |""".stripMargin
-          ).equals("org.key", key)
+          ).equals("org.key", key))
         }
       },
       new OptionalQueryFilter(applicationKey) {
