@@ -1,6 +1,6 @@
 package controllers
 
-import db.generators.GeneratorsDao
+import db.generators.InternalGeneratorsDao
 import io.apibuilder.api.v0.models.json._
 import models.GeneratorWithServiceModel
 import play.api.mvc._
@@ -11,9 +11,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class GeneratorWithServices @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  generatorsDao: GeneratorsDao,
-  model: GeneratorWithServiceModel
+                                        val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                                        generatorsDao: InternalGeneratorsDao,
+                                        model: GeneratorWithServiceModel
 ) extends ApiBuilderController {
 
   def get(
@@ -26,13 +26,12 @@ class GeneratorWithServices @Inject() (
     offset: Long = 0
   ): Action[AnyContent] = Anonymous { request =>
     val generators = generatorsDao.findAll(
-      request.authorization,
       guid = guid,
       serviceGuid = serviceGuid,
       serviceUri = serviceUri,
       attributeName = attributeName,
       key = key,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
     Ok(Json.toJson(model.toModels(generators)))
@@ -40,9 +39,8 @@ class GeneratorWithServices @Inject() (
 
   def getByKey(key: String): Action[AnyContent] = Anonymous { request =>
     generatorsDao.findAll(
-      request.authorization,
       key = Some(key),
-      limit = 1
+      limit = Some(1)
     ).headOption.flatMap(model.toModel) match {
       case None => NotFound
       case Some(gws) => Ok(Json.toJson(gws))

@@ -86,7 +86,7 @@ class InternalOrganizationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite wit
     "creates with domains" in {
       initialize()
 
-      toModel(org).domains.map(_.name).mkString(" ") must be(domains.mkString(" "))
+      toModel(org).domains.map(_.name).sorted.mkString(" ") must be(domains.sorted.mkString(" "))
       val fetched = organizationsDao.findByGuid(Authorization.All, org.guid).get
       toModel(fetched).domains.map(_.name).sorted.mkString(" ") must be(domains.sorted.mkString(" "))
     }

@@ -51,7 +51,7 @@
         { "name": "name", "type": "string" },
         { "name": "description", "type": "string", "required": false },
         { "name": "language", "type": "string", "required": false },
-        { "name":  "attributes", "type": "json" }
+        { "name":  "attributes", "type": "[string]" }
       ]
     }
   }

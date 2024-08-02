@@ -3,7 +3,7 @@ package controllers
 import _root_.util.{ApiBuilderServiceImportResolver, UserAgent}
 import db.InternalVersionsDao
 import db.generated.{GeneratorInvocationForm, GeneratorInvocationsDao}
-import db.generators.{GeneratorsDao, InternalGeneratorServicesDao}
+import db.generators.{InternalGeneratorServicesDao, InternalGeneratorsDao}
 import io.apibuilder.api.v0.models.json.*
 import io.apibuilder.api.v0.models.{CodeForm, Version}
 import io.apibuilder.generator.v0.Client
@@ -26,7 +26,7 @@ class Code @Inject() (
                        wSClient: WSClient,
                        apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
                        generatorInvocationsDao: GeneratorInvocationsDao,
-                       generatorsDao: GeneratorsDao,
+                       generatorsDao: InternalGeneratorsDao,
                        servicesDao: InternalGeneratorServicesDao,
                        versionsDao: InternalVersionsDao,
                        versionsModel: VersionsModel,
@@ -143,7 +143,10 @@ class Code @Inject() (
       }
 
       case Some(service) => {
-        generatorsDao.findAll(request.authorization, key = Some(generatorKey))
+        generatorsDao.findAll(
+            key = Some(generatorKey),
+            limit = None
+          )
           .flatMap(model.toModel)
           .headOption match {
           case None => {

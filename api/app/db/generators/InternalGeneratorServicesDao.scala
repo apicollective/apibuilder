@@ -24,9 +24,9 @@ case class InternalGeneratorService(db: generated.generators.Service) {
 case class ValidatedGeneratorServiceForm(uri: String)
 
 class InternalGeneratorServicesDao @Inject()(
-  dao: ServicesDao,
-  generatorsDao: GeneratorsDao,
-  internalTasksDao: InternalTasksDao
+                                              dao: ServicesDao,
+                                              generatorsDao: InternalGeneratorsDao,
+                                              internalTasksDao: InternalTasksDao
 ) {
 
   def validate(

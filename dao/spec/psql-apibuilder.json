@@ -92,6 +92,35 @@
       ]
     },
 
+    "password_reset": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "user_guid", "type": "uuid" },
+        { "name": "algorithm_key", "type": "string" },
+        { "name": "hash", "type": "string" }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["user_guid"], "where": "deleted_at is null", "unique": true },
+              { "fields": ["user_guid"] }
+            ]
+          }
+        }
+      ]
+    },
+
     "application": {
       "fields": [
         { "name": "guid", "type": "uuid" },

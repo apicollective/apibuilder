@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits.*
-import db.generators.{GeneratorsDao, InternalGeneratorService, InternalGeneratorServicesDao}
+import db.generators.{InternalGeneratorsDao, InternalGeneratorService, InternalGeneratorServicesDao}
 import db.{Authorization, InternalUsersDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.interfaces.Client
@@ -26,7 +26,7 @@ class SyncGeneratorServiceProcessor @Inject()(
                                                args: TaskProcessorArgs,
                                                system: ActorSystem,
                                                servicesDao: InternalGeneratorServicesDao,
-                                               generatorsDao: GeneratorsDao,
+                                               generatorsDao: InternalGeneratorsDao,
                                                usersDao: InternalUsersDao,
                                                generatorClientFactory: GeneratorClientFactory
 ) extends TaskProcessorWithGuid(args, TaskType.SyncGeneratorService) with ValidatedHelpers {

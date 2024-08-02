@@ -3,6 +3,7 @@ package models
 import db.Authorization
 import db.generators.{InternalGenerator, InternalGeneratorServicesDao}
 import io.apibuilder.api.v0.models.GeneratorWithService
+import io.apibuilder.generator.v0.models.Generator
 
 import javax.inject.Inject
 
@@ -22,7 +23,16 @@ class GeneratorWithServiceModel @Inject()(
 
     generators.flatMap { g =>
       services.get(g.serviceGuid).map { s =>
-        GeneratorWithService(s, g.model)
+        GeneratorWithService(
+          s,
+          Generator(
+            key = g.key,
+            name = g.name,
+            language = g.language,
+            description = g.description,
+            attributes = g.attributes
+          )
+        )
       }
     }
   }

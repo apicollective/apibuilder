@@ -24,9 +24,8 @@ class GeneratorServiceUtilSpec extends PlaySpec with GuiceOneAppPerSuite with Ge
 
     def find(serviceGuid: UUID) = {
       generatorsDao.findAll(
-        authorization = Authorization.All,
         serviceGuid = Some(serviceGuid),
-        limit = 1
+        limit = Some(1)
       ).headOption
     }
 

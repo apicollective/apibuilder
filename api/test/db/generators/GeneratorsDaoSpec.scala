@@ -1,10 +1,10 @@
 package db.generators
 
-import java.util.UUID
-
 import db.Authorization
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
+import java.util.UUID
 
 class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with GeneratorHelpers {
 
@@ -13,16 +13,15 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
     "is a no-op if no data has changed" in {
       val service = createGeneratorService()
       val form = createGeneratorForm(service)
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) must be(Nil)
+      generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None) must be(Nil)
 
-      generatorsDao.upsert(testUser, form)
-      val generator = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
-        sys.error("Failed to create generator record")
+      val generator = expectValid {
+        generatorsDao.upsert(testUser, form)
       }
       generator.key must be(form.generator.key)
 
       generatorsDao.upsert(testUser, form)
-      val second = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      val second = generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       second must be(generator)
@@ -31,10 +30,10 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
     "change record if no data has changed" in {
       val service = createGeneratorService()
       val form = createGeneratorForm(service = service)
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) must be(Nil)
+      generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None) must be(Nil)
 
       generatorsDao.upsert(testUser, form)
-      val generator = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      val generator = generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       generator.key must be(form.generator.key)
@@ -44,7 +43,7 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
         generator = form.generator.copy(name = form.generator.name + "2")
       )
       generatorsDao.upsert(testUser, newForm)
-      val second = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      val second = generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       second.name must be(form.generator.name + "2")
@@ -61,7 +60,7 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
       )
 
       generatorsDao.upsert(testUser, form)
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.attributes must be(
+      generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).headOption.get.attributes must be(
         Seq("foo", "bar")
       )
 
@@ -72,7 +71,7 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
         )
       )
       generatorsDao.upsert(testUser, form2)
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.attributes must be(
+      generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).headOption.get.attributes must be(
         Seq("baz")
       )
 
@@ -83,7 +82,7 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
         )
       )
       generatorsDao.upsert(testUser, form3)
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.attributes must be(
+      generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).headOption.get.attributes must be(
         Nil
       )
     }
@@ -93,7 +92,7 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
   "softDelete" in {
     val generator = createGenerator()
     generatorsDao.softDelete(testUser, generator)
-    generatorsDao.findAll(Authorization.All, key = Some(generator.key)) must be(Nil)
+    generatorsDao.findAll(key = Some(generator.key), limit = None) must be(Nil)
   }
 
   "findAll" must {
@@ -101,18 +100,18 @@ class GeneratorsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with Generator
     "serviceGuid" in {
       val service = createGeneratorService()
       val generator = createGenerator(service)
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).map(_.key) must be(Seq(generator.key))
-      generatorsDao.findAll(Authorization.All, serviceGuid = Some(UUID.randomUUID)) must be(Nil)
+      generatorsDao.findAll(serviceGuid = Some(service.guid), limit = None).map(_.key) must be(Seq(generator.key))
+      generatorsDao.findAll(serviceGuid = Some(UUID.randomUUID), limit = None) must be(Nil)
     }
 
     "isDeleted" in {
       val generator = createGenerator()
-      generatorsDao.findAll(Authorization.All, key = Some(generator.key)).map(_.key) must be(Seq(generator.key))
+      generatorsDao.findAll(key = Some(generator.key), limit = None).map(_.key) must be(Seq(generator.key))
 
       generatorsDao.softDelete(testUser, generator)
-      generatorsDao.findAll(Authorization.All, key = Some(generator.key), isDeleted = None).map(_.key) must be(Seq(generator.key))
-      generatorsDao.findAll(Authorization.All, key = Some(generator.key), isDeleted = Some(true)).map(_.key) must be(Seq(generator.key))
-      generatorsDao.findAll(Authorization.All, key = Some(generator.key), isDeleted = Some(false)) must be(Nil)
+      generatorsDao.findAll(key = Some(generator.key), isDeleted = None, limit = None).map(_.key) must be(Seq(generator.key))
+      generatorsDao.findAll(key = Some(generator.key), isDeleted = Some(true), limit = None).map(_.key) must be(Seq(generator.key))
+      generatorsDao.findAll(key = Some(generator.key), isDeleted = Some(false), limit = None) must be(Nil)
     }
 
   }

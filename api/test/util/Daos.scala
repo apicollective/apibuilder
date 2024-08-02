@@ -2,7 +2,7 @@ package util
 
 import db._
 import db.generated.SessionsDao
-import db.generators.{GeneratorsDao, InternalGeneratorServicesDao}
+import db.generators.{InternalGeneratorsDao, InternalGeneratorServicesDao}
 import lib.{DatabaseServiceFetcher, Emails}
 import models.VersionsModel
 import play.api.Application
@@ -36,7 +36,7 @@ trait Daos {
   def versionsDao: InternalVersionsDao = injector.instanceOf[db.InternalVersionsDao]
 
   def servicesDao: InternalGeneratorServicesDao = injector.instanceOf[db.generators.InternalGeneratorServicesDao]
-  def generatorsDao: GeneratorsDao = injector.instanceOf[db.generators.GeneratorsDao]
+  def generatorsDao: InternalGeneratorsDao = injector.instanceOf[db.generators.InternalGeneratorsDao]
 
   def emails: Emails = injector.instanceOf[Emails]
 
