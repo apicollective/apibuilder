@@ -46,8 +46,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -75,8 +74,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -104,8 +102,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -148,8 +145,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -177,8 +173,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -221,8 +216,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -249,8 +243,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -282,8 +275,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -323,8 +315,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -364,8 +355,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -404,8 +394,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -435,8 +424,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -475,8 +463,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -516,8 +503,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -555,8 +541,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -598,8 +583,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -638,8 +622,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -680,8 +663,7 @@
           "name": "scala",
           "value": {
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -721,8 +703,7 @@
           "value": {
             "package": "db.generated.cache",
             "pkey_generator": {
-              "method": "java.util.UUID.randomUUID",
-              "returns": "uuid"
+              "method": "java.util.UUID.randomUUID"
             }
           }
         },
@@ -841,6 +822,48 @@
                 "by": { "name": "updated_by_guid", "type": "string" }
               }
             }
+          }
+        }
+      ]
+    },
+
+    "original": {
+      "fields": [
+        { "name": "id", "type": "long" },
+        { "name": "version_guid", "type": "uuid" },
+        { "name": "type", "type": "string" },
+        { "name": "data", "type": "string" }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "auto": true
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "pkey": "id",
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "created_by_guid", "type": "uuid" }
+              },
+              "updated": {
+                "at": { "type": "date-time-iso8601" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            },
+            "indexes": [
+              { "fields": ["version_guid"] },
+              { "fields": ["version_guid"], "where": "deleted_at is null", "unique": true }
+            ]
           }
         }
       ]

@@ -26,7 +26,7 @@ trait Daos {
   def organizationDomainsDao: InternalOrganizationDomainsDao = injector.instanceOf[db.InternalOrganizationDomainsDao]
   def organizationLogsDao: OrganizationLogsDao = injector.instanceOf[db.OrganizationLogsDao]
   def organizationsDao: InternalOrganizationsDao = injector.instanceOf[db.InternalOrganizationsDao]
-  def originalsDao: OriginalsDao = injector.instanceOf[db.OriginalsDao]
+  def originalsDao: InternalOriginalsDao = injector.instanceOf[db.InternalOriginalsDao]
   def passwordResetsDao: InternalPasswordResetsDao = injector.instanceOf[db.InternalPasswordResetsDao]
   def sessionsDao: SessionsDao =  injector.instanceOf[SessionsDao]
 

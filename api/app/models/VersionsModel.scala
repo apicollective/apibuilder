@@ -4,7 +4,7 @@ import builder.api_json.upgrades.ServiceParser
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits.*
-import db.{Authorization, InternalApplicationsDao, InternalOrganizationsDao, InternalVersion, OriginalsDao}
+import db.{Authorization, InternalApplicationsDao, InternalOrganizationsDao, InternalVersion, InternalOriginalsDao}
 import db.generated.cache.ServicesDao
 import io.apibuilder.api.v0.models.Version
 import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
@@ -17,7 +17,7 @@ import javax.inject.Inject
 class VersionsModel @Inject()(
                                applicationsDao: InternalApplicationsDao,
                                organizationsDao: InternalOrganizationsDao,
-                               originalsDao: OriginalsDao,
+                               originalsDao: InternalOriginalsDao,
                                serviceParser: ServiceParser,
                                servicesDao: ServicesDao,
                                originalsModel: OriginalsModel

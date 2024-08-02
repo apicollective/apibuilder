@@ -32,14 +32,14 @@ case class InternalVersion(db: generated.Version) {
 }
 
 class InternalVersionsDao @Inject()(
-  dao: VersionsDao,
-  applicationsDao: InternalApplicationsDao,
-  originalsDao: OriginalsDao,
-  tasksDao: InternalTasksDao,
-  usersDao: InternalUsersDao,
-  organizationsDao: InternalOrganizationsDao,
-  versionsModel: VersionsModel,
-  servicesDao: ServicesDao
+                                     dao: VersionsDao,
+                                     applicationsDao: InternalApplicationsDao,
+                                     originalsDao: InternalOriginalsDao,
+                                     tasksDao: InternalTasksDao,
+                                     usersDao: InternalUsersDao,
+                                     organizationsDao: InternalOrganizationsDao,
+                                     versionsModel: VersionsModel,
+                                     servicesDao: ServicesDao
 ) extends ValidatedHelpers {
 
   private val logger: Logger = Logger(this.getClass)

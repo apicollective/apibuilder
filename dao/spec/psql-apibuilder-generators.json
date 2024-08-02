@@ -8,8 +8,7 @@
         "package": "db.generated.generators",
         "user_class": "java.util.UUID",
         "pkey_generator": {
-          "method": "java.util.UUID.randomUUID",
-          "returns": "uuid"
+          "method": "java.util.UUID.randomUUID"
         }
       }
     },
