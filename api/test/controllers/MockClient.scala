@@ -2,19 +2,21 @@ package controllers
 
 import java.util.UUID
 import db.{Authorization, InternalApplication, InternalOrganization, InternalUser}
+import helpers.ValidatedTestHelpers
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
-import io.apibuilder.api.v0.models._
+import io.apibuilder.api.v0.models.*
 import play.api.libs.ws.WSClient
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 
 import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.util.{Failure, Success, Try}
 
 trait MockClient extends db.Helpers
   with FutureAwaits
   with DefaultAwaitTimeout
+  with ValidatedTestHelpers
 {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,8 +28,9 @@ trait MockClient extends db.Helpers
   private val DefaultDuration = FiniteDuration(3, SECONDS)
 
   private lazy val apiToken = {
-    val token = tokensDao.create(testUser, TokenForm(userGuid = testUser.guid))
-    tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
+    expectValid {
+      tokensDao.create(testUser, TokenForm(userGuid = testUser.guid))
+    }.db.token
   }
   private lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
 

@@ -2,6 +2,7 @@ package models
 
 import db.{InternalToken, InternalUsersDao}
 import io.apibuilder.api.v0.models.Token
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
 import javax.inject.Inject
 
@@ -21,7 +22,12 @@ class TokensModel @Inject()(usersModel: UsersModel) {
           maskedToken = t.maskedToken,
           description = t.description,
           user = user,
-          audit = t.audit
+          audit = Audit(
+            createdAt = t.db.createdAt,
+            createdBy = ReferenceGuid(t.db.createdByGuid),
+            updatedAt = t.db.createdAt,
+            updatedBy = ReferenceGuid(t.db.createdByGuid),
+          )
         )
       }
     }
