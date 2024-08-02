@@ -27,7 +27,8 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
 
     changesDao.findAll(
       Authorization.All,
-      fromVersionGuid = Some(fromVersion.guid)
+      fromVersionGuid = Some(fromVersion.guid),
+      limit = Some(1)
     ).head
   }
 
@@ -40,7 +41,8 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
       changesDao.upsert(testUser, fromVersion, toVersion, Nil)
       changesDao.findAll(
         Authorization.All,
-        fromVersionGuid = Some(fromVersion.guid)
+        fromVersionGuid = Some(fromVersion.guid),
+        limit = Some(1)
       ) must be(Nil)
     }
 
@@ -55,7 +57,8 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
 
       val actual = changesDao.findAll(
         Authorization.All,
-        fromVersionGuid = Some(fromVersion.guid)
+        fromVersionGuid = Some(fromVersion.guid),
+        limit = None
       ).map(_.diff)
 
       actual.size must be(2)
@@ -73,7 +76,8 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
 
       changesDao.findAll(
         Authorization.All,
-        fromVersionGuid = Some(fromVersion.guid)
+        fromVersionGuid = Some(fromVersion.guid),
+        limit = None
       ).map(_.diff) must be(Seq(diff))
     }
 
@@ -92,78 +96,78 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
 
     "guid" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) must be(Nil)
-      changesDao.findAll(Authorization.All, guid = Some(change.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "organizationGuid" in {
       val org = createOrganization()
       val change = createChange(org = org)
-      changesDao.findAll(Authorization.All, organizationGuid = Some(UUID.randomUUID)) must be(Nil)
-      changesDao.findAll(Authorization.All, organizationGuid = Some(org.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, organizationGuid = Some(UUID.randomUUID), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, organizationGuid = Some(org.guid), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "organizationKey" in {
       val org = createOrganization()
       val change = createChange(org = org)
-      changesDao.findAll(Authorization.All, organizationKey = Some(UUID.randomUUID.toString)) must be(Nil)
-      changesDao.findAll(Authorization.All, organizationKey = Some(org.key)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, organizationKey = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, organizationKey = Some(org.key), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "applicationGuid" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID)) must be(Nil)
-      changesDao.findAll(Authorization.All, applicationGuid = Some(change.application.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, applicationGuid = Some(change.application.guid), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "applicationKey" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, applicationKey = Some(UUID.randomUUID.toString)) must be(Nil)
-      changesDao.findAll(Authorization.All, applicationKey = Some(change.application.key)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, applicationKey = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, applicationKey = Some(change.application.key), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "fromVersionGuid" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, fromVersionGuid = Some(UUID.randomUUID)) must be(Nil)
-      changesDao.findAll(Authorization.All, fromVersionGuid = Some(change.fromVersion.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, fromVersionGuid = Some(UUID.randomUUID), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, fromVersionGuid = Some(change.fromVersion.guid), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "toVersionGuid" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, toVersionGuid = Some(UUID.randomUUID)) must be(Nil)
-      changesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, toVersionGuid = Some(UUID.randomUUID), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "fromVersion" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, guid = Some(change.guid), fromVersion = Some(change.fromVersion.version)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), fromVersion = Some(change.fromVersion.version), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "toVersion" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString)) must be(Nil)
-      changesDao.findAll(Authorization.All, guid = Some(change.guid), toVersion = Some(change.toVersion.version)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), toVersion = Some(change.toVersion.version), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "description" in {
       val desc = UUID.randomUUID.toString
       val change = createChange(description = desc)
-      changesDao.findAll(Authorization.All, description = Some(UUID.randomUUID.toString)) must be(Nil)
-      changesDao.findAll(Authorization.All, description = Some(desc)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, description = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, description = Some(desc), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
     "limit and offset" in {
       val change = createChange()
-      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1).map(_.guid) must be(Seq(change.guid))
-      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1, offset = 1).map(_.guid) must be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = Some(1).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = Some(1), offset = 1).map(_.guid) must be(Nil)
     }
 
     "authorization" in {
       val change = createChange()
 
       val user = createRandomUser()
-      changesDao.findAll(Authorization.User(user.guid), guid = Some(change.guid)).map(_.guid) must be(Nil)
-      changesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid)).map(_.guid) must be(Nil)
+      changesDao.findAll(Authorization.User(user.guid), guid = Some(change.guid), limit = None).map(_.guid) must be(Nil)
+      changesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid), limit = None).map(_.guid) must be(Nil)
 
       val app = applicationsDao.findByGuid(Authorization.All, change.application.guid).get
 
@@ -174,7 +178,7 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
         ).get,
         user
       )
-      changesDao.findAll(Authorization.User(testUser.guid), guid = Some(change.guid)).map(_.guid) must be(Seq(change.guid))
+      changesDao.findAll(Authorization.User(testUser.guid), guid = Some(change.guid), limit = None).map(_.guid) must be(Seq(change.guid))
     }
   }
 
