@@ -18,7 +18,7 @@ trait Daos {
   def databaseServiceFetcher: DatabaseServiceFetcher = injector.instanceOf[DatabaseServiceFetcher]
   def emailVerificationsDao: InternalEmailVerificationsDao = injector.instanceOf[db.InternalEmailVerificationsDao]
   def itemsDao: ItemsDao = injector.instanceOf[db.ItemsDao]
-  def membershipRequestsDao: MembershipRequestsDao = injector.instanceOf[db.MembershipRequestsDao]
+  def membershipRequestsDao: InternalMembershipRequestsDao = injector.instanceOf[db.InternalMembershipRequestsDao]
   def membershipsDao: MembershipsDao = injector.instanceOf[db.MembershipsDao]
   def usersDao: InternalUsersDao = injector.instanceOf[db.InternalUsersDao]
 

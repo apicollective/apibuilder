@@ -1,71 +1,49 @@
 package db
 
-import anorm._
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNec
+import cats.implicits.*
+import db.generated.MembershipRequestsDao
 import io.apibuilder.api.v0.models.{MembershipRequest, User}
 import io.apibuilder.common.v0.models.{Audit, MembershipRole, ReferenceGuid}
 import io.apibuilder.task.v0.models.{EmailDataMembershipRequestAccepted, EmailDataMembershipRequestCreated, EmailDataMembershipRequestDeclined}
-import io.flow.postgresql.Query
-import play.api.db._
+import io.flow.postgresql.{OrderBy, Query}
+import play.api.db.*
 import processor.EmailProcessorQueue
 import util.OptionalQueryFilter
 
 import java.util.UUID
 import javax.inject.Inject
 
-case class InternalMembershipRequest(
-  guid: UUID,
-  role: MembershipRole,
-  organizationGuid: UUID,
-  userGuid: UUID,
-  audit: Audit
-)
+case class InternalMembershipRequest(db: generated.MembershipRequest) {
+  val guid: UUID = db.guid
+  val role: MembershipRole = MembershipRole(db.role)
+  val organizationGuid: UUID = db.organizationGuid
+  val userGuid: UUID = db.userGuid
+}
 
-class MembershipRequestsDao @Inject() (
-  @NamedDatabase("default") db: Database,
+class InternalMembershipRequestsDao @Inject()(
+  dao: MembershipRequestsDao,
   emailQueue: EmailProcessorQueue,
   membershipsDao: MembershipsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
 
-  private val dbHelpers = DbHelpers(db, "membership_requests")
-
-  // TODO: Properly select domains
-  private val BaseQuery = Query(s"""
-    select guid,
-           role,
-           organization_guid,
-           user_guid,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")}
-      from membership_requests
-  """)
-
-  private val InsertQuery = """
-   insert into membership_requests
-   (guid, organization_guid, user_guid, role, created_by_guid)
-   values
-   ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
-  """
-
   def upsert(createdBy: InternalUser, organization: InternalOrganization, user: InternalUser, role: MembershipRole): InternalMembershipRequest = {
-    findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role) match {
-      case Some(r: InternalMembershipRequest) => r
-      case None => {
-        create(createdBy, organization, user, role)
-      }
+    findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role).getOrElse {
+      create(createdBy, organization, user, role)
     }
   }
 
   private[db] def create(createdBy: InternalUser, organization: InternalOrganization, user: InternalUser, role: MembershipRole): InternalMembershipRequest = {
-    val guid = UUID.randomUUID
-    db.withTransaction { implicit c =>
-      SQL(InsertQuery).on(
-        "guid" -> guid,
-        "organization_guid" -> organization.guid,
-        "user_guid" -> user.guid,
-        "role" -> role.toString,
-        "created_by_guid" -> createdBy.guid
-      ).execute()
+    val guid = dao.db.withTransaction { c =>
+      val guid = dao.insert(c, createdBy.guid, generated.MembershipRequestForm(
+        userGuid = user.guid,
+        organizationGuid = organization.guid,
+        role = role.toString,
+      ))
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestCreated(guid))
+      guid
     }
 
     findByGuid(Authorization.All, guid).getOrElse {
@@ -88,9 +66,9 @@ class MembershipRequestsDao @Inject() (
   }
 
   private def doAccept(createdBy: UUID, request: MembershipRequest, message: String): Unit = {
-    db.withTransaction { implicit c =>
+    dao.db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy, OrganizationReference(request.organization), message)
-      dbHelpers.delete(c, createdBy, request.guid)
+      dao.deleteByGuid(c, createdBy, request.guid)
       membershipsDao.upsert(createdBy, OrganizationReference(request.organization), UserReference(request.user), request.role)
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, request.role))
     }
@@ -104,9 +82,9 @@ class MembershipRequestsDao @Inject() (
     assertUserCanReview(createdBy, request)
 
     val message = s"Declined membership request for ${request.user.email} to join as ${request.role}"
-    db.withTransaction { implicit c =>
+    dao.db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy.guid, OrganizationReference(request.organization), message)
-      softDelete(createdBy, request)
+      dao.deleteByGuid(c, createdBy.guid, request.guid)
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestDeclined(request.organization.guid, request.user.guid))
     }
   }
@@ -118,8 +96,8 @@ class MembershipRequestsDao @Inject() (
     )
   }
 
-  def softDelete(user: InternalUser, membershipRequest: MembershipRequest): Unit = {
-    dbHelpers.delete(user.guid, membershipRequest.guid)
+  def softDelete(user: InternalUser, membershipRequest: InternalMembershipRequest): Unit = {
+    dao.delete(user.guid, membershipRequest.db)
   }
 
   def findByOrganizationAndUserGuidAndRole(
@@ -133,12 +111,12 @@ class MembershipRequestsDao @Inject() (
       organizationGuid = Some(org.guid),
       userGuid = Some(userGuid),
       role = Some(role),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[InternalMembershipRequest] = {
-    findAll(authorization, guid = Some(guid)).headOption
+    findAll(authorization, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -149,7 +127,7 @@ class MembershipRequestsDao @Inject() (
     userGuid: Option[UUID] = None,
     role: Option[MembershipRole] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[InternalMembershipRequest] = {
     // TODO Implement authorization
@@ -162,45 +140,17 @@ class MembershipRequestsDao @Inject() (
       }
     )
 
-    db.withConnection { implicit c =>
-      filters.foldLeft(BaseQuery) { case (q, f) => f.filter(q) }.
-        equals("guid", guid).
-        equals("organization_guid", organizationGuid).
-        equals("user_guid", userGuid).
-        equals("role", role.map(_.toString)).
-        and(isDeleted.map(Filters.isDeleted("membership_requests", _))).
-        orderBy("created_at desc").
-        limit(limit).
-        offset(offset).
-        as(parser.*)
-    }
-  }
-
-  private val parser: RowParser[InternalMembershipRequest] = {
-    import org.joda.time.DateTime
-
-    SqlParser.get[UUID]("guid") ~
-      SqlParser.str("role") ~
-      SqlParser.get[DateTime]("created_at") ~
-      SqlParser.get[UUID]("created_by_guid") ~
-      SqlParser.get[DateTime]("updated_at") ~
-      SqlParser.get[UUID]("updated_by_guid") ~
-      SqlParser.get[UUID]("organization_guid") ~
-      SqlParser.get[UUID]("user_guid") map {
-      case guid ~ role ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ organizationGuid ~ userGuid => {
-        InternalMembershipRequest(
-          guid = guid,
-          role = MembershipRole.apply(role),
-          organizationGuid = organizationGuid,
-          userGuid = userGuid,
-          audit = Audit(
-            createdAt = createdAt,
-            createdBy = ReferenceGuid(createdByGuid),
-            updatedAt = updatedAt,
-            updatedBy = ReferenceGuid(updatedByGuid),
-          )
-        )
-      }
-    }
+    dao.findAll(
+      guid = guid,
+      organizationGuid = organizationGuid,
+      userGuid = userGuid,
+      limit = limit,
+      offset = offset,
+      orderBy = Some(OrderBy("created_at")),
+    ) { q =>
+        filters.foldLeft(q) { case (q, f) => f.filter(q) }
+        .and(isDeleted.map(Filters.isDeleted("membership_requests", _)))
+        .equals("role", role.map(_.toString))
+    }.map(InternalMembershipRequest(_))
   }
 }

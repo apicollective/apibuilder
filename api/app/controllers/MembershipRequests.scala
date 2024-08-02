@@ -1,6 +1,6 @@
 package controllers
 
-import db.{MembershipRequestsDao, InternalOrganizationsDao, InternalUsersDao}
+import db.{InternalMembershipRequestsDao, InternalOrganizationsDao, InternalUsersDao}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
@@ -15,7 +15,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class MembershipRequests @Inject() (
                                      val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                     membershipRequestsDao: MembershipRequestsDao,
+                                     membershipRequestsDao: InternalMembershipRequestsDao,
                                      organizationsDao: InternalOrganizationsDao,
                                      usersDao: InternalUsersDao,
                                      model: MembershipRequestsModel
@@ -47,7 +47,7 @@ class MembershipRequests @Inject() (
       organizationKey = organizationKey,
       userGuid = userGuid,
       role = role,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
     Ok(Json.toJson(model.toModels(requests)))

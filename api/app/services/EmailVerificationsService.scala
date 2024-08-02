@@ -12,7 +12,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class EmailVerificationsService @Inject()(
                                            emailVerificationConfirmationsDao: InternalEmailVerificationConfirmationsDao,
-                                           membershipRequestsDao: MembershipRequestsDao,
+                                           membershipRequestsDao: InternalMembershipRequestsDao,
                                            membershipRequestsModel: MembershipRequestsModel,
                                            organizationsDao: InternalOrganizationsDao
 ) {

@@ -14,7 +14,7 @@ class UserCreatedProcessor @Inject()(
                                       args: TaskProcessorArgs,
                                       usersDao: InternalUsersDao,
                                       organizationsDao: InternalOrganizationsDao,
-                                      membershipRequestsDao: MembershipRequestsDao,
+                                      membershipRequestsDao: InternalMembershipRequestsDao,
                                       emailVerificationsDao: InternalEmailVerificationsDao,
 ) extends TaskProcessorWithGuid(args, TaskType.UserCreated) {
 

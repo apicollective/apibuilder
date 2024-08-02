@@ -8,7 +8,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import java.util.UUID
 
-class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class InternalMembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private lazy val org: InternalOrganization = createOrganization()
   private lazy val member: InternalUser = upsertUser("gilt-member@bryzek.com")
@@ -61,7 +61,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     createOrganization() // create another org for testing
     val newOrg = createOrganization()
     val request = membershipRequestsDao.upsert(testUser, newOrg, member, MembershipRole.Admin)
-    membershipRequestsDao.findAll(Authorization.All, organizationGuid = Some(newOrg.guid)) must equal(
+    membershipRequestsDao.findAll(Authorization.All, organizationGuid = Some(newOrg.guid), limit = None) must equal(
       Seq(request)
     )
   }
@@ -71,7 +71,7 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     val newOrg = createOrganization()
     val request = membershipRequestsDao.upsert(testUser, newOrg, member, MembershipRole.Admin)
     Seq(request) must equal(
-      membershipRequestsDao.findAll(Authorization.All, organizationKey = Some(newOrg.key))
+      membershipRequestsDao.findAll(Authorization.All, organizationKey = Some(newOrg.key), limit = None)
     )
   }
   
@@ -81,18 +81,18 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
   
     val request1 = membershipRequestsDao.upsert(testUser, newOrg, newUser, MembershipRole.Admin)
     Seq(request1) must equal(
-      membershipRequestsDao.findAll(Authorization.All, userGuid = Some(newUser.guid))
+      membershipRequestsDao.findAll(Authorization.All, userGuid = Some(newUser.guid), limit = None)
     )
   
     val request2 = membershipRequestsDao.upsert(testUser, newOrg, newUser, MembershipRole.Member)
     Seq(request2, request1) must equal(
-      membershipRequestsDao.findAll(Authorization.All, userGuid = Some(newUser.guid))
+      membershipRequestsDao.findAll(Authorization.All, userGuid = Some(newUser.guid), limit = None)
     )
   }
   
   "softDelete" in {
     val request = membershipRequestsDao.upsert(testUser, org, member, MembershipRole.Admin)
-    membershipRequestsDao.softDelete(testUser, membershipRequestsModel.toModel(request).value)
+    membershipRequestsDao.softDelete(testUser, request)
     membershipRequestsDao.findByGuid(Authorization.All, request.guid).isEmpty must be(true)
   }
   

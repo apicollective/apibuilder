@@ -49,6 +49,13 @@ class InternalSubscriptionsDao @Inject()(
       .toValidNec(Validation.singleError("Organization not found"))
   }
 
+  private def validatePublication(publication: Publication): ValidatedNec[Error, Unit] = {
+    publication match {
+      case Publication.UNDEFINED(_) => Validation.singleError("Publication not found").invalidNec
+      case _ => ().validNec
+    }
+  }
+
   private def validateAlreadySubscribed(org: Organization, form: SubscriptionForm): ValidatedNec[Error, Unit] = {
     findAll(
       Authorization.All,
@@ -67,8 +74,9 @@ class InternalSubscriptionsDao @Inject()(
       validateOrg(form.organizationKey).andThen { org =>
         validateAlreadySubscribed(org, form).map { _ => org}
       },
-      usersDao.findByGuid(form.userGuid).toValidNec(Validation.singleError("User not found"))
-    ).mapN { case (org, user) =>
+      usersDao.findByGuid(form.userGuid).toValidNec(Validation.singleError("User not found")),
+      validatePublication(form.publication)
+    ).mapN { case (org, user, _) =>
       ValidatedSubscriptionForm(org, user, form.publication)
     }
   }

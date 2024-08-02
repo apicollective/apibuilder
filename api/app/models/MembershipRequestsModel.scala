@@ -1,8 +1,9 @@
 package models
 
-import cats.implicits._
+import cats.implicits.*
 import db.{Authorization, InternalMembershipRequest, InternalOrganizationsDao, InternalUsersDao}
 import io.apibuilder.api.v0.models.MembershipRequest
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
 import javax.inject.Inject
 
@@ -28,7 +29,12 @@ class MembershipRequestsModel @Inject() (
           user = user,
           organization = org,
           role = r.role,
-          audit = r.audit
+          audit = Audit(
+            createdAt = r.db.createdAt,
+            createdBy = ReferenceGuid(r.db.createdByGuid),
+            updatedAt = r.db.createdAt,
+            updatedBy = ReferenceGuid(r.db.createdByGuid),
+          )
         )
       }
     }

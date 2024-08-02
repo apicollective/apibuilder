@@ -33,7 +33,7 @@ class EmailProcessor @Inject()(
                                 emailVerificationsDao: db.InternalEmailVerificationsDao,
                                 membershipsDao: db.MembershipsDao,
                                 membershipsModel: MembershipsModel,
-                                membershipRequestsDao: db.MembershipRequestsDao,
+                                membershipRequestsDao: db.InternalMembershipRequestsDao,
                                 membershipRequestsModel: MembershipRequestsModel,
                                 organizationsDao: InternalOrganizationsDao,
                                 passwordResetRequestsDao: db.PasswordResetRequestsDao,
