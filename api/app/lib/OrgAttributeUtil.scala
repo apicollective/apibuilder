@@ -1,15 +1,17 @@
 package lib
 
-import db.OrganizationAttributeValuesDao
+import db.{InternalAttributesDao, InternalOrganizationAttributeValuesDao}
 import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.generator.v0.models.Attribute
+import models.OrganizationAttributeValuesModel
 
 import java.util.UUID
 import javax.inject.Inject
-import scala.collection.mutable.ListBuffer
 
 class OrgAttributeUtil @Inject() (
-  organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+  organizationAttributeValuesDao: InternalOrganizationAttributeValuesDao,
+  attributesDao: InternalAttributesDao,
+  model: OrganizationAttributeValuesModel,
 ) {
 
   def merge(
@@ -30,20 +32,13 @@ class OrgAttributeUtil @Inject() (
     names match {
       case Nil => Nil
       case _ => {
-        val all = ListBuffer[Attribute]()
-
-        Pager.eachPage { offset =>
-          organizationAttributeValuesDao.findAll(
-            organizationGuid = Some(organizationGuid),
-            attributeNames = Some(names),
-            limit = 1000,
-            offset = offset,
-          )
-        } { av =>
-          all += Attribute(av.attribute.name, av.value)
+        model.toModels(organizationAttributeValuesDao.findAll(
+          organizationGuid = Some(organizationGuid),
+          attributeNames = Some(names),
+          limit = None,
+        )).map { v =>
+          Attribute(v.attribute.name, v.value)
         }
-
-        all.toSeq
       }
     }
   }

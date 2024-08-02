@@ -84,6 +84,7 @@ class InternalAttributesDao @Inject()(
 
   def findAll(
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     name: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Option[Long],
@@ -91,6 +92,7 @@ class InternalAttributesDao @Inject()(
   ): Seq[InternalAttribute] = {
     dao.findAll(
       guid = guid,
+      guids = guids,
       limit = limit,
       offset = offset
     ) { q =>

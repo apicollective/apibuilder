@@ -1,23 +1,25 @@
 package controllers
 
-import io.apibuilder.api.v0.models._
-import io.apibuilder.api.v0.models.json._
+import cats.data.Validated.{Invalid, Valid}
+import io.apibuilder.api.v0.models.*
+import io.apibuilder.api.v0.models.json.*
 import lib.Validation
-import db._
-import models.OrganizationsModel
+import db.*
+import models.{OrganizationAttributeValuesModel, OrganizationsModel}
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc._
-import play.api.libs.json._
+import play.api.mvc.*
+import play.api.libs.json.*
 
 import java.util.UUID
 
 @Singleton
 class Organizations @Inject() (
-                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-                                attributesDao: InternalAttributesDao,
-                                organizationAttributeValuesDao: OrganizationAttributeValuesDao,
-                                model: OrganizationsModel
+  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+  attributesDao: InternalAttributesDao,
+  organizationAttributeValuesDao: InternalOrganizationAttributeValuesDao,
+  organizationAttributeValuesModel: OrganizationAttributeValuesModel,
+  model: OrganizationsModel
 ) extends ApiBuilderController {
 
   def get(
@@ -109,11 +111,13 @@ class Organizations @Inject() (
     withOrg(request.authorization, key) { org =>
       Ok(
         Json.toJson(
-          organizationAttributeValuesDao.findAll(
-            organizationGuid = Some(org.guid),
-            attributeNames = attributeName.map(n => Seq(n)),
-            limit = limit,
-            offset = offset
+          organizationAttributeValuesModel.toModels(
+            organizationAttributeValuesDao.findAll(
+              organizationGuid = Some(org.guid),
+              attributeName = attributeName,
+              limit = Some(limit),
+              offset = offset
+            )
           )
         )
       )
@@ -127,7 +131,7 @@ class Organizations @Inject() (
     withOrg(request.authorization, key) { org =>
       organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
-        case Some(attr) => Ok(Json.toJson(attr))
+        case Some(attr) => Ok(Json.toJson(organizationAttributeValuesModel.toModel(attr)))
       }
     }
   }
@@ -139,19 +143,18 @@ class Organizations @Inject() (
           case e: JsError => {
             Conflict(Json.toJson(Validation.invalidJson(e)))
           }
-          case s: JsSuccess[AttributeValueForm] => {
-            val form = s.get
+          case JsSuccess(form: AttributeValueForm, _) => {
             val existing = organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name)
-            organizationAttributeValuesDao.validate(org, AttributeSummary(attr.guid, attr.name), form, existing) match {
-              case Nil => {
-                val value = organizationAttributeValuesDao.upsert(request.user, org, attr, form)
+            organizationAttributeValuesDao.upsert(request.user, org, attr, form)
+              .map(organizationAttributeValuesModel.toModel) match {
+              case Valid(value) => {
                 existing match {
                   case None => Created(Json.toJson(value))
                   case Some(_) => Ok(Json.toJson(value))
                 }
               }
-              case errors => {
-                Conflict(Json.toJson(errors))
+              case Invalid(errors) => {
+                Conflict(Json.toJson(errors.toNonEmptyList.toList))
               }
             }
           }
