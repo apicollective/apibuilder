@@ -16,7 +16,7 @@ import javax.inject.Inject
 class DiffVersionProcessor @Inject()(
                                       args: TaskProcessorArgs,
                                       appConfig: AppConfig,
-                                      usersDao: UsersDao,
+                                      usersDao: InternalUsersDao,
                                       applicationsDao: InternalApplicationsDao,
                                       organizationsDao: InternalOrganizationsDao,
                                       emails: Emails,

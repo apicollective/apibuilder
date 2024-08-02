@@ -1,13 +1,13 @@
 package models
 
 import cats.implicits._
-import db.{Authorization, InternalMembership, UsersDao}
+import db.{Authorization, InternalMembership, InternalUsersDao}
 import io.apibuilder.api.v0.models.Membership
 
 import javax.inject.Inject
 
 class MembershipsModel @Inject()(
-  usersDao: UsersDao,
+  usersModel: UsersModel,
   orgModel: OrganizationsModel
 ) {
 
@@ -16,9 +16,7 @@ class MembershipsModel @Inject()(
   }
 
   def toModels(s: Seq[InternalMembership]): Seq[Membership] = {
-    val users = usersDao.findAll(
-      guids = Some(s.map(_.userGuid))
-    ).map { u => u.guid -> u }.toMap
+    val users = usersModel.toModelByGuids(s.map(_.userGuid)).map { u => u.guid -> u }.toMap
 
     val orgs = orgModel.toModelByGuids(Authorization.All, s.map(_.organizationGuid))
       .map { o => o.guid -> o }.toMap

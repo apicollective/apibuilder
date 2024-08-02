@@ -60,7 +60,7 @@ class Memberships @Inject() (
       case None => NoContent
       case Some(membership) => {
         if (membershipsDao.isUserAdmin(userGuid = request.user.guid, organizationGuid = membership.organizationGuid)) {
-          membershipsDao.softDelete(request.user, membership)
+          membershipsDao.softDelete(request.user.reference, membership)
           NoContent
         } else {
           Unauthorized

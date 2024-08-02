@@ -1,28 +1,55 @@
 package lib
 
+import helpers.ValidatedTestHelpers
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class MiscSpec extends PlaySpec with GuiceOneAppPerSuite {
+class MiscSpec extends PlaySpec with GuiceOneAppPerSuite with ValidatedTestHelpers {
 
-  "isValidEmail" in {
-    Misc.isValidEmail("") must be(false)
-    Misc.isValidEmail("@") must be(false)
-    Misc.isValidEmail("foo@") must be(false)
-    Misc.isValidEmail("@bryzek.com") must be(false)
-    Misc.isValidEmail("foo@apibuilder.io") must be(true)
+  "validateEmail" must {
+    "invalid" in {
+      def setup(value: String): Seq[String] = {
+        expectInvalid {
+          Misc.validateEmail(value)
+        }.map(_.message)
+      }
+
+      setup("") mustBe Seq("Email must have an '@' symbol")
+      setup("  ") mustBe Seq("Email must have an '@' symbol")
+      setup("@") mustBe Seq("Invalid Email: missing username and domain")
+      setup("foo@") mustBe Seq("Invalid Email: missing domain")
+      setup("@bryzek.com") mustBe Seq("Invalid Email: missing username")
+    }
+
+    "valid" in {
+      def setup(value: String) = expectValid {
+        Misc.validateEmail(value)
+      }
+
+      setup("foo@apibuilder.io") mustBe "foo@apibuilder.io"
+      setup(" foo@apibuilder.io ") mustBe "foo@apibuilder.io"
+    }
   }
 
-  "emailDomain" in {
-    Misc.emailDomain("") must be(None)
-    Misc.emailDomain("@") must be(None)
-    Misc.emailDomain("foo@") must be(None)
-    Misc.emailDomain("foo@apibuilder.io") must be(Some("apibuilder.io"))
-    Misc.emailDomain("FOO@apibuilder.io") must be(Some("apibuilder.io"))
-    Misc.emailDomain("  FOO@apibuilder.io  ") must be(Some("apibuilder.io"))
-    Misc.emailDomain("mb@bryzek.com") must be(Some("bryzek.com"))
-    Misc.emailDomain("mb@internal.bryzek.com") must be(Some("internal.bryzek.com"))
-    Misc.emailDomain("mb") must be(None)
+  "emailDomain" must {
+    "no domain" in {
+      def setup(value: String): Option[String] = Misc.emailDomain(value)
+
+      setup("") must be(None)
+      setup("@") must be(None)
+      setup("foo@") must be(None)
+      setup("mb") must be(None)
+    }
+
+    "with domain" in {
+      def setup(value: String): String = Misc.emailDomain(value).value
+
+      setup("foo@apibuilder.io") must be("apibuilder.io")
+      setup("FOO@apibuilder.io") must be("apibuilder.io")
+      setup("  FOO@apibuilder.io  ") must be("apibuilder.io")
+      setup("mb@bryzek.com") must be("bryzek.com")
+      setup("mb@internal.bryzek.com") must be("internal.bryzek.com")
+    }
   }
 
 }

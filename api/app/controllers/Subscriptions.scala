@@ -73,7 +73,7 @@ class Subscriptions @Inject() (
     subscriptionsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(subscription) => {
-        subscriptionsDao.softDelete(request.user, subscription)
+        subscriptionsDao.softDelete(request.user.reference, subscription)
         NoContent
       }
     }

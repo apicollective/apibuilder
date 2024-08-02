@@ -10,16 +10,16 @@ import processor.EmailProcessorQueue
 import util.OptionalQueryFilter
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 case class InternalMembershipRequest(
-                                      guid: UUID,
-                                      role: MembershipRole,
-                                      organizationGuid: UUID,
-                                      userGuid: UUID,
-                                      audit: Audit)
+  guid: UUID,
+  role: MembershipRole,
+  organizationGuid: UUID,
+  userGuid: UUID,
+  audit: Audit
+)
 
-@Singleton
 class MembershipRequestsDao @Inject() (
   @NamedDatabase("default") db: Database,
   emailQueue: EmailProcessorQueue,
@@ -46,7 +46,7 @@ class MembershipRequestsDao @Inject() (
    ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, organization: InternalOrganization, user: User, role: MembershipRole): InternalMembershipRequest = {
+  def upsert(createdBy: InternalUser, organization: InternalOrganization, user: InternalUser, role: MembershipRole): InternalMembershipRequest = {
     findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role) match {
       case Some(r: InternalMembershipRequest) => r
       case None => {
@@ -55,7 +55,7 @@ class MembershipRequestsDao @Inject() (
     }
   }
 
-  private[db] def create(createdBy: User, organization: InternalOrganization, user: User, role: MembershipRole): InternalMembershipRequest = {
+  private[db] def create(createdBy: InternalUser, organization: InternalOrganization, user: InternalUser, role: MembershipRole): InternalMembershipRequest = {
     val guid = UUID.randomUUID
     db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
@@ -78,7 +78,7 @@ class MembershipRequestsDao @Inject() (
    * action logged, and the user added to the organization
    * in this role if not already in this role for this org.
    */
-  def accept(createdBy: User, request: MembershipRequest): Unit = {
+  def accept(createdBy: InternalUser, request: MembershipRequest): Unit = {
     assertUserCanReview(createdBy, request)
     doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${request.role}")
   }
@@ -91,7 +91,7 @@ class MembershipRequestsDao @Inject() (
     db.withTransaction { implicit c =>
       organizationLogsDao.create(createdBy, OrganizationReference(request.organization), message)
       dbHelpers.delete(c, createdBy, request.guid)
-      membershipsDao.upsert(createdBy, OrganizationReference(request.organization), request.user, request.role)
+      membershipsDao.upsert(createdBy, OrganizationReference(request.organization), UserReference(request.user), request.role)
       emailQueue.queueWithConnection(c, EmailDataMembershipRequestAccepted(request.organization.guid, request.user.guid, request.role))
     }
   }
@@ -100,7 +100,7 @@ class MembershipRequestsDao @Inject() (
    * Declines this request. The request will be deleted and the
    * action logged.
    */
-  def decline(createdBy: User, request: MembershipRequest): Unit = {
+  def decline(createdBy: InternalUser, request: MembershipRequest): Unit = {
     assertUserCanReview(createdBy, request)
 
     val message = s"Declined membership request for ${request.user.email} to join as ${request.role}"
@@ -111,15 +111,15 @@ class MembershipRequestsDao @Inject() (
     }
   }
 
-  private def assertUserCanReview(user: User, request: MembershipRequest): Unit = {
+  private def assertUserCanReview(user: InternalUser, request: MembershipRequest): Unit = {
     require(
       membershipsDao.isUserAdmin(user, OrganizationReference(request.organization)),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"
     )
   }
 
-  def softDelete(user: User, membershipRequest: MembershipRequest): Unit = {
-    dbHelpers.delete(user, membershipRequest.guid)
+  def softDelete(user: InternalUser, membershipRequest: MembershipRequest): Unit = {
+    dbHelpers.delete(user.guid, membershipRequest.guid)
   }
 
   def findByOrganizationAndUserGuidAndRole(

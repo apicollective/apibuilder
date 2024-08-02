@@ -6,12 +6,16 @@ import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
+class InternalUsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with helpers.ValidatedTestHelpers {
 
-  def createUserForm(
+  private def makeUserForm(
     email: String = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     nickname: Option[String] = None
-  ) = UserForm(email = email, password = UUID.randomUUID.toString, nickname = nickname)
+  ): UserForm = UserForm(
+    email = email,
+    password = UUID.randomUUID.toString,
+    nickname = nickname
+  )
 
   "upsert" in {
     val user1 = upsertUser("michael@mailinator.com")
@@ -40,20 +44,26 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       email = UUID.randomUUID.toString + "@test.apibuilder.io",
       password = "testing"
     )
-    val user = usersDao.create(form)
+    val user = createUser(form)
     userPasswordsDao.isValid(user.guid, "testing") must be(true)
     userPasswordsDao.isValid(user.guid, "password") must be(false)
   }
 
   "validate" must {
 
+    def expectInvalidNewUser(form: UserForm): Seq[String] = {
+      expectInvalid(
+        usersDao.validateNewUser(form)
+      ).map(_.message)
+    }
+
     "email is valid" in {
-      usersDao.validateNewUser(
+      expectInvalidNewUser(
         UserForm(
           email = "bad-email",
           password = "testing"
         )
-      ).map(_.message) must be(Seq("Invalid email address"))
+      ) must be(Seq("Email must have an '@' symbol"))
     }
 
     "email is unique" in {
@@ -62,20 +72,28 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         password = "testing"
       )
 
-      usersDao.validateNewUser(form) must be(Nil)
+      expectValid {
+        usersDao.validateNewUser(form)
+      }
 
-      val user = usersDao.create(form)
+      val user = createUser(form)
 
-      usersDao.validateNewUser(form).map(_.message) must be(Seq("User with this email address already exists"))
-      usersDao.validateNewUser(form.copy(email = "other-" + form.email)).map(_.message) must be(Nil)
+      expectInvalidNewUser(form) must be(Seq("User with this email address already exists"))
+      expectValid {
+        usersDao.validateNewUser(form.copy(email = "other-" + form.email))
+      }
 
       val updateForm = UserUpdateForm(
         email = form.email,
         nickname = UUID.randomUUID.toString
       )
 
-      usersDao.validate(updateForm, existingUser = Some(user)).map(_.message) must be(Nil)
-      usersDao.validate(updateForm, existingUser = Some(upsertUser())).map(_.message) must be(Seq("User with this email address already exists"))
+      expectValid {
+        usersDao.validate(updateForm, existingUser = Some(user))
+      }
+      expectInvalid {
+        usersDao.validate(updateForm, existingUser = Some(upsertUser())) 
+      }.map(_.message) must be(Seq("User with this email address already exists"))
     }
 
     "password" in {
@@ -84,7 +102,7 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         password = "bad"
       )
 
-      usersDao.validateNewUser(form).map(_.message) must be(Seq("Password must be at least 5 characters"))
+      expectInvalidNewUser(form) must be(Seq("Password must be at least 5 characters"))
     }
 
     "email in upper case with whitespace" in {
@@ -94,20 +112,22 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         password = "testing"
       )
 
-      usersDao.validateNewUser(form) must be(Nil)
+      expectValid {
+        usersDao.validateNewUser(form)
+      }
 
-      val user = usersDao.create(form)
+      val user = createUser(form)
       user.email must be(email.toLowerCase)
 
-      usersDao.validateNewUser(
+      expectInvalidNewUser(
         form.copy(email = email.toUpperCase)
-      ).map(_.message) must be(
+      ) must be(
         Seq("User with this email address already exists")
       )
     }
     
     "nickname is url friendly" in {
-      usersDao.validateNewUser(createUserForm(nickname = Some("bad nickname"))).map(_.message) must be(
+      expectInvalidNewUser(makeUserForm(nickname = Some("bad nickname"))) must be(
         Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: bad-nickname")
       )
     }
@@ -119,10 +139,14 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         nickname = Some(UUID.randomUUID.toString)
       )
 
-      usersDao.validateNewUser(form) must be(Nil)
-      usersDao.validateNewUser(form.copy(nickname = form.nickname.map(n => "other-" + n))).map(_.message) must be(Nil)
+      expectValid {
+        usersDao.validateNewUser(form)
+      }
+      expectValid {
+        usersDao.validateNewUser(form.copy(nickname = form.nickname.map(n => "other-" + n)))
+      }
 
-      val user = usersDao.create(form)
+      val user = createUser(form)
 
       val formWithUniqueEmail = UserUpdateForm(
         email = "other-" + form.email,
@@ -130,9 +154,15 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         name = form.name
       )
 
-      usersDao.validate(formWithUniqueEmail).map(_.message) must be(Seq("User with this nickname already exists"))
-      usersDao.validate(formWithUniqueEmail, existingUser = Some(user)).map(_.message) must be(Nil)
-      usersDao.validate(formWithUniqueEmail, existingUser = Some(upsertUser())).map(_.message) must be(Seq("User with this nickname already exists"))
+      expectInvalid {
+        usersDao.validate(formWithUniqueEmail)
+      }.map(_.message) must be(Seq("User with this nickname already exists"))
+      expectValid {
+        usersDao.validate(formWithUniqueEmail, existingUser = Some(user))
+      }
+      expectInvalid {
+        usersDao.validate(formWithUniqueEmail, existingUser = Some(upsertUser()))
+      }.map(_.message) must be(Seq("User with this nickname already exists"))
     }
 
   }
@@ -145,11 +175,11 @@ class UsersDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
       val email2 = base + "@test2.apibuilder.io"
 
       usersDao.generateNickname(email1) must be(base)
-      val user = usersDao.create(createUserForm(email1))
+      val user = createUser(makeUserForm(email1))
       user.nickname must be(base)
 
       usersDao.generateNickname(email2) must be(base + "-2")
-      val user2 = usersDao.create(createUserForm(email2))
+      val user2 = createUser(makeUserForm(email2))
       user2.nickname must be(base + "-2")
     }
 

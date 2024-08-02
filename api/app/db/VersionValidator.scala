@@ -10,7 +10,7 @@ class VersionValidator @Inject() (
 ) {
 
   def validate(
-    user: User,
+    user: InternalUser,
     org: InternalOrganization,
     newApplicationKey: String,
     existingApplicationKey: Option[String] = None
@@ -20,8 +20,8 @@ class VersionValidator @Inject() (
     authErrors ++ keyErrors
   }
 
-  private def validateAuthorization(user: User, org: InternalOrganization): Seq[String] = {
-    if (membershipsDao.isUserMember(user, OrganizationReference(org))) {
+  private def validateAuthorization(user: InternalUser, org: InternalOrganization): Seq[String] = {
+    if (membershipsDao.isUserMember(user, org.reference)) {
       Nil
     } else {
       Seq("You must be a member of this organization to update applications")

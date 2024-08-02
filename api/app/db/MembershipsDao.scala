@@ -46,7 +46,7 @@ class MembershipsDao @Inject() (
       join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: UUID, org: OrganizationReference, user: User, role: MembershipRole): InternalMembership = {
+  def upsert(createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, org, user, role) match {
       case Some(r) => r
       case None => create(createdBy, org, user, role)
@@ -64,13 +64,13 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: UUID, org: OrganizationReference, user: User, role: MembershipRole): InternalMembership = {
+  private[db] def create(createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
     db.withTransaction { implicit c =>
       create(c, createdBy, org, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: User, role: MembershipRole): InternalMembership = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
@@ -96,13 +96,13 @@ class MembershipsDao @Inject() (
     * publication subscriptions that require the administrative role
     * for this org.
     */
-  def softDelete(user: User, membership: InternalMembership): Unit = {
+  def softDelete(user: UserReference, membership: InternalMembership): Unit = {
     subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organizationGuid, membership.userGuid)
-    dbHelpers.delete(user, membership.guid)
+    dbHelpers.delete(user.guid, membership.guid)
   }
 
   def isUserAdmin(
-    user: User,
+    user: InternalUser,
     organization: OrganizationReference
   ): Boolean = {
     isUserAdmin(userGuid = user.guid, organizationGuid = organization.guid)
@@ -119,7 +119,7 @@ class MembershipsDao @Inject() (
   }
 
   def isUserMember(
-    user: User,
+    user: InternalUser,
     organization: OrganizationReference
   ): Boolean = {
     isUserMember(userGuid = user.guid, organizationGuid = organization.guid)
@@ -143,7 +143,7 @@ class MembershipsDao @Inject() (
   def findByOrganizationAndUserAndRole(
     authorization: Authorization,
     org: OrganizationReference,
-    user: User,
+    user: UserReference,
     role: MembershipRole
   ): Option[InternalMembership] = {
     findByOrganizationGuidAndUserGuidAndRole(
@@ -167,7 +167,7 @@ class MembershipsDao @Inject() (
   def findByOrganizationAndUserAndRoles(
     authorization: Authorization,
     organization: OrganizationReference,
-    user: User,
+    user: InternalUser,
     roles: Seq[MembershipRole]
   ): Seq[InternalMembership] = {
     findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), roles = Some(roles), limit = None)

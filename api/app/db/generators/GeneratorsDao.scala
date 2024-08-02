@@ -1,14 +1,14 @@
 package db.generators
 
-import anorm._
+import anorm.*
 import cats.data.ValidatedNec
-import cats.implicits._
-import db.{Authorization, Filters}
-import io.apibuilder.api.v0.models._
+import cats.implicits.*
+import db.{Authorization, Filters, InternalUser}
+import io.apibuilder.api.v0.models.*
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
 import lib.Pager
-import play.api.db._
+import play.api.db.*
 import play.api.libs.json.Json
 
 import java.util.UUID
@@ -69,7 +69,7 @@ class GeneratorsDao @Inject() (
        and deleted_at is null
   """)
 
-  def upsert(user: User, form: GeneratorForm): ValidatedNec[String, InternalGenerator] = {
+  def upsert(user: InternalUser, form: GeneratorForm): ValidatedNec[String, InternalGenerator] = {
     findByKey(form.generator.key) match {
       case None => {
         val gen = db.withConnection { implicit c =>
@@ -132,14 +132,14 @@ class GeneratorsDao @Inject() (
     ).headOption
   }
 
-  def softDeleteAllByServiceGuid(c: java.sql.Connection, deletedBy: User, serviceGuid: UUID): Unit = {
+  def softDeleteAllByServiceGuid(c: java.sql.Connection, deletedBy: InternalUser, serviceGuid: UUID): Unit = {
     SoftDeleteByServiceGuidQuery
       .bind("deleted_by_guid", deletedBy.guid)
       .bind("service_guid", serviceGuid)
       .anormSql().execute()(c)
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, form: GeneratorForm): UUID = {
+  private def create(implicit c: java.sql.Connection, user: InternalUser, form: GeneratorForm): UUID = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
@@ -166,13 +166,13 @@ class GeneratorsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, generator: InternalGenerator): Unit = {
+  def softDelete(deletedBy: InternalUser, generator: InternalGenerator): Unit = {
     db.withConnection { implicit c =>
       softDelete(c, deletedBy, generator.serviceGuid, generator.key)
     }
   }
 
-  private def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String): Unit = {
+  private def softDelete(implicit c: java.sql.Connection, deletedBy: InternalUser, serviceGuid: UUID, generatorKey: String): Unit = {
     SoftDeleteByKeyQuery
       .bind("deleted_by_guid", deletedBy.guid)
       .bind("service_guid", serviceGuid)

@@ -1,6 +1,9 @@
 package db
 
 import anorm.*
+import cats.implicits._
+import cats.data.ValidatedNec
+import cats.data.Validated.{Invalid, Valid}
 import com.mbryzek.cipher.{CipherLibraryMindrot, Ciphers, HashedValue}
 import io.apibuilder.api.v0.models.{Error, User}
 import io.flow.postgresql.Query
@@ -43,17 +46,15 @@ class UserPasswordsDao @Inject() (
        and deleted_at is null
   """
 
-  def validate(password: String): Seq[Error] = {
-    val lengthErrors = if (password.trim.length < MinLength) {
-      Seq(s"Password must be at least $MinLength characters")
+  def validate(password: String): ValidatedNec[Error, Unit] = {
+    if (password.trim.length < MinLength) {
+      Validation.singleError(s"Password must be at least $MinLength characters").invalidNec
     } else {
-      Nil
+      ().validNec
     }
-
-    Validation.errors(lengthErrors)
   }
 
-  def create(user: User, userGuid: UUID, cleartextPassword: String): Unit = {
+  def create(user: InternalUser, userGuid: UUID, cleartextPassword: String): Unit = {
     db.withTransaction { implicit c =>
       softDeleteByUserGuid(c, user, userGuid)
       doCreate(c, user.guid, userGuid, cleartextPassword)
@@ -66,8 +67,10 @@ class UserPasswordsDao @Inject() (
     userGuid: UUID,
     cleartextPassword: String
   ): Unit = {
-    val errors = validate(cleartextPassword)
-    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+    validate(cleartextPassword) match {
+      case Invalid(e) => sys.error("Invalid: " + e.toNonEmptyList.toList.map(_.message).mkString("\n"))
+      case Valid(_) => // no-op
+    }
 
     val guid = UUID.randomUUID
     val algorithm = ciphers.latest
@@ -83,7 +86,7 @@ class UserPasswordsDao @Inject() (
     ).execute()
   }
 
-  private def softDeleteByUserGuid(implicit c: Connection, user: User, userGuid: UUID): Unit = {
+  private def softDeleteByUserGuid(implicit c: Connection, user: InternalUser, userGuid: UUID): Unit = {
     SQL(SoftDeleteByUserGuidQuery).on("deleted_by_guid" -> user.guid, "user_guid" -> userGuid).execute()
   }
 

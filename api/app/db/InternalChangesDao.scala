@@ -31,7 +31,7 @@ class InternalChangesDao @Inject()(
   }
 
   def upsert(
-    createdBy: User,
+    createdBy: InternalUser,
     fromVersion: Version,
     toVersion: Version,
     differences: Seq[Diff]

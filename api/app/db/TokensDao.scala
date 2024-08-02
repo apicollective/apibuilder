@@ -22,7 +22,7 @@ case class InternalToken(
 @Singleton
 class TokensDao @Inject() (
   @NamedDatabase("default") db: Database,
-  usersDao: UsersDao
+  usersDao: InternalUsersDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "tokens")
@@ -45,7 +45,7 @@ class TokensDao @Inject() (
   """
 
   def validate(
-    user: User,
+    user: InternalUser,
     form: TokenForm
   ): Seq[Error] = {
     val authErrors = if (user.guid == form.userGuid) {
@@ -62,7 +62,7 @@ class TokensDao @Inject() (
     Validation.errors(authErrors ++ userErrors)
   }
 
-  def create(user: User, form: TokenForm): InternalToken = {
+  def create(user: InternalUser, form: TokenForm): InternalToken = {
     val errors = validate(user, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -83,8 +83,8 @@ class TokensDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, token: InternalToken): Unit = {
-    dbHelpers.delete(deletedBy, token.guid)
+  def softDelete(deletedBy: InternalUser, token: InternalToken): Unit = {
+    dbHelpers.delete(deletedBy.guid, token.guid)
   }
 
   def findByToken(token: String): Option[InternalToken] = {

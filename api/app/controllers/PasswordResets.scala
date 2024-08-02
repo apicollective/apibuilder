@@ -1,21 +1,24 @@
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
 import io.apibuilder.api.v0.models.PasswordReset
-import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.json.*
 import lib.Validation
-import db.{PasswordResetRequestsDao, UserPasswordsDao, UsersDao}
+import db.{InternalUsersDao, PasswordResetRequestsDao, UserPasswordsDao}
+import models.UsersModel
 import util.SessionHelper
+
 import javax.inject.{Inject, Singleton}
-import play.api.mvc._
-import play.api.libs.json._
+import play.api.mvc.*
+import play.api.libs.json.*
 
 @Singleton
 class PasswordResets @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
   passwordResetRequestsDao: PasswordResetRequestsDao,
   sessionHelper: SessionHelper,
-  usersDao: UsersDao,
-  userPasswordsDao: UserPasswordsDao
+  usersDao: InternalUsersDao,
+  userPasswordsDao: UserPasswordsDao,
 ) extends ApiBuilderController {
 
   def post(): Action[JsValue] = Anonymous(parse.json) { request =>
@@ -41,12 +44,12 @@ class PasswordResets @Inject() (
 
                 case Some(user) => {
                   userPasswordsDao.validate(form.password) match {
-                    case Nil => {
+                    case Valid(_) => {
                       passwordResetRequestsDao.resetPassword(request.user, pr, form.password)
                       Ok(Json.toJson(sessionHelper.createAuthentication(user)))
                     }
-                    case errors => {
-                      Conflict(Json.toJson(errors))
+                    case Invalid(errors) => {
+                      Conflict(Json.toJson(errors.toNonEmptyList.toList))
                     }
                   }
                 }

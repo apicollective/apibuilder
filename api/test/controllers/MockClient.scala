@@ -1,7 +1,7 @@
 package controllers
 
 import java.util.UUID
-import db.{Authorization, InternalApplication, InternalOrganization}
+import db.{Authorization, InternalApplication, InternalOrganization, InternalUser}
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
@@ -33,7 +33,7 @@ trait MockClient extends db.Helpers
 
   lazy val client: Client = newClient(testUser)
 
-  def newClient(user: User): Client = {
+  def newClient(user: InternalUser): Client = {
     val auth = sessionHelper.createAuthentication(user)
     newSessionClient(auth.session.id)
   }
@@ -107,15 +107,15 @@ trait MockClient extends db.Helpers
 
   def createSubscriptionForm(
     org: InternalOrganization = createOrganization(),
-    user: User = createUser()
-  ) = SubscriptionForm(
+    user: InternalUser = createUser()
+  ): SubscriptionForm = SubscriptionForm(
     organizationKey = org.key,
     userGuid = user.guid,
     publication = Publication.MembershipRequestsCreate
   )
 
   def createTokenForm(
-    user: User = createUser()
+    user: InternalUser = createUser()
   ): TokenForm = TokenForm(
     userGuid = user.guid,
     description = Some("test")

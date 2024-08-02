@@ -11,7 +11,7 @@ import java.util.UUID
 class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
 
   private lazy val org: InternalOrganization = createOrganization()
-  private lazy val member: User = upsertUser("gilt-member@bryzek.com")
+  private lazy val member: InternalUser = upsertUser("gilt-member@bryzek.com")
   private def membershipRequestsModel: MembershipRequestsModel = app.injector.instanceOf[MembershipRequestsModel]
   
   "create member" in {
@@ -100,10 +100,10 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     val newOrg = createOrganization()
     val request = membershipRequestsDao.upsert(testUser, newOrg, member, MembershipRole.Member)
 
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member, MembershipRole.Member) must be(None)
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member.reference, MembershipRole.Member) must be(None)
 
     membershipRequestsDao.accept(testUser, membershipRequestsModel.toModel(request).value)
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member, MembershipRole.Member).get.userGuid must equal(member.guid)
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member.reference, MembershipRole.Member).get.userGuid must equal(member.guid)
 
     organizationLogsDao.findAll(Authorization.All, organization = Some(newOrg.reference), limit = 1).map(_.message) must equal(
       Seq("Accepted membership request for %s to join as member".format(member.email))
@@ -114,10 +114,10 @@ class MembershipRequestsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with d
     val newOrg = createOrganization()
     val request = membershipRequestsDao.upsert(testUser, newOrg, member, MembershipRole.Member)
 
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member, MembershipRole.Member) must be(None)
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member.reference, MembershipRole.Member) must be(None)
   
     membershipRequestsDao.decline(testUser, membershipRequestsModel.toModel(request).value)
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member, MembershipRole.Member) must be(None)
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg.reference, member.reference, MembershipRole.Member) must be(None)
     organizationLogsDao.findAll(Authorization.All, organization = Some(newOrg.reference), limit = 1).map(_.message) must equal(
       Seq("Declined membership request for %s to join as member".format(member.email))
     )

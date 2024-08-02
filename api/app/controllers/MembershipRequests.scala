@@ -1,6 +1,6 @@
 package controllers
 
-import db.{MembershipRequestsDao, InternalOrganizationsDao, UsersDao}
+import db.{MembershipRequestsDao, InternalOrganizationsDao, InternalUsersDao}
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.api.v0.models.{Organization, User}
 import io.apibuilder.common.v0.models.MembershipRole
@@ -17,7 +17,7 @@ class MembershipRequests @Inject() (
                                      val apiBuilderControllerComponents: ApiBuilderControllerComponents,
                                      membershipRequestsDao: MembershipRequestsDao,
                                      organizationsDao: InternalOrganizationsDao,
-                                     usersDao: UsersDao,
+                                     usersDao: InternalUsersDao,
                                      model: MembershipRequestsModel
 ) extends ApiBuilderController {
 
@@ -71,7 +71,7 @@ class MembershipRequests @Inject() (
                 Conflict(Json.toJson(Validation.error("User not found")))
               }
 
-              case Some(user: User) => {
+              case Some(user) => {
                 MembershipRole.fromString(form.role) match {
                   case None => {
                     Conflict(Json.toJson(Validation.error("Invalid role")))

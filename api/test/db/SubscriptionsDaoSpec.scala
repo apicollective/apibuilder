@@ -15,7 +15,7 @@ class SubscriptionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Hel
 
     Publication.all.foreach { publication => createSubscription(org, user, publication) }
 
-    membershipsDao.softDelete(testUser, membership)
+    membershipsDao.softDelete(testUser.reference, membership)
 
     val subscriptions = subscriptionsDao.findAll(
       Authorization.All,

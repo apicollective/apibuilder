@@ -72,14 +72,14 @@ class OrganizationAttributeValuesDao @Inject() (
     Validation.errors(attributeErrors ++ valueErrors)
   }
 
-  def upsert(user: User, organization: InternalOrganization, attribute: InternalAttribute, form: AttributeValueForm): AttributeValue = {
+  def upsert(user: InternalUser, organization: InternalOrganization, attribute: InternalAttribute, form: AttributeValueForm): AttributeValue = {
     findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
       case None => create(user, organization, attribute, form)
       case Some(existing) => update(user, organization, existing, form)
     }
   }
 
-  def create(user: User, organization: InternalOrganization, attribute: InternalAttribute, form: AttributeValueForm): AttributeValue = {
+  def create(user: InternalUser, organization: InternalOrganization, attribute: InternalAttribute, form: AttributeValueForm): AttributeValue = {
     val errors = validate(organization, AttributeSummary(attribute.guid, attribute.name), form, None)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -100,7 +100,7 @@ class OrganizationAttributeValuesDao @Inject() (
     }
   }
 
-  def update(user: User, organization: InternalOrganization, existing: AttributeValue, form: AttributeValueForm): AttributeValue = {
+  def update(user: InternalUser, organization: InternalOrganization, existing: AttributeValue, form: AttributeValueForm): AttributeValue = {
     val errors = validate(organization, existing.attribute, form, Some(existing))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -117,8 +117,8 @@ class OrganizationAttributeValuesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, org: AttributeValue): Unit = {
-    dbHelpers.delete(deletedBy, org.guid)
+  def softDelete(deletedBy: InternalUser, org: AttributeValue): Unit = {
+    dbHelpers.delete(deletedBy.guid, org.guid)
   }
 
   def findByGuid(guid: UUID): Option[AttributeValue] = {

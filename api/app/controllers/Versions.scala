@@ -204,7 +204,7 @@ class Versions @Inject() (
   }
 
   private def upsertVersion(
-    user: User,
+    user: InternalUser,
     org: InternalOrganization,
     versionName: String,
     form: VersionForm,

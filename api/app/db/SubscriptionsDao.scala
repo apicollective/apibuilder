@@ -1,11 +1,11 @@
 package db
 
-import anorm._
+import anorm.*
 import io.apibuilder.api.v0.models.{Error, Publication, SubscriptionForm, User}
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
 import lib.Validation
-import play.api.db._
+import play.api.db.*
 import play.api.inject.Injector
 import util.OptionalQueryFilter
 
@@ -34,7 +34,7 @@ class SubscriptionsDao @Inject() (
   // TODO: resolve cicrular dependency
   private def organizationsDao = injector.instanceOf[InternalOrganizationsDao]
   private def subscriptionsDao = injector.instanceOf[SubscriptionsDao]
-  private def usersDao = injector.instanceOf[UsersDao]
+  private def usersDao = injector.instanceOf[InternalUsersDao]
 
   private val BaseQuery = Query(s"""
     select guid, user_guid,organization_guid, publication,
@@ -50,7 +50,7 @@ class SubscriptionsDao @Inject() (
   """
 
   def validate(
-    user: User,
+    user: InternalUser,
     form: SubscriptionForm
   ): Seq[Error] = {
     val org = organizationsDao.findByKey(Authorization.User(user.guid), form.organizationKey)
@@ -89,7 +89,7 @@ class SubscriptionsDao @Inject() (
     Validation.errors(organizationKeyErrors ++ publicationErrors ++ userErrors ++ alreadySubscribed)
   }
 
-  def create(createdBy: User, form: SubscriptionForm): InternalSubscription = {
+  def create(createdBy: InternalUser, form: SubscriptionForm): InternalSubscription = {
     val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -114,11 +114,11 @@ class SubscriptionsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, subscription: InternalSubscription): Unit = {
-    dbHelpers.delete(deletedBy, subscription.guid)
+  def softDelete(deletedBy: UserReference, subscription: InternalSubscription): Unit = {
+    dbHelpers.delete(deletedBy.guid, subscription.guid)
   }
 
-  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organizationGuid: UUID, userGuid: UUID): Unit = {
+  def deleteSubscriptionsRequiringAdmin(deletedBy: UserReference, organizationGuid: UUID, userGuid: UUID): Unit = {
     SubscriptionsDao.PublicationsRequiredAdmin.foreach { publication =>
       subscriptionsDao.findAll(
         Authorization.All,

@@ -1,7 +1,7 @@
 package lib
 
-import db._
-import io.apibuilder.api.v0.models._
+import db.*
+import io.apibuilder.api.v0.models.*
 import models.SubscriptionModel
 import play.api.Logging
 
@@ -75,7 +75,7 @@ class Emails @Inject() (
         )
       )
     } { subscription =>
-      if (isAuthorized(context, organization, subscription.user)) {
+      if (isAuthorized(context, organization, UserReference(subscription.user))) {
         logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
         f(subscription)
       } else {
@@ -87,7 +87,7 @@ class Emails @Inject() (
   private[lib] def isAuthorized(
     context: Emails.Context,
     organization: OrganizationReference,
-    user: User
+    user: UserReference
   ): Boolean = {
     isAuthorized(
       context, organizationGuid = organization.guid, userGuid = user.guid

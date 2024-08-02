@@ -104,7 +104,7 @@ class InternalApplicationsDao @Inject()(
   }
 
   def update(
-    updatedBy: User,
+    updatedBy: InternalUser,
     app: InternalApplication,
     form: ApplicationForm
   ): InternalApplication = {
@@ -128,7 +128,7 @@ class InternalApplicationsDao @Inject()(
   }
 
   def move(
-    updatedBy: User,
+    updatedBy: InternalUser,
     app: InternalApplication,
     form: MoveForm
   ): ValidatedNec[Error, InternalApplication] = {
@@ -158,7 +158,7 @@ class InternalApplicationsDao @Inject()(
   }
 
   def setVisibility(
-    updatedBy: User,
+    updatedBy: InternalUser,
     app: InternalApplication,
     visibility: Visibility
   ): InternalApplication = {
@@ -179,7 +179,7 @@ class InternalApplicationsDao @Inject()(
   }
 
   def create(
-    createdBy: User,
+    createdBy: InternalUser,
     org: InternalOrganization,
     form: ApplicationForm
   ): InternalApplication = {
@@ -206,13 +206,13 @@ class InternalApplicationsDao @Inject()(
     }
   }
 
-  def softDelete(deletedBy: User, app: InternalApplication): Unit = {
+  def softDelete(deletedBy: InternalUser, app: InternalApplication): Unit = {
     withTasks(app.guid, { c =>
       dao.delete(c, deletedBy.guid, app.db)
     })
   }
 
-  def canUserUpdate(user: User, app: InternalApplication): Boolean = {
+  def canUserUpdate(user: InternalUser, app: InternalApplication): Boolean = {
     findAll(Authorization.User(user.guid), key = Some(app.key), limit = Some(1)).nonEmpty
   }
 

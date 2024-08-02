@@ -2,7 +2,7 @@ package util
 
 import cats.data.Validated.{Invalid, Valid}
 import db.generators.{GeneratorsDao, ServicesDao}
-import db.{Authorization, UsersDao}
+import db.{Authorization, InternalUsersDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.interfaces.Client
 import io.apibuilder.generator.v0.models.Generator
@@ -18,10 +18,10 @@ import scala.concurrent.duration.{FiniteDuration, SECONDS}
 import scala.util.{Failure, Success, Try}
 
 class GeneratorServiceUtil @Inject() (
-  servicesDao: ServicesDao,
-  generatorsDao: GeneratorsDao,
-  usersDao: UsersDao,
-  generatorClientFactory: GeneratorClientFactory
+                                       servicesDao: ServicesDao,
+                                       generatorsDao: GeneratorsDao,
+                                       usersDao: InternalUsersDao,
+                                       generatorClientFactory: GeneratorClientFactory
 ) extends ValidatedHelpers {
 
   private val log: Logger = Logger(this.getClass)

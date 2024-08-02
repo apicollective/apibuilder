@@ -27,7 +27,7 @@ class OriginalsDao @Inject() () {
 
   def create(
     implicit c: java.sql.Connection,
-    user: User,
+    user: InternalUser,
     versionGuid: UUID,
     original: Original
   ): Unit = {
@@ -41,7 +41,7 @@ class OriginalsDao @Inject() () {
 
   def softDeleteByVersionGuid(
     implicit c: java.sql.Connection,
-    user: User,
+    user: InternalUser,
     guid: UUID
   ): Unit = {
     SQL(SoftDeleteByVersionGuidQuery).on(

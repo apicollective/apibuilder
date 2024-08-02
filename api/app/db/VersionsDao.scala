@@ -37,7 +37,7 @@ class VersionsDao @Inject() (
                               applicationsDao: InternalApplicationsDao,
                               originalsDao: OriginalsDao,
                               tasksDao: InternalTasksDao,
-                              usersDao: UsersDao,
+                              usersDao: InternalUsersDao,
                               organizationsDao: InternalOrganizationsDao,
                               versionsModel: VersionsModel
 ) extends ValidatedHelpers {
@@ -104,7 +104,7 @@ class VersionsDao @Inject() (
        and version = {version}
   """
 
-  def create(user: User, application: InternalApplication, version: String, original: Original, service: Service): InternalVersion = {
+  def create(user: InternalUser, application: InternalApplication, version: String, original: Original, service: Service): InternalVersion = {
     val latestVersion: Option[InternalVersion] = findAll(
       Authorization.User(user.guid),
       applicationGuid = Some(application.guid),
@@ -126,7 +126,7 @@ class VersionsDao @Inject() (
 
   private def doCreate(
     implicit c: java.sql.Connection,
-    user: User,
+    user: InternalUser,
     application: InternalApplication,
     version: String,
     original: Original,
@@ -149,7 +149,7 @@ class VersionsDao @Inject() (
     guid
   }
 
-  def softDelete(deletedBy: User, version: InternalVersion): Unit =  {
+  def softDelete(deletedBy: InternalUser, version: InternalVersion): Unit =  {
     db.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
@@ -175,7 +175,7 @@ class VersionsDao @Inject() (
     )
   }
 
-  def replace(user: User, version: InternalVersion, application: InternalApplication, original: Original, service: Service): InternalVersion = {
+  def replace(user: InternalUser, version: InternalVersion, application: InternalApplication, original: Original, service: Service): InternalVersion = {
     val versionGuid = db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
@@ -377,7 +377,7 @@ class VersionsDao @Inject() (
 
   private def softDeleteService(
     implicit c: java.sql.Connection,
-    user: User,
+    user: InternalUser,
     versionGuid: UUID
   ): Unit =  {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
@@ -389,7 +389,7 @@ class VersionsDao @Inject() (
 
   private def insertService(
     implicit c: java.sql.Connection,
-    user: User,
+    user: InternalUser,
     versionGuid: UUID,
     service: Service
   ): Unit =  {

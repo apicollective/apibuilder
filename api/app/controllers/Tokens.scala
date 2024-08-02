@@ -51,8 +51,7 @@ class Tokens @Inject() (
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[TokenForm] => {
-        val form = s.get
+      case JsSuccess(form: TokenForm, _) => {
         tokensDao.validate(request.user, form) match {
           case Nil => {
             val token = tokensDao.create(request.user, form)

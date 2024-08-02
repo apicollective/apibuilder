@@ -1,6 +1,6 @@
 package db
 
-import helpers.RandomHelpers
+import helpers.{RandomHelpers, ValidatedTestHelpers}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.spec.v0.models.Service
@@ -10,22 +10,26 @@ import play.api.libs.json.Json
 
 import java.util.UUID
 
-trait Helpers extends util.Daos with RandomHelpers {
+trait Helpers extends util.Daos with RandomHelpers with ValidatedTestHelpers {
   def versionsModel: VersionsModel = injector.instanceOf[VersionsModel]
   private def membershipRequestsModel: MembershipRequestsModel = injector.instanceOf[MembershipRequestsModel]
 
-  def createRandomUser(): User = {
+  def createRandomUser(): InternalUser = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
-    usersDao.create(UserForm(email = email, password = "test1"))
+    expectValid {
+      usersDao.create(UserForm(email = email, password = "test1"))
+    }
   }
 
   def upsertUser(
     email: String = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     name: String = "Admin",
     password: String = "test1"
-  ): User = {
+  ): InternalUser = {
     usersDao.findByEmail(email).getOrElse {
-      usersDao.create(UserForm(email = email, name = Some(name), password = password))
+      expectValid {
+        usersDao.create(UserForm(email = email, name = Some(name), password = password))
+      }
     }
   }
 
@@ -42,7 +46,7 @@ trait Helpers extends util.Daos with RandomHelpers {
   }
 
   def createOrganization(
-    createdBy: User = testUser,
+    createdBy: InternalUser = testUser,
     name: Option[String] = None,
     key: Option[String] = None,
     namespace: Option[String] = None,
@@ -61,7 +65,7 @@ trait Helpers extends util.Daos with RandomHelpers {
 
   def createOrganization(
     form: OrganizationForm,
-    createdBy: User
+    createdBy: InternalUser
   ): InternalOrganization = {
     organizationsDao.createWithAdministrator(createdBy, form)
   }
@@ -157,7 +161,7 @@ trait Helpers extends util.Daos with RandomHelpers {
 
   def createMembership(
     org: InternalOrganization,
-    user: User = createRandomUser(),
+    user: InternalUser = createRandomUser(),
     role: MembershipRole = MembershipRole.Admin
   ): InternalMembership = {
     val request = membershipRequestsModel.toModel(
@@ -165,14 +169,14 @@ trait Helpers extends util.Daos with RandomHelpers {
     ).get
     membershipRequestsDao.accept(testUser, request)
 
-    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org.reference, user, role).getOrElse {
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org.reference, user.reference, role).getOrElse {
       sys.error("membership could not be created")
     }
   }
 
   def createSubscription(
     org: InternalOrganization,
-    user: User = createRandomUser(),
+    user: InternalUser = createRandomUser(),
     publication: Publication = Publication.all.head
   ): InternalSubscription = {
     createSubscription(
@@ -223,8 +227,10 @@ trait Helpers extends util.Daos with RandomHelpers {
 
   def createUser(
     form: UserForm = createUserForm()
-  ): User = {
-    usersDao.create(form)
+  ): InternalUser = {
+    expectValid {
+      usersDao.create(form)
+    }
   }
 
   def createUserForm(): UserForm = UserForm(
@@ -237,6 +243,6 @@ trait Helpers extends util.Daos with RandomHelpers {
 
   lazy val testOrg: InternalOrganization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
-  lazy val testUser: User = createUser()
+  lazy val testUser: InternalUser = createUser()
 
 }

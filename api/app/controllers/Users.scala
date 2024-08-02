@@ -1,10 +1,12 @@
 package controllers
 
+import cats.data.Validated.{Invalid, Valid}
 import io.apibuilder.api.v0.models.{User, UserForm, UserUpdateForm}
 import io.apibuilder.api.v0.models.json.*
-import lib.Validation
+import lib.{Constants, Validation}
 import util.SessionHelper
-import db.{UserPasswordsDao, UsersDao}
+import db.{InternalUser, InternalUsersDao, UserPasswordsDao}
+import models.UsersModel
 
 import javax.inject.Inject
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, JsValue, Json, Reads}
@@ -16,11 +18,12 @@ import play.api.mvc.{Action, AnyContent}
 import scala.concurrent.Future
 
 class Users @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  wsClient: WSClient,
-  sessionHelper: SessionHelper,
-  usersDao: UsersDao,
-  userPasswordsDao: UserPasswordsDao
+                        val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                        wsClient: WSClient,
+                        sessionHelper: SessionHelper,
+                        usersDao: InternalUsersDao,
+                        userPasswordsDao: UserPasswordsDao,
+                        model: UsersModel
 ) extends ApiBuilderController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,16 +49,17 @@ class Users @Inject() (
       guid = guid,
       email = email,
       nickname = nickname,
-      token = token
+      token = token,
+      limit = None
     )
-    Ok(Json.toJson(users))
+    Ok(Json.toJson(model.toModels(users)))
   }
 
   def getByGuid(guid: UUID): Action[AnyContent] = Identified { request =>
     requireSystemUser(request.user)
     usersDao.findByGuid(guid) match {
       case None => NotFound
-      case Some(user: User) => Ok(Json.toJson(user))
+      case Some(user) => Ok(Json.toJson(model.toModel(user)))
     }
   }
 
@@ -65,14 +69,9 @@ class Users @Inject() (
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case JsSuccess(form: UserForm, _) => {
-        usersDao.validateNewUser(form) match {
-          case Nil => {
-            val user = usersDao.create(form)
-            Ok(Json.toJson(user))
-          }
-          case errors => {
-            Conflict(Json.toJson(errors))
-          }
+        usersDao.create(form) match {
+          case Valid(user) => Ok(Json.toJson(model.toModel(user)))
+          case Invalid(errors) => Conflict(Json.toJson(errors.toNonEmptyList.toList))
         }
       }
     }
@@ -80,39 +79,14 @@ class Users @Inject() (
 
   def putByGuid(guid: UUID): Action[JsValue] = Identified(parse.json) { request =>
     request.body.validate[UserUpdateForm] match {
-      case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
-      }
-      case s: JsSuccess[UserUpdateForm] => {
-        val form = s.get
-        usersDao.findByGuid(guid.toString) match {
-
+      case e: JsError => Conflict(Json.toJson(Validation.invalidJson(e)))
+      case JsSuccess(form: UserUpdateForm, _) => {
+        usersDao.findByGuid(guid) match {
           case None => NotFound
-
-          case Some(u: User) if u.guid != request.user.guid=> Unauthorized
-
-          case Some(_: User) => {
-            val existingUser = usersDao.findByGuid(guid)
-
-            usersDao.validate(form, existingUser = existingUser) match {
-              case Nil => {
-                existingUser match {
-                  case None => {
-                    NotFound
-                  }
-
-                  case Some(existing) => {
-                    usersDao.update(request.user, existing, form)
-                    val user =usersDao.findByGuid(guid.toString).getOrElse {
-                      sys.error("Failed to update user")
-                    }
-                    Ok(Json.toJson(user))
-                  }
-                }
-              }
-              case errors => {
-                Conflict(Json.toJson(errors))
-              }
+          case Some(existingUser) => {
+            usersDao.update(request.user, existingUser, form) match {
+              case Valid(user) => Ok(Json.toJson(model.toModel(user)))
+              case Invalid(errors) => Conflict(Json.toJson(errors.toNonEmptyList.toList))
             }
           }
         }
@@ -185,9 +159,9 @@ class Users @Inject() (
     }
   }
 
-  private def requireSystemUser(user: User): Unit = {
+  private def requireSystemUser(user: InternalUser): Unit = {
     require(
-      user.guid == UsersDao.AdminUserGuid,
+      user.guid == Constants.AdminUserGuid,
       "Action restricted to the system admin user"
     )
   }

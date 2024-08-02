@@ -1,21 +1,27 @@
 package lib
 
 import io.apibuilder.api.v0.models.User
+
 import java.util.UUID
 import java.nio.file.{Files, Path, Paths}
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-import com.sendgrid._
-import com.sendgrid.helpers.mail._
-import com.sendgrid.helpers.mail.objects._
+import com.sendgrid.*
+import com.sendgrid.helpers.mail.*
+import com.sendgrid.helpers.mail.objects.*
+import db.InternalUser
 
 
 case class Person(email: String, name: Option[String] = None)
 
 object Person {
+  def apply(user: InternalUser): Person = Person(
+    email = user.email,
+    name = user.name
+  )
+
   def apply(user: User): Person = Person(
     email = user.email,
     name = user.name

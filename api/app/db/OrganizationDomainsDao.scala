@@ -26,13 +26,13 @@ class OrganizationDomainsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {domain}, {created_by_guid}::uuid)
   """  
 
-  def create(createdBy: User, org: InternalOrganization, domainName: String): OrganizationDomain = {
+  def create(createdBy: InternalUser, org: InternalOrganization, domainName: String): OrganizationDomain = {
     db.withConnection { implicit c =>
       create(c, createdBy, org.guid, domainName)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, orgGuid: UUID, domainName: String): OrganizationDomain = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: InternalUser, orgGuid: UUID, domainName: String): OrganizationDomain = {
     val domain = OrganizationDomain(
       guid = UUID.randomUUID,
       organizationGuid = orgGuid,
@@ -49,8 +49,8 @@ class OrganizationDomainsDao @Inject() (
     domain
   }
 
-  def softDelete(deletedBy: User, domain: OrganizationDomain): Unit = {
-    dbHelpers.delete(deletedBy, domain.guid)
+  def softDelete(deletedBy: InternalUser, domain: OrganizationDomain): Unit = {
+    dbHelpers.delete(deletedBy.guid, domain.guid)
   }
 
   def findAll(

@@ -1,20 +1,25 @@
 package util
 
+import db.InternalUser
 import io.apibuilder.api.v0.models.{Authentication, Session, User}
+import models.UsersModel
+import javax.inject.Inject
 
-object Conversions {
+class Conversions @Inject() (
+  usersModel: UsersModel
+) {
 
-  def toSession(db: _root_.db.generated.Session): Session = {
+  private def toSession(db: _root_.db.generated.Session): Session = {
     Session(
       id = db.id,
       expiresAt = db.expiresAt
     )
   }
 
-  def toAuthentication(dbSession: _root_.db.generated.Session, user: User): Authentication = {
+  def toAuthentication(dbSession: _root_.db.generated.Session, user: InternalUser): Authentication = {
     Authentication(
       session = toSession(dbSession),
-      user = user
+      user = usersModel.toModel(user)
     )
   }
 

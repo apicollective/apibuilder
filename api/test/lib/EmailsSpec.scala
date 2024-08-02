@@ -1,5 +1,6 @@
 package lib
 
+import db.InternalUser
 import io.apibuilder.api.v0.models.Visibility
 import io.apibuilder.common.v0.models.MembershipRole
 import org.scalatestplus.play.PlaySpec
@@ -27,15 +28,19 @@ class EmailsSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
     lazy val formerMember = {
       val user = createRandomUser()
       val membership = createMembership(org, user)
-      membershipsDao.softDelete(user, membership)
+      membershipsDao.softDelete(user.reference, membership)
       user
     }
 
     "Context.Application for private app" in {
       val app = createApplication(org = org)
-      emails.isAuthorized(Emails.Context.Application(app), org.reference, randomUser) must be(false)
-      emails.isAuthorized(Emails.Context.Application(app), org.reference, orgMember) must be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org.reference, formerMember) must be(false)
+      def check(user: InternalUser): Boolean = {
+        emails.isAuthorized(Emails.Context.Application(app), org.reference, user.reference)
+      }
+
+      check(randomUser) must be(false)
+      check(orgMember) must be(true)
+      check(formerMember) must be(false)
     }
 
     "Context.Application for public app" in {
@@ -44,23 +49,35 @@ class EmailsSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers {
         createApplicationForm(visibility = Visibility.Public)
       )
 
-      emails.isAuthorized(Emails.Context.Application(app), org.reference, randomUser) must be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org.reference, orgMember) must be(true)
-      emails.isAuthorized(Emails.Context.Application(app), org.reference, formerMember) must be(true)
+      def check(user: InternalUser): Boolean = {
+        emails.isAuthorized(Emails.Context.Application(app), org.reference, user.reference)
+      }
+
+      check(randomUser) must be(true)
+      check(orgMember) must be(true)
+      check(formerMember) must be(true)
     }
 
     "Context.OrganizationAdmin" in {
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, randomUser) must be(false)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, orgMember) must be(false)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, orgAdmin) must be(true)
-      emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, formerMember) must be(false)
+      def check(user: InternalUser): Boolean = {
+        emails.isAuthorized(Emails.Context.OrganizationAdmin, org.reference, user.reference)
+      }
+
+      check(randomUser) must be(false)
+      check(orgMember) must be(false)
+      check(orgAdmin) must be(true)
+      check(formerMember) must be(false)
     }
 
     "Context.OrganizationMember" in {
-      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, randomUser) must be(false)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, orgMember) must be(true)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, orgAdmin) must be(true)
-      emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, formerMember) must be(false)
+      def check(user: InternalUser): Boolean = {
+        emails.isAuthorized(Emails.Context.OrganizationMember, org.reference, user.reference)
+      }
+
+      check(randomUser) must be(false)
+      check(orgMember) must be(true)
+      check(orgAdmin) must be(true)
+      check(formerMember) must be(false)
     }
 
   }

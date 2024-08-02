@@ -23,8 +23,8 @@ class EmailVerificationConfirmationForms @Inject() (
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[EmailVerificationConfirmationForm] => {
-        val token = s.get.token
+      case JsSuccess(form: EmailVerificationConfirmationForm, _) => {
+        val token = form.token
         emailVerificationsDao.findByToken(token) match {
           case None => Conflict(Json.toJson("Token not found or has already expired"))
           case Some(verification) => {

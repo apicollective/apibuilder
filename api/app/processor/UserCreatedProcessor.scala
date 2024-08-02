@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 class UserCreatedProcessor @Inject()(
                                       args: TaskProcessorArgs,
-                                      usersDao: UsersDao,
+                                      usersDao: InternalUsersDao,
                                       organizationsDao: InternalOrganizationsDao,
                                       membershipRequestsDao: MembershipRequestsDao,
                                       emailVerificationsDao: EmailVerificationsDao,

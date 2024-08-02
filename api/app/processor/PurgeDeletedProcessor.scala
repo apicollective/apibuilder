@@ -3,7 +3,7 @@ package processor
 import anorm._
 import cats.implicits._
 import cats.data.ValidatedNec
-import db.UsersDao
+import db.InternalUsersDao
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
@@ -17,9 +17,9 @@ import scala.collection.concurrent.TrieMap
 
 
 class PurgeDeletedProcessor @Inject()(
-  args: TaskProcessorArgs,
-  db: Database,
-  usersDao: UsersDao,
+                                       args: TaskProcessorArgs,
+                                       db: Database,
+                                       usersDao: InternalUsersDao,
 ) extends TaskProcessor(args, TaskType.PurgeDeleted) {
 
   override def processRecord(id: String): ValidatedNec[String, Unit] = {

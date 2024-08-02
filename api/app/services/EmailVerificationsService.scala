@@ -18,7 +18,7 @@ class EmailVerificationsService @Inject()(
   organizationsDao: InternalOrganizationsDao
 ) {
 
-  def confirm(user: Option[User], verification: EmailVerification): ValidatedNec[String, Unit] = {
+  def confirm(user: Option[InternalUser], verification: EmailVerification): ValidatedNec[String, Unit] = {
     validateExpiration(verification).map { _ =>
       val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
 

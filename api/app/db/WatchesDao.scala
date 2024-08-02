@@ -13,7 +13,8 @@ import util.OptionalQueryFilter
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-case class ValidatedWatchForm(user: User,
+case class ValidatedWatchForm(
+  user: InternalUser,
   application: InternalApplication,
 )
 
@@ -27,7 +28,7 @@ case class InternalWatch(
 class WatchesDao @Inject() (
                              @NamedDatabase("default") db: Database,
                              applicationsDao: InternalApplicationsDao,
-                             usersDao: UsersDao
+                             usersDao: InternalUsersDao
 ) {
 
   private val dbHelpers = DbHelpers(db, "watches")
@@ -64,7 +65,7 @@ class WatchesDao @Inject() (
     ).headOption
   }
 
-  def upsert(auth: Authorization, createdBy: User, form: WatchForm): ValidatedNec[Error, InternalWatch] = {
+  def upsert(auth: Authorization, createdBy: InternalUser, form: WatchForm): ValidatedNec[Error, InternalWatch] = {
     validate(auth, form).map { vForm =>
       def find: Option[InternalWatch] = findByApplicationGuidAndUserGuid(
         applicationGuid = vForm.application.guid,
@@ -87,8 +88,8 @@ class WatchesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, watch: InternalWatch): Unit =  {
-    dbHelpers.delete(deletedBy, watch.guid)
+  def softDelete(deletedBy: InternalUser, watch: InternalWatch): Unit =  {
+    dbHelpers.delete(deletedBy.guid, watch.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[InternalWatch] = {

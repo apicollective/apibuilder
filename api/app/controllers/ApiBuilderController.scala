@@ -1,7 +1,7 @@
 package controllers
 
 import com.google.inject.ImplementedBy
-import db.{Authorization, InternalOrganization, InternalOrganizationsDao, MembershipsDao}
+import db.{Authorization, InternalOrganization, InternalOrganizationsDao, MembershipsDao, InternalUser}
 import io.apibuilder.api.v0.models.User
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.MembershipRole
@@ -42,7 +42,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  def withOrgMember(user: User, orgKey: String)(f: InternalOrganization => Result): Result = {
+  def withOrgMember(user: InternalUser, orgKey: String)(f: InternalOrganization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
       withRole(org, user, MembershipRole.all) {
         f(org)
@@ -50,7 +50,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  def withOrgAdmin(user: User, orgKey: String)(f: InternalOrganization => Result): Result = {
+  def withOrgAdmin(user: InternalUser, orgKey: String)(f: InternalOrganization => Result): Result = {
     withOrg(Authorization.User(user.guid), orgKey) { org =>
       withRole(org, user, Seq(MembershipRole.Admin)) {
         f(org)
@@ -58,7 +58,7 @@ trait ApiBuilderController extends BaseController {
     }
   }
 
-  private def withRole(org: InternalOrganization, user: User, roles: Seq[MembershipRole])(f: => Result): Result = {
+  private def withRole(org: InternalOrganization, user: InternalUser, roles: Seq[MembershipRole])(f: => Result): Result = {
     val actualRoles = membershipsDao.findByOrganizationAndUserAndRoles(
       Authorization.All, org.reference, user, roles
     ).map(_.role)
@@ -104,7 +104,7 @@ class ApiBuilderDefaultControllerComponents @Inject() (
 ) extends ApiBuilderControllerComponents
 
 case class AnonymousRequest[A](
-  user: Option[User],
+  user: Option[InternalUser],
   request: Request[A]
 ) extends WrappedRequest(request) {
   val authorization: Authorization = user match {
@@ -114,7 +114,7 @@ case class AnonymousRequest[A](
 }
 
 case class IdentifiedRequest[A](
-  user: User,
+  user: InternalUser,
   request: Request[A]
 ) extends WrappedRequest(request) {
   val authorization: Authorization.User = Authorization.User(user.guid)

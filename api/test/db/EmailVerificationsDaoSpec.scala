@@ -91,12 +91,12 @@ class EmailVerificationsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with H
 
     val prefix = "test-user-" + UUID.randomUUID.toString
 
-    val user = usersDao.create(UserForm(
+    val user = createUser(UserForm(
       email = prefix + "@" + domain,
       password = "testing"
     ))
 
-    val nonMatchingUser = usersDao.create(UserForm(
+    val nonMatchingUser = createUser(UserForm(
       email = prefix + "@other." + domain,
       password = "testing"
     ))

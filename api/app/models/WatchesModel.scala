@@ -1,7 +1,7 @@
 package models
 
 import cats.implicits._
-import db.{InternalApplicationsDao, Authorization, InternalWatch, InternalOrganizationsDao, UsersDao}
+import db.{InternalApplicationsDao, Authorization, InternalWatch, InternalOrganizationsDao, InternalUsersDao}
 import io.apibuilder.api.v0.models.Watch
 
 import javax.inject.Inject
@@ -10,7 +10,7 @@ class WatchesModel @Inject()(
                               organizationsDao: InternalOrganizationsDao,
                               applicationsDao: InternalApplicationsDao,
                               applicationsModel: ApplicationsModel,
-                              usersDao: UsersDao,
+                              usersModel: UsersModel,
                               organizationsModel: OrganizationsModel,
                                         ) {
   def toModel(watch: InternalWatch): Option[Watch] = {
@@ -18,11 +18,9 @@ class WatchesModel @Inject()(
   }
 
   def toModels(watches: Seq[InternalWatch]): Seq[Watch] = {
-    val users = usersDao.findAll(
-      guids = Some(watches.map(_.userGuid))
-    ).map { u => u.guid -> u }.toMap
+    val users = usersModel.toModelByGuids(watches.map(_.userGuid)).map { u => u.guid -> u }.toMap
 
-    val applications = applicationsModel.toModels (
+    val applications = applicationsModel.toModels(
       applicationsDao.findAll(
         Authorization.All,
         guids = Some(watches.map(_.applicationGuid).distinct),
@@ -37,11 +35,11 @@ class WatchesModel @Inject()(
     )).map { o => o.guid -> o }.toMap
 
     watches.flatMap { w =>
-      (users.get(w.userGuid),
-        applications.get(w.applicationGuid).flatMap { a =>
-          organizations.get(a.organization.guid).map { o => (o, a) }
-        },
-      ).mapN { case (user, (org, app)) =>
+      for {
+        user <- users.get(w.userGuid)
+        app <- applications.get(w.applicationGuid)
+        org <- organizations.get(app.organization.guid)
+      } yield {
         Watch(
           guid = w.guid,
           user = user,
@@ -52,4 +50,5 @@ class WatchesModel @Inject()(
       }
     }
   }
+
 }

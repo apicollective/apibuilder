@@ -57,7 +57,7 @@ class InternalAttributesDao @Inject()(
     desc.map(_.trim).filterNot(_.isEmpty).validNec
   }
 
-  def create(user: User, form: AttributeForm): ValidatedNec[io.apibuilder.api.v0.models.Error, InternalAttribute] = {
+  def create(user: InternalUser, form: AttributeForm): ValidatedNec[io.apibuilder.api.v0.models.Error, InternalAttribute] = {
     validate(form).map { vForm =>
       val guid = dao.insert(user.guid, db.generated.AttributeForm(
         name = vForm.name,
@@ -70,7 +70,7 @@ class InternalAttributesDao @Inject()(
     }
   }
 
-  def softDelete(deletedBy: User, attributes: InternalAttribute): Unit = {
+  def softDelete(deletedBy: InternalUser, attributes: InternalAttribute): Unit = {
     dao.delete(deletedBy.guid, attributes.db)
   }
 

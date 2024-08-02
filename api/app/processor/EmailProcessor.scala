@@ -2,7 +2,7 @@ package processor
 
 import cats.data.ValidatedNec
 import cats.implicits._
-import db.{Authorization, InternalOrganizationsDao, InternalTasksDao, UsersDao}
+import db.{Authorization, InternalOrganizationsDao, InternalTasksDao, InternalUsersDao}
 import io.apibuilder.api.v0.models.Publication
 import io.apibuilder.common.v0.models.MembershipRole
 import io.apibuilder.task.v0.models._
@@ -37,7 +37,7 @@ class EmailProcessor @Inject()(
                                 membershipRequestsModel: MembershipRequestsModel,
                                 organizationsDao: InternalOrganizationsDao,
                                 passwordResetRequestsDao: db.PasswordResetRequestsDao,
-                                usersDao: UsersDao,
+                                usersDao: InternalUsersDao,
                                 orgModel: OrganizationsModel,
 ) extends TaskProcessorWithData[EmailData](args, TaskType.Email) {
 

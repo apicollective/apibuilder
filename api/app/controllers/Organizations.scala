@@ -76,11 +76,10 @@ class Organizations @Inject() (
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[OrganizationForm] => { 
+      case JsSuccess(form: OrganizationForm, _) => { 
         organizationsDao.findByKey(request.authorization, key) match {
           case None => NotFound
           case Some(existing) => {
-            val form = s.get
             val errors = organizationsDao.validate(form, Some(existing))
             if (errors.isEmpty) {
               val org = organizationsDao.update(request.user, existing, form)

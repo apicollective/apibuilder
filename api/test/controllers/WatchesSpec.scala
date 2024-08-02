@@ -1,6 +1,6 @@
 package controllers
 
-import db.{InternalApplication, InternalOrganization}
+import db.{InternalUser, InternalApplication, InternalOrganization}
 import io.apibuilder.api.v0.models.{Organization, User, Watch, WatchForm}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -18,7 +18,7 @@ class WatchesSpec extends PlaySpec with MockClient with GuiceOneServerPerSuite {
   }
 
   def createWatchForm(
-    user: User = createUser(),
+    user: InternalUser = createUser(),
     org: InternalOrganization = createOrganization(),
     application: Option[InternalApplication] = None
   ): WatchForm = WatchForm(

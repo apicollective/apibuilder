@@ -1,11 +1,29 @@
 package lib
 
+import cats.data.ValidatedNec
+import cats.implicits.catsSyntaxValidatedIdBinCompat0
+import io.apibuilder.api.v0.models.Error
+
 object Misc {
 
-  def isValidEmail(email: String): Boolean = {
-    email.split("@").toList match {
-      case username :: domain :: Nil => !username.trim.isEmpty && !domain.trim.isEmpty
-      case _ => false
+  def validateEmail(email: String): ValidatedNec[Error, String] = {
+    def err(msg: String) = Validation.singleError(msg).invalidNec
+    val trimmed = email.trim
+
+    if (!trimmed.contains("@")) {
+      err("Email must have an '@' symbol")
+
+    } else if (trimmed == "@") {
+      err("Invalid Email: missing username and domain")
+
+    } else if (trimmed.startsWith("@")) {
+      err("Invalid Email: missing username")
+
+    } else if (trimmed.endsWith("@")) {
+      err("Invalid Email: missing domain")
+
+    } else {
+      trimmed.validNec
     }
   }
 

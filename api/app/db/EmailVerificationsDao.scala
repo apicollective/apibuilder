@@ -43,13 +43,13 @@ class EmailVerificationsDao @Inject() (
     ({guid}::uuid, {user_guid}::uuid, {email}, {token}, {expires_at}, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, user: User, email: String): EmailVerification = {
+  def upsert(createdBy: InternalUser, user: InternalUser, email: String): EmailVerification = {
     findAll(userGuid = Some(user.guid), email = Some(email), isExpired = Some(false), limit = 1).headOption.getOrElse {
       create(createdBy, user, email)
     }
   }
 
-  def create(createdBy: User, user: User, email: String): EmailVerification = {
+  def create(createdBy: InternalUser, user: InternalUser, email: String): EmailVerification = {
     val guid = UUID.randomUUID
     db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
@@ -68,7 +68,7 @@ class EmailVerificationsDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, verification: EmailVerification): Unit = {
+  def softDelete(deletedBy: InternalUser, verification: EmailVerification): Unit = {
     dbHelpers.delete(deletedBy.guid, verification.guid)
   }
 

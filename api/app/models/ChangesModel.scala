@@ -8,10 +8,10 @@ import java.util.UUID
 import javax.inject.Inject
 
 class ChangesModel @Inject()(
-  orgDao: InternalOrganizationsDao,
-  appDao: InternalApplicationsDao,
-  versionsDao: VersionsDao,
-  usersDao: UsersDao,
+                              orgDao: InternalOrganizationsDao,
+                              appDao: InternalApplicationsDao,
+                              versionsDao: VersionsDao,
+                              usersDao: InternalUsersDao,
 ) {
   def toModel(v: InternalChange): Option[Change] = {
     toModels(Seq(v)).headOption

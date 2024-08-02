@@ -56,7 +56,7 @@ class ServicesDao @Inject() (
     Validation.errors(uriErrors)
   }
 
-  def create(user: User, form: GeneratorServiceForm): GeneratorService = {
+  def create(user: InternalUser, form: GeneratorServiceForm): GeneratorService = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -79,7 +79,7 @@ class ServicesDao @Inject() (
   /**
     * Also will soft delete all generators for this service
     */
-  def softDelete(deletedBy: User, service: GeneratorService): Unit = {
+  def softDelete(deletedBy: InternalUser, service: GeneratorService): Unit = {
     db.withTransaction { c =>
       generatorsDao.softDeleteAllByServiceGuid(c, deletedBy, service.guid)
       dbHelpers.delete(c, deletedBy = deletedBy.guid, guid = service.guid)

@@ -5,7 +5,7 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits._
 import db.generators.{GeneratorsDao, ServicesDao}
-import db.{Authorization, UsersDao}
+import db.{Authorization, InternalUsersDao}
 import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
 import io.apibuilder.generator.v0.interfaces.Client
 import io.apibuilder.generator.v0.models.Generator
@@ -23,12 +23,12 @@ import scala.util.{Failure, Success, Try}
 
 
 class SyncGeneratorServiceProcessor @Inject()(
-  args: TaskProcessorArgs,
-  system: ActorSystem,
-  servicesDao: ServicesDao,
-  generatorsDao: GeneratorsDao,
-  usersDao: UsersDao,
-  generatorClientFactory: GeneratorClientFactory
+                                               args: TaskProcessorArgs,
+                                               system: ActorSystem,
+                                               servicesDao: ServicesDao,
+                                               generatorsDao: GeneratorsDao,
+                                               usersDao: InternalUsersDao,
+                                               generatorClientFactory: GeneratorClientFactory
 ) extends TaskProcessorWithGuid(args, TaskType.SyncGeneratorService) with ValidatedHelpers {
 
   private val log: Logger = Logger(this.getClass)

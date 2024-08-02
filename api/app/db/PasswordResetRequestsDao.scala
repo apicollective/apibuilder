@@ -25,7 +25,7 @@ class PasswordResetRequestsDao @Inject() (
   @NamedDatabase("default") db: Database,
   emailQueue: EmailProcessorQueue,
   userPasswordsDao: UserPasswordsDao,
-  usersDao: UsersDao
+  usersDao: InternalUsersDao
 ) {
 
   private val TokenLength = 80
@@ -48,7 +48,7 @@ class PasswordResetRequestsDao @Inject() (
     ({guid}::uuid, {user_guid}::uuid, {token}, {expires_at}, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: Option[User], user: User): PasswordReset = {
+  def create(createdBy: Option[InternalUser], user: InternalUser): PasswordReset = {
     val guid = UUID.randomUUID
     db.withTransaction { implicit c =>
       SQL(InsertQuery).on(
@@ -70,7 +70,7 @@ class PasswordResetRequestsDao @Inject() (
     pr.expiresAt.isBeforeNow
   }
 
-  def resetPassword(user: Option[User], pr: PasswordReset, newPassword: String): Unit = {
+  def resetPassword(user: Option[InternalUser], pr: PasswordReset, newPassword: String): Unit = {
     assert(
       !isExpired(pr),
       s"Password reset[${pr.guid}] is expired"
@@ -86,8 +86,8 @@ class PasswordResetRequestsDao @Inject() (
     softDelete(updatingUser, pr)
   }
 
-  def softDelete(deletedBy: User, pr: PasswordReset): Unit =  {
-    dbHelpers.delete(deletedBy, pr.guid)
+  def softDelete(deletedBy: InternalUser, pr: PasswordReset): Unit =  {
+    dbHelpers.delete(deletedBy = deletedBy.guid, guid = pr.guid)
   }
 
   def findByGuid(guid: UUID): Option[PasswordReset] = {

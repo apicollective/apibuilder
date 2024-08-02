@@ -114,10 +114,10 @@ class InternalOrganizationsDao @Inject()(
   /**
    * Creates the org and assigns the user as its administrator.
    */
-  def createWithAdministrator(user: User, form: OrganizationForm): InternalOrganization = {
+  def createWithAdministrator(user: InternalUser, form: OrganizationForm): InternalOrganization = {
     dao.db.withTransaction { implicit c =>
       val org = create(c, user, form)
-      membershipsDao.create(c, user.guid, org.reference, user, MembershipRole.Admin)
+      membershipsDao.create(c, user.guid, org.reference, user.reference, MembershipRole.Admin)
       organizationLogsDao.create(c, user.guid, org.reference, s"Created organization and joined as ${MembershipRole.Admin}")
       org
     }
@@ -134,7 +134,7 @@ class InternalOrganizationsDao @Inject()(
     }
   }
 
-  def update(user: User, existing: InternalOrganization, form: OrganizationForm): InternalOrganization = {
+  def update(user: InternalUser, existing: InternalOrganization, form: OrganizationForm): InternalOrganization = {
     val errors = validate(form, Some(existing))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -153,7 +153,7 @@ class InternalOrganizationsDao @Inject()(
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): InternalOrganization = {
+  private def create(implicit c: java.sql.Connection, user: InternalUser, form: OrganizationForm): InternalOrganization = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -173,7 +173,7 @@ class InternalOrganizationsDao @Inject()(
     })
   }
 
-  def softDelete(deletedBy: User, org: InternalOrganization): Unit = {
+  def softDelete(deletedBy: InternalUser, org: InternalOrganization): Unit = {
     dao.delete(deletedBy.guid, org.db)
   }
 
