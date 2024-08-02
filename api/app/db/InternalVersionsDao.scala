@@ -1,45 +1,45 @@
 package db
 
-import anorm._
+import anorm.*
 import builder.OriginalValidator
 import cats.data.ValidatedNec
-import cats.implicits._
+import cats.implicits.*
 import core.{ServiceFetcher, VersionMigration}
-import io.apibuilder.api.v0.models._
+import db.generated.VersionsDao
+import db.generated.cache.ServicesDao
+import io.apibuilder.api.v0.models.*
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.spec.v0.models.Service
-import io.apibuilder.spec.v0.models.json._
-import io.apibuilder.task.v0.models._
-import io.apibuilder.task.v0.models.json._
-import io.flow.postgresql.Query
+import io.apibuilder.spec.v0.models.json.*
+import io.apibuilder.task.v0.models.*
+import io.apibuilder.task.v0.models.json.*
+import io.flow.postgresql.{OrderBy, Query}
 import lib.{ServiceConfiguration, ServiceUri, ValidatedHelpers, VersionTag}
 import models.VersionsModel
 import org.joda.time.DateTime
 import play.api.Logger
-import play.api.db._
-import play.api.libs.json._
+import play.api.db.*
+import play.api.libs.json.*
 import processor.MigrateVersion
 
 import java.util.UUID
 import javax.inject.Inject
 
-case class InternalVersion(
-  guid: UUID,
-  applicationGuid: UUID,
-  version: String,
-  original: Option[Original],
-  serviceJson: Option[String],
-  audit: Audit
-)
+case class InternalVersion(db: generated.Version) {
+  val guid: UUID = db.guid
+  val applicationGuid: UUID = db.applicationGuid
+  val version: String = db.version
+}
 
-class VersionsDao @Inject() (
-                              @NamedDatabase("default") db: Database,
-                              applicationsDao: InternalApplicationsDao,
-                              originalsDao: OriginalsDao,
-                              tasksDao: InternalTasksDao,
-                              usersDao: InternalUsersDao,
-                              organizationsDao: InternalOrganizationsDao,
-                              versionsModel: VersionsModel
+class InternalVersionsDao @Inject()(
+  dao: VersionsDao,
+  applicationsDao: InternalApplicationsDao,
+  originalsDao: OriginalsDao,
+  tasksDao: InternalTasksDao,
+  usersDao: InternalUsersDao,
+  organizationsDao: InternalOrganizationsDao,
+  versionsModel: VersionsModel,
+  servicesDao: ServicesDao
 ) extends ValidatedHelpers {
 
   private val logger: Logger = Logger(this.getClass)
@@ -57,53 +57,6 @@ class VersionsDao @Inject() (
       |)
     """.stripMargin
 
-  private val BaseQuery = Query(s"""
-    select versions.guid, versions.version,
-           ${AuditsDao.queryCreationDefaultingUpdatedAt("versions")},
-           originals.type as original_type,
-           originals.data as original_data,
-           versions.application_guid,
-           (select services.json::text
-              from cache.services
-             where services.deleted_at is null
-               and services.version_guid = versions.guid
-             order by services.created_at desc
-              limit 1) as service_json
-     from versions
-     left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
-  """)
-
-  private val InsertQuery = """
-    insert into versions
-    (guid, application_guid, version, version_sort_key, created_by_guid)
-    values
-    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {created_by_guid}::uuid)
-  """
-
-  private val DeleteQuery = """
-    update versions
-       set deleted_at = now(),
-           deleted_by_guid = {deleted_by_guid}::uuid
-     where deleted_at is null
-       and guid = {guid}::uuid
-  """
-
-  private val InsertServiceQuery = """
-    insert into cache.services
-    (guid, version_guid, version, json, created_by_guid)
-    values
-    ({guid}::uuid, {version_guid}::uuid, {version}, {json}::json, {user_guid}::uuid)
-  """
-
-  private val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
-    update cache.services
-       set deleted_at = now(),
-           deleted_by_guid = {user_guid}::uuid
-     where deleted_at is null
-       and version_guid = {version_guid}::uuid
-       and version = {version}
-  """
-
   def create(user: InternalUser, application: InternalApplication, version: String, original: Original, service: Service): InternalVersion = {
     val latestVersion: Option[InternalVersion] = findAll(
       Authorization.User(user.guid),
@@ -111,7 +64,7 @@ class VersionsDao @Inject() (
       limit = Some(1)
     ).headOption
 
-    val guid = db.withTransaction { implicit c =>
+    val guid = dao.db.withTransaction { implicit c =>
       val versionGuid = doCreate(c, user, application, version, original, service)
       latestVersion.foreach { v =>
         createDiffTask(v.guid, versionGuid)
@@ -132,15 +85,13 @@ class VersionsDao @Inject() (
     original: Original,
     service: Service
   ): UUID = {
-    val guid = UUID.randomUUID
-
-    SQL(InsertQuery).on(
-      "guid" -> guid,
-      "application_guid" -> application.guid,
-      "version" -> version.trim,
-      "version_sort_key" -> VersionTag(version.trim).sortKey,
-      "created_by_guid" -> user.guid
-    ).execute()
+    val guid = dao.insert(c, user.guid, generated.VersionForm(
+      applicationGuid = application.guid,
+      version = version.trim,
+      versionSortKey = VersionTag(version.trim).sortKey,
+      original = None,
+      oldJson = None,
+    ))
 
     originalsDao.create(c, user, guid, original)
     softDeleteService(c, user, guid)
@@ -150,14 +101,10 @@ class VersionsDao @Inject() (
   }
 
   def softDelete(deletedBy: InternalUser, version: InternalVersion): Unit =  {
-    db.withTransaction { implicit c =>
+    dao.db.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
-
-      SQL(DeleteQuery).on(
-        "guid" -> version.guid,
-        "deleted_by_guid" -> deletedBy.guid
-      ).execute()
+      dao.delete(c, deletedBy.guid, version.db)
     }
   }
 
@@ -176,7 +123,7 @@ class VersionsDao @Inject() (
   }
 
   def replace(user: InternalUser, version: InternalVersion, application: InternalApplication, original: Original, service: Service): InternalVersion = {
-    val versionGuid = db.withTransaction { implicit c =>
+    val versionGuid = dao.db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
       createDiffTask(version.guid, versionGuid)
@@ -246,76 +193,43 @@ class VersionsDao @Inject() (
     limit: Option[Long],
     offset: Long = 0
   ): Seq[InternalVersion] = {
-    db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery, "application_guid").
-        and(HasServiceJsonClause).
-        equals("versions.guid", guid).
-        optionalIn("versions.guid", guids).
-        equals("versions.application_guid", applicationGuid).
-        equals("versions.version", version).
-        and(versionConstraint.map(vc => s"versions.version like '${vc}%'")).
-        and(isDeleted.map(Filters.isDeleted("versions", _))).
-        orderBy("versions.version_sort_key desc, versions.created_at desc").
-        optionalLimit(limit).
-        offset(offset).
-        as(parser.*)
-    }
+    dao.findAll(
+      guid = guid,
+      guids = guids,
+      applicationGuid = applicationGuid,
+      limit = limit,
+      offset = offset,
+      orderBy = Some(OrderBy("-version_sort_key, -created_at"))
+    ) { q =>
+      authorization.applicationFilter(q, "application_guid")
+      .and(HasServiceJsonClause)
+      .and(versionConstraint.map(vc => s"version like '${vc}%'"))
+      .and(isDeleted.map(Filters.isDeleted("versions", _)))
+      .equals("version", version)
+    }.map(InternalVersion(_))
   }
 
+  // Efficient query to fetch all versions of a given application
   def findAllVersions(
     authorization: Authorization,
     applicationGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[ApplicationMetadataVersion] = {
-    db.withConnection { implicit c =>
-      authorization.applicationFilter(BaseQuery, "application_guid").
-        and(HasServiceJsonClause).
-        equals("versions.application_guid", applicationGuid).
-        and(isDeleted.map(Filters.isDeleted("versions", _))).
-        orderBy("versions.version_sort_key desc, versions.created_at desc").
-        limit(limit).
-        offset(offset).
-        as(applicationMetadataParser().*
-      )
-    }
-  }  
-
-  private def applicationMetadataParser(): RowParser[ApplicationMetadataVersion] = {
-    SqlParser.str("version") map { version =>
-      ApplicationMetadataVersion(
-        version = version
-      )
-    }
-  }
-
-  private val parser: RowParser[InternalVersion] = {
-    SqlParser.get[UUID]("guid") ~
-    SqlParser.get[UUID]("application_guid") ~
-    SqlParser.str("version") ~
-    SqlParser.str("original_type").? ~
-    SqlParser.str("original_data").? ~
-    SqlParser.str("service_json").? ~
-    SqlParser.get[DateTime]("created_at") ~
-    SqlParser.get[UUID]("created_by_guid") ~
-    SqlParser.get[DateTime]("updated_at") ~
-    SqlParser.get[UUID]("updated_by_guid") map {
-      case guid ~ applicationGuid ~ version ~ originalType ~ originalData ~ serviceJson ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
-        InternalVersion(
-          guid = guid,
-          applicationGuid = applicationGuid,
-          version = version,
-          original = (originalType.map(OriginalType.apply), originalData).mapN(Original(_, _)),
-          serviceJson = serviceJson,
-          audit = Audit(
-            createdAt = createdAt,
-            createdBy = ReferenceGuid(createdByGuid),
-            updatedAt = updatedAt,
-            updatedBy = ReferenceGuid(updatedByGuid),
-          )
-        )
-      }
+    dao.db.withConnection { c =>
+      authorization.applicationFilter(
+          Query("select version from versions").withDebugging,
+          "application_guid"
+        ).equals("application_guid", applicationGuid)
+        .and(isDeleted.map(Filters.isDeleted("versions", _)))
+        .optionalLimit(limit)
+        .offset(offset)
+        .orderBy("version_sort_key desc, created_at desc")
+        .as(SqlParser.str(1).*)(c)
+        .map { version =>
+          ApplicationMetadataVersion(version = version)
+        }
     }
   }
 
@@ -328,11 +242,11 @@ class VersionsDao @Inject() (
   }
 
   private def lookupVersionToMigrate(guid: UUID): Option[InternalVersion] = {
-    db.withConnection { implicit c =>
-      BaseQuery.
-        equals("versions.guid", guid).
-        as(parser.*)
-    }.headOption
+    dao.findByGuid(guid).map(InternalVersion(_))
+  }
+
+  private def validateOriginal(version: InternalVersion): ValidatedNec[String, InternalOriginal] = {
+    originalsDao.findByVersionGuid(version.guid).toValidNec("Cannot find original")
   }
 
   def migrateVersionGuid(guid: UUID): ValidatedNec[String, Unit] = {
@@ -345,12 +259,11 @@ class VersionsDao @Inject() (
         val versionName = version.version
         val versionGuid = version.guid
 
-
         (
           validateApplication(version.applicationGuid).andThen { app =>
             validateOrg(app.organizationGuid).map { o => (o, app) }
           },
-          version.original.toValidNec("Missing original"),
+          validateOriginal(version)
         ).mapN { case ((org, app), original) =>
           val serviceConfig = ServiceConfiguration(
             orgKey = org.key,
@@ -366,7 +279,7 @@ class VersionsDao @Inject() (
             migration = VersionMigration(internal = true)
           )
           validator.validate(original.data).map { service =>
-            db.withConnection { c =>
+            dao.db.withConnection { c =>
               insertService(c, usersDao.AdminUser, versionGuid, service)
             }
           }
@@ -380,11 +293,15 @@ class VersionsDao @Inject() (
     user: InternalUser,
     versionGuid: UUID
   ): Unit =  {
-    SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
-      "version_guid" -> versionGuid,
-      "version" -> MigrateVersion.ServiceVersionNumber,
-      "user_guid" -> user.guid
-    ).execute()
+    servicesDao.findAll(
+      versionGuid = Some(versionGuid),
+      limit = None
+    ) { q =>
+      q.equals("version", MigrateVersion.ServiceVersionNumber)
+        .isNull("deleted_at")
+    }.foreach { s =>
+      servicesDao.delete(user.guid, s)
+    }
   }
 
   private def insertService(
@@ -393,13 +310,11 @@ class VersionsDao @Inject() (
     versionGuid: UUID,
     service: Service
   ): Unit =  {
-    SQL(InsertServiceQuery).on(
-      "guid" -> UUID.randomUUID,
-      "version_guid" -> versionGuid,
-      "version" -> MigrateVersion.ServiceVersionNumber,
-      "json" -> Json.toJson(service).as[JsObject].toString.trim,
-      "user_guid" -> user.guid
-    ).execute()
+    servicesDao.insert(c, user.guid, generated.cache.ServiceForm(
+      versionGuid = versionGuid,
+      version = MigrateVersion.ServiceVersionNumber,
+      json = Json.toJson(service)
+    ))
   }
 
   private def databaseServiceFetcher(auth: Authorization) = {

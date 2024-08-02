@@ -1,14 +1,19 @@
 package db
 
-import io.apibuilder.api.v0.models.{Original, User}
-import anorm._
-import javax.inject.{Inject, Singleton}
-import play.api.db._
+import io.apibuilder.api.v0.models.{Original, OriginalType, User}
+import anorm.*
+import db.generated.Version
+import io.flow.postgresql.Query
+
+import javax.inject.Inject
+import play.api.db.*
 import play.api.libs.json.JsObject
+
 import java.util.UUID
 
-@Singleton
-class OriginalsDao @Inject() () {
+case class InternalOriginal(id: BigInt, versionGuid: UUID, `type`: OriginalType, data: String)
+
+class OriginalsDao @Inject() (db: Database) {
 
   private val InsertQuery = """
     insert into originals
@@ -48,5 +53,32 @@ class OriginalsDao @Inject() () {
       "version_guid" -> guid,
       "deleted_by_guid" -> user.guid
     ).execute()
+  }
+
+  def findAllByVersionGuids(guids: Seq[UUID]): Seq[InternalOriginal] = {
+    db.withConnection { c =>
+      Query("select id, version_guid::text, type, data from originals")
+        .in("version_guid", guids)
+        .isNull("deleted_at")
+        .as(parser.*)(c)
+    }
+  }
+
+  def findByVersionGuid(guid: UUID): Option[InternalOriginal] = {
+    findAllByVersionGuids(Seq(guid)).headOption
+  }
+
+  private val parser: anorm.RowParser[InternalOriginal] = {
+    anorm.SqlParser.long("id") ~
+      anorm.SqlParser.str("version_guid") ~
+      anorm.SqlParser.str("type") ~
+      anorm.SqlParser.str("data") map { case id ~ versionGuid ~ typ ~ data =>
+      InternalOriginal(
+        id = id,
+        versionGuid = java.util.UUID.fromString(versionGuid),
+        `type` = OriginalType(typ),
+        data = data
+      )
+    }
   }
 }

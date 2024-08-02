@@ -1,7 +1,7 @@
 package lib
 
 import core.ServiceFetcher
-import db.{Authorization, VersionsDao}
+import db.{Authorization, InternalVersionsDao}
 
 import javax.inject.Inject
 import io.apibuilder.spec.v0.models.Service
@@ -11,8 +11,8 @@ import models.VersionsModel
   * Implements service fetch by querying the DB
   */
 class DatabaseServiceFetcher @Inject() (
-  versionsDao: VersionsDao,
-  versionsModel: VersionsModel,
+                                         versionsDao: InternalVersionsDao,
+                                         versionsModel: VersionsModel,
 ) {
 
   def instance(authorization: Authorization): ServiceFetcher = {

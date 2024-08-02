@@ -1,7 +1,7 @@
 package services
 
 import cats.data.ValidatedNec
-import db.{InternalApplicationsDao, Authorization, VersionsDao}
+import db.{InternalApplicationsDao, Authorization, InternalVersionsDao}
 import cats.implicits._
 import io.apibuilder.api.v0.models.{BatchDownloadApplicationForm, BatchDownloadApplications, BatchDownloadApplicationsForm, Version}
 import models.VersionsModel
@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 class BatchDownloadApplicationsService @Inject() (
                                                    applicationsDao: InternalApplicationsDao,
-                                                   versionsDao: VersionsDao,
+                                                   versionsDao: InternalVersionsDao,
                                                    versionsModel: VersionsModel,
 ) {
 

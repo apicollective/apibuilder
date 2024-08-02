@@ -10,7 +10,7 @@ import javax.inject.Inject
 class ChangesModel @Inject()(
                               orgDao: InternalOrganizationsDao,
                               appDao: InternalApplicationsDao,
-                              versionsDao: VersionsDao,
+                              versionsDao: InternalVersionsDao,
                               usersDao: InternalUsersDao,
 ) {
   def toModel(v: InternalChange): Option[Change] = {

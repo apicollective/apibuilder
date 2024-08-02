@@ -1,7 +1,7 @@
 package controllers
 
 import _root_.util.{ApiBuilderServiceImportResolver, UserAgent}
-import db.VersionsDao
+import db.InternalVersionsDao
 import db.generated.{GeneratorInvocationForm, GeneratorInvocationsDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import io.apibuilder.api.v0.models.json._
@@ -22,16 +22,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class Code @Inject() (
-  val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  wSClient: WSClient,
-  apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
-  generatorInvocationsDao: GeneratorInvocationsDao,
-  generatorsDao: GeneratorsDao,
-  servicesDao: ServicesDao,
-  versionsDao: VersionsDao,
-  versionsModel: VersionsModel,
-  userAgentGenerator: UserAgent,
-  model: GeneratorWithServiceModel
+                       val apiBuilderControllerComponents: ApiBuilderControllerComponents,
+                       wSClient: WSClient,
+                       apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
+                       generatorInvocationsDao: GeneratorInvocationsDao,
+                       generatorsDao: GeneratorsDao,
+                       servicesDao: ServicesDao,
+                       versionsDao: InternalVersionsDao,
+                       versionsModel: VersionsModel,
+                       userAgentGenerator: UserAgent,
+                       model: GeneratorWithServiceModel
 ) extends ApiBuilderController {
 
   case class CodeParams(

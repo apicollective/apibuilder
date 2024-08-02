@@ -1,6 +1,6 @@
 package util
 
-import db.{Authorization, VersionsDao}
+import db.{Authorization, InternalVersionsDao}
 import io.apibuilder.api.v0.models.Version
 import io.apibuilder.spec.v0.models.{Import, Service}
 import lib.VersionTag
@@ -11,9 +11,9 @@ import javax.inject.Inject
 import scala.annotation.tailrec
 
 class ApiBuilderServiceImportResolver @Inject()(
-  versionsDao: VersionsDao,
-  logger: ApiBuilderLogger,
-  versionModel: VersionsModel
+                                                 versionsDao: InternalVersionsDao,
+                                                 logger: ApiBuilderLogger,
+                                                 versionModel: VersionsModel
 ) {
 
   /**

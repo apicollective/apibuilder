@@ -3,18 +3,24 @@ package models
 import builder.api_json.upgrades.ServiceParser
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
-import cats.implicits._
-import db.{InternalApplicationsDao, Authorization, InternalVersion, InternalOrganizationsDao}
+import cats.implicits.*
+import db.{Authorization, InternalApplicationsDao, InternalOrganizationsDao, InternalVersion, OriginalsDao}
+import db.generated.cache.ServicesDao
 import io.apibuilder.api.v0.models.Version
-import io.apibuilder.common.v0.models.Reference
+import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
 import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.json._
+import io.flow.postgresql.OrderBy
 
 import javax.inject.Inject
 
 class VersionsModel @Inject()(
                                applicationsDao: InternalApplicationsDao,
                                organizationsDao: InternalOrganizationsDao,
+                               originalsDao: OriginalsDao,
                                serviceParser: ServiceParser,
+                               servicesDao: ServicesDao,
+                               originalsModel: OriginalsModel
                                         ) {
   def toModel(v: InternalVersion): Option[Version] = {
     toModels(Seq(v)).headOption
@@ -43,6 +49,8 @@ class VersionsModel @Inject()(
       limit = None
     ).map { o => o.guid -> o }.toMap
 
+    val originals = originalsDao.findAllByVersionGuids(versions.map(_.guid)).map { o => o.versionGuid -> o }.toMap
+    
     versions.map { v =>
       (
         applications.get(v.applicationGuid).toValidNec("Cannot find application").andThen { app =>
@@ -50,25 +58,35 @@ class VersionsModel @Inject()(
             (org, app)
           }
         },
-        service(v)
+        service(v),
       ).mapN { case ((org, app), svc) =>
         Version(
           guid = v.guid,
           organization = Reference(guid = org.guid, key = org.key),
           application = Reference(guid = app.guid, key = app.key),
           version = v.version,
-          original = v.original,
+          original = originals.get(v.guid).map(originalsModel.toModel),
           service = svc,
-          audit = v.audit
+          audit = Audit(
+            createdAt = v.db.createdAt,
+            createdBy = ReferenceGuid(v.db.createdByGuid),
+            updatedAt = v.db.createdAt,
+            updatedBy = ReferenceGuid(v.db.createdByGuid),
+          )
         )
       }
     }.sequence
   }
 
   private def service(v: InternalVersion): ValidatedNec[String, Service] = {
-    v.serviceJson match {
-      case None => "Version does not have service json".invalidNec
-      case Some(json) => serviceParser.fromString(json)
-    }
+    servicesDao.findAll(
+      versionGuid = Some(v.guid),
+      orderBy = Some(OrderBy("-created_at")),
+      limit = Some(1),
+    ) { q =>
+      q.isNull("deleted_at")
+    }.headOption
+      .toValidNec("Version does not have service json")
+      .map(_.json.as[Service])
   }
 }

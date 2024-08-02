@@ -17,7 +17,7 @@ import java.util.UUID
 class Applications @Inject() (
                                val apiBuilderControllerComponents: ApiBuilderControllerComponents,
                                applicationsDao: InternalApplicationsDao,
-                               versionsDao: VersionsDao,
+                               versionsDao: InternalVersionsDao,
                                model: ApplicationsModel
 ) extends ApiBuilderController {
 
@@ -140,13 +140,13 @@ class Applications @Inject() (
     applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey) match {
       case None => NotFound
       case Some(application) => {
-        val versions = versionsDao.findAllVersions(
+        val metadata = versionsDao.findAllVersions(
           request.authorization,
           applicationGuid = Some(application.guid),
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
-        Ok(Json.toJson(versions))
+        Ok(Json.toJson(metadata))
       }
     }
   }
@@ -163,7 +163,7 @@ class Applications @Inject() (
         versionsDao.findAllVersions(
           request.authorization,
           applicationGuid = Some(application.guid),
-          limit = 1
+          limit = Some(1)
         ).headOption match {
           case None => NotFound
           case Some(v) => Ok(v.version)

@@ -20,7 +20,7 @@ class Versions @Inject() (
                            apiBuilderServiceImportResolver: ApiBuilderServiceImportResolver,
                            applicationsDao: InternalApplicationsDao,
                            databaseServiceFetcher: DatabaseServiceFetcher,
-                           versionsDao: VersionsDao,
+                           versionsDao: InternalVersionsDao,
                            versionValidator: VersionValidator,
                            model: VersionsModel,
 ) extends ApiBuilderController {

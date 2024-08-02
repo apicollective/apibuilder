@@ -1,3 +1,11 @@
+~/code/apicollective/apibuilder [versions_dao] > git grep DbHelpers
+api/app/db/DbHelpers.scala:case class DbHelpers(
+api/app/db/PasswordResetRequestsDao.scala:  private val dbHelpers = DbHelpers(db, "password_resets")
+api/app/db/generators/ServicesDao.scala:  private val dbHelpers = DbHelpers(db, "generators.services")
+~/code/apicollective/apibuilder [versions_dao] > git grep "val parser" api/app/db
+api/app/db/OriginalsDao.scala:  private val parser: anorm.RowParser[InternalOriginal] = {
+api/app/db/generators/ServicesDao.scala:  private val parser: RowParser[GeneratorService] = {
+
 "org.webjars" % "bootstrap" % "3.4.1",
       webjars
 

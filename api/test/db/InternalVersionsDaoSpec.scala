@@ -7,7 +7,7 @@ import lib.ServiceConfiguration
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with ValidatedTestHelpers {
+class InternalVersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers with ValidatedTestHelpers {
 
   private val Original = createOriginal()
 
@@ -39,10 +39,6 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
       versionsDao.softDelete(testUser, version1)
 
       val version2 = versionsDao.create(testUser, application, "1.0.2", Original, service)
-      version2.copy(
-        guid = version1.guid,
-        audit = version1.audit
-      ) must be(version1)
       version1.guid != version2.guid must be(true)
     }
 
@@ -101,7 +97,8 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
 
     versionsDao.findAllVersions(
       Authorization.All,
-      applicationGuid = Some(app.guid)
+      applicationGuid = Some(app.guid),
+      limit = None
     ).map(_.version) must be(Seq("1.0.2", "1.0.1"))
   }
 

@@ -1,7 +1,7 @@
 package processor
 
 import cats.data.ValidatedNec
-import db.VersionsDao
+import db.InternalVersionsDao
 import io.apibuilder.task.v0.models.TaskType
 
 import java.util.UUID
@@ -13,7 +13,7 @@ object MigrateVersion {
 
 class MigrateVersionProcessor @Inject()(
   args: TaskProcessorArgs,
-  versionsDao: VersionsDao
+  versionsDao: InternalVersionsDao
 ) extends TaskProcessorWithGuid(args, TaskType.MigrateVersion) {
 
   override def processRecord(versionGuid: UUID): ValidatedNec[String, Unit] = {
