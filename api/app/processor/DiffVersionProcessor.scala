@@ -20,7 +20,7 @@ class DiffVersionProcessor @Inject()(
                                       applicationsDao: InternalApplicationsDao,
                                       organizationsDao: InternalOrganizationsDao,
                                       emails: Emails,
-                                      changesDao: ChangesDao,
+                                      changesDao: InternalChangesDao,
                                       versionsDao: VersionsDao,
                                       versionsModel: VersionsModel,
                                       watchesDao: WatchesDao,

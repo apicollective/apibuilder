@@ -1,15 +1,18 @@
 package controllers
 
-import io.apibuilder.api.v0.models.json._
-import db.ChangesDao
+import io.apibuilder.api.v0.models.json.*
+import db.InternalChangesDao
+import models.ChangesModel
+
 import javax.inject.{Inject, Singleton}
-import play.api.mvc._
-import play.api.libs.json._
+import play.api.mvc.*
+import play.api.libs.json.*
 
 @Singleton
 class Changes @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  changesDao: ChangesDao
+  changesDao: InternalChangesDao,
+  model: ChangesModel
 ) extends ApiBuilderController {
 
   def get(
@@ -28,10 +31,10 @@ class Changes @Inject() (
       fromVersion = from,
       toVersion = to,
       `type` = `type`,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     )
-    Ok(Json.toJson(changes))
+    Ok(Json.toJson(model.toModels(changes)))
   }
 
 }

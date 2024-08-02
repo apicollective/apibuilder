@@ -32,7 +32,7 @@ class Versions @Inject() (
       versionsDao.findAll(
         request.authorization,
         applicationGuid = Some(application.guid),
-        limit = limit,
+        limit = Some(limit),
         offset = offset
       )
     }.getOrElse(Nil)

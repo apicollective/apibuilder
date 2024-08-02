@@ -56,7 +56,8 @@ class VersionsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.Helpers 
 
     versionsDao.findAll(
       Authorization.All,
-      applicationGuid = Some(app.guid)
+      applicationGuid = Some(app.guid),
+      limit = None
     ).map(_.version) must be(Seq("1.0.2", "1.0.2-dev"))
   }
 
