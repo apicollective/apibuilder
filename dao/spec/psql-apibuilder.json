@@ -32,6 +32,37 @@
   ],
 
   "models": {
+    "user": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "email", "type": "string" },
+        { "name": "nickname", "type": "string" },
+        { "name": "name", "type": "string", "required": false },
+        { "name": "avatar_url", "type": "string", "required": false },
+        { "name": "gravatar_id", "type": "string", "required": false }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["email"], "where": "deleted_at is null", "unique": true },
+              { "fields": ["nickname"], "where": "deleted_at is null", "unique": true }
+            ]
+          }
+        }
+      ]
+    },
+
     "application": {
       "fields": [
         { "name": "guid", "type": "uuid" },
