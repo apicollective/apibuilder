@@ -219,7 +219,7 @@ class InternalVersionsDao @Inject()(
   ): Seq[ApplicationMetadataVersion] = {
     dao.db.withConnection { c =>
       authorization.applicationFilter(
-          Query("select version from versions").withDebugging,
+          Query("select version from versions"),
           "application_guid"
         ).equals("application_guid", applicationGuid)
         .and(isDeleted.map(Filters.isDeleted("versions", _)))
