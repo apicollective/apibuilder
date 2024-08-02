@@ -311,6 +311,75 @@
       ]
     },
 
+    "organization_domain": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "organization_guid", "type": "uuid" },
+        { "name": "domain", "type": "string" }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "audit": {
+              "created": {
+                "at": { "type": "date-time-iso8601" },
+                "by": { "name": "created_by_guid", "type": "uuid" }
+              },
+              "deleted": {
+                "at": { "type": "date-time-iso8601", "required": false },
+                "by": { "name": "deleted_by_guid", "type": "uuid", "required": false }
+              }
+            },
+            "indexes": [
+              { "fields": ["organization_guid", "domain"], "where": "deleted_at is null", "unique": true },
+              { "fields": ["organization_guid"] },
+              { "fields": ["domain"] }
+            ]
+          }
+        }
+      ]
+    },
+
+    "organization_attribute_value": {
+      "fields": [
+        { "name": "guid", "type": "uuid" },
+        { "name": "organization_guid", "type": "uuid" },
+        { "name": "attribute_guid", "type": "uuid" },
+        { "name": "value", "type": "string" }
+      ],
+      "attributes": [
+        {
+          "name": "scala",
+          "value": {
+            "pkey_generator": {
+              "method": "java.util.UUID.randomUUID",
+              "returns": "uuid"
+            }
+          }
+        },
+        {
+          "name": "psql",
+          "value": {
+            "indexes": [
+              { "fields": ["organization_guid", "attribute_guid", "value"], "where": "deleted_at is null", "unique": true },
+              { "fields": ["attribute_guid"] },
+              { "fields": ["organization_guid"] }
+            ]
+          }
+        }
+      ]
+    },
+
     "task": {
       "fields": [
         { "name": "id", "type": "string" },

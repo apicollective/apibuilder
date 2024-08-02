@@ -23,7 +23,7 @@ trait Daos {
   def usersDao: InternalUsersDao = injector.instanceOf[db.InternalUsersDao]
 
   def organizationAttributeValuesDao: OrganizationAttributeValuesDao = injector.instanceOf[db.OrganizationAttributeValuesDao]
-  def organizationDomainsDao: OrganizationDomainsDao = injector.instanceOf[db.OrganizationDomainsDao]
+  def organizationDomainsDao: InternalOrganizationDomainsDao = injector.instanceOf[db.InternalOrganizationDomainsDao]
   def organizationLogsDao: OrganizationLogsDao = injector.instanceOf[db.OrganizationLogsDao]
   def organizationsDao: InternalOrganizationsDao = injector.instanceOf[db.InternalOrganizationsDao]
   def originalsDao: OriginalsDao = injector.instanceOf[db.OriginalsDao]

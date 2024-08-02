@@ -1,6 +1,6 @@
 package models
 
-import db.{Authorization, InternalOrganization, InternalOrganizationsDao, OrganizationDomainsDao}
+import db.{Authorization, InternalOrganization, InternalOrganizationsDao, InternalOrganizationDomainsDao}
 import io.apibuilder.api.v0.models.Organization
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 
@@ -8,8 +8,9 @@ import java.util.UUID
 import javax.inject.Inject
 
 class OrganizationsModel @Inject()(
-  orgDao: InternalOrganizationsDao,
-  domainsDao: OrganizationDomainsDao,
+                                    orgDao: InternalOrganizationsDao,
+                                    domainsDao: InternalOrganizationDomainsDao,
+                                    domainsModel: DomainsModel,
 ) {
   def toModelByGuids(auth: Authorization, guids: Seq[UUID]): Seq[Organization] = {
     toModels(orgDao.findAll(
@@ -26,6 +27,7 @@ class OrganizationsModel @Inject()(
   def toModels(orgs: Seq[InternalOrganization]): Seq[Organization] = {
     val domains = domainsDao.findAll(
       organizationGuids = Some(orgs.map(_.guid)),
+      limit = None
     ).groupBy(_.organizationGuid)
 
     orgs.map { org =>
@@ -35,7 +37,7 @@ class OrganizationsModel @Inject()(
         key = org.key,
         namespace = org.db.namespace,
         visibility = org.visibility,
-        domains = domains.getOrElse(org.guid, Nil).map(_.domain),
+        domains = domainsModel.toModels(domains.getOrElse(org.guid, Nil)),
         audit = Audit(
           createdAt = org.db.createdAt,
           createdBy = ReferenceGuid(org.db.createdByGuid),

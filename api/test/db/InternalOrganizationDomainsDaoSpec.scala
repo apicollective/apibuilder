@@ -6,18 +6,18 @@ import java.util.UUID
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class OrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with OrganizationHelpers {
+class InternalOrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with OrganizationHelpers {
 
   "create" in {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = createOrganization()
     val domain = organizationDomainsDao.create(testUser, org, domainName)
-    domain.domain.name must be(domainName)
+    domain.db.domain must be(domainName)
 
-    organizationDomainsDao.findAll(guid = Some(domain.guid)).map(_.guid) must be(Seq(domain.guid))
+    organizationDomainsDao.findAll(guid = Some(domain.guid), limit = None).map(_.guid) must be(Seq(domain.guid))
 
     organizationDomainsDao.softDelete(testUser, domain)
-    organizationDomainsDao.findAll(guid = Some(domain.guid)) must be(Nil)
+    organizationDomainsDao.findAll(guid = Some(domain.guid), limit = None) must be(Nil)
   }
 
   "domains are unique per org" in {
@@ -41,8 +41,8 @@ class OrganizationDomainsDaoSpec extends PlaySpec with GuiceOneAppPerSuite with 
     val org = createOrganization()
     val domain = organizationDomainsDao.create(testUser, org, domainName)
 
-    organizationDomainsDao.findAll(organizationGuid = Some(org.guid)).map(_.guid) must be(Seq(domain.guid))
-    organizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) must be(Nil)
+    organizationDomainsDao.findAll(organizationGuid = Some(org.guid), limit = None).map(_.guid) must be(Seq(domain.guid))
+    organizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID), limit = None).map(_.guid) must be(Nil)
   }
 
 }

@@ -1,18 +1,20 @@
 package controllers
 
-import db.OrganizationDomainsDao
+import db.InternalOrganizationDomainsDao
 import io.apibuilder.api.v0.models.Domain
-import io.apibuilder.api.v0.models.json._
+import io.apibuilder.api.v0.models.json.*
 import lib.Validation
-import play.api.libs.json._
-import play.api.mvc._
+import models.DomainsModel
+import play.api.libs.json.*
+import play.api.mvc.*
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Domains @Inject() (
   val apiBuilderControllerComponents: ApiBuilderControllerComponents,
-  organizationDomainsDao: OrganizationDomainsDao
+  organizationDomainsDao: InternalOrganizationDomainsDao,
+  domainsModel: DomainsModel
 ) extends ApiBuilderController {
 
   def post(orgKey: String): Action[JsValue] = Identified(parse.json) { request =>
@@ -25,11 +27,12 @@ class Domains @Inject() (
           val form = s.get
           organizationDomainsDao.findAll(
             organizationGuid = Some(org.guid),
-            domain = Some(form.name)
+            domain = Some(form.name),
+            limit = Some(1)
           ).headOption match {
             case None => {
               val od = organizationDomainsDao.create(request.user, org, form.name)
-              Ok(Json.toJson(od.domain))
+              Ok(Json.toJson(domainsModel.toModel(od)))
             }
             case Some(_) => {
               Conflict(Json.toJson(Validation.error("domain has already been registered")))
@@ -44,7 +47,8 @@ class Domains @Inject() (
     withOrgAdmin(request.user, orgKey) { org =>
       organizationDomainsDao.findAll(
         organizationGuid = Some(org.guid),
-        domain = Some(name)
+        domain = Some(name),
+        limit = Some(1)
       ).foreach { domain =>
         organizationDomainsDao.softDelete(request.user, domain)
       }

@@ -24,10 +24,10 @@ case class InternalOrganization(db: generated.Organization) {
 }
 
 class InternalOrganizationsDao @Inject()(
-  dao: generated.OrganizationsDao,
-  injector: Injector,
-  organizationDomainsDao: OrganizationDomainsDao,
-  organizationLogsDao: OrganizationLogsDao
+                                          dao: generated.OrganizationsDao,
+                                          injector: Injector,
+                                          organizationDomainsDao: InternalOrganizationDomainsDao,
+                                          organizationLogsDao: OrganizationLogsDao
 ) {
 
   // TODO: resolve circular dependency
@@ -127,8 +127,13 @@ class InternalOrganizationsDao @Inject()(
     Misc.emailDomain(email) match {
       case None => Nil
       case Some(domain) => {
-        organizationDomainsDao.findAll(domain = Some(domain)).flatMap { domain =>
-          findByGuid(Authorization.All, domain.organizationGuid)
+        organizationDomainsDao.findAllByDomain(domain).toList match {
+          case Nil => Nil
+          case all => findAll(
+            Authorization.All,
+            guids = Some(all.map(_.organizationGuid)),
+            limit = None
+          )
         }
       }
     }
