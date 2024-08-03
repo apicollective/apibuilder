@@ -298,6 +298,32 @@
             "indexes": [
               { "fields": ["application_guid"] },
               { "fields": ["to_version_guid"] }
+            ],
+            "foreign_keys": [
+              {
+                "fields": ["application_guid", "from_version_guid"],
+                "references": "versions(application_guid, guid)"
+              },
+              {
+                "fields": ["application_guid", "to_version_guid"],
+                "references": "versions(application_guid, guid)"
+              },
+              {
+                "fields": ["application_guid"],
+                "references": "applications"
+              },
+              {
+                "fields": ["from_version_guid"],
+                "references": "versions"
+              },
+              {
+                "fields": ["to_version_guid"],
+                "references": "versions"
+              },
+              {
+                "fields": ["changed_by_guid"],
+                "references": "users"
+              }
             ]
           }
         }
@@ -782,7 +808,6 @@
           "name": "psql",
           "value": {
             "pkey": "id",
-            "hash_code": {},
             "indexes": [
               { "fields": ["user_guid"] }
             ]

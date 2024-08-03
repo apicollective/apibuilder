@@ -45,7 +45,7 @@ class ChangesModel @Inject()(
         org <- orgsByGuid.get(app.db.organizationGuid)
         fromVersion <- versionsByGuid.get(change.db.fromVersionGuid)
         toVersion <- versionsByGuid.get(change.db.toVersionGuid)
-        changedBy <- usersByGuid.get(change.db.toVersionGuid)
+        changedBy <- usersByGuid.get(change.db.changedByGuid)
       } yield {
         Change(
           guid = change.guid,
