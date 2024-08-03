@@ -74,11 +74,7 @@ case object SessionsTable {
       override val name: String = "deleted_by_guid"
     }
 
-    case object HashCode extends Column {
-      override val name: String = "hash_code"
-    }
-
-    val all: List[Column] = List(Id, UserGuid, ExpiresAt, CreatedAt, CreatedByGuid, UpdatedAt, UpdatedByGuid, DeletedAt, DeletedByGuid, HashCode)
+    val all: List[Column] = List(Id, UserGuid, ExpiresAt, CreatedAt, CreatedByGuid, UpdatedAt, UpdatedByGuid, DeletedAt, DeletedByGuid)
   }
 }
 
@@ -101,8 +97,7 @@ trait BaseSessionsDao {
      |        updated_at,
      |        updated_by_guid::text,
      |        deleted_at,
-     |        deleted_by_guid::text,
-     |        hash_code
+     |        deleted_by_guid::text
      |   from public.sessions
      |""".stripMargin.stripTrailing
     )
@@ -217,8 +212,7 @@ trait BaseSessionsDao {
       anorm.SqlParser.get[org.joda.time.DateTime]("updated_at") ~
       anorm.SqlParser.str("updated_by_guid") ~
       anorm.SqlParser.get[org.joda.time.DateTime]("deleted_at").? ~
-      anorm.SqlParser.str("deleted_by_guid").? ~
-      anorm.SqlParser.long("hash_code") map { case id ~ userGuid ~ expiresAt ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ deletedAt ~ deletedByGuid ~ hashCode =>
+      anorm.SqlParser.str("deleted_by_guid").? map { case id ~ userGuid ~ expiresAt ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ deletedAt ~ deletedByGuid =>
       Session(
         id = id,
         userGuid = java.util.UUID.fromString(userGuid),
@@ -242,9 +236,9 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
   private val InsertQuery: io.flow.postgresql.Query = {
     io.flow.postgresql.Query("""
      | insert into public.sessions
-     | (id, user_guid, expires_at, created_at, created_by_guid, updated_at, updated_by_guid, hash_code)
+     | (id, user_guid, expires_at, created_at, created_by_guid, updated_at, updated_by_guid)
      | values
-     | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid, {hash_code}::bigint)
+     | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid)
     """.stripMargin)
   }
 
@@ -254,9 +248,8 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
      | set user_guid = {user_guid}::uuid,
      |     expires_at = {expires_at}::timestamptz,
      |     updated_at = {updated_at}::timestamptz,
-     |     updated_by_guid = {updated_by_guid}::uuid,
-     |     hash_code = {hash_code}::bigint
-     | where id = {id} and sessions.hash_code != {hash_code}::bigint
+     |     updated_by_guid = {updated_by_guid}::uuid
+     | where id = {id}
     """.stripMargin)
   }
 
@@ -486,7 +479,6 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
       .bind("expires_at", form.expiresAt)
       .bind("updated_at", org.joda.time.DateTime.now)
       .bind("updated_by_guid", user)
-      .bind("hash_code", form.hashCode())
   }
 
   private def toNamedParameter(
@@ -498,8 +490,7 @@ class SessionsDao @javax.inject.Inject() (override val db: play.api.db.Database)
       anorm.NamedParameter("user_guid", form.userGuid.toString),
       anorm.NamedParameter("expires_at", form.expiresAt),
       anorm.NamedParameter("updated_at", org.joda.time.DateTime.now),
-      anorm.NamedParameter("updated_by_guid", user.toString),
-      anorm.NamedParameter("hash_code", form.hashCode())
+      anorm.NamedParameter("updated_by_guid", user.toString)
     )
   }
 }

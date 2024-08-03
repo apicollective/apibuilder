@@ -40,6 +40,10 @@ class ChangesModel @Inject()(
     ).map { u => u.guid -> u }.toMap
 
     changes.flatMap { change =>
+      println(s"app: ${appsByGuid.get(change.db.applicationGuid)}")
+      println(s"fromV: ${versionsByGuid.get(change.db.fromVersionGuid)}")
+      println(s"toV: ${versionsByGuid.get(change.db.toVersionGuid)}")
+      println(s"user: ${usersByGuid.get(change.db.toVersionGuid)}")
       for {
         app <- appsByGuid.get(change.db.applicationGuid)
         org <- orgsByGuid.get(app.db.organizationGuid)
