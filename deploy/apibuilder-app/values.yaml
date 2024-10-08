@@ -49,6 +49,15 @@ deployments:
     maxReplicas: 2
     maxUnavailable: 1
 
+nodeSelector:
+  karpenter/role: workers
+  kubernetes.io/arch: amd64
+tolerations:
+  - key: "role"
+    operator: "Equal"
+    value: "workers"
+    effect: "NoSchedule"
+
 rolloutResource:
   enabled: false
 
