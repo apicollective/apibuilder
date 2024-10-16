@@ -48,6 +48,7 @@ deployments:
     minReplicas: 2
     maxReplicas: 2
     maxUnavailable: 1
+    version: "0.16.52"
 
 nodeSelector:
   karpenter/role: workers
