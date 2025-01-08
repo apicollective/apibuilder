@@ -119,7 +119,7 @@ lazy val api = project
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.32" % "provided",
-      ("com.github.mbryzek" % "lib-cipher" % "0.0.2").cross(CrossVersion.for3Use2_13),
+      ("com.github.mbryzek" % "lib-cipher" % "0.0.7").cross(CrossVersion.for3Use2_13),
       "com.github.mbryzek" % "lib-util" % "0.0.7",
       "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
       "com.github.mbryzek" % "lib-query" % "0.0.2",
