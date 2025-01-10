@@ -4,12 +4,12 @@ import builder.api_json.upgrades.ServiceParser
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits.*
-import db.{Authorization, InternalApplicationsDao, InternalOrganizationsDao, InternalVersion, InternalOriginalsDao}
+import db.{Authorization, InternalApplicationsDao, InternalOrganizationsDao, InternalOriginalsDao, InternalVersion}
 import db.generated.cache.ServicesDao
 import io.apibuilder.api.v0.models.Version
 import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
-import io.apibuilder.spec.v0.models.Service
-import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.spec.v0.models.{Apidoc, Service}
+import io.apibuilder.spec.v0.models.json.*
 import io.flow.postgresql.OrderBy
 
 import javax.inject.Inject
@@ -88,5 +88,12 @@ class VersionsModel @Inject()(
     }.headOption
       .toValidNec("Version does not have service json")
       .map(_.json.as[Service])
+      .map { service =>
+        // Some clients need a value due to apibuilder-validation version 0.52.0
+        // having it as a required field.
+        service.apidoc match
+          case Some(_) => service
+          case None => service.copy(apidoc = Some(Apidoc(version = service.version)))
+      }
   }
 }
