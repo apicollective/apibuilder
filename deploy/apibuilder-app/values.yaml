@@ -47,8 +47,8 @@ deployments:
     minReplicas: 2
     maxReplicas: 2
     maxUnavailable: 1
-    serviceAccountName: "flow-prod-eks-production-apibuilder-app-sa"
-    serviceAccountIamRole: "arn:aws:iam::479720515435:role/flow-prod-eks-production-role"
+    serviceAccountName: "flow-prod-eks-apicollective-apibuilder-app-sa"
+    serviceAccountIamRole: "arn:aws:iam::479720515435:role/flow-prod-eks-apicollective-role"
 
 nodeSelector:
   karpenter/role: workers
