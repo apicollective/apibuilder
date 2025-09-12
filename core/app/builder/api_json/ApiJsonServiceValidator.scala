@@ -197,7 +197,7 @@ case class ApiJsonServiceValidator(
       if (form.interfaces.exists(_.name == iName)) {
         ().validNec
       } else {
-        s"$name cannot find interfaces named '$iName'".invalidNec
+        s"$name cannot find interface named '$iName'".invalidNec
       }
     }.sequence.map { _ => () }
   }
