@@ -105,6 +105,7 @@ lazy val api = project
   scalacOptions ++= Seq("-deprecation:false"),
     scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
+    PlayKeys.playDefaultPort := 9001,
     testOptions += Tests.Argument("-oF"),
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
@@ -144,6 +145,7 @@ lazy val app = project
   .settings(
     scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
+    PlayKeys.playDefaultPort := 9000,
     javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
