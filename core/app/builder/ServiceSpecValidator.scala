@@ -136,14 +136,17 @@ case class ServiceSpecValidator(
     )
   }
 
+  private def findInterface(interfaceName: String): Option[Kind.Interface] = {
+    typeResolver.parse(interfaceName) {
+      case _: Kind.Interface => true
+      case _ => false
+    }.map(_.asInstanceOf[Kind.Interface])
+  }
+
 
   private def validateTypeInterfaces(prefix: String, interfaces: Seq[String]): ValidatedNec[String, Unit] = {
-    println(s"validateTypeInterfaces[$prefix] $interfaces")
     interfaces.map { interfaceName =>
-      typeResolver.parse(interfaceName) {
-        case _: Kind.Interface => true
-        case _ => false
-      } match {
+      findInterface(interfaceName) match {
         case Some(_) => ().validNec
         case o => {
           println(s" -- interface[${interfaceName}] => $o")
@@ -181,14 +184,14 @@ case class ServiceSpecValidator(
   }
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): ValidatedNec[String, Unit] = {
-    typeResolver.parse(interfaceName) match {
-      case Some(_: Kind.Interface) => {
+    findInterface(interfaceName) match {
+      case Some(_) => {
         service.interfaces.find(_.name == interfaceName) match {
           case Some(i) => validateInterfaceFields(prefix, i, fields)
-          case None => ().validNec // Other methods validate the interface itself
+          case None => ().validNec // TODO: Future work to validate the fields from the imported interface
         }
       }
-      case _ => s"$prefix Interface[$interfaceName] not found".invalidNec
+      case _ => ().validNec // Other methods will validate the presence of the interface itself
     }
   }
 
