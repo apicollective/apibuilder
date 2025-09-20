@@ -20,7 +20,7 @@ class TaskDispatchActor @Inject() (
   private val actors = scala.collection.mutable.Map[TaskType, ActorRef]()
 
   private def schedule(message: Any, interval: FiniteDuration): Cancellable = {
-    context.system.scheduler.scheduleWithFixedDelay(FiniteDuration(1, SECONDS), interval, self, message)(ec)
+    context.system.scheduler.scheduleWithFixedDelay(FiniteDuration(1, SECONDS), interval, self, message)(using ec)
   }
 
   private val cancellables: Seq[Cancellable] = {
