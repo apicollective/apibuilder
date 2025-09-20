@@ -130,12 +130,29 @@ case class ServiceSpecValidator(
     sequenceUnique(
       Seq(
         validateName(s"$p name", model.name),
-        validateFields(p, model.fields)
+        validateFields(p, model.fields),
+        validateTypeInterfaces(s"Model[${model.name}]", model.interfaces)
       ) ++ model.interfaces.map { n => validateInterfaceFields(p, n, model.fields) }
     )
   }
 
-  def validateAnnotation(prefix: String, anno: String): ValidatedNec[String, Unit] = {
+
+  private def validateTypeInterfaces(name: String, interfaces: Seq[String]): ValidatedNec[String, Unit] = {
+    interfaces.map { iName =>
+      val exists = typeResolver.parse(iName)(using {
+        case Kind.Interface => true
+        case _ => false
+      }).isDefined
+
+      if (exists) {
+        ().validNec
+      } else {
+        s"$name Interface[$iName] not found".invalidNec
+      }
+    }.sequence.map { _ => () }
+  }
+
+  private def validateAnnotation(prefix: String, anno: String): ValidatedNec[String, Unit] = {
     if (service.annotations.map(_.name).contains(anno)){
       ().validNec
     } else {
@@ -163,10 +180,7 @@ case class ServiceSpecValidator(
   }
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): ValidatedNec[String, Unit] = {
-    typeResolver.parse(interfaceName) {
-      case _: Kind.Interface => true
-      case _ => false
-    } match {
+    typeResolver.parse(interfaceName) match {
       case Some(_: Kind.Interface) => {
         service.interfaces.find(_.name == interfaceName) match {
           case Some(i) => validateInterfaceFields(prefix, i, fields)
@@ -280,10 +294,11 @@ case class ServiceSpecValidator(
     sequenceUnique(
       Seq(
         validateUnionNames(),
+        validateUnionInterfaces(),
         validateUnionTypesNonEmpty(),
         validateUnionTypes(),
         validateUnionDiscriminator(),
-        validateUnionCyclicReferences()
+        validateUnionCyclicReferences(),
       ) ++ Seq(
         DuplicateErrorMessage.validate("Union", service.unions.map(_.name))
       )
@@ -296,6 +311,12 @@ case class ServiceSpecValidator(
         validateName(s"Union[${union.name}]", union.name)
       }
     )
+  }
+
+  private def validateUnionInterfaces(): ValidatedNec[String, Unit] = {
+    service.unions.map { union =>
+      validateTypeInterfaces(s"Union[${union.name}]", union.interfaces)
+    }.sequence.map { _ => () }
   }
 
   private def validateUnionTypesNonEmpty(): ValidatedNec[String, Unit] = {
