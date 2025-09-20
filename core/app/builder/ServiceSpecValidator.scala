@@ -137,10 +137,10 @@ case class ServiceSpecValidator(
   }
 
   private def findInterface(interfaceName: String): Option[Kind.Interface] = {
-    typeResolver.parse(interfaceName) {
+    typeResolver.parse(interfaceName)(using {
       case _: Kind.Interface => true
       case _ => false
-    }.map(_.asInstanceOf[Kind.Interface])
+    }).map(_.asInstanceOf[Kind.Interface])
   }
 
 
@@ -148,10 +148,7 @@ case class ServiceSpecValidator(
     interfaces.map { interfaceName =>
       findInterface(interfaceName) match {
         case Some(_) => ().validNec
-        case o => {
-          println(s" -- interface[${interfaceName}] => $o")
-          s"$prefix Interface[$interfaceName] not found".invalidNec
-        }
+        case o => s"$prefix Interface[$interfaceName] not found".invalidNec
       }
     }.sequence.map { _ => () }
   }
@@ -1083,7 +1080,7 @@ case class ServiceSpecValidator(
   }
 
   private def validateConcreteType(prefix: String, typeName: String): ValidatedNec[String, Kind] = {
-    validateType(prefix, typeName) {
+    validateType(prefix, typeName)(using {
       case _: Kind.Interface => s"$prefix type[$typeName] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type".invalidNec
       case _: Kind.Primitive => ().validNec
       case _: Kind.Enum => ().validNec
@@ -1091,6 +1088,6 @@ case class ServiceSpecValidator(
       case _: Kind.Union => ().validNec
       case _: Kind.List => ().validNec
       case _: Kind.Map => ().validNec
-    }
+    })
   }
 }
