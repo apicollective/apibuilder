@@ -11,7 +11,7 @@ trait DbUtils {
 
   def execute(queries: Query*): Unit = {
     database.withConnection { c =>
-      queries.foreach(_.anormSql().executeUpdate()(c))
+      queries.foreach(_.anormSql().executeUpdate()(using c))
     }
   }
 

@@ -20,7 +20,7 @@ class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with H
     database.withConnection { c =>
       Query(s"select count(*) from $table")
         .equals("guid", guid)
-        .as(SqlParser.int(1).*)(c)
+        .as(SqlParser.int(1).*)(using c)
     }.head == 0
   }
 
@@ -31,7 +31,7 @@ class PurgeDeletedProcessorSpec extends PlaySpec with GuiceOneAppPerSuite with H
         .bind("deleted_at", deletedAt)
         .bind("deleted_by_guid", testUser.guid)
         .anormSql()
-        .executeUpdate()(c)
+        .executeUpdate()(using c)
     }
     ()
   }

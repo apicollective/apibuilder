@@ -1,7 +1,7 @@
 name := "apibuilder"
 organization := "io.apibuilder"
 
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalaVersion := "3.7.3"
 
 val playJsonVersion = "2.10.6"
 
@@ -90,7 +90,7 @@ lazy val generated = project
       "com.github.mbryzek" % "lib-util" % "0.0.7",
       "joda-time" % "joda-time" % "2.12.7",
       "org.playframework.anorm" %% "anorm-postgres" % "2.7.0",
-      "org.postgresql" % "postgresql" % "42.7.3",
+      "org.postgresql" % "postgresql" % "42.7.7",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
     )
   )
@@ -122,7 +122,7 @@ lazy val api = project
       "org.projectlombok" % "lombok" % "1.18.32" % "provided",
       ("com.github.mbryzek" % "lib-cipher" % "0.0.7").cross(CrossVersion.for3Use2_13),
       "com.github.mbryzek" % "lib-util" % "0.0.7",
-      "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
+      "com.sendgrid"      %  "sendgrid-java"  % "4.10.3",
       "com.github.mbryzek" % "lib-query" % "0.0.2",
       "com.rollbar" % "rollbar-java" % "1.10.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
