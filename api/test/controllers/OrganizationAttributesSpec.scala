@@ -50,7 +50,7 @@ class OrganizationAttributesSpec extends PlaySpec with MockClient with GuiceOneS
     val updated = await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form2))
     updated.value must equal("test2")
   }
-  
+
   "GET /organizations/:key/attributes" in {
     val org = createOrganization()
     val attribute1 = createAttribute()
@@ -59,7 +59,7 @@ class OrganizationAttributesSpec extends PlaySpec with MockClient with GuiceOneS
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
     await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
-    await(client.organizations.getAttributesByKey(org.key)).map(_.value) must equal(Seq("a", "b"))
+    await(client.organizations.getAttributesByKey(org.key)).map(_.value).sorted must equal(Seq("a", "b"))
   }
 
   "GET /organizations/:key/attributes w/ name filter" in {

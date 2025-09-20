@@ -130,12 +130,30 @@ case class ServiceSpecValidator(
     sequenceUnique(
       Seq(
         validateName(s"$p name", model.name),
-        validateFields(p, model.fields)
+        validateFields(p, model.fields),
+        validateTypeInterfaces(s"Model[${model.name}]", model.interfaces)
       ) ++ model.interfaces.map { n => validateInterfaceFields(p, n, model.fields) }
     )
   }
 
-  def validateAnnotation(prefix: String, anno: String): ValidatedNec[String, Unit] = {
+  private def findInterface(interfaceName: String): Option[Kind.Interface] = {
+    typeResolver.parse(interfaceName)(using {
+      case _: Kind.Interface => true
+      case _ => false
+    }).map(_.asInstanceOf[Kind.Interface])
+  }
+
+
+  private def validateTypeInterfaces(prefix: String, interfaces: Seq[String]): ValidatedNec[String, Unit] = {
+    interfaces.map { interfaceName =>
+      findInterface(interfaceName) match {
+        case Some(_) => ().validNec
+        case o => s"$prefix Interface[$interfaceName] not found".invalidNec
+      }
+    }.sequence.map { _ => () }
+  }
+
+  private def validateAnnotation(prefix: String, anno: String): ValidatedNec[String, Unit] = {
     if (service.annotations.map(_.name).contains(anno)){
       ().validNec
     } else {
@@ -163,20 +181,14 @@ case class ServiceSpecValidator(
   }
 
   private def validateInterfaceFields(prefix: String, interfaceName: String, fields: Seq[Field]): ValidatedNec[String, Unit] = {
-    typeResolver.parse(interfaceName) {
-      case _: Kind.Interface => true
-      case _ => false
-    } match {
-      case Some(_: Kind.Interface) => {
+    findInterface(interfaceName) match {
+      case Some(_) => {
         service.interfaces.find(_.name == interfaceName) match {
           case Some(i) => validateInterfaceFields(prefix, i, fields)
-          case None => {
-            // TODO: should we validate for imported interfaces?
-            ().validNec
-          }
+          case None => ().validNec // TODO: Future work to validate the fields from the imported interface
         }
       }
-      case _ => s"$prefix Interface[$interfaceName] not found".invalidNec
+      case _ => ().validNec // Other methods will validate the presence of the interface itself
     }
   }
 
@@ -280,10 +292,11 @@ case class ServiceSpecValidator(
     sequenceUnique(
       Seq(
         validateUnionNames(),
+        validateUnionInterfaces(),
         validateUnionTypesNonEmpty(),
         validateUnionTypes(),
         validateUnionDiscriminator(),
-        validateUnionCyclicReferences()
+        validateUnionCyclicReferences(),
       ) ++ Seq(
         DuplicateErrorMessage.validate("Union", service.unions.map(_.name))
       )
@@ -296,6 +309,12 @@ case class ServiceSpecValidator(
         validateName(s"Union[${union.name}]", union.name)
       }
     )
+  }
+
+  private def validateUnionInterfaces(): ValidatedNec[String, Unit] = {
+    service.unions.map { union =>
+      validateTypeInterfaces(s"Union[${union.name}]", union.interfaces)
+    }.sequence.map { _ => () }
   }
 
   private def validateUnionTypesNonEmpty(): ValidatedNec[String, Unit] = {
@@ -1061,7 +1080,7 @@ case class ServiceSpecValidator(
   }
 
   private def validateConcreteType(prefix: String, typeName: String): ValidatedNec[String, Kind] = {
-    validateType(prefix, typeName) {
+    validateType(prefix, typeName)(using {
       case _: Kind.Interface => s"$prefix type[$typeName] is an interface and cannot be used as a field type. Specify the specific model you need or use a union type".invalidNec
       case _: Kind.Primitive => ().validNec
       case _: Kind.Enum => ().validNec
@@ -1069,6 +1088,6 @@ case class ServiceSpecValidator(
       case _: Kind.Union => ().validNec
       case _: Kind.List => ().validNec
       case _: Kind.Map => ().validNec
-    }
+    })
   }
 }

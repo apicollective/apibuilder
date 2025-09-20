@@ -5,6 +5,7 @@ import cats.implicits.*
 import com.mbryzek.cipher.Ciphers
 import db.generated.UserPasswordsDao
 import io.apibuilder.api.v0.models.Error
+import io.flow.postgresql.Query
 import lib.Validation
 
 import java.sql.Connection
@@ -97,8 +98,8 @@ class InternalUserPasswordsDao @Inject()(
       guid = guid,
       userGuid = userGuid,
       limit = limit
-    ) { q =>
+    )(using (q: Query) => {
       q.and(isDeleted.map(Filters.isDeleted("user_passwords", _)))
-    }.map(InternalUserPassword(_))
+    }).map(InternalUserPassword(_))
   }
 }

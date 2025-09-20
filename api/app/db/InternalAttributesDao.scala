@@ -5,6 +5,7 @@ import cats.data.ValidatedNec
 import cats.implicits.*
 import db.generated.AttributesDao
 import io.apibuilder.api.v0.models.{AttributeForm, User}
+import io.flow.postgresql.Query
 import lib.{UrlKey, Validation}
 
 import java.util.UUID
@@ -95,12 +96,12 @@ class InternalAttributesDao @Inject()(
       guids = guids,
       limit = limit,
       offset = offset
-    ) { q =>
+    )(using (q: Query) => {
       q.and(name.map { _ =>
         "lower(trim(attributes.name)) = lower(trim({name}))"
       }).bind("name", name)
       .and(isDeleted.map(Filters.isDeleted("attributes", _)))
-    }.map(InternalAttribute(_))
+    }).map(InternalAttribute(_))
   }
 
 }

@@ -233,7 +233,7 @@ class InternalUsersDao @Inject()(
       guid = guid,
       guids = guids,
       limit = limit,
-    ) { q =>
+    )( using (q: Query) => {
       q.and(
         email.map { _ => "email = trim(lower({email}))" }
       ).bind("email", email)
@@ -247,7 +247,7 @@ class InternalUsersDao @Inject()(
         token.map { _ => "guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
       ).bind("token", token)
       .and(isDeleted.map(Filters.isDeleted("users", _)))
-    }.map(InternalUser(_))
+    }).map(InternalUser(_))
   }
 
   @tailrec

@@ -33,7 +33,7 @@ class ScheduleTasksActor @Inject()(
 
   private def scheduleOnce(taskType: TaskType): Unit = {
     context.system.scheduler.scheduleOnce(FiniteDuration(10, SECONDS)) {
-      UpsertTask(taskType)
+      self ! UpsertTask(taskType)
     }
   }
 
@@ -44,7 +44,7 @@ class ScheduleTasksActor @Inject()(
     Seq(
       schedule(ScheduleSyncGeneratorServices, FiniteDuration(1, HOURS)),
       schedule(CheckInvariants, FiniteDuration(12, HOURS)),
-      schedule(PurgeDeleted, FiniteDuration(1, HOURS))(FiniteDuration(5, SECONDS)),
+      schedule(PurgeDeleted, FiniteDuration(1, HOURS)),
     )
   }
 

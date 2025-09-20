@@ -95,10 +95,10 @@ class InternalPasswordResetsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       q.and(isDeleted.map(Filters.isDeleted("password_resets", _)))
         .and(isExpired.map(Filters.isExpired("password_resets", _)))
-    }.map(InternalPasswordReset(_))
+    }).map(InternalPasswordReset(_))
   }
 
 }

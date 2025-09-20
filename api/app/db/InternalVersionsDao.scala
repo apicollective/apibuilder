@@ -78,7 +78,7 @@ class InternalVersionsDao @Inject()(
   }
 
   private def doCreate(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     application: InternalApplication,
     version: String,
@@ -200,13 +200,13 @@ class InternalVersionsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("-version_sort_key, -created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       authorization.applicationFilter(q, "application_guid")
       .and(HasServiceJsonClause)
       .and(versionConstraint.map(vc => s"version like '${vc}%'"))
       .and(isDeleted.map(Filters.isDeleted("versions", _)))
       .equals("version", version)
-    }.map(InternalVersion(_))
+    }).map(InternalVersion(_))
   }
 
   // Efficient query to fetch all versions of a given application
@@ -226,7 +226,7 @@ class InternalVersionsDao @Inject()(
         .optionalLimit(limit)
         .offset(offset)
         .orderBy("version_sort_key desc, created_at desc")
-        .as(SqlParser.str(1).*)(c)
+        .as(SqlParser.str(1).*)(using c)
         .map { version =>
           ApplicationMetadataVersion(version = version)
         }
@@ -289,23 +289,23 @@ class InternalVersionsDao @Inject()(
   }
 
   private def softDeleteService(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID
   ): Unit =  {
     servicesDao.findAll(
       versionGuid = Some(versionGuid),
       limit = None
-    ) { q =>
+    )( using (q: Query) => {
       q.equals("version", MigrateVersion.ServiceVersionNumber)
         .isNull("deleted_at")
-    }.foreach { s =>
+    }).foreach { s =>
       servicesDao.delete(user.guid, s)
     }
   }
 
   private def insertService(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID,
     service: Service

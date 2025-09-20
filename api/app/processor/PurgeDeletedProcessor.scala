@@ -81,7 +81,7 @@ class PurgeDeletedProcessor @Inject()(
         s"select ${table.pkey.name}::text as pkey, deleted_at from ${table.qualified}"
       ).isNotNull("deleted_at")
         .limit(Limit)
-        .as(parser(table.pkey).*)(c)
+        .as(parser(table.pkey).*)(using c)
     }
   }
 
@@ -114,7 +114,7 @@ class PurgeDeletedProcessor @Inject()(
         DeletedAtQuery
           .bind("table_schema", table.schema)
           .bind("table_name", table.name)
-          .as(SqlParser.int(1).single)(c)
+          .as(SqlParser.int(1).single)(using c)
       } > 0
     })
   }
@@ -140,7 +140,7 @@ class PurgeDeletedProcessor @Inject()(
 
   private def exec(q: Query): Unit = {
     db.withConnection { c =>
-      q.anormSql().executeUpdate()(c)
+      q.anormSql().executeUpdate()(using c)
     }
     ()
   }

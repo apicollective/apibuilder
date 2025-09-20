@@ -17,7 +17,7 @@ class TaskDispatchActorCompanion @Inject() (
   def typesWithWork: Seq[TaskType] = {
     database
       .withConnection { c =>
-        TypesQuery.as(SqlParser.str(1).*)(c)
+        TypesQuery.as(SqlParser.str(1).*)(using c)
       }
       .flatMap(TaskType.fromString)
   }

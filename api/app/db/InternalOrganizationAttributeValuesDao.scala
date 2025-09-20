@@ -103,7 +103,7 @@ class InternalOrganizationAttributeValuesDao @Inject()(
   private def findByOrganizationGuidAndAttributeGuid(organizationGuid: UUID, attributeGuid: UUID): Option[InternalOrganizationAttributeValue] = {
     findAll(organizationGuid = Some(organizationGuid), attributeGuid = Some(attributeGuid), limit = Some(1)).headOption
   }
-  
+
   def findAll(
     guid: Option[UUID] = None,
     organizationGuid: Option[UUID] = None,
@@ -133,9 +133,9 @@ class InternalOrganizationAttributeValuesDao @Inject()(
       attributeGuid = attributeGuid,
       limit = limit,
       offset = offset,
-    ) { q =>
+    )( using (q: Query) => {
       filters.foldLeft(q) { case (q, f) => f.filter(q) }
         .and(isDeleted.map(Filters.isDeleted("organization_attribute_values", _)))
-    }.map(InternalOrganizationAttributeValue(_))
+    }).map(InternalOrganizationAttributeValue(_))
   }
 }

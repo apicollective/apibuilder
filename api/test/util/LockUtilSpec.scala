@@ -24,7 +24,7 @@ class LockUtilSpec extends PlaySpec with GuiceOneAppPerSuite with BeforeAndAfter
 
   private def exec(query: Query): Unit = {
     db.withConnection { c =>
-      query.anormSql().executeUpdate()(c)
+      query.anormSql().executeUpdate()(using c)
     }
   }
 

@@ -147,10 +147,10 @@ class InternalMembershipRequestsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("created_at")),
-    ) { q =>
+    )( using (q: Query) => {
         filters.foldLeft(q) { case (q, f) => f.filter(q) }
         .and(isDeleted.map(Filters.isDeleted("membership_requests", _)))
         .equals("role", role.map(_.toString))
-    }.map(InternalMembershipRequest(_))
+    }).map(InternalMembershipRequest(_))
   }
 }

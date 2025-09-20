@@ -1,7 +1,7 @@
 name := "apibuilder"
 organization := "io.apibuilder"
 
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalaVersion := "3.7.3"
 
 val playJsonVersion = "2.10.6"
 
@@ -24,7 +24,7 @@ lazy val lib = project
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "joda-time" % "joda-time" % "2.12.7",
+      "joda-time" % "joda-time" % "2.14.0",
     )
   )
 
@@ -87,10 +87,10 @@ lazy val generated = project
       ws,
       jdbc,
       "com.github.mbryzek" % "lib-query" % "0.0.5",
-      "com.github.mbryzek" % "lib-util" % "0.0.7",
-      "joda-time" % "joda-time" % "2.12.7",
+      "com.github.mbryzek" % "lib-util" % "0.0.16",
+      "joda-time" % "joda-time" % "2.14.0",
       "org.playframework.anorm" %% "anorm-postgres" % "2.7.0",
-      "org.postgresql" % "postgresql" % "42.7.3",
+      "org.postgresql" % "postgresql" % "42.7.7",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
     )
   )
@@ -107,7 +107,7 @@ lazy val api = project
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     PlayKeys.playDefaultPort := 9001,
     testOptions += Tests.Argument("-oF"),
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.53.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesImport += "io.apibuilder.common.v0.Bindables.Models._",
@@ -119,12 +119,12 @@ lazy val api = project
       "com.typesafe.play" %% "play-guice" % "2.9.4",
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
-      "org.projectlombok" % "lombok" % "1.18.32" % "provided",
-      ("com.github.mbryzek" % "lib-cipher" % "0.0.7").cross(CrossVersion.for3Use2_13),
-      "com.github.mbryzek" % "lib-util" % "0.0.7",
-      "com.sendgrid"      %  "sendgrid-java"  % "4.10.2",
-      "com.github.mbryzek" % "lib-query" % "0.0.2",
-      "com.rollbar" % "rollbar-java" % "1.10.0",
+      "org.projectlombok" % "lombok" % "1.18.42" % "provided",
+      ("com.github.mbryzek" % "lib-cipher" % "0.0.8").cross(CrossVersion.for3Use2_13),
+      "com.github.mbryzek" % "lib-util" % "0.0.16",
+      "com.sendgrid"      %  "sendgrid-java"  % "4.10.3",
+      "com.github.mbryzek" % "lib-query" % "0.0.5",
+      "com.rollbar" % "rollbar-java" % "2.0.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
       "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1" % Test
     ),
@@ -146,7 +146,7 @@ lazy val app = project
     scalacOptions ++= allScalacOptions,
     PlayKeys.fileWatchService := play.dev.filewatch.FileWatchService.jdk7(play.sbt.run.toLoggerProxy(sLog.value)),
     PlayKeys.playDefaultPort := 9000,
-    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.8.0",
+    javaAgents += "com.datadoghq" % "dd-java-agent" % "1.53.0",
     routesImport += "io.apibuilder.api.v0.Bindables.Core._",
     routesImport += "io.apibuilder.api.v0.Bindables.Models._",
     routesImport += "io.apibuilder.common.v0.Bindables.Models._",
@@ -155,8 +155,8 @@ lazy val app = project
       guice,
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
-      "org.projectlombok" % "lombok" % "1.18.28" % "provided",
-      "org.apache.commons" % "commons-compress" % "1.26.2",
+      "org.projectlombok" % "lombok" % "1.18.42" % "provided",
+      "org.apache.commons" % "commons-compress" % "1.28.0",
       "com.github.tototoshi" %% "scala-csv" % "1.4.0",
       "com.vladsch.flexmark" % "flexmark-all" % "0.64.8",
       "org.webjars" %% "webjars-play" % "3.0.1",

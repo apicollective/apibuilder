@@ -1,9 +1,7 @@
 package db
 
 import db.generated.OrganizationDomainsDao
-import io.apibuilder.api.v0.models.Domain
 import io.flow.postgresql.{OrderBy, Query}
-import play.api.db.*
 
 import java.util.UUID
 import javax.inject.Inject
@@ -18,12 +16,12 @@ class InternalOrganizationDomainsDao @Inject()(
 ) {
 
   def create(createdBy: InternalUser, org: InternalOrganization, domainName: String): InternalOrganizationDomain = {
-    dao.db.withConnection { implicit c =>
+    dao.db.withConnection { c =>
       create(c, createdBy, org.guid, domainName)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: InternalUser, orgGuid: UUID, domainName: String): InternalOrganizationDomain = {
+  private[db] def create(c: java.sql.Connection, createdBy: InternalUser, orgGuid: UUID, domainName: String): InternalOrganizationDomain = {
     val guid = dao.insert(c, createdBy.guid, generated.OrganizationDomainForm(
       organizationGuid = orgGuid,
       domain = domainName.trim
@@ -57,9 +55,9 @@ class InternalOrganizationDomainsDao @Inject()(
       domain = domain.map(_.trim.toLowerCase()),
       limit = limit,
       orderBy = orderBy,
-    ) { q =>
+    )( using (q: Query) => {
       q.and(isDeleted.map(Filters.isDeleted("organization_domains", _)))
-    }.map(InternalOrganizationDomain(_))
+    }).map(InternalOrganizationDomain(_))
   }
-  
+
 }

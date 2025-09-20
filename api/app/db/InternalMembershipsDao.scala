@@ -49,7 +49,7 @@ class InternalMembershipsDao @Inject()(
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
+  private[db] def create(c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
     val guid = dao.insert(c, createdBy, generated.MembershipForm(
       userGuid = user.guid,
       organizationGuid = org.guid,
@@ -179,11 +179,11 @@ class InternalMembershipsDao @Inject()(
       userGuid = userGuid,
       limit = limit,
       offset = offset,
-    ) { q =>
+    )( using (q: Query) => {
       filters.foldLeft(q) { case (q, f) => f.filter(q) }
         .equals("memberships.role", role.map(_.toString))
         .optionalIn("memberships.role", roles.map(_.map(_.toString)))
         .and(isDeleted.map(Filters.isDeleted("memberships", _)))
-    }.map(InternalMembership(_))
+    }).map(InternalMembership(_))
   }
 }

@@ -1,7 +1,5 @@
 package db
 
-import anorm.JodaParameterMetaData.*
-import anorm.*
 import db.generated.{ChangeForm, ChangesDao}
 import io.apibuilder.api.v0.models.*
 import io.flow.postgresql.{OrderBy, Query}
@@ -157,7 +155,7 @@ class InternalChangesDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("-changed_at, type, -description")),
-    ) { q =>
+    )(using (q: Query) => {
       authorization.applicationFilter(
           filters.foldLeft(q) { case (q, f) => f.filter(q) },
           "application_guid"
@@ -170,6 +168,6 @@ class InternalChangesDao @Inject()(
             "lower(description) = lower(trim({description}))"
           }
         ).bind("description", description)
-    }.map(InternalChange(_))
+    }).map(InternalChange(_))
   }
 }

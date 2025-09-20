@@ -3,19 +3,16 @@ package db
 import cats.data.ValidatedNec
 import cats.implicits.*
 import db.generated.{ApplicationMoveForm, ApplicationMovesDao, ApplicationsDao}
-import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, SortOrder, User, Version, Visibility}
-import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.apibuilder.api.v0.models.{AppSortBy, ApplicationForm, Error, MoveForm, SortOrder, Version, Visibility}
 import io.apibuilder.task.v0.models.{EmailDataApplicationCreated, TaskType}
 import io.flow.postgresql.{OrderBy, Query}
 import lib.{UrlKey, Validation}
-import org.joda.time.DateTime
-import play.api.db.*
 import processor.EmailProcessorQueue
 import util.OptionalQueryFilter
 
 import java.sql.Connection
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 case class InternalApplication(db: generated.Application) {
   val guid: UUID = db.guid
@@ -230,7 +227,7 @@ class InternalApplicationsDao @Inject()(
   def findAllByGuids(authorization: Authorization, guids: Seq[UUID]): Seq[InternalApplication] = {
     findAll(authorization, guids = Some(guids), limit = None)
   }
-  
+
   def findAll(
     authorization: Authorization,
     orgKey: Option[String] = None,
@@ -289,14 +286,14 @@ class InternalApplicationsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(toOrderBy(sorting, ordering)),
-    ) { q =>
+    )( using (q: Query) => {
       authorization.applicationFilter(
         filters.foldLeft(q) { case (q, f) => f.filter(q) },
         "guid"
       )
       .equals("lower(name)", name.map(_.toLowerCase().trim))
       .equals("lower(key)", key.map(_.toLowerCase().trim))
-    }.map(InternalApplication(_))
+    }).map(InternalApplication(_))
   }
 
   private def toOrderBy(

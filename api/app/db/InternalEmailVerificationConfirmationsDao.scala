@@ -47,10 +47,9 @@ class InternalEmailVerificationConfirmationsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       q.and(isDeleted.map(Filters.isDeleted("email_verification_confirmations", _)))
-    }.map(InternalEmailVerificationConfirmation(_))
+    }).map(InternalEmailVerificationConfirmation(_))
   }
 
 }
-

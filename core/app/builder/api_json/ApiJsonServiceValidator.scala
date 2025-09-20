@@ -129,9 +129,7 @@ case class ApiJsonServiceValidator(
   private def validateUnions(form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
     sequenceUnique(
       form.unions.map(_.warnings) ++ form.unions.map { union =>
-        (validateAttributes(s"Union[${union.name}]", union.attributes),
-          validateTypeInterfaces(form, s"Union[${union.name}]", union.interfaces)
-        ).mapN { case (_, _) => () }
+        validateAttributes(s"Union[${union.name}]", union.attributes).map { _ => () }
       } ++ form.unions.map(validateUnionTypes)
     )
   }
@@ -185,21 +183,9 @@ case class ApiJsonServiceValidator(
   private def validateModels(form: InternalApiJsonForm): ValidatedNec[String, Unit] = {
     sequenceUnique(
       form.models.map(_.warnings) ++ form.models.map { model =>
-        (validateAttributes(s"Model[${model.name}]", model.attributes),
-          validateTypeInterfaces(form, s"Model[${model.name}]", model.interfaces)
-        ).mapN { case (_, _) => () }
+        validateAttributes(s"Model[${model.name}]", model.attributes).map { _ => () }
       } ++ Seq(validateFields(form.models))
     )
-  }
-
-  private def validateTypeInterfaces(form: InternalApiJsonForm, name: String, interfaces: Seq[String]): ValidatedNec[String, Unit] = {
-    interfaces.map { iName =>
-      if (form.interfaces.exists(_.name == iName)) {
-        ().validNec
-      } else {
-        s"$name cannot find interface named '$iName'".invalidNec
-      }
-    }.sequence.map { _ => () }
   }
 
   private def validateHeaders(headers: Seq[InternalHeaderForm]): ValidatedNec[String, Unit] = {

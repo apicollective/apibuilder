@@ -30,7 +30,7 @@ class LockUtil @Inject() (
     Query("SELECT pg_try_advisory_xact_lock({key1}::int, {key2}::int)")
       .bind("key1", key1)
       .bind("key2", key2)
-      .as(SqlParser.bool(1).single)(c)
+      .as(SqlParser.bool(1).single)(using c)
   }
 
   private def toHashInts(id: String): (Int, Int) = {

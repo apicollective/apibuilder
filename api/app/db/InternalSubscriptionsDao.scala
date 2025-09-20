@@ -41,10 +41,10 @@ class InternalSubscriptionsDao @Inject()(
   private def validateOrg(key: String): ValidatedNec[Error, Organization] = {
     organizationsDao.findAll(
       limit = Some(1),
-    ) { q =>
+    )( using (q: Query) => {
         q.equals("key", key)
           .isNull("deleted_at")
-      }
+      })
       .headOption
       .toValidNec(Validation.singleError("Organization not found"))
   }
@@ -68,7 +68,7 @@ class InternalSubscriptionsDao @Inject()(
       case Some(_) => Validation.singleError("User is already subscribed to this publication for this organization").invalidNec
     }
   }
-  
+
   private def validate(form: SubscriptionForm): ValidatedNec[Error, ValidatedSubscriptionForm] = {
     (
       validateOrg(form.organizationKey).andThen { org =>
@@ -142,14 +142,14 @@ class InternalSubscriptionsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       authorization.subscriptionFilter(
         filters.foldLeft(q) { case (q, f) => f.filter(q) },
         "subscriptions"
       )
       .and(isDeleted.map(Filters.isDeleted("subscriptions", _)))
       .equals("publication", publication.map(_.toString))
-    }.map(InternalSubscription(_))
+    }).map(InternalSubscription(_))
   }
 
 }

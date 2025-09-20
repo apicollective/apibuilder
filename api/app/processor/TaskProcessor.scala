@@ -2,10 +2,10 @@ package processor
 
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
-import cats.implicits._
+import cats.implicits.*
 import db.generated.{Task, TaskForm, TasksDao}
 import io.apibuilder.task.v0.models.TaskType
-import io.flow.postgresql.OrderBy
+import io.flow.postgresql.{OrderBy, Query}
 import lib.Constants
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsValue, Reads, Writes}
@@ -91,10 +91,10 @@ abstract class BaseTaskProcessor(
         .findAll(
           limit = Some(Limit),
           orderBy = Some(OrderBy("num_attempts, next_attempt_at"))
-        ) { q =>
+        )( using (q: Query) => {
           q.equals("type", typ.toString)
             .and("next_attempt_at <= now()")
-        }
+        })
         .foreach(processRecordSafe)
     }
   }

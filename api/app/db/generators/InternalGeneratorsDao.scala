@@ -33,7 +33,7 @@ class InternalGeneratorsDao @Inject()(
     findByKey(form.generator.key) match {
       case None => {
         dao.db.withConnection { c =>
-          create(c, user, form).validNec
+          create(user, form)(using c).validNec
         }
       }
 
@@ -42,7 +42,7 @@ class InternalGeneratorsDao @Inject()(
           // Update to catch any updates to properties
           dao.db.withTransaction { implicit c =>
             dao.delete(c, user.guid, existing.db)
-            create(c, user, form).validNec
+            create(user, form)(using c).validNec
           }
         } else {
           existing.validNec
@@ -79,15 +79,15 @@ class InternalGeneratorsDao @Inject()(
     val all = dao.findAllWithConnection(
       c,
       limit = None
-    ) { q =>
+    )( using (q: Query) => {
       q.equals("service_guid", serviceGuid)
-    }
+    })
     if (all.nonEmpty) {
       dao.deleteAllByGuids(deletedBy.guid, all.map(_.guid))
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: InternalUser, form: GeneratorForm): InternalGenerator = {
+  private def create(user: InternalUser, form: GeneratorForm)(implicit c: java.sql.Connection): InternalGenerator = {
     val guid = dao.insert(c, user.guid, _root_.db.generated.generators.GeneratorForm(
       serviceGuid = form.serviceGuid,
       key = form.generator.key.trim,
@@ -129,7 +129,7 @@ class InternalGeneratorsDao @Inject()(
       guid = guid,
       limit = limit,
       offset = offset
-    ) { q =>
+    )( using (q: Query) => {
       q.equals("service_guid", serviceGuid)
         .and(
           serviceUri.map { _ =>
@@ -149,6 +149,6 @@ class InternalGeneratorsDao @Inject()(
         ).bind("attribute_name", attributeName)
         .and(isDeleted.map(Filters.isDeleted("generators", _)))
         .orderBy("lower(name), lower(key), created_at desc")
-    }.map(InternalGenerator(_))
+    }).map(InternalGenerator(_))
   }
 }

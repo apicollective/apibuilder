@@ -2,6 +2,7 @@ package db
 
 import db.generated.OriginalsDao
 import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.flow.postgresql.Query
 
 import java.util.UUID
 import javax.inject.Inject
@@ -16,7 +17,7 @@ case class InternalOriginal(db: generated.Original) {
 class InternalOriginalsDao @Inject()(dao: OriginalsDao) {
 
   def create(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID,
     original: Original
@@ -29,7 +30,7 @@ class InternalOriginalsDao @Inject()(dao: OriginalsDao) {
   }
 
   def softDeleteByVersionGuid(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID
   ): Unit = {
@@ -40,7 +41,7 @@ class InternalOriginalsDao @Inject()(dao: OriginalsDao) {
     dao.findAll(
       versionGuids = Some(versionGuids),
       limit = None,
-    ) { q => q.isNull("deleted_at") }.map(InternalOriginal(_))
+    )( using (q: Query) => { q.isNull("deleted_at") }).map(InternalOriginal(_))
   }
 
   def findByVersionGuid(guid: UUID): Option[InternalOriginal] = {
