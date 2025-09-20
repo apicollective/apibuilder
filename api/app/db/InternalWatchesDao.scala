@@ -111,13 +111,13 @@ class InternalWatchesDao @Inject()(
       applicationGuid = applicationGuid,
       limit = limit,
       offset = offset,
-    ) { q =>
+    )( using (q: Query) => {
       authorization.applicationFilter(
         filters.foldLeft(q) { case (q, f) => f.filter(q) },
         "application_guid"
       )
       .and(isDeleted.map(Filters.isDeleted("watches", _)))
-    }.map(InternalWatch(_))
+    }).map(InternalWatch(_))
   }
 
 }

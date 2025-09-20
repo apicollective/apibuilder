@@ -1,7 +1,8 @@
 package db
 
-import io.apibuilder.api.v0.models._
+import io.apibuilder.api.v0.models.*
 import io.apibuilder.common.v0.models.MembershipRole
+import io.flow.postgresql.Query
 import lib.{Misc, UrlKey, Validation}
 import org.joda.time.DateTime
 import play.api.inject.Injector
@@ -213,7 +214,7 @@ class InternalOrganizationsDao @Inject()(
       guids = guids,
       limit = limit,
       offset = offset,
-    ) { q =>
+    )( using (q: Query) => {
       authorization.organizationFilter(q, "organizations.guid")
       .equals("key", key)
       .equals("lower(name)", name.map(_.toLowerCase().trim))
@@ -237,6 +238,6 @@ class InternalOrganizationsDao @Inject()(
       }).bind("deleted_at_before", deletedAtBefore)
       .and(isDeleted.map(Filters.isDeleted("organizations", _)))
       .orderBy("lower(name), created_at")
-    }.map(InternalOrganization(_))
+    }).map(InternalOrganization(_))
   }
 }

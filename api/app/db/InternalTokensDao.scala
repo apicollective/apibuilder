@@ -85,9 +85,9 @@ class InternalTokensDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       authorization.tokenFilter(q)
         .and(isDeleted.map(Filters.isDeleted("tokens", _)))
-    }.map(InternalToken(_))
+    }).map(InternalToken(_))
   }
 }

@@ -57,9 +57,9 @@ class InternalOrganizationDomainsDao @Inject()(
       domain = domain.map(_.trim.toLowerCase()),
       limit = limit,
       orderBy = orderBy,
-    ) { q =>
+    )( using (q: Query) => {
       q.and(isDeleted.map(Filters.isDeleted("organization_domains", _)))
-    }.map(InternalOrganizationDomain(_))
+    }).map(InternalOrganizationDomain(_))
   }
-  
+
 }

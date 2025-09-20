@@ -200,13 +200,13 @@ class InternalVersionsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("-version_sort_key, -created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       authorization.applicationFilter(q, "application_guid")
       .and(HasServiceJsonClause)
       .and(versionConstraint.map(vc => s"version like '${vc}%'"))
       .and(isDeleted.map(Filters.isDeleted("versions", _)))
       .equals("version", version)
-    }.map(InternalVersion(_))
+    }).map(InternalVersion(_))
   }
 
   // Efficient query to fetch all versions of a given application
@@ -296,10 +296,10 @@ class InternalVersionsDao @Inject()(
     servicesDao.findAll(
       versionGuid = Some(versionGuid),
       limit = None
-    ) { q =>
+    )( using (q: Query) => {
       q.equals("version", MigrateVersion.ServiceVersionNumber)
         .isNull("deleted_at")
-    }.foreach { s =>
+    }).foreach { s =>
       servicesDao.delete(user.guid, s)
     }
   }
