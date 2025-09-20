@@ -17,7 +17,7 @@ case class MemberDownload(
   def csv()(implicit ec: ExecutionContext): Future[File] = Future {
     val file = File.createTempFile(s"member-download-$orgKey", "csv")
 
-    val writer = CSVWriter.open(file)(defaultCSVFormat)
+    val writer = CSVWriter.open(file)(using defaultCSVFormat)
     writer.writeRow(Seq("guid", "role", "user_guid", "user_email", "user_nickname", "user_name"))
 
     Pager.eachPage[Membership] { offset =>

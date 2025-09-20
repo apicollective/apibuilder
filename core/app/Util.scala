@@ -1,11 +1,11 @@
 package core
 
+import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits.*
-import cats.data.Validated.{Invalid, Valid}
-import io.apibuilder.api.v0.models.Error
 import io.apibuilder.spec.v0.models.Enum
-import java.net.{MalformedURLException, URL}
+
+import java.net.{MalformedURLException, URI}
 import scala.util.{Failure, Success, Try}
 
 object Util {
@@ -55,7 +55,7 @@ object Util {
     } else if (formatted.endsWith("/")) {
       s"URI[$formatted] cannot end with a '/'".invalidNec
     } else {
-      Try(new URL(formatted)) match {
+      Try(URI.create(formatted)) match {
         case Success(_) => formatted.validNec
         case Failure(e) => e match {
           case e: MalformedURLException => s"URL is not valid: ${e.getMessage}".invalidNec

@@ -1,16 +1,14 @@
 package db
 
 import db.generated.EmailVerificationsDao
-import io.apibuilder.api.v0.models.User
 import io.apibuilder.task.v0.models.EmailDataEmailVerificationCreated
 import io.flow.postgresql.{OrderBy, Query}
 import lib.TokenGenerator
 import org.joda.time.DateTime
-import play.api.db.*
 import processor.EmailProcessorQueue
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 case class InternalEmailVerification(db: generated.EmailVerification) {
   val guid: UUID = db.guid
@@ -80,11 +78,11 @@ class InternalEmailVerificationsDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("created_at"))
-    ) { q =>
+    )( using (q: Query) => {
       q.equals("lower(email)", email.map(_.toLowerCase))
         .and(isExpired.map(Filters.isExpired("email_verifications", _)))
         .and(isDeleted.map(Filters.isDeleted("email_verifications", _)))
-    }.map(InternalEmailVerification(_))
+    }).map(InternalEmailVerification(_))
   }
 
 }
