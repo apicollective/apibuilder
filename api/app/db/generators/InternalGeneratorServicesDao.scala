@@ -97,7 +97,7 @@ class InternalGeneratorServicesDao @Inject()(
       limit = limit,
       offset = offset,
       orderBy = Some(OrderBy("lower(uri)"))
-    ) { q =>
+    )( using (q: Query) => {
       q.and(
         uri.map { _ =>
           "lower(uri) = lower(trim({uri}))"
@@ -109,7 +109,7 @@ class InternalGeneratorServicesDao @Inject()(
           }
         ).bind("generator_key", generatorKey)
         .and(isDeleted.map(Filters.isDeleted("services", _)))
-    }.map(InternalGeneratorService(_))
+    }).map(InternalGeneratorService(_))
   }
 
 }

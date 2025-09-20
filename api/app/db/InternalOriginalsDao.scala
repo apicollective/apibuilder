@@ -17,7 +17,7 @@ case class InternalOriginal(db: generated.Original) {
 class InternalOriginalsDao @Inject()(dao: OriginalsDao) {
 
   def create(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID,
     original: Original
@@ -30,7 +30,7 @@ class InternalOriginalsDao @Inject()(dao: OriginalsDao) {
   }
 
   def softDeleteByVersionGuid(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID
   ): Unit = {

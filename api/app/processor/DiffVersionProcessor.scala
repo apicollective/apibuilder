@@ -124,14 +124,14 @@ class DiffVersionProcessor @Inject()(
           publication = publication,
           subject = s"${org.name}/${application.name}:${version.version} Updated",
           body = generateBody(org, application, breakingDiffs, nonBreakingDiffs).toString
-        ) { subscription =>
+        )( using { subscription =>
           watchesDao.findAll(
             Authorization.All,
             applicationGuid = Some(application.guid),
             userGuid = Some(subscription.user.guid),
             limit = Some(1)
           ).nonEmpty
-        }
+        })
       }
     }
   }

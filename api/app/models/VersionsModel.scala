@@ -10,7 +10,7 @@ import io.apibuilder.api.v0.models.Version
 import io.apibuilder.common.v0.models.{Audit, Reference, ReferenceGuid}
 import io.apibuilder.spec.v0.models.{Apidoc, Service}
 import io.apibuilder.spec.v0.models.json.*
-import io.flow.postgresql.OrderBy
+import io.flow.postgresql.{OrderBy, Query}
 
 import javax.inject.Inject
 
@@ -50,7 +50,7 @@ class VersionsModel @Inject()(
     ).map { o => o.guid -> o }.toMap
 
     val originals = originalsDao.findAllByVersionGuids(versions.map(_.guid)).map { o => o.versionGuid -> o }.toMap
-    
+
     versions.map { v =>
       (
         applications.get(v.applicationGuid).toValidNec("Cannot find application").andThen { app =>
@@ -83,9 +83,9 @@ class VersionsModel @Inject()(
       versionGuid = Some(v.guid),
       orderBy = Some(OrderBy("-created_at")),
       limit = Some(1),
-    ) { q =>
+    )( using (q: Query) =>
       q.isNull("deleted_at")
-    }.headOption
+    ).headOption
       .toValidNec("Version does not have service json")
       .map(_.json.as[Service])
       .map { service =>

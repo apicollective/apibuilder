@@ -159,7 +159,7 @@ class InternalOrganizationsDao @Inject()(
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: InternalUser, form: OrganizationForm): InternalOrganization = {
+  private def create(c: java.sql.Connection, user: InternalUser, form: OrganizationForm): InternalOrganization = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 

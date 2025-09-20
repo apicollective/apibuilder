@@ -78,7 +78,7 @@ class InternalVersionsDao @Inject()(
   }
 
   private def doCreate(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     application: InternalApplication,
     version: String,
@@ -226,7 +226,7 @@ class InternalVersionsDao @Inject()(
         .optionalLimit(limit)
         .offset(offset)
         .orderBy("version_sort_key desc, created_at desc")
-        .as(SqlParser.str(1).*)(c)
+        .as(SqlParser.str(1).*)(using c)
         .map { version =>
           ApplicationMetadataVersion(version = version)
         }
@@ -289,7 +289,7 @@ class InternalVersionsDao @Inject()(
   }
 
   private def softDeleteService(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID
   ): Unit =  {
@@ -305,7 +305,7 @@ class InternalVersionsDao @Inject()(
   }
 
   private def insertService(
-    implicit c: java.sql.Connection,
+    c: java.sql.Connection,
     user: InternalUser,
     versionGuid: UUID,
     service: Service

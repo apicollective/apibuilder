@@ -66,7 +66,7 @@ class ApplicationsModel @Inject()(
         LastVersionCreatedQuery
           .in("application_guid", guids)
           .groupBy("1")
-          .as(parser.*)(c)
+          .as(parser.*)(using c)
       }
     }
   }

@@ -77,9 +77,9 @@ class ItemsDao @Inject() (
       delete(c, guid)
     }
   }
-  
-  private def delete(implicit c: java.sql.Connection, guid: UUID): Unit = {
-    SQL(DeleteQuery).on("guid" -> guid).execute()
+
+  private def delete(c: java.sql.Connection, guid: UUID): Unit = {
+    SQL(DeleteQuery).on("guid" -> guid).execute()(using c)
   }
 
   def findByGuid(

@@ -23,7 +23,7 @@ class CheckInvariantsProcessor @Inject()(
   override def processRecord(id: String): ValidatedNec[String, Unit] = {
     val results = invariants.all.map { i =>
       val count = database.withConnection { c =>
-        i.query.as(SqlParser.long(1).*)(c).headOption.getOrElse(0L)
+        i.query.as(SqlParser.long(1).*)(using c).headOption.getOrElse(0L)
       }
       InvariantResult(i, count)
     }

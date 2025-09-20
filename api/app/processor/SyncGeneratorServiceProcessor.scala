@@ -35,7 +35,7 @@ class SyncGeneratorServiceProcessor @Inject()(
   private val ec: ExecutionContext = system.dispatchers.lookup("generator-service-sync-context")
 
   override def processRecord(guid: UUID): ValidatedNec[String, Unit] = {
-    syncAll()(ec).validNec
+    syncAll()(using ec).validNec
   }
 
   private def syncAll(pageSize: Long = 200)(implicit ec: scala.concurrent.ExecutionContext): Unit = {

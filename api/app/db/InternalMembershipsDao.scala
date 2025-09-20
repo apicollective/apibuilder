@@ -49,7 +49,7 @@ class InternalMembershipsDao @Inject()(
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
+  private[db] def create(c: java.sql.Connection, createdBy: UUID, org: OrganizationReference, user: UserReference, role: MembershipRole): InternalMembership = {
     val guid = dao.insert(c, createdBy, generated.MembershipForm(
       userGuid = user.guid,
       organizationGuid = org.guid,
