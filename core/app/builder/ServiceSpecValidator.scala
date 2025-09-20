@@ -138,13 +138,17 @@ case class ServiceSpecValidator(
 
 
   private def validateTypeInterfaces(prefix: String, interfaces: Seq[String]): ValidatedNec[String, Unit] = {
+    println(s"validateTypeInterfaces[$prefix] $interfaces")
     interfaces.map { interfaceName =>
       typeResolver.parse(interfaceName) {
         case _: Kind.Interface => true
         case _ => false
       } match {
         case Some(_) => ().validNec
-        case _ => s"$prefix Interface[$interfaceName] not found".invalidNec
+        case o => {
+          println(s" -- interface[${interfaceName}] => $o")
+          s"$prefix Interface[$interfaceName] not found".invalidNec
+        }
       }
     }.sequence.map { _ => () }
   }
