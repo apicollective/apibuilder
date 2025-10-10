@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor._
+import org.apache.pekko.actor.*
 import io.apibuilder.task.v0.models.TaskType
 import play.api.libs.concurrent.InjectedActorSupport
 import processor.TaskDispatchActorCompanion

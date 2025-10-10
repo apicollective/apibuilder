@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, Cancellable}
+import org.apache.pekko.actor.{Actor, ActorLogging, Cancellable}
 import db.InternalTasksDao
 import io.apibuilder.task.v0.models.TaskType
 import play.api.{Environment, Mode}

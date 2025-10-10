@@ -116,7 +116,7 @@ lazy val api = project
       filters,
       jdbc,
       ws,
-      "com.typesafe.play" %% "play-guice" % "2.9.4",
+      "org.playframework" %% "play-guice" % "3.0.6",
       "com.google.inject" % "guice" % "5.1.0",
       "com.google.inject.extensions" % "guice-assistedinject" % "5.1.0",
       "org.projectlombok" % "lombok" % "1.18.42" % "provided",
