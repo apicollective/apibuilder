@@ -140,7 +140,7 @@ class InternalChangesDao @Inject()(
       new OptionalQueryFilter(toVersion) {
         override def filter(q: Query, v: String): Query = {
           q.in(
-            "from_version_guid",
+            "to_version_guid",
             Query("select guid from versions")
               .lessThanOrEquals("version_sort_key", VersionTag(v).sortKey)
           )
