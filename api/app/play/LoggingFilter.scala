@@ -1,8 +1,8 @@
 package io.apicollective.play
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import play.api.{Logger, Logging}
-import play.api.mvc._
+import play.api.mvc.*
 
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HttpFilters

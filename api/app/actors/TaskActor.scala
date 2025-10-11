@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging}
+import org.apache.pekko.actor.{Actor, ActorLogging}
 import com.google.inject.assistedinject.Assisted
 import io.apibuilder.task.v0.models.TaskType
 import processor.TaskActorCompanion
