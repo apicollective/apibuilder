@@ -148,7 +148,7 @@ class InternalChangesDaoSpec extends PlaySpec with GuiceOneAppPerSuite with db.H
     "toVersion" in {
       val change = createChange()
       val version = versionsDao.findByGuid(Authorization.All, change.db.toVersionGuid).get
-      changesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
+      changesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString), limit = None).map(_.guid) must be(Nil)
       changesDao.findAll(Authorization.All, guid = Some(change.guid), toVersion = Some(version.version), limit = None).map(_.guid) must be(Seq(change.guid))
     }
 
