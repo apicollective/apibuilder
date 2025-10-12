@@ -8,5 +8,5 @@ case class Invariant(name: String, query: Query)
 
 class Invariants @Inject() () {
   val all: Seq[Invariant] =
-    TaskInvariants.all ++ PurgeInvariants.all
+    TaskInvariants.all ++ PurgeInvariants.all ++ GeneratorInvariants.all
 }
