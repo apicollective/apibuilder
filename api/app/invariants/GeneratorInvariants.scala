@@ -15,7 +15,7 @@ object GeneratorInvariants {
           | where s.deleted_at is not null
           |   and g.deleted_at is null
           |""".stripMargin
-      ).withDebugging
+      )
     )
   )
 }

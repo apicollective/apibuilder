@@ -1,20 +1,18 @@
 package db.generators
 
+import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNec
 import cats.implicits.*
-import cats.data.Validated.{Invalid, Valid}
 import core.Util
 import db.*
 import db.generated.generators.ServicesDao
-import io.apibuilder.api.v0.models.{Error, GeneratorService, GeneratorServiceForm, User}
-import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.apibuilder.api.v0.models.{Error, GeneratorServiceForm}
 import io.apibuilder.task.v0.models.TaskType
 import io.flow.postgresql.{OrderBy, Query}
 import lib.Validation
-import play.api.db.*
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 case class InternalGeneratorService(db: generated.generators.Service) {
   val guid: UUID = db.guid

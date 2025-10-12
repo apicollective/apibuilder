@@ -2,18 +2,13 @@ package db.generators
 
 import cats.data.ValidatedNec
 import cats.implicits.*
-import db.{Filters, InternalUser}
 import db.generated.generators.GeneratorsDao
+import db.{Filters, InternalUser}
 import io.apibuilder.api.v0.models.*
-import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
-import lib.Pager
-import play.api.db.*
-import play.api.libs.json.Json
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
-import scala.util.{Failure, Success, Try}
+import javax.inject.Inject
 
 case class InternalGenerator(db: _root_.db.generated.generators.Generator) {
   val guid: UUID = db.guid
@@ -80,10 +75,10 @@ class InternalGeneratorsDao @Inject()(
       c,
       limit = None
     )( using (q: Query) => {
-      q.equals("service_guid", serviceGuid)
+      q.equals("service_guid", serviceGuid).isNull("deleted_at")
     })
     if (all.nonEmpty) {
-      dao.deleteAllByGuids(deletedBy.guid, all.map(_.guid))
+      dao.deleteAllByGuids(c, deletedBy.guid, all.map(_.guid))
     }
   }
 
