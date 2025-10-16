@@ -184,7 +184,7 @@ class Code @Inject() (
                 conflict(r.errors.map(_.message))
               }
               case r: io.apibuilder.generator.v0.errors.FailedRequest => {
-                conflict(s"Generator failed with ${r.getMessage}")
+                conflict(s"Generator[${gws.generator.key}] failed with ${r.getMessage}")
               }
             }
           }
