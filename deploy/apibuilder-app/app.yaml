@@ -66,6 +66,6 @@ spec:
       - ApplyOutOfSyncOnly=true    # Only sync out-of-sync resources
       - ServerSideApply=true       # Use server-side apply
       - PruneLast=true            # Prune after successful sync
-    #automated:
-    #  prune: true
-    #  selfHeal: true
+    automated:
+      prune: true
+      selfHeal: true
