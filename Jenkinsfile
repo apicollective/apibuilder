@@ -35,11 +35,11 @@ podTemplate(
       [{"serviceName": "apibuilder-api",
       "dockerImageName": "apibuilder-api",
       "dockerFilePath" : "/api/Dockerfile",
-      "multiplatforms: "no"},
+      "multiplatforms": "no"},
       {"serviceName": "apibuilder-app",
       "dockerImageName": "apibuilder-app",
       "dockerFilePath" : "/app/Dockerfile",
-      "multiplatforms: "no"}]
+      "multiplatforms": "no"}]
       '''
       withCredentials([string(credentialsId: "jenkins-argocd-token", variable: 'ARGOCD_AUTH_TOKEN')]) {
         mainJenkinsBuildArgo(
