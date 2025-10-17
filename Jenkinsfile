@@ -34,18 +34,19 @@ podTemplate(
       String jsondata = '''
       [{"serviceName": "apibuilder-api",
       "dockerImageName": "apibuilder-api",
-      "dockerFilePath" : "/api/Dockerfile"},
+      "dockerFilePath" : "/api/Dockerfile",
+      "multiplatforms: "no"},
       {"serviceName": "apibuilder-app",
       "dockerImageName": "apibuilder-app",
-      "dockerFilePath" : "/app/Dockerfile"}]
+      "dockerFilePath" : "/app/Dockerfile",
+      "multiplatforms: "no"}]
       '''
       withCredentials([string(credentialsId: "jenkins-argocd-token", variable: 'ARGOCD_AUTH_TOKEN')]) {
         mainJenkinsBuildArgo(
           semversion: "${semversion}",
           pgImage: "flowcommerce/bentest-postgresql:latest",
           componentargs: "${jsondata}",
-          sbtOnMain: "${sbtOnMain}",
-          multiplatforms: "no"
+          sbtOnMain: "${sbtOnMain}"
           // => optional
           //orgName: "flowvault"
           // SBT test
