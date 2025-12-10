@@ -5,6 +5,8 @@ metadata:
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  labels:
+    team: foundation
 spec:
   destination:
     namespace: apicollective
