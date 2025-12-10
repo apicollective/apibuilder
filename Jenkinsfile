@@ -1,8 +1,5 @@
 @Library('lib-jenkins-pipeline') _
 
-
-//  => Mandatory to use a definition before the node or Blue Ocean doesn't show the expected info
-def newTagEveryRunMainBranch = "yes" // Force a new version and deploy clicking on Build Now in Jenkins
 def sbtOnMain = "no"
 
 // we can remove the pod_template block if we end up having only one template
@@ -24,7 +21,7 @@ podTemplate(
 
       // => tagging function to identify what actions to take depending on the nature of the changes
       stage ('tagging') {
-        semversion = taggingv2(newTagEveryMainRun: "${newTagEveryRunMainBranch}")
+        semversion = taggingv2()
         println(semversion)
       }
 
