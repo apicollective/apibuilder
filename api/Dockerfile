@@ -1,9 +1,9 @@
-FROM flowdocker/play_builder:latest-java17 as builder
+FROM flowcommerce/play_builder_java17:latest as builder
 ADD . /opt/play
 WORKDIR /opt/play
 RUN sbt 'project api' clean stage
 
-FROM flowdocker/play:latest-java17
+FROM flowcommerce/play_java17:latest
 COPY --from=builder /opt/play /opt/play
 WORKDIR /opt/play/api/target/universal/stage
 ENTRYPOINT ["java", "-jar", "/root/environment-provider.jar", "--service", "play", "apibuilder-api", "bin/apibuilder-api"]
