@@ -1,4 +1,4 @@
-FROM flowcommerce/play_builder:latest-java17 as builder
+FROM flowcommerce/play_builder_java17:latest as builder
 ADD . /opt/play
 WORKDIR /opt/play
 RUN sbt 'project api' clean stage
