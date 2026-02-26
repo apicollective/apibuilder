@@ -147,6 +147,7 @@
         { "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
         { "name": "description", "type": "string", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false },
+        { "name": "fields", "type": "[field]", "required": false, "description": "When present, a model is automatically generated using the type name with the specified fields. The generated model becomes a member of the union. Use an empty array for types that carry no data." },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
         { "name": "default", "type": "boolean", "required": false, "description": "If true, indicates that this type should be used as the default when deserializing union types. This field is only used by union types that require a discriminator and sets the default value for that discriminator during deserialization." },
         { "name": "discriminator_value", "type": "string", "required": false, "description": "The discriminator value defines the string to use in the discriminator field to identify this type. If not specified, the discriminator value will default to the name of the type itself." }

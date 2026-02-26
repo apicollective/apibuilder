@@ -52,6 +52,30 @@ private[api_json] case class InternalApiJsonForm(
     }
   }
 
+  // Models synthesized from union type entries that have inline fields.
+  // Field-level warnings are carried on each InternalFieldForm and validated via validateModels.
+  private lazy val syntheticModelsFromUnions: Seq[InternalModelForm] = {
+    declaredUnions.flatMap { union =>
+      union.types.flatMap { ut =>
+        ut.inlineFields.flatMap { fields =>
+          ut.datatype.toOption.map { dt =>
+            InternalModelForm(
+              name = dt.name,
+              plural = Text.pluralize(dt.name),
+              description = ut.description,
+              deprecation = ut.deprecation,
+              fields = fields,
+              attributes = Nil,
+              interfaces = Nil,
+              templates = Nil,
+              warnings = ().validNec
+            )
+          }
+        }
+      }
+    }
+  }
+
   def unions: Seq[InternalUnionForm] = declaredUnions ++ internalDatatypeBuilder.unionForms
 
   private def parseModels(js: JsValue, prefix: Option[String]): Seq[InternalModelForm] = {
@@ -96,7 +120,7 @@ private[api_json] case class InternalApiJsonForm(
     }
   } ++ internalDatatypeBuilder.interfaceForms
 
-  def models: Seq[InternalModelForm] = declaredModels ++ internalDatatypeBuilder.modelForms
+  def models: Seq[InternalModelForm] = declaredModels ++ internalDatatypeBuilder.modelForms ++ syntheticModelsFromUnions
 
   private lazy val declaredEnums: Seq[InternalEnumForm] = {
     (json \ "enums").asOpt[JsValue] match {
@@ -274,6 +298,7 @@ case class InternalUnionTypeForm(
   attributes: Seq[InternalAttributeForm],
   default: Option[Boolean],
   discriminatorValue: Option[String],
+  inlineFields: Option[Seq[InternalFieldForm]],
   warnings: ValidatedNec[String, Unit]
 )
 
@@ -448,12 +473,18 @@ object InternalUnionForm {
              val internalDatatype = internalDatatypeBuilder.parseTypeFromObject(json)
              val datatypeName = internalDatatype.toOption.map(_.name)
 
+             val inlineFields: Option[Seq[InternalFieldForm]] =
+               (json \ "fields").asOpt[JsArray].map { _ =>
+                 InternalFieldForm.parse(internalDatatypeBuilder, json)
+               }
+
              InternalUnionTypeForm(
                datatype = internalDatatype,
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
                default = JsonUtil.asOptBoolean(json \ "default"),
                discriminatorValue = JsonUtil.asOptString(json \ "discriminator_value"),
+               inlineFields = inlineFields,
                attributes = InternalAttributeForm.fromJson((value \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
@@ -461,7 +492,7 @@ object InternalUnionForm {
                  optionalStrings = Seq("description", "discriminator_value"),
                  optionalBooleans = Seq("default"),
                  optionalObjects = Seq("deprecation"),
-                 optionalArraysOfObjects = Seq("attributes"),
+                 optionalArraysOfObjects = Seq("attributes", "fields"),
                  prefix = Some(s"Union[$name] type[${datatypeName.getOrElse("")}]")
                )
              )

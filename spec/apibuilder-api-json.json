@@ -203,6 +203,7 @@
         { "name": "description", "type": "string", "required": false },
         { "name": "default", "type": "boolean", "required": false, "default": false },
         { "name": "discriminator_value", "type": "string", "required": false },
+        { "name": "fields", "type": "[field]", "required": false, "description": "When present, API Builder auto-generates a model with these fields using the type name. The generated model becomes a member of the union. Use an empty array for types that carry no data." },
         { "name": "attributes", "type": "[attribute]", "required": false },
         { "name": "deprecation", "type": "deprecation", "required": false }
       ]

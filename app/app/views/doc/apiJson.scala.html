@@ -447,6 +447,7 @@
       "description": <em>string (optional)</em>,
       "default": <em>boolean (optional)</em>,
       "discriminator_value": <em>string (optional)</em>,
+      "fields": <em>JSON Array of <a href="#field">Field</a> (optional)</em>,
       "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
@@ -460,6 +461,7 @@
       @description("type")
       <li><em>default</em> If true, indicates that this type should be used as the default when deserializing union types. This field is only used by union types that require a discriminator and sets the default value for that disciminator during deserialization.</li>
       <li><em>discriminator_value</em> The discriminator value defines the string to use in the discriminator field to identify this type. If not specified, the discriminator value will default to the name of the type itself.</li>
+      <li><em>fields</em> When present, a model is automatically generated using the type name with the specified fields. The generated model becomes a member of the union. Use an empty array for types that carry no data. This provides a compact way to define union member types inline without separate model declarations. See <a href="#field">Field</a>.</li>
       <li><em>attributes</em> JSON array defining additional meta data about this union type for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this object is deprecated.</li>
    </ul>
