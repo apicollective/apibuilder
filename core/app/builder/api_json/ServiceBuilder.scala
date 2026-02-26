@@ -374,6 +374,7 @@ case class ServiceBuilder(
             `type` = typ.label,
             description = it.description,
             deprecation = it.deprecation.map(DeprecationBuilder(_)),
+            fields = it.fields.map(_.map(FieldBuilder(_))),
             default = it.default,
             discriminatorValue = Some(
               it.discriminatorValue.getOrElse(typ.name)

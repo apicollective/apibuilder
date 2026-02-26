@@ -320,6 +320,7 @@ package io.apibuilder.spec.v0.models {
     `type`: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[io.apibuilder.spec.v0.models.Deprecation] = None,
+    fields: _root_.scala.Option[Seq[io.apibuilder.spec.v0.models.Field]] = None,
     attributes: Seq[io.apibuilder.spec.v0.models.Attribute] = Nil,
     default: _root_.scala.Option[Boolean] = None,
     discriminatorValue: _root_.scala.Option[String] = None
@@ -1351,10 +1352,11 @@ package io.apibuilder.spec.v0.models {
         `type` <- (__ \ "type").read[String]
         description <- (__ \ "description").readNullable[String]
         deprecation <- (__ \ "deprecation").readNullable[io.apibuilder.spec.v0.models.Deprecation]
+        fields <- (__ \ "fields").readNullable[Seq[io.apibuilder.spec.v0.models.Field]]
         attributes <- (__ \ "attributes").read[Seq[io.apibuilder.spec.v0.models.Attribute]]
         default <- (__ \ "default").readNullable[Boolean]
         discriminatorValue <- (__ \ "discriminator_value").readNullable[String]
-      } yield UnionType(`type`, description, deprecation, attributes, default, discriminatorValue)
+      } yield UnionType(`type`, description, deprecation, fields, attributes, default, discriminatorValue)
     }
 
     def jsObjectUnionType(obj: io.apibuilder.spec.v0.models.UnionType): play.api.libs.json.JsObject = {

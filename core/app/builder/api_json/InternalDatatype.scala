@@ -63,6 +63,8 @@ private[api_json] case class InternalDatatypeBuilder() {
   def interfaceForms: List[InternalInterfaceForm] = dynamicInterfaces.toList
   def unionForms: List[InternalUnionForm] = dynamicUnions.toList
 
+  def addDynamicModel(model: InternalModelForm): Unit = dynamicModels.append(model)
+
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
