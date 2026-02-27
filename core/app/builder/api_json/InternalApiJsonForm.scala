@@ -455,7 +455,7 @@ object InternalUnionForm {
                  InternalFieldForm.parse(internalDatatypeBuilder, json)
                }
 
-             fields.foreach { fieldForms =>
+             fields.filter(_.nonEmpty).foreach { fieldForms =>
                datatypeName.foreach { name =>
                  internalDatatypeBuilder.addDynamicModel(
                    InternalModelForm(
