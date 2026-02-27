@@ -97,7 +97,28 @@ private[api_json] case class InternalApiJsonForm(
 
   private def createModelsForUnionTypes(known: Seq[InternalModelForm]): Seq[InternalModelForm] = {
     println(s"CREATE MODELS")
+    unions.flatMap { u =>
+      u.types.filterNot(isTypeKnown).map { t =>
+        println(s" - ${t.datatype}")
+      }
+    }
     known
+  }
+
+  private def isTypeKnown(ut: InternalUnionTypeForm): Boolean = {
+    ut.datatype match {
+      case Invalid(_) => true
+      case Valid(ut) => {
+        true
+      }
+    }
+    ut.datatype.foreach { t =>
+      if (t.name == "ping") {
+        sys.error("STACK")
+      }
+    }
+    println(s"Union  isTypeKnown[${ut.datatype}]")
+    true
   }
 
   private lazy val declaredEnums: Seq[InternalEnumForm] = {
@@ -146,10 +167,6 @@ private[api_json] case class InternalApiJsonForm(
 
   lazy val attributes: Seq[InternalAttributeForm] = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray])
 
-  lazy val typeResolver: TypeResolver = TypeResolver(
-    defaultNamespace = namespace,
-    RecursiveTypesProvider(this)
-  )
 }
 
 case class InternalImportForm(
