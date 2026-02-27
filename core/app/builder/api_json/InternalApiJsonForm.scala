@@ -1,13 +1,13 @@
 package builder.api_json
 
-import cats.implicits._
+import cats.implicits.*
 import cats.data.ValidatedNec
 import builder.JsonUtil
 import builder.api_json.upgrades.AllUpgrades
 import cats.data.Validated.{Invalid, Valid}
 import core.ServiceFetcher
-import lib.{Text, ValidatedHelpers}
-import play.api.libs.json._
+import lib.{DatatypeResolver, Text, ValidatedHelpers}
+import play.api.libs.json.*
 
 /**
  * Just parses json with minimal validation - build to provide a way to
@@ -92,34 +92,17 @@ private[api_json] case class InternalApiJsonForm(
 
   def models: Seq[InternalModelForm] = {
     val knownModels = declaredModels ++ internalDatatypeBuilder.modelForms
-    knownModels ++ createModelsForUnionTypes(knownModels)
+
+    val datatypeResolver: DatatypeResolver = DatatypeResolver(
+      enumNames = enums.map(_.name),
+      interfaceNames = interfaces.map(_.name),
+      unionNames = unions.map(_.name),
+      modelNames = knownModels.map(_.name)
+    )
+
+    knownModels ++ AutoCreateUnionTypeModels.createModelsForUnionTypes(datatypeResolver, unions)
   }
 
-  private def createModelsForUnionTypes(known: Seq[InternalModelForm]): Seq[InternalModelForm] = {
-    println(s"CREATE MODELS")
-    unions.flatMap { u =>
-      u.types.filterNot(isTypeKnown).map { t =>
-        println(s" - ${t.datatype}")
-      }
-    }
-    known
-  }
-
-  private def isTypeKnown(ut: InternalUnionTypeForm): Boolean = {
-    ut.datatype match {
-      case Invalid(_) => true
-      case Valid(ut) => {
-        true
-      }
-    }
-    ut.datatype.foreach { t =>
-      if (t.name == "ping") {
-        sys.error("STACK")
-      }
-    }
-    println(s"Union  isTypeKnown[${ut.datatype}]")
-    true
-  }
 
   private lazy val declaredEnums: Seq[InternalEnumForm] = {
     (json \ "enums").asOpt[JsValue] match {
@@ -218,7 +201,7 @@ case class InternalTemplateDeclarationForm(
   warnings: ValidatedNec[String, Unit]
 )
 
-object InternalTemplateDeclarationForm {
+private object InternalTemplateDeclarationForm {
   def apply(json: JsObject): InternalTemplateDeclarationForm = {
     InternalTemplateDeclarationForm(
       name = JsonUtil.asOptString(json \ "name"),
