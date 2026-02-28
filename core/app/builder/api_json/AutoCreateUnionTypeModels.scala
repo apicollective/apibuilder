@@ -16,14 +16,15 @@ object AutoCreateUnionTypeModels {
           if (isImported(typ)) {
             None
           } else {
-            resolver.parse(typ) match {
-              case None => Some(createModelForUnionType(typ, t.fields))
-              case Some(_) => None
+            t.fields match {
+              case None => None
+              case Some(_) if resolver.parse(typ).isDefined => None
+              case Some(fields) => Some(createModelForUnionType(typ, fields))
             }
           }
         }
       }
-    }
+    }.distinctBy(_.name)
   }
 
   private def isImported(typ: String): Boolean = typ.indexOf(".") > 0

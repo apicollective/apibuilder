@@ -267,7 +267,7 @@ case class InternalUnionForm(
 
 case class InternalUnionTypeForm(
   datatype: ValidatedNec[String, InternalDatatype],
-  fields: Seq[InternalFieldForm],
+  fields: Option[Seq[InternalFieldForm]],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
@@ -449,12 +449,12 @@ object InternalUnionForm {
 
              InternalUnionTypeForm(
                datatype = internalDatatype,
-               fields = InternalFieldForm.parse(internalDatatypeBuilder, value),
+               fields = (json \ "fields").asOpt[JsArray].map(_ => InternalFieldForm.parse(internalDatatypeBuilder, json)),
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
                default = JsonUtil.asOptBoolean(json \ "default"),
                discriminatorValue = JsonUtil.asOptString(json \ "discriminator_value"),
-               attributes = InternalAttributeForm.fromJson((value \ "attributes").asOpt[JsArray]),
+               attributes = InternalAttributeForm.fromJson((json \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  anys = Seq("type"),

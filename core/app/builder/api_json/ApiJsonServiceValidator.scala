@@ -139,10 +139,29 @@ case class ApiJsonServiceValidator(
       union.types.map(_.warnings) ++ union.types.map { typ =>
         typ.datatype match {
           case Invalid(errors) => (s"Union[${union.name}] type[] " + errors.toNonEmptyList.toList.mkString(", ")).invalidNec
-          case Valid(dt) => validateAttributes(s"Union[${union.name}] type[${dt.name}]", typ.attributes)
+          case Valid(dt) => sequenceUnique(Seq(
+            validateAttributes(s"Union[${union.name}] type[${dt.name}]", typ.attributes),
+            validateUnionTypeFields(union.name, dt, typ.fields),
+          ))
         }
       }
     )
+  }
+
+  private def validateUnionTypeFields(unionName: String, dt: InternalDatatype, fields: Option[Seq[InternalFieldForm]]): ValidatedNec[String, Unit] = {
+    fields match {
+      case None => ().validNec
+      case Some(_) =>
+        dt match {
+          case _: InternalDatatype.List =>
+            s"Union[$unionName] type[${dt.name}] fields cannot be specified for list types".invalidNec
+          case _: InternalDatatype.Map =>
+            s"Union[$unionName] type[${dt.name}] fields cannot be specified for map types".invalidNec
+          case _: InternalDatatype.Singleton if lib.Primitives(dt.name).isDefined =>
+            s"Union[$unionName] type[${dt.name}] fields cannot be specified for primitive types".invalidNec
+          case _ => ().validNec
+        }
+    }
   }
 
   private def validateAnnotations(annotations: Seq[InternalAnnotationForm]): ValidatedNec[String, Unit] = {
