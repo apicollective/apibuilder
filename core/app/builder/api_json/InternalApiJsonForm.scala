@@ -90,7 +90,7 @@ private[api_json] case class InternalApiJsonForm(
     }
   } ++ internalDatatypeBuilder.interfaceForms
 
-  def models: Seq[InternalModelForm] = {
+  lazy val models: Seq[InternalModelForm] = {
     val knownModels = declaredModels ++ internalDatatypeBuilder.modelForms
 
     val datatypeResolver: DatatypeResolver = DatatypeResolver(
