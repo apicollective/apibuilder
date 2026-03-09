@@ -208,6 +208,28 @@ package io.apibuilder.api.v0.models {
   )
 
   /**
+   * The latest version for a single application, if any versions exist.
+   */
+  final case class BatchVersionLatest(
+    applicationKey: String,
+    latestVersion: _root_.scala.Option[String] = None
+  )
+
+  /**
+   * Response containing the latest version for each requested application.
+   */
+  final case class BatchVersionsLatest(
+    applications: Seq[io.apibuilder.api.v0.models.BatchVersionLatest]
+  )
+
+  /**
+   * Form to request the latest version for multiple applications in a single API call.
+   */
+  final case class BatchVersionsLatestForm(
+    applicationKeys: Seq[String]
+  )
+
+  /**
    * Represents a single change from one version of a service to another
    *
    * @param changedAt Records the timestamp of when the actual change occurred (vs. when we created
@@ -1425,6 +1447,57 @@ package io.apibuilder.api.v0.models {
       }
     }
 
+    implicit def jsonReadsApibuilderApiBatchVersionLatest: play.api.libs.json.Reads[io.apibuilder.api.v0.models.BatchVersionLatest] = {
+      for {
+        applicationKey <- (__ \ "application_key").read[String]
+        latestVersion <- (__ \ "latest_version").readNullable[String]
+      } yield BatchVersionLatest(applicationKey = applicationKey, latestVersion = latestVersion)
+    }
+
+    def jsObjectBatchVersionLatest(obj: io.apibuilder.api.v0.models.BatchVersionLatest): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "application_key" -> play.api.libs.json.JsString(obj.applicationKey)
+      ) ++ obj.latestVersion.fold(play.api.libs.json.Json.obj()) { v => play.api.libs.json.Json.obj("latest_version" -> play.api.libs.json.JsString(v)) }
+    }
+
+    implicit def jsonWritesApibuilderApiBatchVersionLatest: play.api.libs.json.Writes[BatchVersionLatest] = {
+      (obj: io.apibuilder.api.v0.models.BatchVersionLatest) => {
+        io.apibuilder.api.v0.models.json.jsObjectBatchVersionLatest(obj)
+      }
+    }
+
+    implicit def jsonReadsApibuilderApiBatchVersionsLatest: play.api.libs.json.Reads[io.apibuilder.api.v0.models.BatchVersionsLatest] = {
+      (__ \ "applications").read[Seq[io.apibuilder.api.v0.models.BatchVersionLatest]].map { x => BatchVersionsLatest(applications = x) }
+    }
+
+    def jsObjectBatchVersionsLatest(obj: io.apibuilder.api.v0.models.BatchVersionsLatest): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "applications" -> play.api.libs.json.Json.toJson(obj.applications)
+      )
+    }
+
+    implicit def jsonWritesApibuilderApiBatchVersionsLatest: play.api.libs.json.Writes[BatchVersionsLatest] = {
+      (obj: io.apibuilder.api.v0.models.BatchVersionsLatest) => {
+        io.apibuilder.api.v0.models.json.jsObjectBatchVersionsLatest(obj)
+      }
+    }
+
+    implicit def jsonReadsApibuilderApiBatchVersionsLatestForm: play.api.libs.json.Reads[io.apibuilder.api.v0.models.BatchVersionsLatestForm] = {
+      (__ \ "application_keys").read[Seq[String]].map { x => BatchVersionsLatestForm(applicationKeys = x) }
+    }
+
+    def jsObjectBatchVersionsLatestForm(obj: io.apibuilder.api.v0.models.BatchVersionsLatestForm): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "application_keys" -> play.api.libs.json.Json.toJson(obj.applicationKeys)
+      )
+    }
+
+    implicit def jsonWritesApibuilderApiBatchVersionsLatestForm: play.api.libs.json.Writes[BatchVersionsLatestForm] = {
+      (obj: io.apibuilder.api.v0.models.BatchVersionsLatestForm) => {
+        io.apibuilder.api.v0.models.json.jsObjectBatchVersionsLatestForm(obj)
+      }
+    }
+
     implicit def jsonReadsApibuilderApiChange: play.api.libs.json.Reads[io.apibuilder.api.v0.models.Change] = {
       for {
         guid <- (__ \ "guid").read[_root_.java.util.UUID]
@@ -2548,6 +2621,8 @@ package io.apibuilder.api.v0 {
 
     def batchDownloadApplications: BatchDownloadApplications = BatchDownloadApplications
 
+    def batchVersionsLatest: BatchVersionsLatest = BatchVersionsLatest
+
     def changes: Changes = Changes
 
     def code: Code = Code
@@ -2791,6 +2866,21 @@ package io.apibuilder.api.v0 {
           case r if r.status == 201 => _root_.io.apibuilder.api.v0.Client.parseJson("io.apibuilder.api.v0.models.BatchDownloadApplications", r, _.validate[io.apibuilder.api.v0.models.BatchDownloadApplications])
           case r if r.status == 409 => throw io.apibuilder.api.v0.errors.ErrorsResponse(r)
           case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
+        }
+      }
+    }
+
+    object BatchVersionsLatest extends BatchVersionsLatest {
+      override def post(
+        orgKey: String,
+        batchVersionsLatestForm: io.apibuilder.api.v0.models.BatchVersionsLatestForm,
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.api.v0.models.BatchVersionsLatest] = {
+        val payload = play.api.libs.json.Json.toJson(batchVersionsLatestForm)
+
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/batch/versions/latest", body = Some(payload), requestHeaders = requestHeaders).map {
+          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("io.apibuilder.api.v0.models.BatchVersionsLatest", r, _.validate[io.apibuilder.api.v0.models.BatchVersionsLatest])
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
     }
@@ -3853,6 +3943,7 @@ package io.apibuilder.api.v0 {
       def attributes: io.apibuilder.api.v0.Attributes
       def authentications: io.apibuilder.api.v0.Authentications
       def batchDownloadApplications: io.apibuilder.api.v0.BatchDownloadApplications
+      def batchVersionsLatest: io.apibuilder.api.v0.BatchVersionsLatest
       def changes: io.apibuilder.api.v0.Changes
       def code: io.apibuilder.api.v0.Code
       def domains: io.apibuilder.api.v0.Domains
@@ -4024,6 +4115,17 @@ package io.apibuilder.api.v0 {
       batchDownloadApplicationsForm: io.apibuilder.api.v0.models.BatchDownloadApplicationsForm,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.api.v0.models.BatchDownloadApplications]
+  }
+
+  trait BatchVersionsLatest {
+    /**
+     * Retrieve the latest version for multiple applications in one API call.
+     */
+    def post(
+      orgKey: String,
+      batchVersionsLatestForm: io.apibuilder.api.v0.models.BatchVersionsLatestForm,
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.apibuilder.api.v0.models.BatchVersionsLatest]
   }
 
   trait Changes {

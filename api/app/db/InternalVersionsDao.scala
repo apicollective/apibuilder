@@ -209,6 +209,44 @@ class InternalVersionsDao @Inject()(
     }).map(InternalVersion(_))
   }
 
+  /**
+   * Efficient single-query lookup of the latest version string for multiple applications
+   * within an organization. Returns a map of application_key -> latest_version.
+   */
+  def findLatestVersions(
+    orgKey: String,
+    applicationKeys: Seq[String],
+  ): Map[String, String] = {
+    if (applicationKeys.isEmpty) {
+      Map.empty
+    } else {
+      val keyParams = applicationKeys.zipWithIndex.map { case (_, i) => s"{app_key_$i}" }.mkString(", ")
+      val namedParams = applicationKeys.zipWithIndex.map { case (key, i) =>
+        NamedParameter(s"app_key_$i", key)
+      }
+
+      dao.db.withConnection { implicit c =>
+        SQL(
+          s"""select distinct on (a.key) a.key as app_key, versions.version
+              |  from versions
+              |  join applications a on a.guid = versions.application_guid
+              |  join organizations o on o.guid = a.organization_guid
+              | where o.key = {org_key}
+              |   and a.key in ($keyParams)
+              |   and versions.deleted_at is null
+              |   and a.deleted_at is null
+              |   and o.deleted_at is null
+              |   and $HasServiceJsonClause
+              | order by a.key, versions.version_sort_key desc""".stripMargin
+        ).on(
+          (Seq(NamedParameter("org_key", orgKey)) ++ namedParams)*
+        ).as(
+          (SqlParser.str("app_key") ~ SqlParser.str("version")).map { case key ~ version => key -> version }.*
+        ).toMap
+      }
+    }
+  }
+
   // Efficient query to fetch all versions of a given application
   def findAllVersions(
     authorization: Authorization,

@@ -546,6 +546,29 @@
         { "name": "application_key", "type": "string" },
         { "name": "version", "type": "string", "default": "latest", "required": false }
       ]
+    },
+
+    "batch_versions_latest_form": {
+      "description": "Form to request the latest version for multiple applications in a single API call.",
+      "fields": [
+        { "name": "application_keys", "type": "[string]", "description": "List of application keys to look up" }
+      ]
+    },
+
+    "batch_version_latest": {
+      "description": "The latest version for a single application, if any versions exist.",
+      "fields": [
+        { "name": "application_key", "type": "string" },
+        { "name": "latest_version", "type": "string", "required": false, "description": "The latest version string, or absent if no versions exist for this application" }
+      ]
+    },
+
+    "batch_versions_latest": {
+      "plural": "batch_versions_latest",
+      "description": "Response containing the latest version for each requested application.",
+      "fields": [
+        { "name": "applications", "type": "[batch_version_latest]" }
+      ]
     }
   },
 
@@ -1004,6 +1027,20 @@
           "responses": {
             "201": { "type": "batch_download_applications" },
             "409": { "type": "[error]" }
+          }
+        }
+      ]
+    },
+
+    "batch_versions_latest": {
+      "path": "/:orgKey/batch/versions/latest",
+      "operations": [
+        {
+          "method": "POST",
+          "description": "Retrieve the latest version for multiple applications in one API call.",
+          "body": { "type": "batch_versions_latest_form" },
+          "responses": {
+            "200": { "type": "batch_versions_latest" }
           }
         }
       ]
