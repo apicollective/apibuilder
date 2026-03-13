@@ -8,10 +8,10 @@ image:
 
 resources:
   limits:
-    memory: "6Gi"
+    memory: "7Gi"
     cpu: 3
   requests:
-    memory: "6Gi"
+    memory: "7Gi"
     cpu: 1
 
 jvmOpts:
