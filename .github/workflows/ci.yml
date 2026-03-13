@@ -22,6 +22,8 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
         distribution: 'zulu'
+    - name: Install sbt
+      uses: sbt/setup-sbt@v1
     - name: Build
       run: |
         docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest-pg15
