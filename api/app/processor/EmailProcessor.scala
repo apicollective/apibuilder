@@ -30,13 +30,11 @@ class EmailProcessor @Inject()(
                                 applicationsDao: db.InternalApplicationsDao,
                                 email: EmailUtil,
                                 emails: Emails,
-                                emailVerificationsDao: db.InternalEmailVerificationsDao,
                                 membershipsDao: db.InternalMembershipsDao,
                                 membershipsModel: MembershipsModel,
                                 membershipRequestsDao: db.InternalMembershipRequestsDao,
                                 membershipRequestsModel: MembershipRequestsModel,
                                 organizationsDao: InternalOrganizationsDao,
-                                passwordResetRequestsDao: db.InternalPasswordResetsDao,
                                 usersDao: InternalUsersDao,
                                 orgModel: OrganizationsModel,
 ) extends TaskProcessorWithData[EmailData](args, TaskType.Email) {
@@ -44,12 +42,12 @@ class EmailProcessor @Inject()(
   override def processRecord(id: String, data: EmailData): ValidatedNec[String, Unit] = {
     data match {
       case EmailDataApplicationCreated(guid) => applicationCreated(guid).validNec
-      case EmailDataEmailVerificationCreated(guid) => emailVerificationCreated(guid).validNec
+      case EmailDataEmailVerificationCreated(guid) => s"EmailDataEmailVerificationCreated is no longer supported".invalidNec
       case EmailDataMembershipCreated(guid) => membershipCreated(guid).validNec
       case EmailDataMembershipRequestCreated(guid) => membershipRequestCreated(guid).validNec
       case EmailDataMembershipRequestAccepted(orgGuid, userGuid, role) => membershipRequestAccepted(orgGuid, userGuid, role).validNec
       case EmailDataMembershipRequestDeclined(orgGuid, userGuid) => membershipRequestDeclined(orgGuid, userGuid).validNec
-      case EmailDataPasswordResetRequestCreated(guid) => passwordResetRequestCreated(guid).validNec
+      case EmailDataPasswordResetRequestCreated(guid) => s"EmailDataPasswordResetRequestCreated is no longer supported".invalidNec
       case EmailDataUndefinedType(description) => s"Invalid email data type '$description'".invalidNec
     }
   }
@@ -63,18 +61,6 @@ class EmailProcessor @Inject()(
           publication = Publication.ApplicationsCreate,
           subject = s"${org.name}: New Application Created - ${application.name}",
           body = views.html.emails.applicationCreated(appConfig, org, application).toString
-        )
-      }
-    }
-  }
-
-  private def emailVerificationCreated(guid: UUID): Unit = {
-    emailVerificationsDao.findByGuid(guid).foreach { verification =>
-      usersDao.findByGuid(verification.userGuid).foreach { user =>
-        email.sendHtml(
-          to = Person(email = verification.email, name = user.name),
-          subject = "Verify your email address",
-          body = views.html.emails.emailVerificationCreated(appConfig, verification).toString
         )
       }
     }
@@ -132,15 +118,4 @@ class EmailProcessor @Inject()(
     }
   }
 
-  private def passwordResetRequestCreated(guid: UUID): Unit = {
-    passwordResetRequestsDao.findByGuid(guid).foreach { request =>
-      usersDao.findByGuid(request.userGuid).foreach { user =>
-        email.sendHtml(
-          to = Person(user),
-          subject = "Reset your password",
-          body = views.html.emails.passwordResetRequestCreated(appConfig, request.token).toString
-        )
-      }
-    }
-  }
 }

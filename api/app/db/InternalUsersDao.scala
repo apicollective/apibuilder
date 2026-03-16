@@ -41,7 +41,6 @@ case class ValidatedUserForm(
 
 class InternalUsersDao @Inject()(
                                   dao: UsersDao,
-                                  emailVerificationsDao: InternalEmailVerificationsDao,
                                   userPasswordsDao: InternalUserPasswordsDao,
                                   internalTasksDao: InternalTasksDao,
 ) {
@@ -120,11 +119,6 @@ class InternalUsersDao @Inject()(
         name = vForm.name,
         nickname = vForm.nickname,
       ))
-
-      // TODO: Move to inside a transaction
-      if (user.email.toLowerCase != vForm.email.toLowerCase) {
-        emailVerificationsDao.upsert(updatingUser, user, form.email)
-      }
 
       findByGuid(user.guid).getOrElse {
         sys.error("Failed to update user")

@@ -16,7 +16,6 @@ trait Daos {
   def attributesDao: InternalAttributesDao = injector.instanceOf[db.InternalAttributesDao]
   def changesDao: InternalChangesDao = injector.instanceOf[db.InternalChangesDao]
   def databaseServiceFetcher: DatabaseServiceFetcher = injector.instanceOf[DatabaseServiceFetcher]
-  def emailVerificationsDao: InternalEmailVerificationsDao = injector.instanceOf[db.InternalEmailVerificationsDao]
   def itemsDao: ItemsDao = injector.instanceOf[db.ItemsDao]
   def membershipRequestsDao: InternalMembershipRequestsDao = injector.instanceOf[db.InternalMembershipRequestsDao]
   def membershipsDao: InternalMembershipsDao = injector.instanceOf[db.InternalMembershipsDao]
@@ -27,7 +26,6 @@ trait Daos {
   def organizationLogsDao: OrganizationLogsDao = injector.instanceOf[db.OrganizationLogsDao]
   def organizationsDao: InternalOrganizationsDao = injector.instanceOf[db.InternalOrganizationsDao]
   def originalsDao: InternalOriginalsDao = injector.instanceOf[db.InternalOriginalsDao]
-  def passwordResetsDao: InternalPasswordResetsDao = injector.instanceOf[db.InternalPasswordResetsDao]
   def sessionsDao: SessionsDao =  injector.instanceOf[SessionsDao]
 
   def subscriptionsDao: InternalSubscriptionsDao = injector.instanceOf[db.InternalSubscriptionsDao]
