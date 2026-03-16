@@ -15,7 +15,6 @@ class UserCreatedProcessor @Inject()(
                                       usersDao: InternalUsersDao,
                                       organizationsDao: InternalOrganizationsDao,
                                       membershipRequestsDao: InternalMembershipRequestsDao,
-                                      emailVerificationsDao: InternalEmailVerificationsDao,
 ) extends TaskProcessorWithGuid(args, TaskType.UserCreated) {
 
   override def processRecord(userGuid: UUID): ValidatedNec[String, Unit] = {
@@ -23,7 +22,6 @@ class UserCreatedProcessor @Inject()(
       organizationsDao.findAllByEmailDomain(user.email).foreach { org =>
         membershipRequestsDao.upsert(user, org, user, MembershipRole.Member)
       }
-      emailVerificationsDao.upsert(user, user, user.email)
     }
     ().validNec
   }
