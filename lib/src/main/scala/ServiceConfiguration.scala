@@ -12,14 +12,13 @@ case class ServiceConfiguration(
   private val ApplicationNamespaceNonLetterRegexp = """\.([^a-zA-Z])""".r
 
   /**
-    * Example: apidocSpec => apidoc.spec.v0
+    * Example: apidocSpec => apidoc.spec
     */
   def applicationNamespace(key: String): String = {
     ApplicationNamespaceNonLetterRegexp.replaceAllIn(
       (
         Seq(orgNamespace.trim) ++
-        Text.splitIntoWords(Text.camelCaseToUnderscore(key.trim)).map(_.toLowerCase).map(_.trim) ++
-        Seq(VersionTag(version).major.map(num => s"v$num").getOrElse(""))
+        Text.splitIntoWords(Text.camelCaseToUnderscore(key.trim)).map(_.toLowerCase).map(_.trim)
       ).filter(!_.isEmpty).mkString("."),
       m => m.group(1)
     )
