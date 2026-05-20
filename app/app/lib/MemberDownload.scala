@@ -1,7 +1,6 @@
 package lib
 
-import com.github.tototoshi.csv.{CSVFormat, CSVWriter}
-import com.github.tototoshi.csv.defaultCSVFormat
+import com.github.tototoshi.csv.{CSVFormat, CSVWriter, DefaultCSVFormat}
 
 import java.io.File
 import io.apibuilder.api.v0.models.Membership
@@ -17,7 +16,8 @@ case class MemberDownload(
   def csv()(implicit ec: ExecutionContext): Future[File] = Future {
     val file = File.createTempFile(s"member-download-$orgKey", "csv")
 
-    val writer = CSVWriter.open(file)(using defaultCSVFormat)
+    given CSVFormat = new DefaultCSVFormat {}
+    val writer = CSVWriter.open(file)
     writer.writeRow(Seq("guid", "role", "user_guid", "user_email", "user_nickname", "user_name"))
 
     Pager.eachPage[Membership] { offset =>
