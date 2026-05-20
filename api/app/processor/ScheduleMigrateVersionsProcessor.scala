@@ -28,14 +28,20 @@ class ScheduleMigrateVersionsProcessor @Inject()(
     s"""
       |select v.guid
       |  from versions v
-      |  join applications apps on apps.guid = v.application_guid and apps.deleted_at is null
+      |  join applications apps on apps.guid = v.application_guid
+      |    and apps.deleted_at is null
       |  left join cache.services on services.deleted_at is null
-      |                          and services.version_guid = v.guid
-      |                          and services.version = {service_version}
+      |    and services.version_guid = v.guid
+      |    and services.version = {service_version}
       | where v.deleted_at is null
       |   and services.guid is null
-      |   and v.guid not in (select type_id::uuid from tasks where type = {task_type})
-      |limit $Limit
+      |   and not exists (
+      |     select 1
+      |       from tasks
+      |      where type = {task_type}
+      |        and type_id = v.guid::text
+      |   )
+      | limit $Limit
       |""".stripMargin
   ).bind("service_version", MigrateVersion.ServiceVersionNumber)
     .bind("task_type", TaskType.MigrateVersion.toString)
