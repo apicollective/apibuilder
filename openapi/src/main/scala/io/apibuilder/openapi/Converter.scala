@@ -5,13 +5,18 @@ import lib.{ServiceConfiguration, UrlKey}
 
 object Converter {
 
-  def convert(openApi: sttp.apispec.openapi.OpenAPI, config: ServiceConfiguration): Service = {
+  def convert(
+    openApi: sttp.apispec.openapi.OpenAPI,
+    config: ServiceConfiguration,
+    filterHeaders: Set[String] = Set.empty,
+    nameOverride: Option[String] = None,
+  ): Service = {
     val namingConfig = NamingConfig()
-    val c = Classification.fromOpenApi(openApi, namingConfig, filterHeaders = Set.empty)
+    val c = Classification.fromOpenApi(openApi, namingConfig, filterHeaders)
     val schemaConverter = new SchemaConverter(c.modelReferences, namingConfig)
     val schemaResult = schemaConverter.convert(c.classification)
 
-    val apiName = UrlKey.generate(openApi.info.title)
+    val apiName = nameOverride.getOrElse(UrlKey.generate(openApi.info.title))
 
     Service(
       apidoc = None,

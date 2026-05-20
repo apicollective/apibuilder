@@ -5,10 +5,21 @@ import io.circe.yaml.{parser => yamlParser}
 import sttp.apispec.openapi.OpenAPI
 import sttp.apispec.openapi.circe._
 
+import java.nio.file.{Files, Path}
 import scala.io.Source
 import scala.util.Using
 
 object OpenApiParser {
+
+  def fromFile(path: Path): Either[String, OpenAPI] =
+    Using(Source.fromFile(path.toFile, "UTF-8"))(_.mkString).toEither
+      .left.map(_.getMessage)
+      .flatMap(fromString)
+
+  def fromUrl(url: String): Either[String, OpenAPI] =
+    Using(Source.fromURL(url, "UTF-8"))(_.mkString).toEither
+      .left.map(_.getMessage)
+      .flatMap(fromString)
 
   def fromString(input: String): Either[String, OpenAPI] = {
     val trimmed = input.trim
