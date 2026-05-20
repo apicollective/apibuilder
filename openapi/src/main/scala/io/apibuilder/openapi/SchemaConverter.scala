@@ -81,10 +81,19 @@ class SchemaConverter(
     val itemType = schema.items
       .map {
         case s: Schema if s.$ref.isDefined => refName(s.$ref.get)
-        case s: Schema => simpleType(s).map(_.name).getOrElse(ScalarType.StringType.name)
-        case _ => ScalarType.StringType.name
+        case s: Schema =>
+          simpleType(s).map(_.name).getOrElse {
+            System.err.println(s"Warning: could not resolve array item type for schema '$name'; defaulting to string")
+            ScalarType.StringType.name
+          }
+        case _ =>
+          System.err.println(s"Warning: unrecognised array items schema type for '$name'; defaulting to string")
+          ScalarType.StringType.name
       }
-      .getOrElse(ScalarType.StringType.name)
+      .getOrElse {
+        System.err.println(s"Warning: array schema '$name' has no items definition; defaulting to string")
+        ScalarType.StringType.name
+      }
 
     Model(
       name = sn(name),
@@ -112,6 +121,8 @@ class SchemaConverter(
   }
 
   private def convertClassifiedField(cf: ClassifiedField): Option[(Field, Seq[Enum])] = {
+    if (cf.kind.isEmpty)
+      System.err.println(s"Warning: could not classify field '${cf.fieldName}' in schema '${cf.schemaName}'; field will be omitted")
     cf.kind.map {
       case FieldKind.Ref(target) =>
         (makeField(cf, resolve(target)), Nil)
@@ -213,7 +224,12 @@ class SchemaConverter(
   }
 
   private def sn(str: String): String = uniqueSnakeCase(str, config)
-  private def resolve(name: String): String = resolveReference(name, modelReferences)
+  private def resolve(name: String): String = resolveReference(name, modelReferences) match {
+    case Right(resolved) => resolved
+    case Left(err) =>
+      System.err.println(s"Warning: $err")
+      name
+  }
 }
 
 case class SchemaConversionResult(

@@ -111,12 +111,6 @@ class PathConverter(
       Some(convertOperation(path, method, op, merged))
     }
 
-    val report = PathReport(
-      path = path,
-      methods = methods.map(_._1),
-      unsupported = issues.result(),
-    )
-
     val nonUnitResponses = operations.view
       .flatMap(_.responses)
       .filter(_.`type` != ScalarType.UnitType.name)
@@ -136,6 +130,15 @@ class PathConverter(
         attributes = Seq.empty,
       )
     }
+
+    if (operations.nonEmpty && resource.isEmpty)
+      issues += s"$path: no typed response found; path excluded from resources"
+
+    val report = PathReport(
+      path = path,
+      methods = methods.map(_._1),
+      unsupported = issues.result(),
+    )
 
     (resource, report)
   }
@@ -206,6 +209,7 @@ class PathConverter(
     } else if (ref.startsWith("#/components/schemas/")) {
       Some(refName(ref))
     } else {
+      System.err.println(s"Warning: cannot resolve requestBody reference '$ref'; operation will have no body")
       None
     }
   }
@@ -264,7 +268,7 @@ class PathConverter(
     case ParameterIn.Query => Some(ab.ParameterLocation.Query)
     case ParameterIn.Header => Some(ab.ParameterLocation.Header)
     case ParameterIn.Path => Some(ab.ParameterLocation.Path)
-    case ParameterIn.Cookie => None
+    case ParameterIn.Cookie => None // callers pre-filter and report cookie params
   }
 
   private def is2xx(code: ab.ResponseCode): Boolean = code match {
@@ -276,5 +280,10 @@ class PathConverter(
     path.replaceAll("\\{([^}]+)\\}", ":$1")
 
   private def sn(str: String): String = uniqueSnakeCase(str, config)
-  private def resolve(name: String): String = resolveReference(name, modelReferences)
+  private def resolve(name: String): String = resolveReference(name, modelReferences) match {
+    case Right(resolved) => resolved
+    case Left(err) =>
+      System.err.println(s"Warning: $err")
+      name
+  }
 }

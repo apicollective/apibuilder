@@ -10,6 +10,9 @@ case class OpenApiServiceValidator(config: ServiceConfiguration) extends Service
   override def validate(rawInput: String): ValidatedNec[String, Service] =
     OpenApiParser.fromString(rawInput) match {
       case Left(err) => err.invalidNec
-      case Right(openApi) => Converter.convert(openApi, config).validNec
+      case Right(openApi) =>
+        scala.util.Try(Converter.convert(openApi, config)).toEither
+          .left.map(e => s"Conversion failed: ${e.getMessage}")
+          .toValidatedNec
     }
 }

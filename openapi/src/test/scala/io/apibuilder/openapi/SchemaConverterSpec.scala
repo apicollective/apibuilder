@@ -220,5 +220,63 @@ class SchemaConverterSpec extends AnyWordSpec with Matchers {
       result.unions must have size 1
       result.unions.head.types.map(_.`type`) must be(Seq("full_schema"))
     }
+
+    "SchemaConverter.convert: object schema with two properties produces a Model with correct field names and types" in {
+      val schemas: ListMap[String, Schema] = ListMap(
+        "Widget" -> Schema(
+          `type` = Some(List(SchemaType.Object)),
+          properties = ListMap(
+            "id" -> Schema(`type` = Some(List(SchemaType.String))),
+            "count" -> Schema(`type` = Some(List(SchemaType.Integer))),
+          ),
+        ),
+      )
+      val classification = SchemaClassifier.classify(schemas)
+      val result = new SchemaConverter(Map.empty, NamingConfig()).convert(classification)
+
+      result.models must have size 1
+      val model = result.models.head
+      model.name must be("widget")
+      val fieldNames = model.fields.map(_.name)
+      fieldNames must contain("id")
+      fieldNames must contain("count")
+      model.fields.find(_.name == "id").map(_.`type`) must be(Some("string"))
+      model.fields.find(_.name == "count").map(_.`type`) must be(Some("integer"))
+    }
+
+    "SchemaConverter.convert: string enum schema produces an Enum with the right values" in {
+      val schemas: ListMap[String, Schema] = ListMap(
+        "Status" -> Schema(
+          `type` = Some(List(SchemaType.String)),
+          `enum` = Some(List(ExampleSingleValue("active"), ExampleSingleValue("inactive"))),
+        ),
+      )
+      val classification = SchemaClassifier.classify(schemas)
+      val result = new SchemaConverter(Map.empty, NamingConfig()).convert(classification)
+
+      result.enums must have size 1
+      val enumDef = result.enums.head
+      enumDef.name must be("status")
+      enumDef.values.map(_.name) must contain allOf ("active", "inactive")
+    }
+
+    "SchemaConverter.convert: field with unresolvable type is omitted" in {
+      val schemas: ListMap[String, Schema] = ListMap(
+        "Widget" -> Schema(
+          `type` = Some(List(SchemaType.Object)),
+          properties = ListMap(
+            "name" -> Schema(`type` = Some(List(SchemaType.String))),
+            "mystery" -> Schema(),
+          ),
+        ),
+      )
+      val classification = SchemaClassifier.classify(schemas)
+      val result = new SchemaConverter(Map.empty, NamingConfig()).convert(classification)
+
+      result.models must have size 1
+      val model = result.models.head
+      model.fields.map(_.name) must contain("name")
+      model.fields.map(_.name) must not contain "mystery"
+    }
   }
 }

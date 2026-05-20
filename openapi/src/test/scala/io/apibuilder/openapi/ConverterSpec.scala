@@ -3,7 +3,7 @@ package io.apibuilder.openapi
 import lib.ServiceConfiguration
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import sttp.apispec.SecurityScheme
+import sttp.apispec.{Schema, SchemaType, SecurityScheme}
 import sttp.apispec.openapi.{Components, Info, _}
 
 import scala.collection.immutable.ListMap
@@ -38,19 +38,26 @@ class ConverterSpec extends AnyWordSpec with Matchers {
       val service = Converter.convert(openApi, testConfig)
 
       service.models must not be empty
+      service.models.map(_.name) must contain("money")
       service.resources must not be empty
     }
 
     "convert fedex-track" in {
       val openApi = OpenApiParser.fromResource("fedex-track.json").toOption.get
       val service = Converter.convert(openApi, testConfig)
+
       service.models must not be empty
+      service.models.map(_.name) must contain("tracking_info")
+      service.resources must not be empty
     }
 
     "convert fedex-eei-filing" in {
       val openApi = OpenApiParser.fromResource("fedex-eei-filing.json").toOption.get
       val service = Converter.convert(openApi, testConfig)
+
       service.models must not be empty
+      service.models.map(_.name) must contain("gtic_response_vo")
+      service.resources must not be empty
     }
 
     "convert security schemes to headers" in {
@@ -76,6 +83,40 @@ class ConverterSpec extends AnyWordSpec with Matchers {
         h.`type` must be("string")
         h.required must be(true)
       }
+    }
+
+    "filterHeaders: header parameter is excluded from converted operations" in {
+      val headerParam = Parameter(
+        name = "X-Trace-Id",
+        in = ParameterIn.Header,
+        schema = Some(Schema(`type` = Some(List(SchemaType.String)))),
+      )
+      val operation = Operation(
+        parameters = List(Right(headerParam)),
+        responses = Responses(
+          responses = ListMap(
+            ResponsesCodeKey(200) -> Right(
+              Response(
+                description = "ok",
+                content = ListMap(
+                  "application/json" -> MediaType(
+                    schema = Some(Schema($ref = Some("#/components/schemas/Widget"))),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+      val openApi = OpenAPI(
+        info = Info("test", "1.0"),
+        paths = Paths(pathItems = ListMap("/widgets" -> PathItem(get = Some(operation)))),
+      )
+
+      val service = Converter.convert(openApi, testConfig, filterHeaders = Set("X-Trace-Id"))
+
+      val params = service.resources.flatMap(_.operations).flatMap(_.parameters)
+      params.exists(_.name == "X-Trace-Id") must be(false)
     }
 
     "set org key and namespace from ServiceConfiguration" in {

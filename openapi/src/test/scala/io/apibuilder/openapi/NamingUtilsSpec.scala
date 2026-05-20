@@ -20,6 +20,21 @@ class NamingUtilsSpec extends AnyWordSpec with Matchers {
     "handle acronyms" in {
       toSnakeCase("HTTPSConnection") must be("https_connection")
     }
+    "handle all-caps word" in {
+      toSnakeCase("URL") must be("url")
+    }
+    "handle identifier with embedded number" in {
+      toSnakeCase("Foo2Bar") must be("foo2_bar")
+    }
+  }
+
+  "ApibuilderPrimitiveTypes" must {
+    "contain 'string'" in {
+      ApibuilderPrimitiveTypes.contains("string") must be(true)
+    }
+    "not contain an unknown type" in {
+      ApibuilderPrimitiveTypes.contains("unknown_xyz") must be(false)
+    }
   }
 
   "uniqueSnakeCase" must {

@@ -8,8 +8,14 @@ import scala.collection.immutable.ListMap
 
 object SchemaResolver {
 
-  def refName(ref: String): String =
-    ref.replaceAll("#/components/schemas/", "")
+  def refName(ref: String): String = {
+    val prefix = "#/components/schemas/"
+    if (ref.startsWith(prefix)) ref.stripPrefix(prefix)
+    else {
+      System.err.println(s"Warning: unrecognised $$ref format '$ref'; using raw value as type name")
+      ref
+    }
+  }
 
   def buildModelReferences(schemas: ListMap[String, SchemaLike]): Map[String, String] = {
     schemas.toSeq.flatMap {
@@ -29,16 +35,16 @@ object SchemaResolver {
     }.toMap
   }
 
-  def resolveReference(name: String, refs: Map[String, String]): String =
+  def resolveReference(name: String, refs: Map[String, String]): Either[String, String] =
     resolveReference(name, refs, Set.empty)
 
   @tailrec
-  private def resolveReference(name: String, refs: Map[String, String], seen: Set[String]): String = {
+  private def resolveReference(name: String, refs: Map[String, String], seen: Set[String]): Either[String, String] = {
     if (seen.contains(name))
-      sys.error(s"Cycle detected while resolving schema alias: ${seen.mkString(" -> ")} -> $name")
+      Left(s"Cycle detected while resolving schema alias: ${seen.mkString(" -> ")} -> $name")
     else
       refs.get(name) match {
-        case None => name
+        case None => Right(name)
         case Some(target) => resolveReference(target, refs, seen + name)
       }
   }

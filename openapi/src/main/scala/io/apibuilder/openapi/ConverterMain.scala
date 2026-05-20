@@ -41,7 +41,7 @@ object ConverterMain {
     }
 
   private def run(opts: ParsedOptions): Unit = {
-    val uri = resolveInput(opts.input.get) match {
+    val uri = resolveInput(opts.input.getOrElse(sys.error("missing required option: input"))) match {
       case Left(err) => System.err.println(s"Error: $err"); sys.exit(1)
       case Right(u) => u
     }
@@ -54,7 +54,7 @@ object ConverterMain {
     val apiName = opts.name.getOrElse(UrlKey.generate(openApi.info.title))
     val orgNamespace = opts.namespace.getOrElse(inferNamespace(openApi, apiName))
     val config = ServiceConfiguration(
-      orgKey = opts.organization.get,
+      orgKey = opts.organization.getOrElse(sys.error("missing required option: organization")),
       orgNamespace = orgNamespace,
       version = opts.version,
     )
@@ -160,7 +160,11 @@ object ConverterMain {
             val reversed = (if (meaningful.nonEmpty) meaningful else parts).reverse
             Some(reversed)
           }
-        } catch { case _: Exception => None }
+        } catch {
+          case e: IllegalArgumentException =>
+            System.err.println(s"Warning: could not parse server URL '${server.url}' for namespace inference: ${e.getMessage}")
+            None
+        }
       }
       .getOrElse(Seq("io", "apibuilder"))
     (domainParts :+ apiName).mkString(".")

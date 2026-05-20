@@ -13,17 +13,20 @@ object OpenApiParser {
 
   def fromFile(path: Path): Either[String, OpenAPI] =
     Using(Source.fromFile(path.toFile, "UTF-8"))(_.mkString).toEither
-      .left.map(_.getMessage)
+      .left.map(e => s"${e.getClass.getSimpleName}: ${e.getMessage}")
       .flatMap(fromString)
 
   def fromUrl(url: String): Either[String, OpenAPI] =
     Using(Source.fromURL(url, "UTF-8"))(_.mkString).toEither
-      .left.map(_.getMessage)
+      .left.map(e => s"${e.getClass.getSimpleName}: ${e.getMessage}")
       .flatMap(fromString)
 
   def fromString(input: String): Either[String, OpenAPI] = {
     val trimmed = input.trim
-    if (looksLikeYaml(trimmed)) fromYaml(trimmed) else fromJson(trimmed)
+    if (looksLikeYaml(trimmed))
+      fromYaml(trimmed).left.map(e => s"Failed to parse input as YAML: $e")
+    else
+      fromJson(trimmed).left.map(e => s"Failed to parse input as JSON: $e")
   }
 
   def fromResource(resourcePath: String): Either[String, OpenAPI] = {
