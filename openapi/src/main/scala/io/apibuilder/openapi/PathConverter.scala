@@ -147,9 +147,7 @@ class PathConverter(
     mergedParams: Seq[Parameter],
   ): ab.Operation =
     ab.Operation(
-      method = ab.Method
-        .fromString(httpMethod)
-        .getOrElse(throw new IllegalArgumentException(s"Unknown HTTP method: $httpMethod")),
+      method = ab.Method.fromString(httpMethod).getOrElse(ab.Method.UNDEFINED(httpMethod)),
       path = toApibuilderPath(path),
       description = op.description,
       deprecation = None,
