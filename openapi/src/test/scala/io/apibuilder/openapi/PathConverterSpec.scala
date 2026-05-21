@@ -185,6 +185,76 @@ class PathConverterSpec extends AnyWordSpec with Matchers {
       report.unsupported.find(_.contains("no JSON request body")).get must include("multipart/form-data")
     }
 
+    "multipart/form-data with $ref schema extracts body type" in {
+      val operation = Operation(
+        requestBody = Some(Right(RequestBody(
+          content = ListMap("multipart/form-data" -> MediaType(
+            schema = Some(Schema($ref = Some("#/components/schemas/UploadRequest"))),
+          )),
+        ))),
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(makeResponse("Widget")),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/uploads" -> PathItem(post = Some(operation))))
+      val result = makeConverter().convertPaths(paths)
+
+      val body = result.resources.head.operations.head.body
+      body.map(_.`type`) must be(Some("upload_request"))
+    }
+
+    "multipart/form-data with $ref schema suppresses the non-JSON body warning" in {
+      val operation = Operation(
+        requestBody = Some(Right(RequestBody(
+          content = ListMap("multipart/form-data" -> MediaType(
+            schema = Some(Schema($ref = Some("#/components/schemas/UploadRequest"))),
+          )),
+        ))),
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(makeResponse("Widget")),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/uploads" -> PathItem(post = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      report.unsupported.filter(_.contains("no JSON request body")) must be(empty)
+    }
+
+    "multipart/form-data with inline object schema produces no body" in {
+      val operation = Operation(
+        requestBody = Some(Right(RequestBody(
+          content = ListMap("multipart/form-data" -> MediaType(
+            schema = Some(Schema(`type` = Some(List(SchemaType.Object)))),
+          )),
+        ))),
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(makeResponse("Widget")),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/uploads" -> PathItem(post = Some(operation))))
+      val result = makeConverter().convertPaths(paths)
+
+      result.resources.head.operations.head.body must be(None)
+    }
+
+    "application/x-www-form-urlencoded with $ref schema extracts body type" in {
+      val operation = Operation(
+        requestBody = Some(Right(RequestBody(
+          content = ListMap("application/x-www-form-urlencoded" -> MediaType(
+            schema = Some(Schema($ref = Some("#/components/schemas/FormRequest"))),
+          )),
+        ))),
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(makeResponse("Widget")),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/submit" -> PathItem(post = Some(operation))))
+      val result = makeConverter().convertPaths(paths)
+
+      val body = result.resources.head.operations.head.body
+      body.map(_.`type`) must be(Some("form_request"))
+    }
+
     "request body with both JSON and non-JSON content types reports no body issue" in {
       val operation = Operation(
         requestBody = Some(Right(RequestBody(

@@ -88,7 +88,7 @@ class PathConverter(
       }
 
       op.requestBody.foreach {
-        case Right(rb) if !rb.content.contains("application/json") =>
+        case Right(rb) if !rb.content.contains("application/json") && formSchemaRef(rb.content).isEmpty =>
           val nonJsonTypes = rb.content.keys.toSeq
           if (nonJsonTypes.nonEmpty)
             issues += s"$method $path: no JSON request body (${nonJsonTypes.mkString(", ")})"
@@ -194,7 +194,8 @@ class PathConverter(
   private def extractBody(bodyOrRef: Either[Reference, RequestBody]): Option[ab.Body] =
     bodyOrRef match {
       case Right(rb) =>
-        jsonSchemaRef(rb.content).map(t => ab.Body(`type` = sn(resolve(t))))
+        (jsonSchemaRef(rb.content) orElse formSchemaRef(rb.content))
+          .map(t => ab.Body(`type` = sn(resolve(t))))
       case Left(ref) =>
         resolveRequestBodyRef(ref.$ref).map(t => ab.Body(`type` = sn(resolve(t))))
     }
@@ -218,6 +219,12 @@ class PathConverter(
 
   private def jsonSchemaRef(content: ListMap[String, MediaType]): Option[String] =
     content.get("application/json").flatMap(_.schema.flatMap(schemaRef))
+
+  private def formSchemaRef(content: ListMap[String, MediaType]): Option[String] =
+    Seq("multipart/form-data", "application/x-www-form-urlencoded")
+      .flatMap(content.get)
+      .flatMap(_.schema.flatMap(schemaRef))
+      .headOption
 
   private def schemaRef(sl: SchemaLike): Option[String] = sl match {
     case s: Schema if s.$ref.isDefined => Some(refName(s.$ref.get))
