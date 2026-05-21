@@ -273,6 +273,33 @@ class PathConverterSpec extends AnyWordSpec with Matchers {
       report.unsupported.filter(_.contains("no JSON request body")) must be(empty)
     }
 
+    "security requirements: suppressed when all schemes are convertible" in {
+      val operation = Operation(
+        security = List(ListMap("api_key" -> Vector.empty)),
+        responses = Responses(responses = ListMap(ResponsesCodeKey(200) -> Right(makeResponse("Widget")))),
+      )
+      val paths = Paths(pathItems = ListMap("/widgets" -> PathItem(get = Some(operation))))
+      val converter = new PathConverter(Map.empty, NamingConfig(), convertibleSchemeNames = Set("api_key"))
+      val report = converter.convertPaths(paths).pathReports.head
+
+      report.unsupported.exists(_.contains("security")) must be(false)
+    }
+
+    "security requirements: warn only for scheme names not in convertible set" in {
+      val operation = Operation(
+        security = List(ListMap("bearer_auth" -> Vector.empty, "custom_oauth" -> Vector.empty)),
+        responses = Responses(responses = ListMap(ResponsesCodeKey(200) -> Right(makeResponse("Widget")))),
+      )
+      val paths = Paths(pathItems = ListMap("/widgets" -> PathItem(get = Some(operation))))
+      val converter = new PathConverter(Map.empty, NamingConfig(), convertibleSchemeNames = Set("bearer_auth"))
+      val report = converter.convertPaths(paths).pathReports.head
+
+      val secIssues = report.unsupported.filter(_.contains("security"))
+      secIssues must have size 1
+      secIssues.head must include("custom_oauth")
+      secIssues.head must not include "bearer_auth"
+    }
+
     "response key is formatted as numeric code not as case class" in {
       val operation = Operation(
         responses = Responses(responses = ListMap(

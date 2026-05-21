@@ -2,125 +2,147 @@ package io.apibuilder.openapi
 
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import sttp.apispec.SecurityScheme
+import sttp.apispec.{OAuthFlow, OAuthFlows, SecurityScheme}
 import sttp.apispec.openapi.Reference
 
 import scala.collection.immutable.ListMap
 
 class SecurityConverterSpec extends AnyWordSpec with Matchers {
 
+  private def convert(schemes: ListMap[String, Either[Reference, SecurityScheme]]): SecurityConversionResult =
+    SecurityConverter.convertSecuritySchemes(schemes)
+
   "SecurityConverter" must {
 
     "convert apiKey with in=header" in {
-      val schemes = ListMap(
+      val result = convert(ListMap(
         "api_key" -> Right(SecurityScheme(`type` = "apiKey", name = Some("X-Api-Key"), in = Some("header"))),
-      )
-      val headers = SecurityConverter.convertSecuritySchemes(schemes)
-      headers must have size 1
-      headers.head.name must be("X-Api-Key")
-      headers.head.`type` must be("string")
-      headers.head.required must be(true)
+      ))
+      result.headers must have size 1
+      result.headers.head.name must be("X-Api-Key")
+      result.headers.head.`type` must be("string")
+      result.headers.head.required must be(true)
+      result.degradedNotes must be(empty)
     }
 
     "convert apiKey with description" in {
-      val schemes = ListMap(
-        "api_key" -> Right(
-          SecurityScheme(
-            `type` = "apiKey",
-            name = Some("X-Api-Key"),
-            in = Some("header"),
-            description = Some("Your API key"),
-          ),
-        ),
-      )
-      val headers = SecurityConverter.convertSecuritySchemes(schemes)
-      headers.head.description must be(Some("Your API key"))
+      val result = convert(ListMap(
+        "api_key" -> Right(SecurityScheme(
+          `type` = "apiKey", name = Some("X-Api-Key"), in = Some("header"),
+          description = Some("Your API key"),
+        )),
+      ))
+      result.headers.head.description must be(Some("Your API key"))
     }
 
     "skip apiKey with in=query" in {
-      val schemes = ListMap(
+      convert(ListMap(
         "api_key" -> Right(SecurityScheme(`type` = "apiKey", name = Some("api_key"), in = Some("query"))),
-      )
-      SecurityConverter.convertSecuritySchemes(schemes) must be(empty)
+      )).headers must be(empty)
     }
 
     "skip apiKey with in=cookie" in {
-      val schemes = ListMap(
+      convert(ListMap(
         "api_key" -> Right(SecurityScheme(`type` = "apiKey", name = Some("session"), in = Some("cookie"))),
-      )
-      SecurityConverter.convertSecuritySchemes(schemes) must be(empty)
+      )).headers must be(empty)
     }
 
     "convert http bearer" in {
-      val schemes = ListMap(
-        "bearer" -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"))),
-      )
-      val headers = SecurityConverter.convertSecuritySchemes(schemes)
-      headers must have size 1
-      headers.head.name must be("Authorization")
-      headers.head.`type` must be("string")
-      headers.head.required must be(true)
-      headers.head.description must be(Some("Bearer token"))
+      val result = convert(ListMap("bearer" -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer")))))
+      result.headers must have size 1
+      result.headers.head.name must be("Authorization")
+      result.headers.head.description must be(Some("Bearer token"))
+      result.degradedNotes must be(empty)
     }
 
     "convert http basic" in {
-      val schemes = ListMap(
-        "basic" -> Right(SecurityScheme(`type` = "http", scheme = Some("basic"))),
-      )
-      val headers = SecurityConverter.convertSecuritySchemes(schemes)
-      headers must have size 1
-      headers.head.name must be("Authorization")
-      headers.head.description must be(Some("Basic authentication"))
+      val result = convert(ListMap("basic" -> Right(SecurityScheme(`type` = "http", scheme = Some("basic")))))
+      result.headers.head.name must be("Authorization")
+      result.headers.head.description must be(Some("Basic authentication"))
     }
 
     "use explicit description over default for http scheme" in {
-      val schemes = ListMap(
-        "bearer" -> Right(
-          SecurityScheme(`type` = "http", scheme = Some("bearer"), description = Some("JWT access token")),
-        ),
-      )
-      SecurityConverter.convertSecuritySchemes(schemes).head.description must be(Some("JWT access token"))
+      val result = convert(ListMap(
+        "bearer" -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"), description = Some("JWT access token"))),
+      ))
+      result.headers.head.description must be(Some("JWT access token"))
     }
 
     "deduplicate Authorization headers from multiple http schemes" in {
-      val schemes = ListMap(
+      val result = convert(ListMap(
         "bearer" -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"))),
-        "basic" -> Right(SecurityScheme(`type` = "http", scheme = Some("basic"))),
-      )
-      val headers = SecurityConverter.convertSecuritySchemes(schemes)
-      headers must have size 1
-      headers.head.name must be("Authorization")
+        "basic"  -> Right(SecurityScheme(`type` = "http", scheme = Some("basic"))),
+      ))
+      result.headers must have size 1
+      result.headers.head.name must be("Authorization")
     }
 
-    "skip oauth2" in {
-      val schemes = ListMap("oauth" -> Right(SecurityScheme(`type` = "oauth2")))
-      SecurityConverter.convertSecuritySchemes(schemes) must be(empty)
+    "convert oauth2 to Authorization header" in {
+      val result = convert(ListMap("oauth" -> Right(SecurityScheme(`type` = "oauth2"))))
+      result.headers must have size 1
+      result.headers.head.name must be("Authorization")
     }
 
-    "skip openIdConnect" in {
-      val schemes = ListMap("oidc" -> Right(SecurityScheme(`type` = "openIdConnect")))
-      SecurityConverter.convertSecuritySchemes(schemes) must be(empty)
+    "convert oauth2 with clientCredentials flow: include flow details in description" in {
+      val flows = OAuthFlows(clientCredentials = Some(OAuthFlow(
+        tokenUrl = Some("https://auth.example.com/token"),
+        scopes = ListMap("read:widgets" -> "Read widgets", "write:widgets" -> "Write widgets"),
+      )))
+      val result = convert(ListMap(
+        "oauth" -> Right(SecurityScheme(`type` = "oauth2", flows = Some(flows))),
+      ))
+      val desc = result.headers.head.description.getOrElse("")
+      desc must include("clientCredentials")
+      desc must include("https://auth.example.com/token")
+      desc must include("read:widgets")
+    }
+
+    "convert oauth2: emit degraded note" in {
+      val result = convert(ListMap("myOAuth" -> Right(SecurityScheme(`type` = "oauth2"))))
+      result.degradedNotes must have size 1
+      result.degradedNotes.head must include("myOAuth")
+      result.degradedNotes.head must include("oauth2")
+      result.degradedNotes.head must include("Authorization header")
+    }
+
+    "convert openIdConnect to Authorization header with discovery URL in description" in {
+      val result = convert(ListMap(
+        "oidc" -> Right(SecurityScheme(
+          `type` = "openIdConnect",
+          openIdConnectUrl = Some("https://auth.example.com/.well-known/openid-configuration"),
+        )),
+      ))
+      result.headers must have size 1
+      result.headers.head.name must be("Authorization")
+      result.headers.head.description.getOrElse("") must include("https://auth.example.com/.well-known/openid-configuration")
+    }
+
+    "convert openIdConnect: emit degraded note" in {
+      val result = convert(ListMap("myOidc" -> Right(SecurityScheme(`type` = "openIdConnect"))))
+      result.degradedNotes must have size 1
+      result.degradedNotes.head must include("myOidc")
+      result.degradedNotes.head must include("openIdConnect")
+      result.degradedNotes.head must include("Authorization header")
     }
 
     "skip references" in {
-      val schemes = ListMap("ref" -> Left(Reference("#/components/securitySchemes/other")))
-      SecurityConverter.convertSecuritySchemes(schemes) must be(empty)
+      convert(ListMap("ref" -> Left(Reference("#/components/securitySchemes/other")))).headers must be(empty)
     }
 
-    "convert mixed schemes keeping only convertible ones" in {
-      val schemes = ListMap(
-        "api_key" -> Right(SecurityScheme(`type` = "apiKey", name = Some("X-Api-Key"), in = Some("header"))),
-        "bearer" -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"))),
-        "oauth" -> Right(SecurityScheme(`type` = "oauth2")),
+    "convert all scheme types to at most two distinct headers" in {
+      val result = convert(ListMap(
+        "api_key"   -> Right(SecurityScheme(`type` = "apiKey", name = Some("X-Api-Key"), in = Some("header"))),
+        "bearer"    -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"))),
+        "oauth"     -> Right(SecurityScheme(`type` = "oauth2")),
         "query_key" -> Right(SecurityScheme(`type` = "apiKey", name = Some("key"), in = Some("query"))),
-      )
-      val headers = SecurityConverter.convertSecuritySchemes(schemes)
-      headers must have size 2
-      headers.map(_.name).toSet must be(Set("X-Api-Key", "Authorization"))
+      ))
+      result.headers must have size 2
+      result.headers.map(_.name).toSet must be(Set("X-Api-Key", "Authorization"))
     }
   }
 
   "isConvertible" must {
+
     "return true for apiKey with in=header" in {
       SecurityConverter.isConvertible(
         SecurityScheme(`type` = "apiKey", name = Some("X-Key"), in = Some("header")),
@@ -137,12 +159,12 @@ class SecurityConverterSpec extends AnyWordSpec with Matchers {
       SecurityConverter.isConvertible(SecurityScheme(`type` = "http", scheme = Some("bearer"))) must be(true)
     }
 
-    "return false for oauth2" in {
-      SecurityConverter.isConvertible(SecurityScheme(`type` = "oauth2")) must be(false)
+    "return true for oauth2" in {
+      SecurityConverter.isConvertible(SecurityScheme(`type` = "oauth2")) must be(true)
     }
 
-    "return false for openIdConnect" in {
-      SecurityConverter.isConvertible(SecurityScheme(`type` = "openIdConnect")) must be(false)
+    "return true for openIdConnect" in {
+      SecurityConverter.isConvertible(SecurityScheme(`type` = "openIdConnect")) must be(true)
     }
   }
 }

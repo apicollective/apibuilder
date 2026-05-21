@@ -17,6 +17,7 @@ class PathConverter(
   config: NamingConfig,
   filterHeaders: Set[String] = Set.empty,
   requestBodies: ListMap[String, Either[Reference, RequestBody]] = ListMap.empty,
+  convertibleSchemeNames: Set[String] = Set.empty,
 ) {
 
   private val filterHeadersLower: Set[String] = filterHeaders.map(_.toLowerCase)
@@ -105,7 +106,9 @@ class PathConverter(
         }
       }
 
-      if (op.security.nonEmpty) issues += s"$method $path: security requirements (not converted)"
+      val unconvertibleSecurity = op.security.flatMap(_.keys).filterNot(convertibleSchemeNames).distinct.sorted
+      if (unconvertibleSecurity.nonEmpty)
+        issues += s"$method $path: security requirements not converted: ${unconvertibleSecurity.mkString(", ")}"
       if (op.callbacks.nonEmpty) issues += s"$method $path: callbacks (not converted)"
 
       val opParams = extractParams(op.parameters)

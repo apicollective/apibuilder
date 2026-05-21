@@ -76,17 +76,20 @@ object Classification {
       .map(_.requestBodies)
       .getOrElse(ListMap.empty)
 
-    val pathConverter = new PathConverter(modelReferences, namingConfig, filterHeaders, requestBodies)
+    val securitySchemes = openApi.components
+      .map(_.securitySchemes)
+      .getOrElse(ListMap.empty)
+
+    val convertibleSchemeNames = securitySchemes.collect {
+      case (name, Right(scheme)) if SecurityConverter.isConvertible(scheme) => name
+    }.toSet
+
+    val pathConverter = new PathConverter(modelReferences, namingConfig, filterHeaders, requestBodies, convertibleSchemeNames)
     val pathResult = pathConverter.convertPaths(openApi.paths)
 
-    val securityHeaders = SecurityConverter.convertSecuritySchemes(
-      openApi.components
-        .map(_.securitySchemes)
-        .getOrElse(ListMap.empty),
-    )
+    val securityResult = SecurityConverter.convertSecuritySchemes(securitySchemes)
+    val unsupportedFeatures = ConversionReport.detectUnsupportedFeatures(openApi) ++ securityResult.degradedNotes
 
-    val unsupportedFeatures = ConversionReport.detectUnsupportedFeatures(openApi)
-
-    Classification(classification, modelReferences, pathResult, securityHeaders, unsupportedFeatures, openApi)
+    Classification(classification, modelReferences, pathResult, securityResult.headers, unsupportedFeatures, openApi)
   }
 }

@@ -60,17 +60,15 @@ class ConverterSpec extends AnyWordSpec with Matchers {
       service.resources must not be empty
     }
 
-    "convert security schemes to headers" in {
+    "convert security schemes to headers: apiKey and http produce distinct headers; oauth2 is deduped" in {
       val openApi = OpenAPI(
         info = Info("test", "1.0"),
         components = Some(
           Components(
             securitySchemes = ListMap(
-              "api_key" -> Right(
-                SecurityScheme(`type` = "apiKey", name = Some("X-Api-Key"), in = Some("header")),
-              ),
-              "bearer" -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"))),
-              "oauth" -> Right(SecurityScheme(`type` = "oauth2")),
+              "api_key" -> Right(SecurityScheme(`type` = "apiKey", name = Some("X-Api-Key"), in = Some("header"))),
+              "bearer"  -> Right(SecurityScheme(`type` = "http", scheme = Some("bearer"))),
+              "oauth"   -> Right(SecurityScheme(`type` = "oauth2")),
             ),
           ),
         ),
@@ -83,6 +81,23 @@ class ConverterSpec extends AnyWordSpec with Matchers {
         h.`type` must be("string")
         h.required must be(true)
       }
+    }
+
+    "oauth2 scheme emits degraded note in openapi_conversion attribute" in {
+      val openApi = OpenAPI(
+        info = Info("test", "1.0"),
+        components = Some(
+          Components(
+            securitySchemes = ListMap(
+              "oauth" -> Right(SecurityScheme(`type` = "oauth2")),
+            ),
+          ),
+        ),
+      )
+      val service = Converter.convert(openApi, testConfig)
+
+      val attr = service.attributes.find(_.name == "openapi_conversion").get
+      attr.value.toString must include("oauth2")
     }
 
     "filterHeaders: header parameter is excluded from converted operations" in {
