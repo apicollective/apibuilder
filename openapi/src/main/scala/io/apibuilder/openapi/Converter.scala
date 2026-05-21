@@ -2,6 +2,7 @@ package io.apibuilder.openapi
 
 import io.apibuilder.spec.v0.models._
 import lib.{ServiceConfiguration, UrlKey}
+import play.api.libs.json.Json
 
 object Converter {
 
@@ -17,6 +18,9 @@ object Converter {
     val schemaResult = schemaConverter.convert(c.classification)
 
     val apiName = nameOverride.getOrElse(UrlKey.generate(openApi.info.title))
+    val report = ConversionReport.fromClassification(c)
+    val description = Seq(openApi.info.description, Some(report.briefSummary)).flatten.mkString("\n\n")
+    val conversionAttribute = buildConversionAttribute(report)
 
     Service(
       apidoc = None,
@@ -26,7 +30,7 @@ object Converter {
       namespace = config.applicationNamespace(apiName),
       version = config.version,
       baseUrl = openApi.servers.headOption.map(_.url),
-      description = openApi.info.description,
+      description = Some(description),
       info = Info(license = None, contact = None),
       headers = c.securityHeaders,
       imports = Seq.empty,
@@ -35,8 +39,20 @@ object Converter {
       unions = schemaResult.unions,
       models = schemaResult.models,
       resources = c.pathResult.resources,
-      attributes = Seq.empty,
+      attributes = Seq(conversionAttribute),
       annotations = Seq.empty,
     )
+  }
+
+  private def buildConversionAttribute(report: ConversionReport): Attribute = {
+    val pathIssues = report.paths.flatMap(_.unsupported)
+    val value = Json.obj(
+      "unmapped_fields"      -> report.unmappedFields,
+      "defaulted_fields"     -> report.defaultedFields,
+      "ignored_formats"      -> report.ignoredFormats,
+      "path_issues"          -> pathIssues,
+      "unsupported_features" -> report.unsupportedFeatures,
+    )
+    Attribute(name = "openapi_conversion", value = value)
   }
 }

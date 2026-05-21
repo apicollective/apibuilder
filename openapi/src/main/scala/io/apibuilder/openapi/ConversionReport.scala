@@ -30,6 +30,19 @@ case class ConversionReport(
     s"$schema.$field (format: $fmt)"
   }
 
+  def briefSummary: String = {
+    val pathIssueCount = paths.flatMap(_.unsupported).size
+    val parts = Seq(
+      Option.when(unmappedFields.nonEmpty)(s"${unmappedFields.size} unmapped fields"),
+      Option.when(defaultedFields.nonEmpty)(s"${defaultedFields.size} fields defaulted to string"),
+      Option.when(ignoredFormats.nonEmpty)(s"${ignoredFormats.size} ignored formats"),
+      Option.when(pathIssueCount > 0)(s"$pathIssueCount path issues"),
+      Option.when(unsupportedFeatures.nonEmpty)(s"${unsupportedFeatures.size} unsupported features"),
+    ).flatten
+    if (parts.isEmpty) "Imported from OpenAPI."
+    else s"Imported from OpenAPI. Conversion issues: ${parts.mkString(", ")}."
+  }
+
   def summary: String = {
     val lines = Seq.newBuilder[String]
     lines += s"=== Conversion Report ==="

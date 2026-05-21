@@ -128,6 +128,42 @@ class ConverterSpec extends AnyWordSpec with Matchers {
       service.namespace must startWith("io.myorg")
       service.version must be("1.2.3")
     }
+
+    "description: appends brief summary to existing description" in {
+      val openApi = OpenAPI(info = Info("My Service", "1.0", description = Some("Original description.")))
+      val service = Converter.convert(openApi, testConfig)
+
+      service.description must be(Symbol("defined"))
+      service.description.get must startWith("Original description.")
+      service.description.get must include("Imported from OpenAPI.")
+    }
+
+    "description: contains only brief summary when no original description" in {
+      val openApi = OpenAPI(info = Info("My Service", "1.0"))
+      val service = Converter.convert(openApi, testConfig)
+
+      service.description must be(Some("Imported from OpenAPI."))
+    }
+
+    "attributes: includes openapi_conversion attribute" in {
+      val openApi = OpenAPI(info = Info("My Service", "1.0"))
+      val service = Converter.convert(openApi, testConfig)
+
+      service.attributes must have size 1
+      service.attributes.head.name must be("openapi_conversion")
+    }
+
+    "attributes: openapi_conversion value contains expected keys" in {
+      val openApi = OpenAPI(info = Info("My Service", "1.0"))
+      val service = Converter.convert(openApi, testConfig)
+
+      val attrValue = service.attributes.head.value
+      (attrValue \ "unmapped_fields").isDefined must be(true)
+      (attrValue \ "defaulted_fields").isDefined must be(true)
+      (attrValue \ "ignored_formats").isDefined must be(true)
+      (attrValue \ "path_issues").isDefined must be(true)
+      (attrValue \ "unsupported_features").isDefined must be(true)
+    }
   }
 
   "OpenApiServiceValidator" must {
