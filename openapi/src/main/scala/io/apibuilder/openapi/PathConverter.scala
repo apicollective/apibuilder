@@ -88,17 +88,19 @@ class PathConverter(
       }
 
       op.requestBody.foreach {
-        case Right(rb) =>
-          rb.content.keys.filterNot(_ == "application/json").foreach { ct =>
-            issues += s"$method $path: non-JSON request body content type '$ct'"
-          }
+        case Right(rb) if !rb.content.contains("application/json") =>
+          val nonJsonTypes = rb.content.keys.toSeq
+          if (nonJsonTypes.nonEmpty)
+            issues += s"$method $path: no JSON request body (${nonJsonTypes.mkString(", ")})"
         case _ => ()
       }
 
       op.responses.responses.foreach { case (key, respOrRef) =>
         respOrRef.foreach { resp =>
-          resp.content.keys.filterNot(_ == "application/json").foreach { ct =>
-            issues += s"$method $path response $key: non-JSON content type '$ct'"
+          if (!resp.content.contains("application/json")) {
+            val nonJsonTypes = resp.content.keys.toSeq
+            if (nonJsonTypes.nonEmpty)
+              issues += s"$method $path response ${formatResponseKey(key)}: no JSON content (${nonJsonTypes.mkString(", ")})"
           }
         }
       }
@@ -274,6 +276,12 @@ class PathConverter(
   private def is2xx(code: ab.ResponseCode): Boolean = code match {
     case ab.ResponseCodeInt(c) => c >= 200 && c < 300
     case _ => false
+  }
+
+  private def formatResponseKey(key: ResponsesKey): String = key match {
+    case ResponsesCodeKey(c) => c.toString
+    case ResponsesDefaultKey => "default"
+    case ResponsesRangeKey(r) => s"${r}xx"
   }
 
   private def toApibuilderPath(path: String): String =

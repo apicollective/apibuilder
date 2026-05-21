@@ -116,5 +116,107 @@ class PathConverterSpec extends AnyWordSpec with Matchers {
       val result = makeConverter().convertPaths(paths)
       result.resources must be(empty)
     }
+
+    "non-JSON response with no JSON alternative reports one consolidated issue" in {
+      val operation = Operation(
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(Response(
+            description = "video",
+            content = ListMap("video/mp4" -> MediaType()),
+          )),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/videos/:id/content" -> PathItem(get = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      report.unsupported.count(_.contains("no JSON content")) must be(1)
+      report.unsupported.find(_.contains("no JSON content")).get must include("video/mp4")
+    }
+
+    "non-JSON response with multiple content types consolidates into one issue" in {
+      val operation = Operation(
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(Response(
+            description = "media",
+            content = ListMap("video/mp4" -> MediaType(), "image/webp" -> MediaType()),
+          )),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/videos/:id/content" -> PathItem(get = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      val contentIssues = report.unsupported.filter(_.contains("no JSON content"))
+      contentIssues must have size 1
+      contentIssues.head must include("video/mp4")
+      contentIssues.head must include("image/webp")
+    }
+
+    "response with both JSON and non-JSON content types reports no content-type issue" in {
+      val operation = Operation(
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(Response(
+            description = "ok",
+            content = ListMap(
+              "application/json" -> MediaType(schema = Some(Schema($ref = Some("#/components/schemas/Widget")))),
+              "text/event-stream" -> MediaType(),
+            ),
+          )),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/widgets" -> PathItem(get = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      report.unsupported.filter(_.contains("no JSON content")) must be(empty)
+    }
+
+    "non-JSON request body with no JSON alternative reports one consolidated issue" in {
+      val operation = Operation(
+        requestBody = Some(Right(RequestBody(
+          content = ListMap("multipart/form-data" -> MediaType()),
+        ))),
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(makeResponse("Widget")),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/uploads" -> PathItem(post = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      report.unsupported.count(_.contains("no JSON request body")) must be(1)
+      report.unsupported.find(_.contains("no JSON request body")).get must include("multipart/form-data")
+    }
+
+    "request body with both JSON and non-JSON content types reports no body issue" in {
+      val operation = Operation(
+        requestBody = Some(Right(RequestBody(
+          content = ListMap(
+            "application/json" -> MediaType(schema = Some(Schema($ref = Some("#/components/schemas/Widget")))),
+            "multipart/form-data" -> MediaType(),
+          ),
+        ))),
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(makeResponse("Widget")),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/widgets" -> PathItem(post = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      report.unsupported.filter(_.contains("no JSON request body")) must be(empty)
+    }
+
+    "response key is formatted as numeric code not as case class" in {
+      val operation = Operation(
+        responses = Responses(responses = ListMap(
+          ResponsesCodeKey(200) -> Right(Response(
+            description = "video",
+            content = ListMap("video/mp4" -> MediaType()),
+          )),
+        )),
+      )
+      val paths = Paths(pathItems = ListMap("/videos/:id" -> PathItem(get = Some(operation))))
+      val report = makeConverter().convertPaths(paths).pathReports.head
+
+      report.unsupported.exists(_.contains("ResponsesCodeKey")) must be(false)
+      report.unsupported.exists(_.contains("response 200:")) must be(true)
+    }
   }
 }
