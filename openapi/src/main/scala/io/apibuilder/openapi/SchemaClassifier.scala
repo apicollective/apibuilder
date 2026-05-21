@@ -59,7 +59,14 @@ object SchemaClassifier {
       val members = unionMembers(s)
       Option
         .when(members.nonEmpty && s.properties.isEmpty) {
-          collectRefs(members).headOption.map(FieldKind.Ref(_))
+          val nonNullMembers = members.collect { case m: Schema if !hasType(m, SchemaType.Null) => m }
+          collectRefs(nonNullMembers).headOption.map(FieldKind.Ref(_))
+            .orElse {
+              nonNullMembers match {
+                case List(single) => SchemaConverter.simpleType(single).map(FieldKind.Primitive.apply)
+                case _ => None
+              }
+            }
         }
         .flatten
     }

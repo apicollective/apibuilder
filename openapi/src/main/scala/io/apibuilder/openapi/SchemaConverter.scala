@@ -281,6 +281,12 @@ object SchemaConverter {
     "uuid" -> ScalarType.UuidType,
     "date" -> ScalarType.DateIso8601Type,
     "date-time" -> ScalarType.DateTimeIso8601Type,
+    "unixtime" -> ScalarType.LongType,
+    "uri" -> ScalarType.StringType,
+    "binary" -> ScalarType.StringType,
+    "byte" -> ScalarType.StringType,
+    "password" -> ScalarType.StringType,
+    "email" -> ScalarType.StringType,
   )
 
   def simpleType(s: Schema): Option[ScalarType] = {

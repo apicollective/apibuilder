@@ -197,6 +197,54 @@ class SchemaConverterSpec extends AnyWordSpec with Matchers {
       )
       SchemaClassifier.classifyField(s) must be(Some(FieldKind.InlineEnum(s)))
     }
+
+    "Primitive for oneOf number and null (nullable number)" in {
+      val s = Schema(oneOf = List(
+        Schema(`type` = Some(List(SchemaType.Number))),
+        Schema(`type` = Some(List(SchemaType.Null))),
+      ))
+      SchemaClassifier.classifyField(s) must be(Some(FieldKind.Primitive(ScalarType.DecimalType)))
+    }
+
+    "Primitive for oneOf string and null (nullable string)" in {
+      val s = Schema(oneOf = List(
+        Schema(`type` = Some(List(SchemaType.String))),
+        Schema(`type` = Some(List(SchemaType.Null))),
+      ))
+      SchemaClassifier.classifyField(s) must be(Some(FieldKind.Primitive(ScalarType.StringType)))
+    }
+
+    "Primitive for oneOf integer and null (nullable integer)" in {
+      val s = Schema(oneOf = List(
+        Schema(`type` = Some(List(SchemaType.Integer))),
+        Schema(`type` = Some(List(SchemaType.Null))),
+      ))
+      SchemaClassifier.classifyField(s) must be(Some(FieldKind.Primitive(ScalarType.IntegerType)))
+    }
+
+    "Primitive for anyOf boolean and null (nullable boolean)" in {
+      val s = Schema(anyOf = List(
+        Schema(`type` = Some(List(SchemaType.Boolean))),
+        Schema(`type` = Some(List(SchemaType.Null))),
+      ))
+      SchemaClassifier.classifyField(s) must be(Some(FieldKind.Primitive(ScalarType.BooleanType)))
+    }
+
+    "Ref for oneOf ref and null (nullable ref)" in {
+      val s = Schema(oneOf = List(
+        Schema($ref = Some("#/components/schemas/Foo")),
+        Schema(`type` = Some(List(SchemaType.Null))),
+      ))
+      SchemaClassifier.classifyField(s) must be(Some(FieldKind.Ref("Foo")))
+    }
+
+    "None for anyOf with two non-null primitive types" in {
+      val s = Schema(anyOf = List(
+        Schema(`type` = Some(List(SchemaType.String))),
+        Schema(`type` = Some(List(SchemaType.Integer))),
+      ))
+      SchemaClassifier.classifyField(s) must be(None)
+    }
   }
 
   "convert" must {
@@ -277,6 +325,47 @@ class SchemaConverterSpec extends AnyWordSpec with Matchers {
       val model = result.models.head
       model.fields.map(_.name) must contain("name")
       model.fields.map(_.name) must not contain "mystery"
+    }
+  }
+
+  "simpleType" must {
+
+    "return LongType for format unixtime, overriding base integer type" in {
+      SchemaConverter.simpleType(Schema(
+        `type` = Some(List(SchemaType.Integer)),
+        format = Some("unixtime"),
+      )) must be(Some(ScalarType.LongType))
+    }
+  }
+
+  "ignoredFormat" must {
+
+    "return None for unixtime" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("unixtime"))) must be(None)
+    }
+
+    "return None for uri" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("uri"))) must be(None)
+    }
+
+    "return None for binary" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("binary"))) must be(None)
+    }
+
+    "return None for byte" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("byte"))) must be(None)
+    }
+
+    "return None for password" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("password"))) must be(None)
+    }
+
+    "return None for email" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("email"))) must be(None)
+    }
+
+    "return Some for an unrecognised format" in {
+      SchemaConverter.ignoredFormat(Schema(format = Some("x-custom"))) must be(Some("x-custom"))
     }
   }
 }
