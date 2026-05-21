@@ -2,6 +2,7 @@ package io.apibuilder.openapi
 
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.libs.json.Json
 import sttp.apispec.{OAuthFlow, OAuthFlows, SecurityScheme}
 import sttp.apispec.openapi.Reference
 
@@ -88,21 +89,51 @@ class SecurityConverterSpec extends AnyWordSpec with Matchers {
         tokenUrl = Some("https://auth.example.com/token"),
         scopes = ListMap("read:widgets" -> "Read widgets", "write:widgets" -> "Write widgets"),
       )))
-      val result = convert(ListMap(
-        "oauth" -> Right(SecurityScheme(`type` = "oauth2", flows = Some(flows))),
-      ))
+      val result = convert(ListMap("oauth" -> Right(SecurityScheme(`type` = "oauth2", flows = Some(flows)))))
       val desc = result.headers.head.description.getOrElse("")
       desc must include("clientCredentials")
       desc must include("https://auth.example.com/token")
       desc must include("read:widgets")
     }
 
-    "convert oauth2: emit degraded note" in {
+    "convert oauth2 with clientCredentials flow: persist flow details in oauth2 attribute" in {
+      val flows = OAuthFlows(clientCredentials = Some(OAuthFlow(
+        tokenUrl = Some("https://auth.example.com/token"),
+        scopes = ListMap("read:widgets" -> "Read widgets", "write:widgets" -> "Write widgets"),
+      )))
+      val result = convert(ListMap("oauth" -> Right(SecurityScheme(`type` = "oauth2", flows = Some(flows)))))
+      val attr = result.headers.head.attributes.find(_.name == "oauth2").get
+      val attrStr = attr.value.toString
+      attrStr must include("client_credentials")
+      attrStr must include("https://auth.example.com/token")
+      attrStr must include("read:widgets")
+    }
+
+    "convert oauth2 with authorizationCode flow: persists both URLs in attribute" in {
+      val flows = OAuthFlows(authorizationCode = Some(OAuthFlow(
+        authorizationUrl = Some("https://auth.example.com/authorize"),
+        tokenUrl = Some("https://auth.example.com/token"),
+        scopes = ListMap("openid" -> "OpenID"),
+      )))
+      val result = convert(ListMap("oauth" -> Right(SecurityScheme(`type` = "oauth2", flows = Some(flows)))))
+      val attrStr = result.headers.head.attributes.find(_.name == "oauth2").get.value.toString
+      attrStr must include("authorization_code")
+      attrStr must include("authorization_url")
+      attrStr must include("token_url")
+    }
+
+    "convert oauth2 with no flows: oauth2 attribute has empty flows object" in {
+      val result = convert(ListMap("oauth" -> Right(SecurityScheme(`type` = "oauth2"))))
+      val attr = result.headers.head.attributes.find(_.name == "oauth2").get
+      attr.value must be(Json.obj("flows" -> Json.obj()))
+    }
+
+    "convert oauth2: emit degraded note referencing the attribute" in {
       val result = convert(ListMap("myOAuth" -> Right(SecurityScheme(`type` = "oauth2"))))
       result.degradedNotes must have size 1
       result.degradedNotes.head must include("myOAuth")
       result.degradedNotes.head must include("oauth2")
-      result.degradedNotes.head must include("Authorization header")
+      result.degradedNotes.head must include("attribute")
     }
 
     "convert openIdConnect to Authorization header with discovery URL in description" in {
@@ -117,12 +148,29 @@ class SecurityConverterSpec extends AnyWordSpec with Matchers {
       result.headers.head.description.getOrElse("") must include("https://auth.example.com/.well-known/openid-configuration")
     }
 
-    "convert openIdConnect: emit degraded note" in {
+    "convert openIdConnect: persists discovery URL in openid_connect attribute" in {
+      val result = convert(ListMap(
+        "oidc" -> Right(SecurityScheme(
+          `type` = "openIdConnect",
+          openIdConnectUrl = Some("https://auth.example.com/.well-known/openid-configuration"),
+        )),
+      ))
+      val attr = result.headers.head.attributes.find(_.name == "openid_connect").get
+      attr.value.toString must include("https://auth.example.com/.well-known/openid-configuration")
+    }
+
+    "convert openIdConnect with no discovery URL: openid_connect attribute has empty object" in {
+      val result = convert(ListMap("oidc" -> Right(SecurityScheme(`type` = "openIdConnect"))))
+      val attr = result.headers.head.attributes.find(_.name == "openid_connect").get
+      attr.value must be(Json.obj())
+    }
+
+    "convert openIdConnect: emit degraded note referencing the attribute" in {
       val result = convert(ListMap("myOidc" -> Right(SecurityScheme(`type` = "openIdConnect"))))
       result.degradedNotes must have size 1
       result.degradedNotes.head must include("myOidc")
       result.degradedNotes.head must include("openIdConnect")
-      result.degradedNotes.head must include("Authorization header")
+      result.degradedNotes.head must include("attribute")
     }
 
     "skip references" in {

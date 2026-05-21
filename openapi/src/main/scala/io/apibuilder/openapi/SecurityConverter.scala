@@ -1,8 +1,9 @@
 package io.apibuilder.openapi
 
-import io.apibuilder.spec.v0.models.Header
+import io.apibuilder.spec.v0.models.{Attribute, Header}
 import io.apibuilder.validation.ScalarType
-import sttp.apispec.{OAuthFlows, SecurityScheme}
+import play.api.libs.json.{JsObject, Json}
+import sttp.apispec.{OAuthFlow, OAuthFlows, SecurityScheme}
 import sttp.apispec.openapi.Reference
 
 import scala.collection.immutable.ListMap
@@ -20,7 +21,7 @@ object SecurityConverter {
     val results = schemes.toSeq.flatMap { case (name, schemeOrRef) =>
       schemeOrRef match {
         case Right(scheme) => convertScheme(name, scheme)
-        case Left(_) => None
+        case Left(_)       => None
       }
     }
     SecurityConversionResult(
@@ -50,8 +51,9 @@ object SecurityConverter {
           case Nil   => Some("OAuth2 authentication")
           case parts => Some(parts.mkString(". "))
         }
-        val note = s"securityScheme '$name': oauth2 converted to Authorization header; flow details not representable in apibuilder"
-        Some((makeHeader("Authorization", desc), Some(note)))
+        val attr = oauth2Attribute(scheme.flows)
+        val note = s"securityScheme '$name': oauth2 converted to Authorization header; flow details preserved in 'oauth2' attribute"
+        Some((makeHeader("Authorization", desc, Seq(attr)), Some(note)))
 
       case "openIdConnect" =>
         val discoveryDesc = scheme.openIdConnectUrl.map(u => s"OpenID Connect discovery: $u")
@@ -59,11 +61,40 @@ object SecurityConverter {
           case Nil   => Some("OpenID Connect authentication")
           case parts => Some(parts.mkString(". "))
         }
-        val note = s"securityScheme '$name': openIdConnect converted to Authorization header; discovery URL not representable in apibuilder"
-        Some((makeHeader("Authorization", desc), Some(note)))
+        val attr = oidcAttribute(scheme.openIdConnectUrl)
+        val note = s"securityScheme '$name': openIdConnect converted to Authorization header; discovery URL preserved in 'openid_connect' attribute"
+        Some((makeHeader("Authorization", desc, Seq(attr)), Some(note)))
 
       case _ => None
     }
+
+  private def oauth2Attribute(flowsOpt: Option[OAuthFlows]): Attribute = {
+    val flowsJson = flowsOpt.fold(Json.obj()) { flows =>
+      Seq(
+        flows.`implicit`.map(f => "implicit" -> flowJson(f, authUrl = true)),
+        flows.password.map(f => "password" -> flowJson(f, authUrl = false)),
+        flows.clientCredentials.map(f => "client_credentials" -> flowJson(f, authUrl = false)),
+        flows.authorizationCode.map(f => "authorization_code" -> flowJson(f, authUrl = true)),
+      ).flatten.foldLeft(Json.obj()) { case (acc, (k, v)) => acc + (k -> v) }
+    }
+    Attribute(name = "oauth2", value = Json.obj("flows" -> flowsJson))
+  }
+
+  private def flowJson(flow: OAuthFlow, authUrl: Boolean): JsObject = {
+    val stringFields = Seq(
+      Option.when(authUrl)(flow.authorizationUrl).flatten.map("authorization_url" -> _),
+      flow.tokenUrl.map("token_url" -> _),
+      flow.refreshUrl.map("refresh_url" -> _),
+    ).flatten
+    val base = stringFields.foldLeft(Json.obj()) { case (acc, (k, v)) => acc + (k -> Json.toJson(v)) }
+    if (flow.scopes.nonEmpty) base + ("scopes" -> Json.toJson(flow.scopes.toMap)) else base
+  }
+
+  private def oidcAttribute(discoveryUrl: Option[String]): Attribute =
+    Attribute(
+      name = "openid_connect",
+      value = discoveryUrl.fold(Json.obj())(u => Json.obj("discovery_url" -> u)),
+    )
 
   private def oauthFlowDescription(flowsOpt: Option[OAuthFlows]): Option[String] =
     flowsOpt.map { flows =>
@@ -92,7 +123,7 @@ object SecurityConverter {
     case _               => false
   }
 
-  private def makeHeader(name: String, description: Option[String]): Header =
+  private def makeHeader(name: String, description: Option[String], attributes: Seq[Attribute] = Seq.empty): Header =
     Header(
       name = name,
       `type` = ScalarType.StringType.name,
@@ -100,6 +131,6 @@ object SecurityConverter {
       deprecation = None,
       required = true,
       default = None,
-      attributes = Seq.empty,
+      attributes = attributes,
     )
 }
