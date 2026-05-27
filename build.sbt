@@ -61,32 +61,12 @@ lazy val swagger = project
     )
   )
 
-lazy val openapi = project
-  .in(file("openapi"))
-  .dependsOn(lib % "compile->compile;test->test")
-  .aggregate(lib)
-  .settings(
-    scalacOptions ++= allScalacOptions,
-    resolvers += "jitpack" at "https://jitpack.io",
-    libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.apispec" %% "openapi-model" % "0.11.10",
-      "com.softwaremill.sttp.apispec" %% "openapi-circe" % "0.11.10",
-      "com.softwaremill.sttp.apispec" %% "openapi-circe-yaml" % "0.11.10",
-      "com.github.apicollective" % "apibuilder-validation" % "0.5.8",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
-    ),
-    Test / javaOptions ++= Seq(
-      "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
-      "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED"
-    )
-  )
-
 val circeVersion = "0.14.9"
 lazy val core = project
   .in(file("core"))
   .enablePlugins(PlayScala)
-  .dependsOn(generated, lib, avro, swagger, openapi)
-  .aggregate(generated, lib, avro, swagger, openapi)
+  .dependsOn(generated, lib, avro, swagger)
+  .aggregate(generated, lib, avro, swagger)
   .settings(commonSettings*)
   .settings(
     libraryDependencies ++= Seq(

@@ -31,8 +31,6 @@ object OriginalUtil {
           Some(OriginalType.ApiJson)
         } else if (o.asOpt[Service].isDefined) {
           Some(OriginalType.ServiceJson)
-        } else if ((o \ "openapi").asOpt[JsString].exists(_.value.startsWith("3."))) {
-          Some(OriginalType.UNDEFINED("open_api_3"))
         } else if ((o \ "swagger").asOpt[JsString].isDefined) {
           Some(OriginalType.Swagger)
         } else {
@@ -42,8 +40,6 @@ object OriginalUtil {
       case _ => {
         if (trimmed.indexOf("protocol ") >= 0 || trimmed.indexOf("@namespace") >= 0) {
           Some(OriginalType.AvroIdl)
-        } else if (isOpenApi3Yaml(trimmed)) {
-          Some(OriginalType.UNDEFINED("open_api_3"))
         } else if (trimmed.contains("swagger:")) {
           Some(OriginalType.Swagger)
         } else {
@@ -52,11 +48,6 @@ object OriginalUtil {
       }
     }
   }
-
-  private val OpenApi3YamlPattern = """(?m)^openapi:\s*["']?3\.""".r
-
-  private def isOpenApi3Yaml(data: String): Boolean =
-    OpenApi3YamlPattern.findFirstIn(data).isDefined
 
   private def guessApiOrServiceJson(o: JsObject): Option[OriginalType] = {
     // service.json has these defined as array; api.json as maps

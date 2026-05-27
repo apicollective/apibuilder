@@ -5,7 +5,6 @@ import cats.data.ValidatedNec
 import core.{ServiceFetcher, VersionMigration}
 import io.apibuilder.api.v0.models.OriginalType
 import io.apibuilder.avro.AvroIdlServiceValidator
-import io.apibuilder.openapi.OpenApiServiceValidator
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.swagger.SwaggerServiceValidator
 import lib.{ServiceConfiguration, ServiceValidator}
@@ -24,7 +23,6 @@ object OriginalValidator {
       case OriginalType.ServiceJson => ServiceJsonServiceValidator
       case OriginalType.Swagger => SwaggerServiceValidator(config)
       case OriginalType.UNDEFINED("swagger_json") => SwaggerServiceValidator(config)
-      case OriginalType.UNDEFINED("open_api_3") => OpenApiServiceValidator(config)
       case OriginalType.UNDEFINED(other) => sys.error(s"Invalid original type[$other]")
     }
     WithServiceSpecValidator(validator)
