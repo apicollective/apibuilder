@@ -1,0 +1,3583 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "EEI Filing API",
+		"version": "1.0"
+	},
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/globaltrade/v1/shipments/itn/retrieve": {
+			"post": {
+				"summary": "Retrieve ITN",
+				"description": "Use this endpoint to retrieve the ITN(internal tracking number) of an EEI(Electronic Export Information) which was already filed with US Customs.",
+				"operationId": "RetrieveITN",
+				"parameters": [
+					{
+						"name": "x-locale",
+						"in": "header",
+						"description": "This indicates the combination of language code and country code.",
+						"schema": {
+							"type": "string"
+						},
+						"example": "en_US"
+					},
+					{
+						"name": "content-type",
+						"in": "header",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"name": "authorization",
+						"in": "header",
+						"description": "This indicates the authorization token for the input request",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "Bearer XXXXX"
+					},
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"schema": {
+							"type": "string",
+							"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RetrieveITNInputVO"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/GticResponseVO_1"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError400"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "EEI.SHIPMENTREFERENCENUMBER.INVALID",
+											"message": "Shipment reference number is missing or invalid. Please update and try again.",
+											"parameterList": {
+												"value": "ULTIMATE_CONSIGNEE",
+												"key": "EEI.SHIPMENTREFERENCENUMBER.INVALID"
+											}
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError401_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "LOGIN.REAUTHENTICATE.ERROR",
+											"message": "Your session is expired. Please enter your user ID and password to log in again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError404_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": {
+										"code": "NOT.FOUND.ERROR",
+										"message": "The resource you requested is no longer available. Please modify your request and try again."
+									}
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError500_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue.We apologize for any inconvenience.Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError503"
+								},
+								"example": {
+									"transactionId": "08f37269-2fcf-4a52-8f02-01c8349d143f",
+									"errors": {
+										"code": "SERVICE.UNAVAILABLE.ERROR",
+										"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience.Please check back at a later time"
+									}
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/itn/retrieve\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/globaltrade/v1/shipments/eei/file": {
+			"post": {
+				"summary": "File EEI",
+				"description": "Use this endpoint to file an Electronic Export Information(EEI) with US Customs.",
+				"operationId": "FileEEI V1",
+				"parameters": [
+					{
+						"name": "x-locale",
+						"in": "header",
+						"description": "This indicates the combination of language code and country code.",
+						"schema": {
+							"type": "string"
+						},
+						"example": "en_US"
+					},
+					{
+						"name": "authorization",
+						"in": "header",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "Bearer XXXXX"
+					},
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"schema": {
+							"type": "string",
+							"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/eei_file_body"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/GticResponseVO_2"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError400"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "0e671149-016f-1000-941f-ef4dbabadd2e",
+									"errors": [
+										{
+											"code": "EEI.SHIPMENTREFERENCENUMBER.INVALID",
+											"message": "Shipment reference number is missing or invalid. Please update and try again.",
+											"parameterList": {
+												"value": "ULTIMATE_CONSIGNEE",
+												"key": "EEI.SHIPMENTREFERENCENUMBER.INVALID"
+											}
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError401_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "RESOURCESERVER.TOKEN.EXPIRED"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError403_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError404_2"
+								},
+								"example": {
+									"error": "NOT.FOUND.ERROR",
+									"error_detail": "The resource you requested is no longer available. Please modify your request and try again."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CXSError500_2"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/globaltrade/v1/shipments/eei/file\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/globaltrade/v1/regulatorycompliance/lookup": {
+			"post": {
+				"summary": "Regulatory Compliance Lookup",
+				"description": "This endpoint is to determine the compliance regulations applied for Shipment for EEI Filings.",
+				"operationId": "regulatoryComplianceLookup",
+				"parameters": [
+					{
+						"name": "X-locale",
+						"in": "header",
+						"description": "ISO locale ",
+						"schema": {
+							"type": "string"
+						},
+						"example": "en_US"
+					},
+					{
+						"name": "content-type",
+						"in": "header",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "application/json"
+					},
+					{
+						"name": "Authorization",
+						"in": "header",
+						"description": "Specifies the authorization token.",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "Bearer XXX"
+					},
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Contains the Materials Input object to be applied.",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestVO"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/GticResponseVO_3"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "COMMODITY.CODE.REQUIRED",
+											"message": "Harmonized code or scheduleBCode is required."
+										},
+										{
+											"code": "REGULATORYCOMPLIANCE.COMMODITIES.NOTALLOWED",
+											"message": "The HTS code(s) are not allowed by AES."
+										},
+										{
+											"code": "COMMODITY.CODE.INVALID",
+											"message": "Harmonized code or scheduleBCode is invalid. Please Verify."
+										},
+										{
+											"code": "REGULATORYCOMPLIANCE.SHIPDATE.INVALID",
+											"message": "Shipment date can’t be greater than 120 days."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "No access token provided. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_1"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/globaltrade/v1/regulatorycompliance/lookup\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"GticResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br>Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_1"
+					}
+				},
+				"description": "This is a wrapper class for outputVO."
+			},
+			"BaseProcessOutputVO_1": {
+				"required": [
+					"countryDetails",
+					"userMessages"
+				],
+				"type": "object",
+				"properties": {
+					"userMessages": {
+						"type": "array",
+						"description": "Represents User Message",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryMessage"
+						}
+					},
+					"countryDetails": {
+						"description": "Represents Country Details",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/RegulatoryCountryDetails"
+							}
+						]
+					},
+					"cxsalerts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSAlert_1"
+						}
+					}
+				},
+				"description": "ShipmentRegulatoryDetailsOutputVO Model"
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				},
+				"description": "This holds the error responses."
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"description": "Indicates the error code.<br>Example: ACCOUNT.NUMBER.INVALID,LOGIN.REAUTHENTICATE.ERROR,SHIPMENT.USER.UNAUTHORIZED,NOT.FOUND.ERROR,INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: We are unable to process this request. Please try again later or contact FedEx Customer Service."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter_2": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				},
+				"description": "This holds the error responses."
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				},
+				"description": "This holds the error responses."
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO422": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError422"
+						}
+					}
+				},
+				"description": "This holds the error responses."
+			},
+			"CXSError422": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INVALID.INPUT.EXCEPTION"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Validation failed for the object='shipmentRegulatoryDetailsInputVO'.Error count:1"
+					}
+				},
+				"description": "Indicates error when mandatory elements are not passed in the request."
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"format": "uuid"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				},
+				"description": "This holds the error responses."
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"FullSchema": {
+				"required": [
+					"carrierCode",
+					"destinationAddress",
+					"originAddress"
+				],
+				"type": "object",
+				"properties": {
+					"serviceType": {
+						"type": "string",
+						"description": "Specify the type of service that is used to ship the package.<br><a onclick='loadDocReference(\"servicetypes\")'>click here to see Service Types</a>",
+						"example": "FEDEX_FREIGHT_ECONOMY"
+					},
+					"totalCommodityValue": {
+						"description": "Specify the total commodity value. Either customsClearenceDetail or totalCommodityValue is required.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Money"
+							}
+						]
+					},
+					"originAddress": {
+						"description": "Provide the shipment origin address details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Address"
+							}
+						]
+					},
+					"destinationAddress": {
+						"description": "Provide the shipment destination address details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Address"
+							}
+						]
+					},
+					"serviceOptionType": {
+						"type": "array",
+						"description": "Specify attributes to filter location types. If more than one value is specified, only those locations that have all the specified attributes will be returned.",
+						"example": [
+							"FEDEX_ONE_RATE",
+							"SATURDAY_DELIVERY"
+						],
+						"items": {
+							"type": "string",
+							"description": "Specify attributes to filter location types. If more than one value is specified, only those locations that have all the specified attributes will be returned. <br> Example: [FEDEX_ONE_RATE, SATURDAY_DELIVERY]",
+							"enum": [
+								"FEDEX_ONE_RATE",
+								"FREIGHT_GUARANTEE",
+								"SATURDAY_DELIVERY",
+								"SMART_POST_ALLOWED_INDICIA",
+								"SMART_POST_HUB_ID"
+							]
+						}
+					},
+					"customsClearanceDetail": {
+						"description": "Specify the Customs clearance details.Either customsClearenceDetail or totalCommodityValue is required.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/CustomsClearanceDetailVO"
+							}
+						]
+					},
+					"shipDate": {
+						"type": "string",
+						"description": "Specify shipment date. <br><br><i>Note : Default value is current date in case the date is not provided or a past date is provided.</i><br>Format [YYYY-MM-DD].<br>Example: 2021-08-05'",
+						"example": "2019-10-14"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements.<br><br>Valid values are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li><br>Example: FDXE",
+						"example": "FDXE"
+					},
+					"totalWeight": {
+						"description": "Provide the total weight for the shipment.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"includeURLReferences": {
+						"type": "boolean",
+						"description": "Specify if the url references to be included in the output. These are regulatory reference data urls specific to document, agency.",
+						"example": true
+					},
+					"consolidationType": {
+						"type": "string",
+						"description": "Specify the type of consolidation that contains this shipment.<br><br>Valid values are:<ul><li>INTERNATIONAL_DISTRIBUTION_FREIGHT</li><li>INTERNATIONAL_ECONOMY_DISTRIBUTION</li><li>INTERNATIONAL_GROUND_DISTRIBUTION</li><li>INTERNATIONAL_PRIORITY_DISTRIBUTION</li><li>TRANSBORDER_DISTRIBUTION</ul>",
+						"example": "INTERNATIONAL_DISTRIBUTION_FREIGHT"
+					},
+					"consolidationRole": {
+						"type": "string",
+						"description": "Specify the role this shipment plays within the consolidation.<br><br>Valid values are:<ul><li>CONSOLIDATION_DOCUMENTS_SHIPMENT &ndash; Shipment contains clearance documents for the corresponding consolidation.</li><li>CRN_SHIPMENT &ndash; Shipment is a Child Reference Number(individual shipment within consolidation).</li><li>MASTER_AIRWAYBILL_SHIPMENT &ndash; Shipment represents entire consolidation, moving as a unit.</li></ul>",
+						"example": "CONSOLIDATION_DOCUMENTS_SHIPMENT"
+					}
+				},
+				"description": "The request elements to retrieve Shipment Regulatory Details."
+			},
+			"Money": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "This is the amount.<br>Example: 12.45",
+						"format": "double",
+						"example": 12.45,
+						"xml": {
+							"name": "Amount"
+						}
+					},
+					"currency": {
+						"type": "string",
+						"description": "This is the currency code for the amount.<br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>click here to see Currency codes</a>",
+						"example": "USD",
+						"xml": {
+							"name": "Currency"
+						}
+					}
+				},
+				"description": "Customs value for this commodity."
+			},
+			"Address": {
+				"required": [
+					"countryCode"
+				],
+				"type": "object",
+				"properties": {
+					"countryCode": {
+						"type": "string",
+						"description": "Indicate the 2-character ISO country code. <br>Maximum length is 2.<br>Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>click here to see Country codes</a>",
+						"example": "US"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "This is the postal code.<br>Note: This is Optional for non postal-aware countries. Maximum length is 10.<br>Example: 65247<br><a onclick='loadDocReference(\"postalawarecountries\")'>click here to see Postal aware countries</a>",
+						"example": "75063"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is a placeholder for state or province code.<br>Example: CA.<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>click here to see State or Province Code</a>",
+						"example": "TX"
+					}
+				},
+				"description": "Address Model"
+			},
+			"CustomsClearanceDetailVO": {
+				"required": [
+					"commodities",
+					"customsValue"
+				],
+				"type": "object",
+				"properties": {
+					"regulatoryControls": {
+						"type": "array",
+						"description": "These are the Regulatory Controls applicable to the shipment.",
+						"example": "NOT_IN_FREE_CIRCULATION",
+						"items": {
+							"type": "string",
+							"enum": [
+								"FOOD_OR_PERISHABLE",
+								"USMCA",
+								"NOT_APPLICABLE_FOR_LOW_VALUE_CUSTOMS_EXCEPTIONS",
+								"NOT_IN_FREE_CIRCULATION"
+							]
+						}
+					},
+					"insuranceCharges": {
+						"$ref": "#/components/schemas/Money_1"
+					},
+					"importerOfRecordAccountNumber": {
+						"description": "The descriptive data for the importer of Record for the shipment and account number information.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Party"
+							}
+						]
+					},
+					"customsValue": {
+						"$ref": "#/components/schemas/Money"
+					},
+					"commercialInvoice": {
+						"$ref": "#/components/schemas/CommercialInvoice"
+					},
+					"commodities": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CommodityVO"
+						}
+					},
+					"documentContent": {
+						"type": "string",
+						"description": "Defaults to COMMODITY. Only used for int'l Express requests to indicate if just documents are being shipped or not.",
+						"example": "DOCUMENT",
+						"enum": [
+							"DOCUMENT",
+							"COMMODITY"
+						]
+					}
+				},
+				"description": "These are customs clearance details. <br>Required for International and intra-country Shipments."
+			},
+			"Money_1": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "This is the amount.<br>Example: 12.45",
+						"format": "double",
+						"example": 12.45,
+						"xml": {
+							"name": "Amount"
+						}
+					},
+					"currency": {
+						"type": "string",
+						"description": "This is the currency code for the amount.<br>Example: USD<br><a onclick='loadDocReference(\"currencycodes\")'>click here to see Currency codes</a>",
+						"example": "USD",
+						"xml": {
+							"name": "Currency"
+						}
+					}
+				},
+				"description": "Specify Insurance charges if applicable.<br><i>Note: FedEx does not provide insurance of any kind</i>."
+			},
+			"Party": {
+				"type": "object",
+				"properties": {
+					"accountNumber": {
+						"type": "string",
+						"description": "This is FedEx Account number details. Example: 123456789"
+					}
+				},
+				"description": "Attributes for a Party to a transaction including the physical address, contact information and account number information.",
+				"example": "897654564"
+			},
+			"CommercialInvoice": {
+				"type": "object",
+				"properties": {
+					"freightCharge": {
+						"description": "Indicate the freight charge.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Money"
+							}
+						]
+					},
+					"purpose": {
+						"type": "string",
+						"description": "It describes the purpose.",
+						"example": "SOLD"
+					}
+				},
+				"description": "Use this object to provide Commercial Invoice details. This element is required for electronic upload of CI data. It will serve to create/transmit an electronic Commercial Invoice through the FedEx system.<br>Customers are responsible for printing their own Commercial Invoice.<br>If you would like FedEx to generate a Commercial Invoice and transmit it to Customs for clearance purposes, you need to specify that in the ETDDetail/RequestedDocumentCopies element.<br>Supports maximum of 99 commodity line items."
+			},
+			"CommodityVO": {
+				"required": [
+					"harmonizedCode"
+				],
+				"type": "object",
+				"properties": {
+					"quantity": {
+						"type": "string",
+						"description": "Total number of units (using quantityUnits as the unit of measure) of this commodity present in the shipment.  <br>Example: '1'"
+					},
+					"quantityUOM": {
+						"type": "string",
+						"description": "This is the units quantity per commodity. This is used to estimate duties and taxes in GTC.<br>Example: 125"
+					},
+					"customsValue": {
+						"description": "Required<br>Customs value for this commodity",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Money"
+							}
+						]
+					},
+					"countryOfManufacture": {
+						"type": "string",
+						"description": "Required<br> Max Length is 4<br> Example: IN",
+						"example": "US"
+					},
+					"name": {
+						"type": "string",
+						"description": "This represents the name of commodity."
+					},
+					"harmonizedCode": {
+						"type": "string",
+						"description": "This is to specify the Harmonized Tariff System (HTS) code to meet U.S. and foreign governments' customs requirements. These are mainly used to estimate the duties and taxes.<br>Example: 0613<br>To research the classification for your commodity, use the FedEx Global Trade Manager online at <a href='http://www.fedex.com/gtm' target='_blank'>fedex.com/gtm</a>. You will find country-specific information to determine whether your commodity is considered to be a document or non-document for your destination.",
+						"example": "0613"
+					},
+					"description": {
+						"type": "string",
+						"description": "This represents commodity description"
+					},
+					"weight": {
+						"description": "Represents Weight of the packages or shipment.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Weight"
+							}
+						]
+					},
+					"commodityId": {
+						"type": "integer",
+						"description": "This represents the commodity id",
+						"format": "int32"
+					},
+					"additionalMeasures": {
+						"$ref": "#/components/schemas/Measure"
+					}
+				}
+			},
+			"Weight": {
+				"required": [
+					"units",
+					"value"
+				],
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Indicate the weight unit type. The package and commodity weight unit should be the same else the request will result in an error.",
+						"example": "KG",
+						"enum": [
+							"KG",
+							"LB"
+						]
+					},
+					"value": {
+						"type": "number",
+						"description": "This is the weight. Max. Length is 99999.<br>Example: 68.25",
+						"format": "double",
+						"example": 68.25
+					}
+				},
+				"description": "Indicates the weight details of the commodity.",
+				"example": {
+					"units": "KG",
+					"value": 68
+				}
+			},
+			"Measure": {
+				"required": [
+					"quantity",
+					"uom"
+				],
+				"type": "object",
+				"properties": {
+					"uom": {
+						"type": "string",
+						"description": "Unit of measure used to express the quantity of this commodity line item.",
+						"xml": {
+							"name": "Uom"
+						}
+					},
+					"quantity": {
+						"type": "number",
+						"description": "Specify commodity quantity.",
+						"format": "double",
+						"xml": {
+							"name": "Quantity"
+						}
+					}
+				},
+				"description": "This object contains additional quantitative information other than weight and quantity to calculate duties and taxes."
+			},
+			"MinimumSamplePayload": {
+				"example": {
+					"originAddress": {
+						"countryCode": "IN"
+					},
+					"destinationAddress": {
+						"countryCode": "CA"
+					},
+					"carrierCode": "FDXE",
+					"customsClearanceDetail": {
+						"customsValue": {
+							"amount": "",
+							"currency": ""
+						},
+						"commodities": [
+							{
+								"harmonizedCode": "580122"
+							}
+						]
+					}
+				}
+			},
+			"GticResponseVO_1": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO_2"
+					}
+				}
+			},
+			"BaseProcessOutputVO_2": {
+				"type": "object",
+				"properties": {
+					"internalTrackingNumber": {
+						"type": "string",
+						"description": "This is the ITN number from US Customs.",
+						"example": "X20241011791496"
+					},
+					"status": {
+						"type": "string",
+						"description": "This is EEI’s status code for the shipment reference number.",
+						"example": "A1"
+					},
+					"statusDescription": {
+						"type": "string",
+						"description": "This is the status description.",
+						"example": "EEI Approved"
+					},
+					"highestSeverity": {
+						"type": "string",
+						"description": "Specifies the type of severity of the notifications",
+						"example": "SUCCESS",
+						"enum": [
+							"ERROR",
+							"FAILURE",
+							"NOTE",
+							"SUCCESS",
+							"WARNING"
+						]
+					},
+					"notification": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Notification_Detail"
+							}
+						]
+					}
+				}
+			},
+			"CXSError400": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "It is the same customerTransactionId sent as part of the request's header,by the clients calling this endpoint.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError400_error"
+						}
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError401_1": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "It is the same customerTransactionId sent as part of the request's header,by the clients calling this endpoint.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"error": {
+						"$ref": "#/components/schemas/CXSError401_1_error"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "It is the same customerTransactionId sent as part of the request's header,by the clients calling this endpoint.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"error": {
+						"$ref": "#/components/schemas/CXSError403_error"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError404_1": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "It is the same customerTransactionId sent as part of the request's header,by the clients calling this endpoint.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"error": {
+						"$ref": "#/components/schemas/CXSError404_1_error"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError500_1": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "It is the same customerTransactionId sent as part of the request's header,by the clients calling this endpoint.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"error": {
+						"$ref": "#/components/schemas/CXSError500_1_error"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"error": {
+						"$ref": "#/components/schemas/CXSError503_error"
+					}
+				}
+			},
+			"RetrieveITNInputVO": {
+				"required": [
+					"shipmentReferenceNumber"
+				],
+				"type": "object",
+				"properties": {
+					"version": {
+						"$ref": "#/components/schemas/Version"
+					},
+					"shipmentReferenceNumber": {
+						"type": "string",
+						"description": "This is the shipment reference number which is needed in order to retrieve the ITN (Internal Tracking Number).",
+						"example": "24091060018"
+					}
+				}
+			},
+			"Version": {
+				"required": [
+					"major",
+					"minor"
+				],
+				"type": "object",
+				"properties": {
+					"major": {
+						"type": "integer",
+						"description": "This version is incremented when significant changes are made to the API functionality. These could be breaking changes and might require code-adjustments from clients. Accepts only numbers",
+						"example": 1
+					},
+					"minor": {
+						"type": "integer",
+						"description": "This represents a backward-compatible bug fix or minor adjustment to an existing API functionality. This is the second number in API versioning scheme. Accepts only numbers",
+						"example": 1
+					},
+					"patch": {
+						"type": "integer",
+						"description": "This represents a backward-compatible bug fix or minor adjustment to an existing API functionality. This is the third number in API versioning scheme. Accepts only numbers",
+						"example": 1
+					}
+				}
+			},
+			"GticResponseVO_2": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "It is the same customerTransactionId sent as part of the request's header,by the clients calling this endpoint.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"output": {
+						"$ref": "#/components/schemas/FileEEIOutputVO"
+					}
+				}
+			},
+			"FileEEIOutputVO": {
+				"type": "object",
+				"properties": {
+					"shipmentReferenceNumber": {
+						"type": "string",
+						"description": "Describes the reference number for the shipment.",
+						"example": "24102960001"
+					},
+					"highestSeverity": {
+						"type": "string",
+						"description": "Specifies the type of severity of the notifications",
+						"example": "SUCCESS",
+						"enum": [
+							"ERROR",
+							"FAILURE",
+							"NOTE",
+							"SUCCESS",
+							"WARNING"
+						]
+					},
+					"notification": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Notification_Detail"
+							}
+						]
+					}
+				}
+			},
+			"Notification_Detail": {
+				"type": "object",
+				"properties": {
+					"severity": {
+						"type": "array",
+						"description": "Specifies the type of severity of the notifications",
+						"example": "SUCCESS",
+						"items": {
+							"type": "string",
+							"enum": [
+								"ERROR",
+								"FAILURE",
+								"NOTE",
+								"SUCCESS",
+								"WARNING"
+							]
+						}
+					},
+					"source": {
+						"type": "string",
+						"description": "specifies the source of the notifications",
+						"example": "FEDEX"
+					},
+					"code": {
+						"type": "string",
+						"description": "specifies the code related to  the notifications",
+						"example": "0"
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the message related to the notifications",
+						"example": "Request was successfully processed."
+					}
+				}
+			},
+			"CXSError400_1": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/MessageParameters_1"
+				}
+			},
+			"CXSError400_2": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.",
+						"example": "COUNTRY.CODE.INVALID,PRICING.OPTION.INVALID,PAYMENTTYPEVALUE.INVALID,COUNTRY.SOURCETYPE.INVALID,COUNTRY.TYPE.ID.INVALID"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.",
+						"example": "Longitude and Latitude are required."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError401_2": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/CXSError401_3"
+				}
+			},
+			"CXSError401_3": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.",
+						"example": "LOGIN.REAUTHENTICATE.ERROR"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.",
+						"example": "Your session is expired. Please enter your user ID and password to log in again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError403_1": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/CXSError403_2"
+				}
+			},
+			"CXSError403_2": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.",
+						"example": "FORBIDDEN.ERROR"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.",
+						"example": "We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError404_2": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/CXSError404_3"
+				}
+			},
+			"CXSError404_3": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.",
+						"example": "NOT.FOUND.ERROR"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.",
+						"example": "The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"CXSError500_2": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/CXSError500_3"
+				}
+			},
+			"CXSError500_3": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.",
+						"example": "INTERNAL.SERVER.ERROR"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.",
+						"example": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"FullSchema_FileEEIInputVO": {
+				"required": [
+					"eeiPartyDetails",
+					"processingOption"
+				],
+				"type": "object",
+				"properties": {
+					"version": {
+						"$ref": "#/components/schemas/Version"
+					},
+					"processingOption": {
+						"type": "array",
+						"description": "processingOption for ADD Cancel Update",
+						"example": "ADD",
+						"items": {
+							"type": "string",
+							"enum": [
+								"ADD",
+								"CANCEL",
+								"UPDATE"
+							]
+						}
+					},
+					"eeiControlDetail": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiControlDetail"
+					},
+					"eeiPartyDetails": {
+						"type": "array",
+						"description": "Both USPPI and ULTIMATE_CONSIGNEE are mandatory.",
+						"items": {
+							"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiPartyDetails"
+						}
+					},
+					"eeiCommodities": {
+						"type": "array",
+						"description": "Contains details for each exported item, including description, tariff code, origin, weight and other information.",
+						"items": {
+							"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiCommodities"
+						}
+					}
+				}
+			},
+			"SamplePayload_AddFiling": {
+				"example": {
+					"version": {
+						"minor": 1,
+						"major": 1,
+						"patch": 1
+					},
+					"processingOption": "ADD",
+					"eeiControlDetail": {
+						"shipDate": "2025-02-03",
+						"accountNumber": "130043016",
+						"customerReferenceNumber": "1234",
+						"hazardousMaterial": false,
+						"partiesToTransactionAreRelated": false
+					},
+					"eeiPartyDetails": [
+						{
+							"eeiShipmentPartyType": "ULTIMATE_CONSIGNEE",
+							"eeiContactAndAddress": {
+								"contact": {
+									"personName": {
+										"firstName": "",
+										"lastName": ""
+									},
+									"title": "",
+									"companyName": "MARK PVT LIMITED",
+									"phoneNumberCountryCode": "",
+									"phoneNumberAreaCode": "",
+									"phoneNumber": "",
+									"phoneExtension": "",
+									"pagerNumber": "",
+									"faxNumber": "",
+									"eMailAddress": ""
+								},
+								"address": {
+									"streetLines": [
+										"BUILD NO 1"
+									],
+									"city": "PARIS",
+									"stateOrProvinceCode": "",
+									"postalCode": "",
+									"urbanizationCode": "",
+									"countryCode": "FR",
+									"countryName": "",
+									"residential": false,
+									"geographicCoordinates": ""
+								}
+							},
+							"einTaxId": ""
+						},
+						{
+							"eeiShipmentPartyType": "USPPI",
+							"eeiContactAndAddress": {
+								"contact": {
+									"personName": {
+										"firstName": "RASI",
+										"lastName": "SAI"
+									},
+									"title": "",
+									"companyName": "TEST LIMITED",
+									"phoneNumberCountryCode": "",
+									"phoneNumberAreaCode": "",
+									"phoneNumber": "8025192678",
+									"phoneExtension": "",
+									"pagerNumber": "",
+									"faxNumber": "",
+									"eMailAddress": "sait.osv@fedex.com"
+								},
+								"address": {
+									"streetLines": [
+										"BUILDING"
+									],
+									"city": "AUSTIN",
+									"stateOrProvinceCode": "TX",
+									"postalCode": "73301",
+									"urbanizationCode": "",
+									"countryCode": "US",
+									"countryName": "",
+									"residential": false,
+									"geographicCoordinates": ""
+								}
+							},
+							"einTaxId": "456736452"
+						}
+					],
+					"eeiCommodities": [
+						{
+							"commodity": {
+								"commodityId": "",
+								"numberOfPieces": 1,
+								"description": "REGISTERS, ACCOUNT BOOKS, NOTEBOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PADS,   DIARIES AND SIMILAR ARTICLES [REGISTERS, ACCOUNT BOOKS, NOTE BOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PAD  S, DIARIES AND SIMILAR ARTICLES, EXERCISE BOOKS, BLOTTING-PADS, BINDERS (LOOSELEAF OR OTHER)]",
+								"countryOfManufacture": "",
+								"harmonizedCode": "4820100000",
+								"weight": {
+									"units": "KG",
+									"value": 2
+								},
+								"quantity": 1,
+								"quantityUnits": "NO",
+								"unitPrice": {
+									"currency": "",
+									"amount": 0
+								},
+								"customsValue": {
+									"currency": "USD",
+									"amount": 2700
+								},
+								"exportLicenseNumber": "NLR",
+								"exportLicenseExpirationDate": "",
+								"cIMarksAndNumbers": "",
+								"partNumber": ""
+							},
+							"scheduleBCode": "4820100000",
+							"exportInformationCode": "OS",
+							"eeiCommodityLicenseDetail": {
+								"licenseCode": "C33",
+								"licenseValue": {
+									"currency": "USD",
+									"amount": 0
+								}
+							},
+							"inbondCode": "",
+							"usDomestic": false,
+							"ddtcDetail": {
+								"ddtcITARExemptionNumber": "",
+								"ddtcRegistrationNumber": "",
+								"ddtcSignificantMilitarySMEIndicator": false,
+								"ddtcEligibleParty": false,
+								"usmlCategoryCode": "",
+								"ddtcXXIDeterminationNumber": "",
+								"ddtcUnitOfMeasure": {
+									"quantity": 0,
+									"units": ""
+								}
+							},
+							"vehicleDetail": {
+								"vinNumber": "",
+								"titleNumber": "",
+								"titleState": ""
+							}
+						}
+					]
+				}
+			},
+			"SamplePayload_CancelFiling": {
+				"example": {
+					"processingOption": "CANCEL",
+					"eeiControlDetail": {
+						"shipmentReferenceNumber": "24092660018"
+					}
+				}
+			},
+			"SamplePayload_UpdateFiling": {
+				"example": {
+					"processingOption": "UPDATE",
+					"eeiControlDetail": {
+						"shipDate": "2024-09-23",
+						"accountNumber": "130043016",
+						"shipmentReferenceNumber": "24093060018",
+						"hazardousMaterial": false,
+						"partiesToTransactionAreRelated": false
+					},
+					"eeiPartyDetails": {
+						"eeiShipmentPartyType": "ULTIMATE_CONSIGNEE",
+						"eeiContactAndAddress": {
+							"contact": {
+								"personName": {
+									"firstName": "Surya",
+									"lastName": "Reddy"
+								},
+								"title": "Mr",
+								"companyName": "HUAWEI",
+								"phoneNumberCountryCode": "1011",
+								"phoneNumberAreaCode": "1012",
+								"phoneNumber": "8907757679",
+								"phoneExtension": "1",
+								"pagerNumber": "1",
+								"faxNumber": "14560171",
+								"eMailAddress": "maneesh.nv@fedex.com"
+							},
+							"address": {
+								"streetLines": [
+									"10 FedEx Parkway"
+								],
+								"city": "PARIS",
+								"stateOrProvinceCode": "TX",
+								"postalCode": "26150",
+								"urbanizationCode": "URB FAIR OAKS",
+								"countryCode": "US",
+								"countryName": "UNITED STATES",
+								"residential": false,
+								"geographicCoordinates": null
+							}
+						},
+						"einTaxId": "456736452"
+					},
+					"eeiCommodities": {
+						"commodity": {
+							"commodityId": "12",
+							"numberOfPieces": "1",
+							"description": "REGISTERS, ACCOUNT BOOKS, NOTEBOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PADS,   DIARIES AND SIMILAR ARTICLES [REGISTERS, ACCOUNT BOOKS, NOTE BOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PAD  S, DIARIES AND SIMILAR ARTICLES, EXERCISE BOOKS, BLOTTING-PADS, BINDERS (LOOSELEAF OR OTHER)]",
+							"countryOfManufacture": "US",
+							"harmonizedCode": "4820100000",
+							"weight": {
+								"units": "K",
+								"value": 2
+							},
+							"quantity": "1",
+							"quantityUnits": "NO",
+							"additionalMeasures": [
+								null
+							],
+							"unitPrice": {
+								"currency": "USD",
+								"amount": "12"
+							},
+							"customsValue": {
+								"currency": "USD",
+								"amount": "2600"
+							},
+							"exportLicenseNumber": "26456",
+							"exportLicenseExpirationDate": "2009-04-12",
+							"cIMarksAndNumbers": "87123",
+							"partNumber": "167"
+						},
+						"scheduleBCode": "4820100000",
+						"exportInformationCode": "OS",
+						"eeiCommodityLicenseDetail": {
+							"licenseCode": "C33",
+							"licenseValue": {
+								"currency": "USD",
+								"amount": "0"
+							}
+						},
+						"inbondCode": "36",
+						"usDomestic": "false",
+						"ddtcDetail": {
+							"ddtcITARExemptionNumber": "123.11B",
+							"ddtcRegistrationNumber": "C6754",
+							"ddtcSignificantMilitarySMEIndicator": false,
+							"ddtcEligibleParty": false,
+							"usmlCategoryCode": "17",
+							"ddtcUnitOfMeasure": {
+								"quantity": "0",
+								"units": "USD"
+							}
+						}
+					}
+				}
+			},
+			"Minimum_Payload": {
+				"example": {
+					"processingOption": "ADD",
+					"eeiControlDetail": {
+						"shipDate": "2024-09-23",
+						"accountNumber": "130043016"
+					},
+					"eeiPartyDetails": [
+						{
+							"eeiShipmentPartyType": "USPPI",
+							"eeiContactAndAddress": {
+								"contact": {
+									"companyName": "HUAWEI",
+									"personName": {
+										"firstName": "Surya",
+										"lastName": "Kumar"
+									}
+								},
+								"address": {
+									"streetLines": [
+										"BUILDING"
+									],
+									"city": "PARIS",
+									"countryCode": "US"
+								}
+							},
+							"einTaxId": "456736452"
+						},
+						{
+							"eeiShipmentPartyType": "ULTIMATE_CONSIGNEE",
+							"eeiContactAndAddress": {
+								"contact": {
+									"companyName": "HUAWEI"
+								},
+								"address": {
+									"streetLines": [
+										"BUILDING"
+									],
+									"city": "PARIS",
+									"countryCode": "US"
+								}
+							}
+						}
+					],
+					"eeiCommodities": {
+						"commodity": {
+							"description": "REGISTERS, ACCOUNT BOOKS, NOTEBOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PADS,   DIARIES AND SIMILAR ARTICLES [REGISTERS, ACCOUNT BOOKS, NOTE BOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PAD  S, DIARIES AND SIMILAR ARTICLES, EXERCISE BOOKS, BLOTTING-PADS, BINDERS (LOOSELEAF OR OTHER)]",
+							"harmonizedCode": "4820100000",
+							"quantityUnits": "NO",
+							"weight": {
+								"units": "KG"
+							}
+						},
+						"exportInformationCode": "GP",
+						"eeiCommodityLicenseDetail": {
+							"licenseCode": "C33"
+						}
+					}
+				}
+			},
+			"GticResponseVO_3": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "It is the unique identifier for the transaction.",
+						"format": "uuid",
+						"example": "0e671149-016f-1000-941f-ef4dbabadd2e"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction.  This element is also returned in the reply and helps you match the request to the reply.<br>Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/BaseProcessOutputVO"
+							}
+						]
+					}
+				}
+			},
+			"BaseProcessOutputVO": {
+				"type": "object",
+				"properties": {
+					"regulatoryComplianceCountryDetails": {
+						"type": "array",
+						"description": "This is an array of nonnegative-Integer identifying the associated commodities.",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryComplianceCountryDetail"
+						}
+					},
+					"shipmentRegulatoryComplianceDetails": {
+						"type": "array",
+						"description": "This is an array of nonnegative-Integer identifying the associated commodities.",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryComplianceTypeDetail"
+						}
+					}
+				}
+			},
+			"CXSAlert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the API alert code.",
+						"example": "INVALID.INPUT.EXCEPTION"
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the API alert Type.",
+						"example": "WARNING",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_1"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the API alert message.",
+						"example": "Validation failed for object. Error count: 1"
+					}
+				}
+			},
+			"Parameter_1": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied.",
+						"example": "packagingType can not be null"
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key.",
+						"example": "NotNull.specialServicesOptionsInputVO.requestedShipment.packagingType"
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO_1": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/ErrorResponseVO_2"
+				}
+			},
+			"ErrorResponseVO_2": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "Unique identifier used to match requests to their respective responses.<br>Example: XXX_ORDERXXXX789.",
+						"example": "XXX_ORDERXXXX789"
+					},
+					"errors": {
+						"type": "array",
+						"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts.<br> This includes code, message and parameter.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError_1"
+						}
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter."
+			},
+			"CXSError_1": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"description": "Indicates the error code.<br>Example: ACCOUNT.NUMBER.INVALID,LOGIN.REAUTHENTICATE.ERROR,SHIPMENT.USER.UNAUTHORIZED,NOT.FOUND.ERROR,INTERNAL.SERVER.ERROR"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: We are unable to process this request. Please try again later or contact FedEx Customer Service."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"RequestVO": {
+				"required": [
+					"carrierCode",
+					"consolidationRole",
+					"consolidationType",
+					"destinationAddress",
+					"originAddress",
+					"regulatoryCustomsClearanceDetail",
+					"serviceOptionTypes",
+					"serviceType",
+					"shipDate",
+					"totalCommodityValue",
+					"totalWeight"
+				],
+				"type": "object",
+				"properties": {
+					"version": {
+						"$ref": "#/components/schemas/Version_optional"
+					},
+					"shipDate": {
+						"type": "string",
+						"description": "String date format to indicate the date to be used for importing. Default to next day if not present in the request. This date can’t be greater than 120 days this includes weekends. The date format should be ISO8601Date, YYYY-MM-DD.",
+						"format": "YYYY-MM-DD",
+						"example": "2022-10-05"
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "The shipment type abbreviation for a FedEx operating company. EX: FXE for FedEx Express.\r\nSupported Values: FXE, FXG, FXF or any value supported in the DOM element CarrierCodeType.",
+						"example": "FXE"
+					},
+					"originAddress": {
+						"description": "Represents the origin address details required for regulatory compliance",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/RegulatoryAddressVO"
+							}
+						]
+					},
+					"destinationAddress": {
+						"description": "Represents the destination address details required for regulatory compliance",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/RegulatoryAddressVO"
+							}
+						]
+					},
+					"serviceType": {
+						"type": "string",
+						"description": "String value to indicate a FedEx operating company’s type of service. Valid values from the authoritative data source (ADS) are listed in the example. Default value is “IP” if not present in the request. Valid values are also DOM ServiceType values.",
+						"example": "[\"IP\",\"SG\",\"PO\",\"XS\",\"FR\",\"FL\"]"
+					},
+					"serviceOptionTypes": {
+						"type": "array",
+						"description": "A list to indicate possible shipment features, some of which are listed below. (String[]) Values come from PLEFS (ADS) and DOM. Some possible valid values “FICE”, “ITAR”.",
+						"example": [
+							"FICE"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"FICE",
+								"ITAR"
+							]
+						}
+					},
+					"totalWeight": {
+						"$ref": "#/components/schemas/Weight"
+					},
+					"consolidationType": {
+						"type": "string",
+						"description": "String value to identify the type of consolidation containing this shipment.<br> Example: INTERNATIONAL_PRIORITY_DISTRIBUTION",
+						"example": "INTERNATIONAL_PRIORITY_DISTRIBUTION"
+					},
+					"consolidationRole": {
+						"type": "string",
+						"description": "A String value to identify the role of this shipment within the consolidation.<br> Example: CRN_SHIPMENT",
+						"example": "CRN_SHIPMENT"
+					},
+					"totalCommodityValue": {
+						"$ref": "#/components/schemas/Money_2"
+					},
+					"regulatoryCustomsClearanceDetail": {
+						"$ref": "#/components/schemas/RegulatoryCustomsClearanceDetail"
+					}
+				},
+				"additionalProperties": false
+			},
+			"Version_optional": {
+				"type": "object",
+				"properties": {
+					"major": {
+						"type": "integer",
+						"description": "This version is incremented when significant changes are made to the API functionality. These could be breaking changes and might require code-adjustments from clients. Accepts only numbers",
+						"example": 1
+					},
+					"minor": {
+						"type": "integer",
+						"description": "This represents a backward-compatible bug fix or minor adjustment to an existing API functionality. This is the second number in API versioning scheme. Accepts only numbers",
+						"example": 1
+					},
+					"patch": {
+						"type": "integer",
+						"description": "This represents a backward-compatible bug fix or minor adjustment to an existing API functionality. This is the third number in API versioning scheme. Accepts only numbers",
+						"example": 1
+					}
+				}
+			},
+			"RegulatoryAddressVO": {
+				"required": [
+					"countryCode"
+				],
+				"type": "object",
+				"properties": {
+					"countryCode": {
+						"type": "string",
+						"description": "String value to indicate the 2-character ISO country code",
+						"example": "US"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "String value to identify the abbreviation for US state, Canada province etc. The valid values for stateOrProvinceCode are AS, GU, MP, PR, VI, VA",
+						"example": "TX"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "String value to indicate the zip code",
+						"example": "75024"
+					}
+				}
+			},
+			"Money_2": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"description": "This is the amount.<br>Example: 12.45",
+						"format": "double",
+						"example": 12.45,
+						"xml": {
+							"name": "Amount"
+						}
+					},
+					"currency": {
+						"type": "string",
+						"description": "This is the currency code for the amount.",
+						"example": "USD",
+						"xml": {
+							"name": "Currency"
+						}
+					}
+				}
+			},
+			"RegulatoryCustomsClearanceDetail": {
+				"type": "object",
+				"properties": {
+					"regulatoryControls": {
+						"type": "array",
+						"example": "NOT_IN_FREE_CIRCULATION",
+						"items": {
+							"type": "string",
+							"enum": [
+								"FOOD_OR_PERISHABLE",
+								"USMCA",
+								"NOT_APPLICABLE_FOR_LOW_VALUE_CUSTOMS_EXCEPTIONS",
+								"NOT_IN_FREE_CIRCULATION"
+							]
+						}
+					},
+					"documentContent": {
+						"type": "string",
+						"description": "It is the documentContent.",
+						"example": "NON_DOCUMENTS"
+					},
+					"customsValue": {
+						"$ref": "#/components/schemas/Money_2"
+					},
+					"commercialInvoice": {
+						"$ref": "#/components/schemas/CommercialInvoice"
+					},
+					"commodities": {
+						"minItems": 1,
+						"description": "Indicates the details of commodities",
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CommodityLookup"
+						}
+					}
+				}
+			},
+			"CommodityLookup": {
+				"type": "object",
+				"properties": {
+					"commodityID": {
+						"type": "string",
+						"description": "Unique id with the commodity in the containing shipment.",
+						"example": "12"
+					},
+					"scheduleBCode": {
+						"type": "string",
+						"description": "Is a 6 digit US customs code sent in request.",
+						"example": "500000"
+					},
+					"harmonizedCode": {
+						"type": "string",
+						"description": "Is a 6 digit HS code sent in request.",
+						"example": "611692"
+					},
+					"name": {
+						"type": "string",
+						"description": "String value to indicate the commodity name",
+						"example": "Papers"
+					},
+					"description": {
+						"type": "string",
+						"description": "It describes the commodity",
+						"example": "Theragem Power Supply Unit"
+					},
+					"exportControlClassificationNumber": {
+						"type": "string",
+						"description": "It describes the export Control Classification Number",
+						"example": "10"
+					},
+					"commodityLicenseOrPermit": {
+						"type": "string",
+						"description": "It describes the Commodity License or Prmit",
+						"example": "10"
+					},
+					"countryOfManufacture": {
+						"type": "string",
+						"description": "2-character ISO country code",
+						"example": "GB"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/Weight"
+					},
+					"quantity": {
+						"type": "number",
+						"description": "Specifies the commodity quantity",
+						"example": 15
+					},
+					"quantityUnits": {
+						"type": "string",
+						"description": "This the unit of measure for the units quantity. This is used to estimate duties and taxes.<br>Example: EA",
+						"example": "Ea"
+					},
+					"customsValue": {
+						"$ref": "#/components/schemas/Money_2"
+					}
+				}
+			},
+			"ShipmentRegulatoryDetailsOutputVO": {
+				"required": [
+					"countryDetails",
+					"userMessages"
+				],
+				"type": "object",
+				"properties": {
+					"userMessages": {
+						"type": "array",
+						"description": "Represents User Message",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryMessage"
+						}
+					},
+					"countryDetails": {
+						"description": "Represents Country Details",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/RegulatoryCountryDetails"
+							}
+						]
+					},
+					"cxsalerts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSAlert_1"
+						}
+					}
+				},
+				"description": "ShipmentRegulatoryDetailsOutputVO Model"
+			},
+			"RegulatoryMessage": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the message code.",
+						"example": "1028"
+					},
+					"messageParameters": {
+						"type": "array",
+						"description": "Value indicating the translated text.",
+						"items": {
+							"$ref": "#/components/schemas/MessageParameters"
+						}
+					},
+					"index": {
+						"type": "integer",
+						"description": "Non negative integer value indicating the index of the commodity description.",
+						"format": "int32",
+						"example": 1
+					},
+					"text": {
+						"type": "string",
+						"description": "Indicates the content of the user-instructional message in English.",
+						"example": "Based on shipment information provided, only non-document/commodity type is permitted for this shipment"
+					},
+					"localizedText": {
+						"type": "string",
+						"description": "This is the return message from the service provider in local language.",
+						"example": "Selon les informations fournies sur l envoi, seul le type de produit / document est autorisé pour cet envo"
+					}
+				},
+				"description": "Object representing the information needed during the interaction with clients"
+			},
+			"MessageParameters": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Indicates the message identifier.",
+						"example": "1"
+					},
+					"value": {
+						"type": "string",
+						"description": "Indicates the message.",
+						"example": "Based on shipment information provided, only non-document/commodity type is permitted for this shipment"
+					}
+				},
+				"description": "Object containing the parameters for a Message object"
+			},
+			"MessageParameters_1": {
+				"description": "Object containing the parameters for a Message object",
+				"type": "object",
+				"properties": {
+					"id": {
+						"description": "String value indicating the identifier of the message.",
+						"type": "string",
+						"example": "FIELD_NAME"
+					},
+					"value": {
+						"description": "String value to indicate value of the message.",
+						"type": "string",
+						"example": "accountNumber"
+					}
+				}
+			},
+			"RegulatoryCountryDetails": {
+				"required": [
+					"category",
+					"countryCode",
+					"shipmentDetails"
+				],
+				"type": "object",
+				"properties": {
+					"shipmentDetails": {
+						"description": "These are Shipment Details.",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/RegulatoryShipmentDetail"
+							}
+						]
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "Indicates Country Code."
+					},
+					"category": {
+						"type": "string",
+						"description": "Indicates the Regulatory details category."
+					}
+				}
+			},
+			"RegulatoryShipmentDetail": {
+				"type": "object",
+				"properties": {
+					"regulatoryStatements": {
+						"$ref": "#/components/schemas/RegulatoryStatement"
+					},
+					"requiredCommodityUnitsOfMeasure": {
+						"type": "array",
+						"description": "This is the statistical unit of measure required by the government.",
+						"items": {
+							"type": "string",
+							"description": "Describes the regulatory data elements required to move the package."
+						}
+					},
+					"level": {
+						"type": "string",
+						"description": "This a Delay Level Type. The attribute of the shipment that caused delay."
+					},
+					"commodityIndex": {
+						"type": "integer",
+						"description": "This is a non negative integer. This is a 1-based index identifying the comodity in the request that resulted in this Commodity or Document type prohibition.",
+						"format": "int32"
+					},
+					"regulatoryDocuments": {
+						"$ref": "#/components/schemas/RegulatoryDocument"
+					},
+					"regulatoryCountryAdvisories": {
+						"$ref": "#/components/schemas/RegulatoryCountryAdvisory"
+					}
+				}
+			},
+			"RegulatoryStatement": {
+				"type": "object",
+				"properties": {
+					"userMessage": {
+						"$ref": "#/components/schemas/RegulatoryMessage"
+					},
+					"supportType": {
+						"type": "string",
+						"description": "This represents document support type.",
+						"enum": [
+							"FEDEX_GENERATED",
+							"FILLABLE",
+							"PRINT_ONLY",
+							"SAMPLE"
+						]
+					},
+					"allowability": {
+						"type": "string",
+						"description": "Specifies a requirement type."
+					},
+					"fileName": {
+						"type": "string",
+						"description": "This represents file name."
+					},
+					"agencyUrl": {
+						"type": "string",
+						"description": "Represents agency url."
+					},
+					"documentUrl": {
+						"type": "string",
+						"description": "Represents document url."
+					},
+					"id": {
+						"type": "string",
+						"description": "This specifies Regualatory document id."
+					},
+					"completionType": {
+						"type": "string",
+						"description": "This specifies completion type.",
+						"enum": [
+							"COMPLETE",
+							"REQUIRES_COMPLETION"
+						]
+					},
+					"agencyName": {
+						"type": "string",
+						"description": "It Specifies agency name."
+					},
+					"localizedAttributes": {
+						"$ref": "#/components/schemas/LocalizedAttributeDetail"
+					},
+					"documentIds": {
+						"type": "array",
+						"description": "Specifies the document identifier.",
+						"items": {
+							"type": "string"
+						}
+					},
+					"statementUrl": {
+						"type": "string",
+						"description": "This represents statement url."
+					}
+				},
+				"description": "Specifies the list of regulatory statements."
+			},
+			"LocalizedAttributeDetail": {
+				"type": "object",
+				"properties": {
+					"localization": {
+						"$ref": "#/components/schemas/Localization"
+					},
+					"name": {
+						"type": "string",
+						"description": "Specifies the name of the product being shipped."
+					},
+					"description": {
+						"type": "string",
+						"description": "Specifies elabaorate material description and other technical details of the product beingshipped."
+					}
+				},
+				"description": "Specifies the localized attribute details."
+			},
+			"Localization": {
+				"type": "object",
+				"properties": {
+					"localization": {
+						"type": "string",
+						"description": "Two letter language code. <br> Example: EN<br><a onclick='loadDocReference(\"locales\")'>click here to see Locales</a>",
+						"example": "EN"
+					},
+					"localeCode": {
+						"type": "string",
+						"description": "Two letter region code. <br> Example: us<br><a onclick='loadDocReference(\"locales\")'>click here to see Locales</a>",
+						"example": "us"
+					}
+				},
+				"description": "Specify locale details for composing email with the document."
+			},
+			"RegulatoryDocument": {
+				"type": "object",
+				"properties": {
+					"userMessage": {
+						"$ref": "#/components/schemas/RegulatoryMessage"
+					},
+					"supportType": {
+						"type": "string",
+						"description": "This represents document support type.",
+						"enum": [
+							"FEDEX_GENERATED",
+							"FILLABLE",
+							"PRINT_ONLY",
+							"SAMPLE"
+						]
+					},
+					"allowability": {
+						"type": "string",
+						"description": "This is a Requirement type."
+					},
+					"fileName": {
+						"type": "string",
+						"description": "This represents file name."
+					},
+					"documentType": {
+						"type": "string",
+						"description": "Specifies the document type."
+					},
+					"agencyUrl": {
+						"type": "string",
+						"description": "Represents the agency url."
+					},
+					"documentUrl": {
+						"type": "string",
+						"description": "Represents document url."
+					},
+					"id": {
+						"type": "string",
+						"description": "This specifies Regualatory document id."
+					},
+					"agencyName": {
+						"type": "string",
+						"description": "Specifies the agency name."
+					},
+					"localizedAttributes": {
+						"$ref": "#/components/schemas/LocalizedAttributeDetail"
+					}
+				},
+				"description": "Specifies the Regulatory Documents."
+			},
+			"RegulatoryCountryAdvisory": {
+				"type": "object",
+				"properties": {
+					"types": {
+						"type": "string",
+						"description": "Specifies the advisory type."
+					},
+					"messages": {
+						"type": "array",
+						"description": "Specifies code and other parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Message"
+						}
+					}
+				},
+				"description": "Specifies the types and parameters of Country's advisory regulations."
+			},
+			"Message": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the advisory document related code."
+					},
+					"text": {
+						"type": "string",
+						"description": "Specifies names of the regulatory advisories."
+					},
+					"parameters": {
+						"type": "array",
+						"description": "Specifies information related to the advisories and their relevant parameters.",
+						"items": {
+							"$ref": "#/components/schemas/MessageParameter"
+						}
+					},
+					"localizedText": {
+						"type": "string",
+						"description": "This provides the specifics of the regulations."
+					}
+				}
+			},
+			"MessageParameter": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Specifies the advisory ids."
+					},
+					"value": {
+						"type": "string",
+						"description": "Specifies the advisory regulation."
+					}
+				}
+			},
+			"CXSAlert_1": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the API alert code."
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the API alert type.",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the API alert message."
+					}
+				}
+			},
+			"RetrieveITNOutputVO": {
+				"type": "object",
+				"properties": {
+					"internalTrackingNumber": {
+						"type": "string",
+						"description": "This is the ITN number from US Customs.",
+						"example": "X20241011791496"
+					},
+					"status": {
+						"type": "string",
+						"description": "This is EEI’s status code for the shipment reference number.",
+						"example": "A1"
+					},
+					"statusDescription": {
+						"type": "string",
+						"description": "This is the status description.",
+						"example": "EEI Approved"
+					},
+					"highestSeverity": {
+						"type": "string",
+						"description": "Specifies the type of severity of the notifications",
+						"enum": [
+							"ERROR",
+							"FAILURE",
+							"NOTE",
+							"SUCCESS",
+							"WARNING"
+						]
+					},
+					"notification": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/Notification_Detail"
+							}
+						]
+					}
+				}
+			},
+			"AccountNumber": {
+				"type": "string",
+				"description": "The account number value.<br> Max Length is 9.<br> Example: 123456789",
+				"example": "602345XXX"
+			},
+			"Measure1": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "string",
+						"description": "Barrels/Drums",
+						"example": "BBL"
+					},
+					"quantity": {
+						"type": "number",
+						"description": "Specifies the number of quantity",
+						"format": "double",
+						"example": 0
+					}
+				}
+			},
+			"RegulatoryComplianceOutputVO": {
+				"type": "object",
+				"properties": {
+					"regulatoryComplianceCountryDetails": {
+						"type": "array",
+						"description": "This is an array of nonnegative-Integer identifying the associated commodities.",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryComplianceCountryDetail"
+						}
+					},
+					"shipmentRegulatoryComplianceDetails": {
+						"type": "array",
+						"description": "This is an array of nonnegative-Integer identifying the associated commodities.",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryComplianceTypeDetail"
+						}
+					}
+				}
+			},
+			"RegulatoryComplianceCountryDetail": {
+				"type": "object",
+				"properties": {
+					"countryCode": {
+						"type": "string",
+						"description": "The ISO country code for the country.",
+						"example": "US"
+					},
+					"category": {
+						"type": "string",
+						"description": "Describes the type of category",
+						"example": "ProductType"
+					},
+					"regulatoryComplianceCommodityDetails": {
+						"type": "array",
+						"description": "This is an array of nonnegative-Integer identifying the associated commodities.",
+						"items": {
+							"$ref": "#/components/schemas/RegulatoryComplianceCommodityDetail"
+						}
+					}
+				}
+			},
+			"RegulatoryComplianceCommodityDetail": {
+				"type": "object",
+				"properties": {
+					"commodityComplianceTypeDetail": {
+						"$ref": "#/components/schemas/CommodityComplianceTypeDetail"
+					}
+				}
+			},
+			"CommodityComplianceTypeDetail": {
+				"type": "object",
+				"properties": {
+					"commodityIndexes": {
+						"type": "array",
+						"description": "This is an array of nonnegative-Integer identifying the associated commodities.",
+						"example": 1,
+						"items": {
+							"minimum": 0,
+							"type": "number"
+						}
+					},
+					"regulatoryComplianceTypeDetail": {
+						"$ref": "#/components/schemas/RegulatoryComplianceTypeDetail"
+					}
+				}
+			},
+			"RegulatoryComplianceTypeDetail": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "compliance type.",
+						"example": "EEI"
+					},
+					"description": {
+						"type": "string",
+						"description": "compliance description.",
+						"example": "Shipments to your selected country require an EEI filing"
+					}
+				}
+			},
+			"regulatorydetails_retrieve_body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload"
+					}
+				]
+			},
+			"eei_file_body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO"
+					},
+					{
+						"$ref": "#/components/schemas/SamplePayload_AddFiling"
+					},
+					{
+						"$ref": "#/components/schemas/SamplePayload_CancelFiling"
+					},
+					{
+						"$ref": "#/components/schemas/SamplePayload_UpdateFiling"
+					},
+					{
+						"$ref": "#/components/schemas/Minimum_Payload"
+					}
+				]
+			},
+			"BaseProcessOutputVO_2_alert": {
+				"type": "object",
+				"properties": {
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the api alert type.",
+						"example": "NOTE",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the api alert message.",
+						"example": "VALUE/QUANTITY 1 OUT OF RANGE - LOW"
+					}
+				}
+			},
+			"CXSError400_error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example:CURRENCIESCONVERSION.FROMCURRENCYCODE.REQUIRED, CURRENCIESCONVERSION.TOCURRENCYCODE.REQUIRED",
+						"example": "CURRENCIESCONVERSION.FROMCURRENCYCODE.REQUIRED"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Please provide a valid {{FROM}} currency code.",
+						"example": "Please provide a valid {{FROM}} currency code."
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					}
+				}
+			},
+			"CXSError401_1_error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR, LOGIN.REAUTHENTICATE.ERROR",
+						"example": "LOGIN.REAUTHENTICATE.ERROR"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again.",
+						"example": "Re-Login authentication error"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					}
+				}
+			},
+			"CXSError403_error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				}
+			},
+			"CXSError404_1_error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				}
+			},
+			"CXSError500_1_error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				}
+			},
+			"CXSError503_error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We are unable to process this request. Please try again later or contact FedEx Customer Service."
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_eeiControlDetail_internationalControlledExportDetail": {
+				"type": "object",
+				"properties": {
+					"foreignTradeZoneCode": {
+						"type": "string",
+						"description": "Identity of the Foreign Trade Zone from which the merchandise was withdrawn."
+					},
+					"entryNumber": {
+						"type": "string",
+						"description": "The import entry number for a shipment \"transported under bond\", or the import entry number when a FTZ NAFTA Deferred Duty claim is made."
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_eeiControlDetail": {
+				"required": [
+					"accountNumber",
+					"shipDate",
+					"customerReferenceNumber"
+				],
+				"type": "object",
+				"properties": {
+					"shipDate": {
+						"type": "string",
+						"description": "This is the shipment date<br/> Format [YYYY-MM-DD].",
+						"example": "2024-09-04"
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/AccountNumber"
+					},
+					"portOfExportCode": {
+						"type": "string",
+						"description": "The code for the port of export for the export-import combination",
+						"example": "2095"
+					},
+					"shipmentReferenceNumber": {
+						"type": "string",
+						"description": "This is the shipment reference number which will be returned in the response, this field is mandatory when doing an update or cancellation of an EEI filing.",
+						"example": "24102960001"
+					},
+					"hazardousMaterial": {
+						"type": "boolean",
+						"description": "This indicates if this shipment contains hazardous materials",
+						"example": false
+					},
+					"mode": {
+						"type": "string",
+						"description": "Object of ModeOfTransportationType",
+						"example": "AIR",
+						"enum": [
+							"AIR",
+							"GROUND",
+							"RAIL",
+							"SEA"
+						]
+					},
+					"customerReferenceNumber": {
+						"type": "string",
+						"description": "Customer reference number, this is supplied by the customer",
+						"example": "410"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "This is the AWB if it is available by the customer.",
+						"example": "1372"
+					},
+					"partiesToTransactionAreRelated": {
+						"type": "boolean",
+						"description": "This indicates if the companies are related like a parent company",
+						"example": false
+					},
+					"internationalControlledExportDetail": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiControlDetail_internationalControlledExportDetail"
+					}
+				},
+				"description": "Object of EEIControlDetail"
+			},
+			"FullSchema_FileEEIInputVO_eeiContactAndAddress_contact_personName": {
+				"type": "object",
+				"properties": {
+					"firstName": {
+						"type": "string",
+						"description": "Identifies the contact person's name suffix.",
+						"example": "Surya"
+					},
+					"lastName": {
+						"type": "string",
+						"description": "Identifies the contact person's name suffix.",
+						"example": "Kumar"
+					}
+				},
+				"description": "String value to indicate the name of the person. personName and companyName cannot be null or empty string at the same time."
+			},
+			"FullSchema_FileEEIInputVO_eeiContactAndAddress_contact": {
+				"required": [
+					"companyName",
+					"personName"
+				],
+				"type": "object",
+				"properties": {
+					"personName": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiContactAndAddress_contact_personName"
+					},
+					"title": {
+						"type": "string",
+						"description": "Identifies the contact person's title.",
+						"example": "Mr"
+					},
+					"companyName": {
+						"type": "string",
+						"description": "Identifies the company this contact is associated with.",
+						"example": "MARK PVT LIMITED"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "String value to indicate the phone number. Minimum length is 10 and supports maximum of 15 for certain countries using longer phone numbers.",
+						"example": "6127812999"
+					},
+					"eMailAddress": {
+						"type": "string",
+						"description": "String value to indicate the email address. Maximum length is 80.",
+						"example": "maneesh.nv@fedex.com"
+					}
+				},
+				"description": "Contact Object"
+			},
+			"FullSchema_FileEEIInputVO_eeiContactAndAddress_address": {
+				"required": [
+					"city",
+					"countryCode",
+					"streetLines"
+				],
+				"type": "object",
+				"properties": {
+					"streetLines": {
+						"type": "array",
+						"description": "Array of   string values to indicate the address lines, including combination of number, street name etc",
+						"example": [
+							"10 FedEx Parkway",
+							"Suite 302"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
+					"city": {
+						"type": "string",
+						"description": "The name of city.",
+						"example": "Beverly Hills"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "String value to identify the abbreviation for US state, Canada province etc. The valid values for stateOrProvinceCode are AS, GU,MP, PR, VI, VA<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>click here to see State or Province Code</a>",
+						"example": "TX"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "The postal zip code for the destination",
+						"example": "26150"
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "Specifies the country code.<br><a onclick='loadDocReference(\"countrycodes\")'>click here to see Country codes</a>",
+						"example": "US"
+					}
+				},
+				"description": "Address Object"
+			},
+			"FullSchema_FileEEIInputVO_eeiContactAndAddress": {
+				"type": "object",
+				"properties": {
+					"contact": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiContactAndAddress_contact"
+					},
+					"address": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiContactAndAddress_address"
+					}
+				},
+				"description": ""
+			},
+			"FullSchema_FileEEIInputVO_eeiPartyDetails": {
+				"required": [
+					"einTaxId"
+				],
+				"type": "object",
+				"properties": {
+					"eeiShipmentPartyType": {
+						"type": "string",
+						"description": "it is a eeishipmentpartytype",
+						"example": "USPPI,ULTIMATE_CONSIGNEE",
+						"enum": [
+							"USPPI",
+							"ULTIMATE_CONSIGNEE",
+							"FORWARDER_CONSIGNEE",
+							"INTERMEDIATE_CONSIGNEE"
+						]
+					},
+					"ultimateConsigneeType": {
+						"type": "string",
+						"description": "Indicates the type of ultimate consignee receiving the goods.",
+						"example": "DIRECT_CONSUMER",
+						"enum": [
+							"DIRECT_CONSUMER",
+							"GOVERNMENT_ENTITY",
+							"OTHER",
+							"RESELLER"
+						]
+					},
+					"eeiContactAndAddress": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiContactAndAddress"
+					},
+					"einTaxId": {
+						"type": "string",
+						"description": "This is the tax EIN number code for the USPPI.",
+						"example": "456736452"
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_commodity_customsValue": {
+				"type": "object",
+				"properties": {
+					"currency": {
+						"type": "string",
+						"description": "This is the currency code for the amount.",
+						"example": "USD"
+					},
+					"amount": {
+						"type": "number",
+						"description": "This is the amount.",
+						"format": "double",
+						"example": 2700
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_commodity": {
+				"required": [
+					"description",
+					"harmonizedCode",
+					"quantityUnits"
+				],
+				"type": "object",
+				"properties": {
+					"commodityId": {
+						"type": "string",
+						"description": "A number that identifies the specific commodity line item within a shipment.",
+						"example": "12"
+					},
+					"description": {
+						"type": "string",
+						"description": "A commercial description of the commodity reported for the line item.",
+						"example": "REGISTERS, ACCOUNT BOOKS, NOTEBOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PADS,   DIARIES AND SIMILAR ARTICLES [REGISTERS, ACCOUNT BOOKS, NOTE BOOKS, ORDER BOOKS, RECEIPT BOOKS, LETTER PADS, MEMORANDUM PAD  S, DIARIES AND SIMILAR ARTICLES, EXERCISE BOOKS, BLOTTING-PADS, BINDERS (LOOSELEAF OR OTHER)]"
+					},
+					"countryOfManufacture": {
+						"type": "string",
+						"description": "Commodity country of manufacture.",
+						"example": "US"
+					},
+					"harmonizedCode": {
+						"type": "string",
+						"description": "String that indicates the harmonizedCode",
+						"example": "4820100000"
+					},
+					"weight": {
+						"$ref": "#/components/schemas/Weight"
+					},
+					"quantity": {
+						"type": "number",
+						"description": "Total number of units that correspond to the unit",
+						"format": "double",
+						"example": 1
+					},
+					"quantityUnits": {
+						"type": "string",
+						"description": "A unit of measure code that corresponds to the quantity as prescribed by the Schedule B/HTS number reported.",
+						"example": "NO"
+					},
+					"customsValue": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_commodity_customsValue"
+					},
+					"exportLicenseNumber": {
+						"type": "string",
+						"description": "This is the export license number for the shipment.",
+						"example": "26456"
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_eeiCommodityLicenseDetail_licenseValue": {
+				"type": "object",
+				"properties": {
+					"currency": {
+						"type": "string",
+						"description": "This is the currency code for the amount.",
+						"example": "USD"
+					},
+					"amount": {
+						"type": "number",
+						"description": "This is the amount.",
+						"format": "double",
+						"example": 0
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_eeiCommodityLicenseDetail": {
+				"required": [
+					"licenseCode"
+				],
+				"type": "object",
+				"properties": {
+					"exportControlClassificationNumber": {
+						"type": "string",
+						"description": "It describes the export Control Classification Number",
+						"example": "0A018"
+					},
+					"licenseCode": {
+						"type": "string",
+						"description": "Code defining whether the shipment completes the terms of the license, or the shipment is only a partial delivery relative to the license terms.",
+						"example": "C33"
+					},
+					"licenseValue": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiCommodityLicenseDetail_licenseValue"
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_ddtcDetail": {
+				"type": "object",
+				"properties": {
+					"ddtcITARExemptionNumber": {
+						"type": "string",
+						"description": "The specific citation (exemption number) under the International Traffic in Arms Regulations (ITAR) from the Code of Federal register (see 22 CFR 120-130) that exempts the shipment from the requirements for a license or other written authorization from DDTC.",
+						"example": "123.11B"
+					},
+					"ddtcRegistrationNumber": {
+						"type": "string",
+						"description": "The registration identifier assigned by the DDTC to the registered manufacturer or exporter that has authorization from the DDTC (through a license or exemption) to export the article.",
+						"example": "C6754"
+					},
+					"ddtcSignificantMilitarySMEIndicator": {
+						"type": "boolean",
+						"description": "An indication that the articles reported warrant special export controls because of their capacity for substantial military utility of capability ",
+						"example": false
+					},
+					"ddtcEligibleParty": {
+						"type": "boolean",
+						"description": "A self-certification by the exporter for the exemption, and a self-certification by the exporter that they are an eligible party",
+						"example": false
+					},
+					"usmlCategoryCode": {
+						"type": "string",
+						"description": "Classified Articles, Technical Data and Defense Service Not Otherwise Listed",
+						"example": "17"
+					},
+					"ddtcXXIDeterminationNumber": {
+						"type": "string"
+					},
+					"ddtcUnitOfMeasure": {
+						"$ref": "#/components/schemas/Measure1"
+					}
+				},
+				"description": "If you choose licenseCode of S00, SCA, SGB or SAU you need to supply DDTC information."
+			},
+			"FullSchema_FileEEIInputVO_vehicleDetail": {
+				"type": "object",
+				"properties": {
+					"vinNumber": {
+						"type": "string"
+					},
+					"titleNumber": {
+						"type": "string"
+					},
+					"titleState": {
+						"type": "string"
+					}
+				}
+			},
+			"FullSchema_FileEEIInputVO_eeiCommodities": {
+				"required": [
+					"exportInformationCode"
+				],
+				"type": "object",
+				"properties": {
+					"commodity": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_commodity"
+					},
+					"scheduleBCode": {
+						"type": "string",
+						"description": "Is a 6 digit US customs code sent in request.",
+						"example": "482010"
+					},
+					"exportInformationCode": {
+						"type": "string",
+						"description": "US govt contract for overseas construction",
+						"example": "GP"
+					},
+					"eeiCommodityLicenseDetail": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_eeiCommodityLicenseDetail"
+					},
+					"inbondCode": {
+						"type": "string",
+						"description": "Warehouse withdrawal for IE",
+						"example": "36"
+					},
+					"usDomestic": {
+						"type": "boolean",
+						"description": "An indication if the manufacture origin of the commodity is US Domestic or not.",
+						"example": false
+					},
+					"ddtcDetail": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_ddtcDetail"
+					},
+					"vehicleDetail": {
+						"$ref": "#/components/schemas/FullSchema_FileEEIInputVO_vehicleDetail"
+					}
+				}
+			}
+		},
+		"parameters": {
+			"locale": {
+				"name": "X-locale",
+				"in": "header",
+				"description": "ISO locale ",
+				"schema": {
+					"type": "string"
+				},
+				"example": "en_US"
+			},
+			"content-type": {
+				"name": "content-type",
+				"in": "header",
+				"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+				"required": true,
+				"schema": {
+					"type": "string"
+				},
+				"example": "application/json"
+			},
+			"Authorization": {
+				"name": "Authorization",
+				"in": "header",
+				"description": "Specifies the authorization token.",
+				"required": true,
+				"schema": {
+					"type": "string"
+				},
+				"example": "Bearer XXX"
+			}
+		}
+	}
+}
