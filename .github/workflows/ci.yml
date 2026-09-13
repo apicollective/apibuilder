@@ -16,14 +16,14 @@ jobs:
         java: [ '17' ]
         scala: [ '3.7.3' ]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
     - name: Set up JDK
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v6
       with:
         java-version: ${{ matrix.java }}
         distribution: 'zulu'
     - name: Install sbt
-      uses: sbt/setup-sbt@v1
+      uses: sbt/setup-sbt@v1.5.9
     - name: Build
       run: |
         docker run -d -p 127.0.0.1:5432:5432 flowcommerce/apibuilder-postgresql:latest-pg15
